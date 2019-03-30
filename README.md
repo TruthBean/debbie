@@ -25,8 +25,14 @@ for microservice
 
 ## 待定项
 ---------
-1.是否用kotlin
+~~1.是否用kotlin~~
 
-2.用java8还是java11
+不用kotlin，如果使用kotlin，建议使用jetbrain开发的ktor框架
 
-3.用gradle还是maven
+~~2.用java8还是java11~~
+
+用最新的版本
+
+~~3.用gradle还是maven~~
+
+使用gradle kotlin dsl

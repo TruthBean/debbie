@@ -1,0 +1,10 @@
+package com.truthbean.code.debbie.jdbc.column;
+
+/**
+ * @author TruthBean
+ * @since 0.0.1
+ * Created on 2018-03-19 11:34.
+ */
+public interface ColumnNameTransformer {
+    String changeColumnNameToPropertyName(String columnName);
+}
