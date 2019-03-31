@@ -40,6 +40,8 @@ subprojects {
     apply(plugin = "maven")
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
+    apply(plugin = "idea")
+    apply(plugin = "eclipse")
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"

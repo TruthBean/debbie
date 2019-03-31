@@ -17,6 +17,7 @@ public class ClassInfo {
     private Class<?> clazz;
     private Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
+    @SuppressWarnings("rawtypes")
     private Constructor[] constructors;
 
     private List<Method> methods;
@@ -40,6 +41,7 @@ public class ClassInfo {
         return clazz;
     }
 
+    @SuppressWarnings("rawtypes")
     public Constructor[] getConstructors() {
         return constructors;
     }

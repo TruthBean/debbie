@@ -44,13 +44,16 @@ public class ServletRouterRequest extends RouterRequest {
 
         setSession(new ServletRouterSession(request));
 
-        setBodyType();
         setParams();
         setQueries(queries(request.getQueryString()));
         setBody();
 
         setContentType();
         setResponseTypeInHeader();
+    }
+
+    public HttpServletRequest getHttpServletRequest() {
+        return request;
     }
 
     private void setPathAttributes() {
@@ -87,15 +90,6 @@ public class ServletRouterRequest extends RouterRequest {
         setCookies(result);
     }
 
-    private void setBodyType() {
-        var type = request.getContentType();
-        if (type == null) {
-            setBodyType(MediaType.ANY);
-        } else {
-            setBodyType(MediaType.of(type));
-        }
-    }
-
     private void setParams() {
         Map<String, List> map = new HashMap<>();
         var parameterNames = request.getParameterNames();
@@ -108,7 +102,7 @@ public class ServletRouterRequest extends RouterRequest {
         if (!paramsInBody.isEmpty()) {
             map.putAll(paramsInBody);
         }
-        setParams(map);
+        setParameters(map);
     }
 
     private Map<String, List> getParamsInBody() {
@@ -224,7 +218,7 @@ public class ServletRouterRequest extends RouterRequest {
     }
 
     private void setContentType() {
-        var respType = request.getHeader("Content-Type");
+        var respType = request.getContentType();
         if (respType != null) {
             setContentType(MediaType.of(respType));
         } else {
@@ -244,6 +238,16 @@ public class ServletRouterRequest extends RouterRequest {
             }
         }
         setResponseTypeInHeader(mediaType);
+    }
+
+    @Override
+    public String getRealPath(String path) {
+        return request.getServletContext().getRealPath(path);
+    }
+
+    @Override
+    public String getContextPath() {
+        return request.getContextPath();
     }
 
     @Override

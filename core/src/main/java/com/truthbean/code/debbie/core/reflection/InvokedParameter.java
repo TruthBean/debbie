@@ -7,7 +7,7 @@ import java.lang.annotation.Annotation;
  * @since 0.0.1
  * Created on 2018-03-09 13:51
  */
-public class InvokedParameter<T> implements Comparable<InvokedParameter>, Cloneable {
+public class InvokedParameter<T> implements Comparable<InvokedParameter<T>>, Cloneable {
     private Class<T> type;
     private T value;
     private int index;
@@ -63,7 +63,8 @@ public class InvokedParameter<T> implements Comparable<InvokedParameter>, Clonea
             return false;
         }
 
-        InvokedParameter that = (InvokedParameter) o;
+        @SuppressWarnings("unchecked")
+        InvokedParameter<T> that = (InvokedParameter<T>) o;
 
         if (getType() != null ? !getType().equals(that.getType()) : that.getType() != null) {
             return false;
@@ -85,7 +86,7 @@ public class InvokedParameter<T> implements Comparable<InvokedParameter>, Clonea
     }
 
     @Override
-    public int compareTo(InvokedParameter o) {
+    public int compareTo(@SuppressWarnings("rawtypes") InvokedParameter o) {
         return this.index - o.index;
     }
 

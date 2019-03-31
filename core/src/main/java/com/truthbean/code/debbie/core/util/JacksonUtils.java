@@ -26,7 +26,7 @@ public final class JacksonUtils {
     }
 
     /**
-     * djcps logger
+     * slf4j logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(JacksonUtils.class);
 
@@ -264,10 +264,9 @@ public final class JacksonUtils {
      */
     public static String xmlToJson(String xml) {
         var xmlMapper = XML_MAPPER.copy();
-        JsonNode node;
         var json = "{}";
         try {
-            node = xmlMapper.readTree(xml.getBytes());
+            var node = xmlMapper.readTree(xml.getBytes());
             json = toJson(node);
         } catch (IOException e) {
             e.printStackTrace();
@@ -283,7 +282,7 @@ public final class JacksonUtils {
      */
     public static <T> String toXml(T object) {
         var xmlMapper = XML_MAPPER.copy();
-        String xml = "<xml></xml>";
+        var xml = "<xml></xml>";
         try {
             xml = xmlMapper.writeValueAsString(object);
         } catch (IOException e) {

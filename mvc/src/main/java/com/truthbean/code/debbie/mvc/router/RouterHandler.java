@@ -210,7 +210,7 @@ public class RouterHandler {
             throw new NullPointerException("httpRequest is null");
         }
 
-        LOGGER.debug("params: " + httpRequest.getParams());
+        LOGGER.debug("params: " + httpRequest.getParameters());
         LOGGER.debug("query: " + httpRequest.getQueries());
 
         var parameters = new RouterRequestValues(httpRequest);

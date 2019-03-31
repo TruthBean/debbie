@@ -5,6 +5,7 @@ val modules =
                 "httpclient", "jdbc", "mvc",
                 "servlet",
                 "boot",
+                "tomcat",
                 "example")
 
 modules.forEach { dir ->

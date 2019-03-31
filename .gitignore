@@ -28,3 +28,10 @@ hs_err_pid*
 
 */build
 */out
+
+# idea
+.idea/
+
+# vscode
+.vscode/
+!.vscode/launch.json

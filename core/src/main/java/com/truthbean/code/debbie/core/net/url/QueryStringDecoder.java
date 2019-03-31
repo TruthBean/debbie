@@ -125,6 +125,7 @@ public class QueryStringDecoder {
     /**
      * Creates a new decoder that decodes the specified URI. The decoder will
      * assume that the query string is encoded in UTF-8.
+     * @param uri uri
      */
     public QueryStringDecoder(URI uri) {
         this(uri, Constants.DEFAULT_CHARSET);
@@ -133,6 +134,8 @@ public class QueryStringDecoder {
     /**
      * Creates a new decoder that decodes the specified URI encoded in the
      * specified charset.
+     * @param uri uri
+     * @param charset charset
      */
     public QueryStringDecoder(URI uri, Charset charset) {
         this(uri, charset, DEFAULT_MAX_PARAMS);
@@ -141,6 +144,9 @@ public class QueryStringDecoder {
     /**
      * Creates a new decoder that decodes the specified URI encoded in the
      * specified charset.
+     * @param uri uri
+     * @param charset charset
+     * @param maxParams max params
      */
     public QueryStringDecoder(URI uri, Charset charset, int maxParams) {
         String rawPath = uri.getRawPath();

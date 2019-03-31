@@ -30,9 +30,7 @@ public class RouterRequest implements Cloneable {
 
     private RouterSession session;
 
-    private MediaType bodyType;
-
-    private Map<String, List> params;
+    private Map<String, List> parameters;
 
     private Map<String, List<String>> queries;
 
@@ -90,20 +88,32 @@ public class RouterRequest implements Cloneable {
         this.session = session;
     }
 
-    public MediaType getBodyType() {
-        return bodyType;
+    public Map<String, List> getParameters() {
+        return parameters;
     }
 
-    public void setBodyType(MediaType bodyType) {
-        this.bodyType = bodyType;
+    public String getParameter(String name) {
+        if (parameters != null && !parameters.isEmpty()) {
+            var values = parameters.get(name);
+            if (values != null && !values.isEmpty()) {
+                return (String) values.get(0);
+            }
+        }
+        return null;
     }
 
-    public Map<String, List> getParams() {
-        return params;
+    public List getParameterValues(String name) {
+        if (parameters != null && !parameters.isEmpty()) {
+            var values = parameters.get(name);
+            if (values != null && !values.isEmpty()) {
+                return values;
+            }
+        }
+        return null;
     }
 
-    public void setParams(Map<String, List> params) {
-        this.params = params;
+    public void setParameters(Map<String, List> parameters) {
+        this.parameters = parameters;
     }
 
     public Map<String, List<String>> getQueries() {
@@ -138,6 +148,14 @@ public class RouterRequest implements Cloneable {
         this.responseTypeInHeader = responseTypeInHeader;
     }
 
+    public String getRealPath(String path) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getContextPath() {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public RouterRequest clone() {
         RouterRequest clone;
@@ -148,7 +166,6 @@ public class RouterRequest implements Cloneable {
             clone = new RouterRequest();
             clone.method = method;
             clone.url = url;
-            clone.bodyType = bodyType;
             clone.body = body;
             clone.contentType = contentType;
             clone.responseTypeInHeader = responseTypeInHeader;
@@ -158,7 +175,7 @@ public class RouterRequest implements Cloneable {
         clone.headers = new HashMap<>(headers);
         clone.cookies = new ArrayList<>(cookies);
         clone.session = session;
-        clone.params = new HashMap<>(params);
+        clone.parameters = new HashMap<>(parameters);
         clone.queries = new HashMap<>(queries);
         return clone;
     }

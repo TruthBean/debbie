@@ -33,7 +33,7 @@ public class RouterRequestValues {
         setPathAttributes(routerRequest.getPathAttributes());
 
         queries = routerRequest.getQueries();
-        params = routerRequest.getParams();
+        params = routerRequest.getParameters();
         headers = routerRequest.getHeaders();
 
         cookieAttributes = new HashMap<>();
