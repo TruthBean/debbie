@@ -1,9 +1,11 @@
 package com.truthbean.code.debbie.core.aop;
 
+import net.sf.cglib.proxy.InterfaceMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 
 /**
@@ -14,8 +16,18 @@ import java.lang.reflect.Proxy;
 public class InterfaceDynamicProxy {
     private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceDynamicProxy.class);
 
-    public <T> T doProxy(T target) {
-        return doProxy((Class<T>) target.getClass(), target);
+    public <T> T doProxy(Class<T> targetClass) {
+        try {
+            T target = targetClass.getConstructor().newInstance();
+            InterfaceMaker interfaceMaker = new InterfaceMaker();
+            //抽取某个类的方法生成接口方法
+            interfaceMaker.add(targetClass);
+            Class<T> targetInterface = interfaceMaker.create();
+            return doProxy(targetInterface, target);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public <T, K extends T> T doProxy(Class<T> targetInterface, K target) {
@@ -40,10 +52,13 @@ public class InterfaceDynamicProxy {
             return invoke;
         };
 
-        T result = (T) Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
+        var proxyInstance = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
+
+         T result = (T) proxyInstance;
+
         //handle result
-        LOGGER.debug(result.toString());
-        return result;
+         LOGGER.debug(result.toString());
+        return target;
     }
 
     private static class TargetProxy<T> {

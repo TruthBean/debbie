@@ -18,6 +18,9 @@ allprojects {
 plugins {
     `maven-publish`
     signing
+
+    idea
+    eclipse
 }
 
 val projectVersion: String by project
@@ -36,15 +39,19 @@ subprojects {
 
     version = projectVersion
 
+    apply(plugin = "java")
     apply(plugin = "java-library")
     apply(plugin = "maven")
+
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
+
     apply(plugin = "idea")
     apply(plugin = "eclipse")
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
+        options.compilerArgs.add("-Xlint:unchecked")
     }
 
     configure<JavaPluginConvention> {
@@ -134,9 +141,6 @@ subprojects {
                     version = projectVersion
                     description.set("a java microservice project")
                     url.set("http://code.truthbean.com/debbie/")
-                    properties.set(mapOf(
-                            "key" to "value"
-                    ))
                     licenses {
                         license {
                             name.set("MIT License")
@@ -167,11 +171,11 @@ subprojects {
             maven {
                 url = uri(mavenRepositoryUrl)
                 credentials {
-                    val sonatypeUsername: String by project
-                    username = sonatypeUsername
+                    val sonatypeUsername: String? by project
+                    username = if (sonatypeUsername == null) "" else sonatypeUsername
 
-                    val sonatypePassword: String by project
-                    password = sonatypePassword
+                    val sonatypePassword: String? by project
+                    password = if (sonatypePassword == null) "" else sonatypePassword
                 }
             }
         }
@@ -179,8 +183,22 @@ subprojects {
 
     // 进行数字签名
     signing {
-        isRequired = isReleaseBuild && gradle.taskGraph.hasTask("build")
+        isRequired = isReleaseBuild && gradle.taskGraph.hasTask("uploadToMavenRepository")
         sign(publishing.publications["uploadToMavenRepository"])
+    }
+
+    eclipse {
+        classpath {
+            isDownloadJavadoc = true
+            isDownloadSources = true
+        }
+    }
+
+    idea {
+        module {
+            isDownloadJavadoc = true
+            isDownloadSources = true
+        }
     }
 
 }

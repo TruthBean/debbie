@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ExampleApplication",
+            "request": "launch",
+            "mainClass": "com.truthbean.code.debbie.example.ExampleApplication",
+            "projectName": "debbie-example"
+        }
+    ]
+}

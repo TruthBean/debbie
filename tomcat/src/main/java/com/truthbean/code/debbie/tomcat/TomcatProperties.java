@@ -23,8 +23,13 @@ public class TomcatProperties extends AbstractServerProperties {
 
         ClassLoader classLoader = ClassLoaderUtils.getDefaultClassLoader();
         String userDir = Objects.requireNonNull(classLoader.getResource("")).getPath();
-        System.out.println(userDir + "/../webapp");
-        configuration.setWebappDir(properties.getStringValue(TOMCAT_WEBAPP, userDir + "/../webapp"));
+        var webappPath = classLoader.getResource("webapp");
+        if (webappPath == null) {
+            userDir = userDir + "/../webapp";
+        } else {
+            userDir = webappPath.getPath();
+        }
+        configuration.setWebappDir(properties.getStringValue(TOMCAT_WEBAPP, userDir));
 
         return configuration;
     }

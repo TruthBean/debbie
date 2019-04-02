@@ -2,6 +2,7 @@ package com.truthbean.code.debbie.core.reflection;
 
 import com.truthbean.code.debbie.core.util.Constants;
 import com.truthbean.code.debbie.core.util.NumericUtils;
+import org.objectweb.asm.Type;
 
 import java.util.*;
 
@@ -203,5 +204,16 @@ public final class TypeHelper {
 
         }
         return false;
+    }
+
+    public static Type[] getTypes(Class[] classes) {
+        if (classes == null) {
+            return null;
+        }
+        Type[] types = new Type[classes.length];
+        for (int i = 0; i < classes.length; i++) {
+            types[i] = Type.getType(classes[i]);
+        }
+        return types;
     }
 }

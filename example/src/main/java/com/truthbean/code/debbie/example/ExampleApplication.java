@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author TruthBean
- * @since version
+ * @since 0.0.1
  * @since 2019-03-31 18:02
  */
 public class ExampleApplication {

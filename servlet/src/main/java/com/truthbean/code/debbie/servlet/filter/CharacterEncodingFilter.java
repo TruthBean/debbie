@@ -18,6 +18,8 @@ import java.io.IOException;
  */
 public class CharacterEncodingFilter extends HttpFilter {
 
+    private static final long serialVersionUID = 2547926167686086400L;
+
     private static final String UTF8 = "UTF-8";
 
     private String charset = UTF8;
@@ -37,6 +39,7 @@ public class CharacterEncodingFilter extends HttpFilter {
         LOGGER.debug("character encoding filter");
         request.setCharacterEncoding(this.charset);
         response.setCharacterEncoding(this.charset);
+        chain.doFilter(request, response);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CharacterEncodingFilter.class);

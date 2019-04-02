@@ -33,5 +33,6 @@ hs_err_pid*
 .idea/
 
 # vscode
-.vscode/
-!.vscode/launch.json
+#.vscode/
+
+*/bin/

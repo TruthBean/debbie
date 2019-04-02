@@ -22,6 +22,7 @@ import java.io.IOException;
  */
 public class DispatcherServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -8253171030384092538L;
     private ServletConfiguration configuration;
 
     public DispatcherServlet(ServletConfiguration configuration) {
@@ -29,7 +30,47 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatcher(req, resp);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatcher(req, resp);
+    }
+
+    @Override
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doHead(req, resp);
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doOptions(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatcher(req, resp);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatcher(req, resp);
+    }
+
+    @Override
+    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatcher(req, resp);
+    }
+
+    @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // TODO do cache
+        super.service(req, resp);
+    }
+
+    private void dispatcher(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         LOGGER.debug("dispatcher servlet .... ");
 
         var requestAdapter = new ServletRouterRequest(req);

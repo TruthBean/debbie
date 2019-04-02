@@ -45,13 +45,13 @@ public class ServletContextHandler {
                 DispatcherType.ASYNC, DispatcherType.ERROR
                 );
         servletContext.addFilter("characterEncodingFilter", new CharacterEncodingFilter())
-                .addMappingForUrlPatterns(dispatcherTypes, true, "/");
+                .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
         // cors filter
 
         // TODO: it not work??
         servletContext.addFilter("corsFilter", new CorsFilter(servletConfiguration))
-                .addMappingForUrlPatterns(dispatcherTypes, true, "/");
+                .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
         servletConfiguration.addScanClasses(classes);
         return servletConfiguration.getTargetClasses();

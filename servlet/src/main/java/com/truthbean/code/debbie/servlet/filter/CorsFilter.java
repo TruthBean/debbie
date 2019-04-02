@@ -18,6 +18,7 @@ import java.io.IOException;
  */
 public class CorsFilter extends HttpFilter {
 
+    private static final long serialVersionUID = -5174032877157965619L;
     private ServletConfiguration configuration;
 
     public CorsFilter(ServletConfiguration configuration) {

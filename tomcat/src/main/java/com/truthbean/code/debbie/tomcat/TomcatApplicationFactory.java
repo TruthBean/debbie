@@ -48,12 +48,15 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
         }
 
         String webappDir = configuration.getWebappDir();
-        if (!new File(webappDir).exists()) {
+        var webappPath = new File(webappDir);
+        if (!webappPath.exists()) {
             try {
                 webappDir = Files.createTempDirectory("default-doc-base").toFile().getAbsolutePath();
             } catch (IOException e) {
                 LOGGER.error("create default-doc-base in temp directory error", e);
             }
+        } else {
+            webappDir = webappPath.getAbsolutePath();
         }
 
         StandardContext ctx = (StandardContext) server.addWebapp("", webappDir);
