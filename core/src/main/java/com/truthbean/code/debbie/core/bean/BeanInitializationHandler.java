@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class BeanInitializationHandler {
     public static void init(Class<?> beanClass) {
-        BeanCacheHandler.register(null, beanClass);
+        BeanCacheHandler.register(beanClass);
     }
 
     public static void init(Set<Class<?>> beanClasses) {
@@ -27,5 +27,9 @@ public class BeanInitializationHandler {
 
     public static <T extends Annotation> Set<ClassInfo> getAnnotatedClass(Class<T> annotationClass) {
         return BeanCacheHandler.getAnnotatedClass(annotationClass);
+    }
+
+    public static <T extends Annotation> Set<ClassInfo> getAnnotatedMethodBean(Class<T> annotationClass) {
+        return BeanCacheHandler.getAnnotatedMethodsBean(annotationClass);
     }
 }

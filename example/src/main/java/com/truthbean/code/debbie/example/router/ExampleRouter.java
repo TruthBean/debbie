@@ -21,12 +21,12 @@ import java.util.Map;
 @Router("example")
 public class ExampleRouter {
 
-    @Router(pathRegex = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
+    @Router(path = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
     public String helloWorld() {
         return "{\"message\":\"hello world\", \"method\":\"GET\"}";
     }
 
-    @Router(pathRegex = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
+    @Router(path = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloXml(@RequestParam(name = "key", type = RequestParamType.QUERY) String key,
                         @RequestParam(name = "value", type = RequestParamType.QUERY) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
@@ -34,7 +34,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(pathRegex = "/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(path = "/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloJson(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
                                         @RequestParam(name = "value", type = RequestParamType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
@@ -42,7 +42,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(pathRegex = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloBodyXml(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
                                             @RequestParam(name = "value", type = RequestParamType.BODY,
             requestType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
@@ -51,7 +51,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(pathRegex = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
+    @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloBodyJson(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
                                             @RequestParam(name = "value", type = RequestParamType.BODY,
                                                     requestType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
@@ -60,7 +60,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(pathRegex = "/index.png", hasTemplate = true, responseType = MediaType.IMAGE_PNG)
+    @Router(path = "/index.png", hasTemplate = true, responseType = MediaType.IMAGE_PNG)
     public StaticResourcesView resourceJpg() {
         var view = new StaticResourcesView();
         view.setTemplate("index");
@@ -69,7 +69,7 @@ public class ExampleRouter {
         return view;
     }
 
-    @Router(pathRegex = "/index.html", hasTemplate = true, responseType = MediaType.TEXT_HTML_UTF8)
+    @Router(path = "/index.html", hasTemplate = true, responseType = MediaType.TEXT_HTML_UTF8)
     public StaticResourcesView resource() {
         return new StaticResourcesView();
     }

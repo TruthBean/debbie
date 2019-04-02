@@ -1,6 +1,7 @@
 package com.truthbean.code.debbie.servlet;
 
 import com.truthbean.code.debbie.core.io.MediaType;
+import com.truthbean.code.debbie.core.util.StringUtils;
 import com.truthbean.code.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.code.debbie.mvc.response.view.AbstractView;
 import com.truthbean.code.debbie.mvc.router.RouterHandler;
@@ -90,8 +91,12 @@ public class DispatcherServlet extends HttpServlet {
             }
             jspView.setHttpServletRequest(req);
             jspView.setHttpServletResponse(resp);
-            jspView.setPrefix(routerInfo.getTemplatePrefix());
-            jspView.setSuffix(routerInfo.getTemplateSuffix());
+            if (!StringUtils.isBlank(routerInfo.getTemplatePrefix())) {
+                jspView.setPrefix(routerInfo.getTemplatePrefix());
+            }
+            if (!StringUtils.isBlank(routerInfo.getTemplateSuffix())) {
+                jspView.setSuffix(routerInfo.getTemplateSuffix());
+            }
             jspView.transfer();
         } else if (any instanceof byte[]) {
             resp.reset();

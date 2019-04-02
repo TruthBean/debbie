@@ -15,9 +15,17 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Router {
-    String value() default "";
+    /**
+     * same as path
+     * @return path regex
+     */
+    String[] value() default "";
 
-    String pathRegex() default " ";
+    /**
+     * router path regex
+     * @return path regex
+     */
+    String[] path() default "";
 
     HttpMethod method() default HttpMethod.ALL;
 
@@ -28,7 +36,9 @@ public @interface Router {
      * @return bool
      */
     boolean hasTemplate() default false;
+
     String templateSuffix() default "";
+
     String templatePrefix() default "";
 
     ResponseHandlerProviderEnum handlerFilter() default ResponseHandlerProviderEnum.JSON_RESTFUL;

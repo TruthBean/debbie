@@ -18,39 +18,82 @@ final class BeanCacheHandler {
     private BeanCacheHandler() {
     }
 
+    private static final Map<Class<?>, ClassInfo> BEAN_CLASSES = new HashMap<>();
     private static final Set<ClassInfo> CLASS_INFO_SET = new HashSet<>();
 
-    private static final Map<Class<?>, ClassInfo> BEAN_CLASSES = new HashMap<>();
-
+    private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Map<Class<?>, List<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
 
-    protected static void register(Class<? extends Annotation> classAnnotation, Class<?> beanClass) {
+    private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
+    private static final Map<Class<? extends Annotation>, Set<ClassInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
+
+    protected static void register(Class<?> beanClass) {
+        LOGGER.debug("register class " + beanClass.getName());
         var beanClassInfo = new ClassInfo(beanClass);
+
         BEAN_CLASSES.put(beanClass, beanClassInfo);
         CLASS_INFO_SET.add(beanClassInfo);
 
         List<Method> declaredMethods = beanClassInfo.getMethods();
+        for (var method: declaredMethods) {
+            var annotations = method.getDeclaredAnnotations();
+            if (annotations != null) {
+                for (Annotation annotation: annotations) {
+                    var methodAnnotation = annotation.annotationType();
+                    METHOD_ANNOTATION.add(methodAnnotation);
 
-        if (classAnnotation != null && beanClass.isAnnotationPresent(classAnnotation)) {
-            var classMethodMap = BEAN_CLASS_METHOD_MAP.get(classAnnotation);
-            if (classMethodMap == null) {
-                classMethodMap = new HashMap<>();
+                    var annotationMethodBeans = ANNOTATION_METHOD_BEANS.computeIfAbsent(methodAnnotation, k -> new HashSet<>());
+                    annotationMethodBeans.add(beanClassInfo);
+                }
             }
-            classMethodMap.put(beanClass, declaredMethods);
-            BEAN_CLASS_METHOD_MAP.put(classAnnotation, classMethodMap);
         }
+
+        var classAnnotation = beanClassInfo.getClassAnnotations();
+        if (!classAnnotation.isEmpty()) {
+            var annotations = classAnnotation.keySet();
+            CLASS_ANNOTATION.addAll(annotations);
+
+            for (var annotation: annotations) {
+                if (beanClass.isAnnotationPresent(annotation)) {
+                    var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
+                    if (classMethodMap == null) {
+                        classMethodMap = new HashMap<>();
+                    }
+                    classMethodMap.put(beanClass, declaredMethods);
+                    BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
+                }
+            }
+        }
+
     }
 
     protected static void register(Class<? extends Annotation> classAnnotation, String packageName) {
         var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
-        if (allClass.isEmpty()) {
-            allClass.forEach( bean -> register(classAnnotation, bean));
+        if (!allClass.isEmpty()) {
+            allClass.forEach(c -> {
+                if (c.isAnnotationPresent(classAnnotation)) {
+                    register(c);
+                }
+            });
         }
     }
 
     protected static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames) {
         for (String packageName: packageNames) {
             register(classAnnotation, packageName);
+        }
+    }
+
+    protected static void register(String packageName) {
+        var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
+        if (!allClass.isEmpty()) {
+            allClass.forEach(BeanCacheHandler::register);
+        }
+    }
+
+    protected static void register(List<String> packageNames) {
+        for (String packageName: packageNames) {
+            register(packageName);
         }
     }
 
@@ -81,6 +124,10 @@ final class BeanCacheHandler {
             (Class<? extends Annotation> classAnnotation, Class<? extends Annotation> methodAnnotation) {
 
     }*/
+
+    protected static Set<ClassInfo> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
+        return ANNOTATION_METHOD_BEANS.get(methodAnnotation);
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanCacheHandler.class);
 

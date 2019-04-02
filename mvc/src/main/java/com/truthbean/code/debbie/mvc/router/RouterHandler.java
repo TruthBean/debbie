@@ -5,6 +5,7 @@ import com.truthbean.code.debbie.core.bean.BeanInvoker;
 import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.reflection.ClassInfo;
 import com.truthbean.code.debbie.core.reflection.InvokedParameter;
+import com.truthbean.code.debbie.core.watcher.Watcher;
 import com.truthbean.code.debbie.mvc.MvcConfiguration;
 import com.truthbean.code.debbie.mvc.request.HttpMethod;
 import com.truthbean.code.debbie.mvc.request.RouterRequest;
@@ -30,7 +31,7 @@ public class RouterHandler {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
     public void registerRouter(MvcConfiguration webConfiguration) {
-        Set<ClassInfo> classInfoSet = BeanInitializationHandler.getAnnotatedClass(Router.class);
+        Set<ClassInfo> classInfoSet = BeanInitializationHandler.getAnnotatedMethodBean(Router.class);
         for (var classInfo : classInfoSet) {
             Router prefixRouter = (Router) classInfo.getClassAnnotations().get(Router.class);
             var methods = classInfo.getMethods();
@@ -41,7 +42,7 @@ public class RouterHandler {
                     var routerInfo = new RouterInfo();
                     routerInfo.setRouterClass(classInfo.getClazz());
                     routerInfo.setMethod(method);
-                    routerInfo.setPathRegex(Pattern.compile(getPathRegex(prefixRouter, router)));
+                    routerInfo.setPaths(setPathRegex(prefixRouter, router));
                     routerInfo.setRequestMethod(router.method());
 
                     routerInfo.setHasTemplate(router.hasTemplate());
@@ -78,70 +79,115 @@ public class RouterHandler {
         }
     }
 
-    private String getPrefixPathRegex(Router prefixRouter) {
-        String prefixPathRegex = null;
+    private List<String> getPrefixPathRegex(Router prefixRouter) {
         if (prefixRouter != null) {
-            prefixPathRegex = prefixRouter.value();
-            if ("".equals(prefixPathRegex.trim())) {
-                prefixPathRegex = prefixRouter.pathRegex();
+            var prefixPathRegex = prefixRouter.value();
+
+            if (isEmptyPaths(prefixPathRegex)) {
+                prefixPathRegex = prefixRouter.path();
             }
-            if (!prefixPathRegex.startsWith("/")) {
-                prefixPathRegex = "/" + prefixPathRegex;
+            if (!isEmptyPaths(prefixPathRegex)) {
+                var prefixPath = trimPaths(prefixPathRegex);
+                List<String> newPaths = new ArrayList<>();
+                for (var s : prefixPath) {
+                    if (!s.startsWith("/")) {
+                        newPaths.add("/" + s);
+                    } else {
+                        newPaths.add(s);
+                    }
+                }
+                return newPaths;
             }
         }
-        return prefixPathRegex;
+        return null;
     }
 
-    private String getPathRegex(String apiPrefix, Router prefixRouter, Router router) {
+    private boolean isEmptyPaths(String[] paths) {
+        if (paths == null || paths.length == 0) {
+            return true;
+        }
+
+        for (String path: paths) {
+            if (path != null && !"".equals(path.trim())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List<String> trimPaths(String[] paths) {
+        List<String> copy = Arrays.asList(paths);
+        for (String path: paths) {
+            if (path == null || "".equals(path.trim())) {
+                copy.remove(path);
+            }
+        }
+        return copy;
+    }
+
+    private List<String> getPathRegex(String apiPrefix, Router prefixRouter, Router router) {
         var apiPrefixAfterTrim = apiPrefix;
         if (!"".equals(apiPrefix.trim()) && apiPrefix.endsWith("/")) {
             apiPrefixAfterTrim = apiPrefix.substring(0, apiPrefix.length() - 1);
         }
-        String prefixPathRegex = getPrefixPathRegex(prefixRouter);
+        var paths = splicePathRegex(prefixRouter, router);
 
-        String pathRegex;
-        if (router != null) {
-            pathRegex = router.value();
-            if ("".equals(pathRegex.trim())) {
-                pathRegex = router.pathRegex();
-            }
-            if (prefixPathRegex != null) {
-                pathRegex = apiPrefixAfterTrim + prefixPathRegex + pathRegex;
-            } else {
-                pathRegex = apiPrefixAfterTrim + pathRegex;
-            }
-        } else {
-            if (prefixPathRegex != null) {
-                pathRegex = apiPrefixAfterTrim + prefixPathRegex;
-            } else {
-                throw new RuntimeException("router value or pathRegex cannot be empty");
-            }
+        List<String> list = new ArrayList<>();
+        for (String s: paths) {
+            list.add(apiPrefixAfterTrim + s);
         }
 
-        return pathRegex;
+        return list;
     }
 
-    private String getPathRegex(Router prefixRouter, Router router) {
-        String prefixPathRegex = getPrefixPathRegex(prefixRouter);
+    private List<Pattern> setPathRegex(Router prefixRouter, Router router) {
+        var paths = splicePathRegex(prefixRouter, router);
+        List<Pattern> patterns = new ArrayList<>();
+        for (String path: paths) {
+            patterns.add(Pattern.compile(path));
+        }
+        return patterns;
+    }
 
-        String pathRegex;
-        if (router != null) {
-            pathRegex = router.value();
-            if ("".equals(pathRegex.trim())) {
-                pathRegex = router.pathRegex();
-            }
-            if (prefixPathRegex != null) {
-                pathRegex = prefixPathRegex + pathRegex;
+    private Set<String> splicePathRegex(Router prefixRouter, Router router) {
+        var prefixPathRegex = getPrefixPathRegex(prefixRouter);
+        var pathRegex = router.value();
+        if (isEmptyPaths(pathRegex)) {
+            pathRegex = router.path();
+        }
+
+        Set<String> newPaths = new HashSet<>();
+
+        if (prefixPathRegex != null) {
+            if (!isEmptyPaths(pathRegex)) {
+                for (var p: prefixPathRegex) {
+                    for (var s : pathRegex) {
+                        if (s == null || "".equals(s.trim())) {
+                            newPaths.add(p);
+                        } else {
+                            newPaths.add(p + s);
+                        }
+                    }
+                }
+            } else {
+                newPaths.addAll(prefixPathRegex);
             }
         } else {
-            if (prefixPathRegex != null) {
-                pathRegex = prefixPathRegex;
+            if (!isEmptyPaths(pathRegex)) {
+                var paths = trimPaths(pathRegex);
+                for (var s : paths) {
+                    if (!s.startsWith("/")) {
+                        newPaths.add("/" + s);
+                    } else {
+                        newPaths.add(s);
+                    }
+                }
             } else {
                 throw new RuntimeException("router value or pathRegex cannot be empty");
             }
         }
-
-        return pathRegex;
+        return newPaths;
     }
 
     public RouterInfo getMatchedRouter(RouterRequest routerRequest, List<MediaType> defaultType) {
@@ -150,10 +196,20 @@ public class RouterHandler {
         RouterInfo result = null;
         var set = Collections.unmodifiableSet(ROUTER_INFO_SET);
         for (var routerInfo : set) {
-            var matchUrlAndMethod = routerInfo.getPathRegex().matcher(routerRequest.getUrl()).find() &&
-                    (routerInfo.getRequestMethod() == routerRequest.getMethod()
-                            || routerInfo.getRequestMethod() == HttpMethod.ALL);
-            LOGGER.debug("match url and method: " + matchUrlAndMethod);
+            var paths = routerInfo.getPaths();
+            var matchUrl = false;
+            for (var pattern: paths) {
+                if (pattern.matcher(url).find()) {
+                    matchUrl = true;
+                    break;
+                }
+            }
+
+            LOGGER.debug("match url " + matchUrl);
+
+            var matchMethod = routerInfo.getRequestMethod() == routerRequest.getMethod()
+                            || routerInfo.getRequestMethod() == HttpMethod.ALL;
+            LOGGER.debug("match method: " + matchMethod);
 
             var responseType = routerInfo.getResponse().getResponseType();
             var matchResponseType = routerRequest.getResponseTypeInHeader() == MediaType.ANY ||
@@ -163,7 +219,7 @@ public class RouterHandler {
 
             var requestType = routerRequest.getContentType();
 
-            if (matchResponseType && matchUrlAndMethod) {
+            if (matchUrl && matchMethod && matchResponseType) {
                 result = routerInfo;
                 if (responseType == MediaType.ANY) {
                     routerInfo.getResponse().setResponseType(defaultType.get(0));

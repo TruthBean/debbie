@@ -30,7 +30,7 @@ public class RouterInfo implements Cloneable {
 
     private Class<?> routerClass;
 
-    private Pattern pathRegex;
+    private List<Pattern> paths;
 
     private HttpMethod requestMethod;
 
@@ -98,12 +98,12 @@ public class RouterInfo implements Cloneable {
         this.routerClass = routerClass;
     }
 
-    public Pattern getPathRegex() {
-        return pathRegex;
+    public List<Pattern> getPaths() {
+        return paths;
     }
 
-    public void setPathRegex(Pattern pathRegex) {
-        this.pathRegex = pathRegex;
+    public void setPaths(List<Pattern> paths) {
+        this.paths = paths;
     }
 
     public HttpMethod getRequestMethod() {
@@ -196,7 +196,7 @@ public class RouterInfo implements Cloneable {
         return Objects.equals(method, that.method) &&
                 Objects.equals(methodParams, that.methodParams) &&
                 Objects.equals(routerClass, that.routerClass) &&
-                Objects.equals(pathRegex, that.pathRegex) &&
+                Objects.equals(paths, that.paths) &&
                 requestMethod == that.requestMethod &&
 
                 Objects.equals(response, that.response) &&
@@ -210,7 +210,7 @@ public class RouterInfo implements Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, methodParams, routerClass, pathRegex, requestMethod, response,
+        return Objects.hash(method, methodParams, routerClass, paths, requestMethod, response,
                 request, baseTypeMethodParams, notBaseTypeMethodParams, templatePrefix, templateSuffix);
     }
 
@@ -220,7 +220,7 @@ public class RouterInfo implements Cloneable {
                 "\"method\":" + method +
                 ",\"methodParams\":" + methodParams +
                 ",\"routerClass\":" + routerClass +
-                ",\"pathRegex\":" + pathRegex +
+                ",\"paths\":" + paths +
                 ",\"requestMethod\":" + requestMethod +
                 ",\"response\":" + response +
                 ",\"request\":" + request +
@@ -244,7 +244,7 @@ public class RouterInfo implements Cloneable {
             clone.methodParams = new ArrayList<>(methodParams);
         }
         clone.routerClass = routerClass;
-        clone.pathRegex = pathRegex;
+        clone.paths = paths;
         clone.requestMethod = requestMethod;
         if (response != null) {
             clone.response = response;
