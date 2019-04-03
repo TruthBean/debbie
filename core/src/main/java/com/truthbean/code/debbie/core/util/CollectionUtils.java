@@ -1,6 +1,8 @@
 package com.truthbean.code.debbie.core.util;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author TruthBean
@@ -25,5 +27,11 @@ public final class CollectionUtils {
             }
         }
         return builder.toString();
+    }
+
+    public static void reverse(Map source, Map target) {
+        for (Object key : source.keySet()) {
+            target.put(source.get(key), key);
+        }
     }
 }

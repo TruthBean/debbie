@@ -1,5 +1,6 @@
 package com.truthbean.code.debbie.core.reflection;
 
+import com.truthbean.code.debbie.core.util.Constants;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,49 @@ import java.util.jar.JarFile;
  * Created on 2019/3/23 11:23.
  */
 public class ReflectionHelper {
+    public static <T> T newInstance(Class<T> type) {
+        return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
+    }
+
+    public static <T> T newInstance(Class<T> type, Class[] parameterTypes, Object[] args) {
+        var obj = getConstructor(type, parameterTypes);
+        if (obj != null) {
+            return newInstance(obj, args);
+        }
+        return null;
+    }
+
+    public static <T> T newInstance(final Constructor<T> constructor, final Object[] args) {
+
+        boolean flag = constructor.isAccessible();
+        try {
+            if (!flag) {
+                constructor.setAccessible(true);
+            }
+            return constructor.newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            LOGGER.error("new instance error", e);
+        } finally {
+            if (!flag) {
+                constructor.setAccessible(flag);
+            }
+        }
+        return null;
+    }
+
+    public static <T> Constructor<T> getConstructor(Class<T> type, Class[] parameterTypes) {
+        try {
+            Constructor<T> constructor = type.getDeclaredConstructor(parameterTypes);
+            if (constructor.trySetAccessible()) {
+                constructor.setAccessible(true);
+            }
+            return constructor;
+        } catch (NoSuchMethodException e) {
+            LOGGER.error("no such constructor", e);
+        }
+        return null;
+    }
+
     public static List<Field> getDeclaredFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
         for (var superClass = clazz; superClass != Object.class; superClass = superClass.getSuperclass()) {

@@ -1,12 +1,9 @@
 package com.truthbean.code.debbie.mvc.router;
 
-import com.truthbean.code.debbie.core.aop.InterfaceDynamicProxy;
 import com.truthbean.code.debbie.core.bean.BeanFactory;
 import com.truthbean.code.debbie.core.bean.BeanInitializationHandler;
-import net.sf.cglib.proxy.InterfaceMaker;
+import com.truthbean.code.debbie.core.proxy.InterfaceDynamicProxy;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
 
 /**
  * @author TruthBean
@@ -25,11 +22,18 @@ public class RouterInvokerTest {
     }
 
     @Test
-    public void testProxy() {
+    public void testCglibProxy() {
         var proxy = new InterfaceDynamicProxy();
-        System.out.println(proxy);
-        var test = proxy.doProxy(RouterInvokerTest.class);
+        RouterInvokerTest test = (RouterInvokerTest) proxy.doCglibProxy(RouterInvokerTest.class);
         System.out.println(test.router("6666666666666"));
+    }
+
+    @Test
+    public void testJdkProxy() {
+        var that = new RouterInvokerTest();
+        var proxy = new InterfaceDynamicProxy();
+        /*RouterInvokerTestInterface test = proxy.doJdkProxy(RouterInvokerTestInterface.class, that);
+        System.out.println(test.router("6666666666666"));*/
     }
 
     @Router

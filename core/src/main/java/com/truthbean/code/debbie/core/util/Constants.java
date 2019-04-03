@@ -56,4 +56,6 @@ public interface Constants {
     char LOWERCASE_F = 'f';
     char UPPERCASE_A = 'A';
     char UPPERCASE_F = 'F';
+
+    Class[] EMPTY_CLASS_ARRAY = {};
 }
