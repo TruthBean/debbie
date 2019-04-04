@@ -60,23 +60,25 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public <E> long createTable(Class<E> entity) {
         var classInfo = BeanInitializationHandler.getRegisterBean(entity);
+        var entityInfo = new EntityInfo();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
+        var entityClass = classInfo.getClazz();
         var table = sqlEntity.table();
         if ("".equals(table.trim())) {
-            table = entity.getSimpleName().toLowerCase();
+            table = entityClass.getSimpleName().toLowerCase();
         }
-        List<ColumnInfo> columns = new ArrayList<>();
-        var fields = classInfo.getFields();
-        if (!fields.isEmpty()) {
-            for (var field : fields) {
-                columns.add(JdbcColumnHandler.getColumnInfo(field));
-            }
-        }
-        return createTable(table, columns);
+        entityInfo.setTable(table);
+        entityInfo.setCharset(sqlEntity.charset());
+        entityInfo.setEngine(sqlEntity.engine());
+
+        var columns = super.getColumnInfo(classInfo);
+        entityInfo.setColumnInfoList(columns);
+        return createTable(entityInfo);
     }
 
-    public long createTable(String table, List<ColumnInfo> columns) {
-        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create().table(table, true).leftParenthesis();
+    public long createTable(EntityInfo entityInfo) {
+        var columns = entityInfo.getColumnInfoList();
+        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create().table(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
             for (int i = 0; i < size - 1; i++) {
@@ -91,7 +93,18 @@ public class DdlRepositoryHandler extends RepositoryHandler {
                 buildCreateTableColumns(sqlBuilder, iColumn);
             }
         }
-        var sql = sqlBuilder.rightParenthesis().builder();
+        sqlBuilder.rightParenthesis();
+
+        var engine = entityInfo.getEngine();
+        if (!"".equals(engine.trim())) {
+            sqlBuilder.engine(engine);
+        }
+
+        var charset = entityInfo.getCharset();
+        if (!"".equals(charset.trim())) {
+            sqlBuilder.defaultCharset(charset);
+        }
+        var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
         return super.update(sql);
     }
@@ -101,8 +114,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         if (iColumn.getJdbcType().equals(JDBCType.VARCHAR)) {
             type = "VARCHAR(" + iColumn.getCharMaxLength() + ")";
         }
-        sqlBuilder.extra("`").extra(iColumn.getColumnName()).extra("` ")
-                .extra(type).extra(" ");
+        sqlBuilder.extra("`").extra(iColumn.getColumnName()).extra("` ").extra(type).extra(" ");
         if (iColumn.isNullable() != null) {
             if (iColumn.isNullable()) {
                 sqlBuilder.nullSql();
@@ -121,7 +133,20 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
         if (iColumn.isPrimaryKey()) {
             sqlBuilder.primaryKey();
+
+            if (iColumn.getPrimaryKeyType() != null) {
+                switch (iColumn.getPrimaryKeyType()) {
+                    case UUID:
+                    case NONE:
+                    default:
+                        break;
+                    case AUTO_INCREMENT:
+                        sqlBuilder.autoIncrement();
+                        break;
+                }
+            }
         }
+
         if (iColumn.getComment() != null) {
             sqlBuilder.comment(iColumn.getComment());
         }

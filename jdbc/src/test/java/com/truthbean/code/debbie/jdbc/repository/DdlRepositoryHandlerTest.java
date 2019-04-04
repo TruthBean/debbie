@@ -60,8 +60,10 @@ public class DdlRepositoryHandlerTest {
 
     @Test
     public void dropTable() {
-        var r = ddlRepositoryHandler.dropTable("qu");
+        var r = ddlRepositoryHandler.userDatabase("test");
         System.out.println(r);
+        var s = ddlRepositoryHandler.dropTable("qu");
+        System.out.println(s);
     }
 
 }

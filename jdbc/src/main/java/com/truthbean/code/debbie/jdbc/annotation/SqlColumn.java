@@ -1,5 +1,7 @@
 package com.truthbean.code.debbie.jdbc.annotation;
 
+import com.truthbean.code.debbie.jdbc.column.PrimaryKeyType;
+
 import java.lang.annotation.*;
 
 /**
@@ -16,6 +18,7 @@ public @interface SqlColumn {
      * @return whether is id
      */
     boolean id() default false;
+    PrimaryKeyType primaryKey() default PrimaryKeyType.NONE;
 
     /**
      * @return column name

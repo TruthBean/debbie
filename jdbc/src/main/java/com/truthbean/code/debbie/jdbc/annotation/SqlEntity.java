@@ -15,4 +15,8 @@ public @interface SqlEntity {
      * @return table name
      */
     String table() default "";
+
+    String engine() default "InnoDB";
+
+    String charset() default "utf8";
 }

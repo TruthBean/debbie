@@ -121,6 +121,26 @@ public class ReflectionHelper {
     }
 
     /**
+     * invoke get method
+     *
+     * @param target    target object
+     * @param fieldName field name
+     * @return invoke method result
+     */
+    public static Object invokeGetMethod(Object target, String fieldName) {
+        String methodName = "get" + handleFieldName(fieldName);
+        try {
+            Method method = target.getClass().getMethod(methodName);
+            return method.invoke(target);
+        } catch (NoSuchMethodException e) {
+            LOGGER.warn(fieldName + " set method not found", e);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            LOGGER.warn(fieldName + " invoke error", e);
+        }
+        return null;
+    }
+
+    /**
      * make char of field name upper
      *
      * @param fieldName filed name

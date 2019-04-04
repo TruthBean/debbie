@@ -2,6 +2,7 @@ package com.truthbean.code.debbie.jdbc.repository;
 
 import com.truthbean.code.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.code.debbie.jdbc.annotation.SqlEntity;
+import com.truthbean.code.debbie.jdbc.column.PrimaryKeyType;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -9,7 +10,7 @@ import java.sql.Timestamp;
 @SqlEntity
 public class Qu {
 
-    @SqlColumn(id = true, comment = "主键")
+    @SqlColumn(id = true, comment = "主键", primaryKey = PrimaryKeyType.AUTO_INCREMENT)
     private Long id;
 
     @SqlColumn(nullable = false)

@@ -1,5 +1,6 @@
 package com.truthbean.code.debbie.jdbc.column;
 
+import com.truthbean.code.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.code.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.code.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.code.debbie.jdbc.repository.DynamicSqlBuilder;
@@ -22,7 +23,7 @@ public class JdbcColumnHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcColumnHandler.class);
 
-    public static List<List<ColumnInfo>> getTableColumnData(ResultSet resultSet, ColumnNameTransformer columnNameTransformer) {
+    public static List<List<ColumnInfo>> getTablecolumnInfo(ResultSet resultSet, ColumnNameTransformer columnNameTransformer) {
         List<List<ColumnInfo>> columnLists = new ArrayList<>();
         try {
             var resultSetMetaData = resultSet.getMetaData();
@@ -30,7 +31,7 @@ public class JdbcColumnHandler {
             int columnCount = resultSetMetaData.getColumnCount();
             LOGGER.debug("columnCount: {}", columnCount);
 
-            ColumnInfo columnData;
+            ColumnInfo columnInfo;
             List<ColumnInfo> columnList;
 
             while (resultSet.next()) {
@@ -60,28 +61,28 @@ public class JdbcColumnHandler {
 
                     String type = ColumnTypeHandler.getType(columnTypeName, precision, scale);
 
-                    columnData = new ColumnInfo();
-                    columnData.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnName));
-                    columnData.setColumnName(columnName);
+                    columnInfo = new ColumnInfo();
+                    columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnName));
+                    columnInfo.setColumnName(columnName);
 
-                    columnData.setDataType(type);
-                    columnData.setJdbcType(JDBCType.valueOf(columnType));
-                    columnData.setColumnType(columnTypeName);
+                    columnInfo.setDataType(type);
+                    columnInfo.setJdbcType(JDBCType.valueOf(columnType));
+                    columnInfo.setColumnType(columnTypeName);
                     try {
-                        columnData.setJavaClass(Class.forName(columnClassName));
+                        columnInfo.setJavaClass(Class.forName(columnClassName));
                     } catch (ClassNotFoundException e) {
                         LOGGER.error(columnClassName + " has no class defined ");
                     }
-                    columnData.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, columnClassName));
+                    columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, columnClassName));
 
-                    // columnData.setColumnComment(comment);
-                    columnData.setPrecision(precision);
-                    columnData.setScale(scale);
+                    // columnInfo.setColumnComment(comment);
+                    columnInfo.setPrecision(precision);
+                    columnInfo.setScale(scale);
 
                     //cd.setCharmaxLength(charmaxLength);
                     //cd.setNullable(nullable);
 
-                    columnList.add(columnData);
+                    columnList.add(columnInfo);
                 }
                 columnLists.add(columnList);
             }
@@ -91,20 +92,18 @@ public class JdbcColumnHandler {
         return columnLists;
     }
 
-
-
-    public static List<ColumnInfo> getTableColumnData(Connection connection, String tableName,
+    public static List<ColumnInfo> getTablecolumnInfo(Connection connection, String tableName,
                                                       ColumnNameTransformer columnNameTransformer) {
         List<ColumnInfo> columnList = new ArrayList<>();
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
         try {
-            var sql = DynamicSqlBuilder.sql().select("*").from(tableName).builder();
+            var sql = DynamicSqlBuilder.sql().selectAll().from(tableName).builder();
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
 
-            columnList = getTableColumnData(resultSet, columnNameTransformer).get(0);
+            columnList = getTablecolumnInfo(resultSet, columnNameTransformer).get(0);
         } catch (SQLException e) {
             LOGGER.error(null, e);
         } finally {
@@ -114,48 +113,58 @@ public class JdbcColumnHandler {
         return columnList;
     }
 
+    public static <E> ColumnInfo resolveField(Field field, E entity) {
+        ColumnInfo columnInfo = getColumnInfo(field);
+        var value = ReflectionHelper.invokeGetMethod(entity, field.getName());
+        columnInfo.setValue(value);
+        return columnInfo;
+    }
+
     public static ColumnInfo getColumnInfo(Field field) {
-        var columnData = new ColumnInfo<>();
+        var columnInfo = new ColumnInfo<>();
         SqlColumn sqlColumn = field.getAnnotation(SqlColumn.class);
         if (sqlColumn != null) {
             if (sqlColumn.id()) {
                 var columnName = sqlColumn.name();
                 if (!"".equals(columnName.trim())) {
-                    columnData.setColumnName(columnName);
+                    columnInfo.setColumnName(columnName);
                 } else {
-                    columnData.setColumnName(field.getName());
+                    columnInfo.setColumnName(field.getName());
                 }
-                columnData.setNullable(false);
+                columnInfo.setNullable(false);
                 if (field.getType() == UUID.class) {
-                    columnData.setCharMaxLength(64);
+                    columnInfo.setCharMaxLength(64);
                 }
                 if (!"".equals(sqlColumn.comment().trim())) {
-                    columnData.setComment(sqlColumn.comment());
+                    columnInfo.setComment(sqlColumn.comment());
                 }
-                columnData.setPrimaryKey(true);
+                columnInfo.setPrimaryKey(true);
+                columnInfo.setPrimaryKeyType(sqlColumn.primaryKey());
             } else {
                 var columnName = sqlColumn.name();
                 if (!"".equals(columnName.trim())) {
-                    columnData.setColumnName(columnName);
+                    columnInfo.setColumnName(columnName);
                 } else {
-                    columnData.setColumnName(field.getName());
+                    columnInfo.setColumnName(field.getName());
                 }
-                columnData.setNullable(sqlColumn.nullable());
-                columnData.setUnique(sqlColumn.unique());
-                columnData.setCharMaxLength(sqlColumn.charMaxLength());
+                columnInfo.setNullable(sqlColumn.nullable());
+                columnInfo.setUnique(sqlColumn.unique());
+                columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
                 if (!"".equals(sqlColumn.defaultValue())) {
-                    columnData.setDefaultValue(sqlColumn.defaultValue());
+                    columnInfo.setDefaultValue(sqlColumn.defaultValue());
                 }
                 if (!"".equals(sqlColumn.comment().trim())) {
-                    columnData.setComment(sqlColumn.comment());
+                    columnInfo.setComment(sqlColumn.comment());
                 }
-                columnData.setCharMaxLength(sqlColumn.charMaxLength());
+                columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
             }
 
         } else {
-            columnData.setColumnName(field.getName());
+            columnInfo.setColumnName(field.getName());
         }
-        columnData.setJdbcType(ColumnTypeHandler.explain(field.getType()));
-        return columnData;
+        columnInfo.setJdbcType(ColumnTypeHandler.explain(field.getType()));
+        columnInfo.setPropertyName(field.getName());
+        columnInfo.setJavaClass(field.getType());
+        return columnInfo;
     }
 }

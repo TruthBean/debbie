@@ -38,6 +38,7 @@ public class ColumnInfo<T> {
     private String defaultValue;
 
     private boolean isPrimaryKey;
+    private PrimaryKeyType primaryKeyType;
 
     private boolean unique;
 
@@ -173,6 +174,14 @@ public class ColumnInfo<T> {
         isPrimaryKey = primaryKey;
     }
 
+    public PrimaryKeyType getPrimaryKeyType() {
+        return primaryKeyType;
+    }
+
+    public void setPrimaryKeyType(PrimaryKeyType primaryKeyType) {
+        this.primaryKeyType = primaryKeyType;
+    }
+
     public boolean isUnique() {
         return unique;
     }
@@ -189,6 +198,7 @@ public class ColumnInfo<T> {
                 + "\"charMaxLength\":\"" + charMaxLength + "\"" + "," + "\"nullable\":" + nullable + ","
                 + "\"scale\":" + scale + "," + "\"precision\":" + precision + ","
                 + "\"classType\":\"" + classType + "\"" + "," + "\"optionType\":\"" + optionType + "\"" + ","
-                + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + "," + "\"defaultValue\":" + defaultValue + "}";
+                + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + ","
+                + "\"primaryKeyType\":" + primaryKeyType + ","  + "\"defaultValue\":" + defaultValue + "}";
     }
 }

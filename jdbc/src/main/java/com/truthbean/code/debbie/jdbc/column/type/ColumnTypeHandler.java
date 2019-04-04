@@ -1,8 +1,12 @@
 package com.truthbean.code.debbie.jdbc.column.type;
 
-import java.sql.JDBCType;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.sql.*;
 
 /**
  * @author 璩诗斌
@@ -189,6 +193,111 @@ public class ColumnTypeHandler {
 
             default:
                 return JDBCType.LONGVARCHAR;
+        }
+    }
+
+    public static void setSqlArgValue(PreparedStatement preparedStatement, int index, Object arg) throws SQLException {
+        if (arg == null) {
+            preparedStatement.setObject(index, null);
+            return;
+        }
+        switch (arg.getClass().getName()) {
+            case JdbcTypeConstants.ARRAY:
+                preparedStatement.setArray(index, (Array) arg);
+                break;
+
+            case JdbcTypeConstants.INPUT_STREAM:
+                preparedStatement.setBinaryStream(index, (InputStream) arg);
+                break;
+
+            case JdbcTypeConstants.BIG_DECIMAL:
+                preparedStatement.setBigDecimal(index, (BigDecimal) arg);
+                break;
+
+            case JdbcTypeConstants.BLOB:
+                preparedStatement.setBlob(index, (InputStream) arg);
+                break;
+
+            case JdbcTypeConstants.BOOLEAN:
+                preparedStatement.setBoolean(index, (Boolean) arg);
+                break;
+
+            case JdbcTypeConstants.BYTE:
+                preparedStatement.setByte(index, (Byte) arg);
+                break;
+
+            case JdbcTypeConstants.BYTE_ARRAY:
+                preparedStatement.setBytes(index, (byte[]) arg);
+                break;
+
+            case JdbcTypeConstants.READER:
+                preparedStatement.setCharacterStream(index, (Reader) arg);
+                // getNCharacterStream
+                break;
+
+            case JdbcTypeConstants.CLOB:
+                preparedStatement.setClob(index, (Clob) arg);
+                break;
+
+            case JdbcTypeConstants.DATE:
+                preparedStatement.setDate(index, (Date) arg);
+                break;
+
+            case JdbcTypeConstants.DOUBLE:
+                preparedStatement.setDouble(index, (Double) arg);
+                break;
+
+            case JdbcTypeConstants.FLOAT:
+                preparedStatement.setFloat(index, (Float) arg);
+                break;
+
+            case JdbcTypeConstants.INTEGER:
+                preparedStatement.setInt(index, (Integer) arg);
+                break;
+
+            case JdbcTypeConstants.LONG:
+                preparedStatement.setLong(index, (Long) arg);
+                break;
+
+            case JdbcTypeConstants.NCLOB:
+                preparedStatement.setNClob(index, (NClob) arg);
+                break;
+
+            case JdbcTypeConstants.STRING:
+                preparedStatement.setString(index, (String) arg);
+                // resultSet.getNString(index)
+                break;
+
+            case JdbcTypeConstants.REF:
+                preparedStatement.setRef(index, (Ref) arg);
+                break;
+
+            case JdbcTypeConstants.ROW_ID:
+                preparedStatement.setRowId(index, (RowId) arg);
+                break;
+
+            case JdbcTypeConstants.SHORT:
+                preparedStatement.setShort(index, (Short) arg);
+                break;
+
+            case JdbcTypeConstants.SQLXML:
+                preparedStatement.setSQLXML(index, (SQLXML) arg);
+                break;
+
+            case JdbcTypeConstants.TIME:
+                preparedStatement.setTime(index, (Time) arg);
+                break;
+
+            case JdbcTypeConstants.TIMESTAMP:
+                preparedStatement.setTimestamp(index, (Timestamp) arg);
+                break;
+
+            case JdbcTypeConstants.URL:
+                preparedStatement.setURL(index, (URL) arg);
+                break;
+
+            default:
+                preparedStatement.setObject(index, arg);
         }
     }
 }
