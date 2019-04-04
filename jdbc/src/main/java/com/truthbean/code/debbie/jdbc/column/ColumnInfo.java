@@ -7,7 +7,7 @@ import java.sql.JDBCType;
  * @since 0.0.1
  * Created on 2018-03-19 11:18.
  */
-public class ColumnData<T> {
+public class ColumnInfo<T> {
     private String propertyName;
 
     private String columnName;
@@ -15,13 +15,13 @@ public class ColumnData<T> {
     private String dataType;
     private JDBCType jdbcType;
 
-    private String columnComment;
+    private String comment;
 
     private String columnType;
 
-    private String charMaxLength;
+    private int charMaxLength;
 
-    private boolean nullable;
+    private Boolean nullable;
 
     private int scale;
 
@@ -34,6 +34,12 @@ public class ColumnData<T> {
     private Class javaClass;
 
     private T value;
+
+    private String defaultValue;
+
+    private boolean isPrimaryKey;
+
+    private boolean unique;
 
     public String getPropertyName() {
         return propertyName;
@@ -59,12 +65,12 @@ public class ColumnData<T> {
         this.dataType = dataType;
     }
 
-    public String getColumnComment() {
-        return columnComment;
+    public String getComment() {
+        return comment;
     }
 
-    public void setColumnComment(String columnComment) {
-        this.columnComment = columnComment;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getColumnType() {
@@ -75,19 +81,19 @@ public class ColumnData<T> {
         this.columnType = columnType;
     }
 
-    public String getCharMaxLength() {
+    public int getCharMaxLength() {
         return charMaxLength;
     }
 
-    public void setCharMaxLength(String charMaxLength) {
+    public void setCharMaxLength(int charMaxLength) {
         this.charMaxLength = charMaxLength;
     }
 
-    public boolean isNullable() {
+    public Boolean isNullable() {
         return nullable;
     }
 
-    public void setNullable(boolean nullable) {
+    public void setNullable(Boolean nullable) {
         this.nullable = nullable;
     }
 
@@ -147,14 +153,42 @@ public class ColumnData<T> {
         this.jdbcType = jdbcType;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public Boolean getNullable() {
+        return nullable;
+    }
+
+    public boolean isPrimaryKey() {
+        return isPrimaryKey;
+    }
+
+    public void setPrimaryKey(boolean primaryKey) {
+        isPrimaryKey = primaryKey;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
     @Override
     public String toString() {
         return "{" + "\"propertyName\":\"" + propertyName + "\"" + "," + "\"columnName\":\"" + columnName + "\"" + ","
                 + "\"dataType\":\"" + dataType + "\"" + "," + "\"jdbcType\":" + jdbcType + ","
-                + "\"columnComment\":\"" + columnComment + "\"" + "," + "\"columnType\":\"" + columnType + "\"" + ","
+                + "\"comment\":\"" + comment + "\"" + "," + "\"columnType\":\"" + columnType + "\"" + ","
                 + "\"charMaxLength\":\"" + charMaxLength + "\"" + "," + "\"nullable\":" + nullable + ","
                 + "\"scale\":" + scale + "," + "\"precision\":" + precision + ","
                 + "\"classType\":\"" + classType + "\"" + "," + "\"optionType\":\"" + optionType + "\"" + ","
-                + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + "}";
+                + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + "," + "\"defaultValue\":" + defaultValue + "}";
     }
 }

@@ -1,4 +1,4 @@
-package com.truthbean.code.debbie.jdbc;
+package com.truthbean.code.debbie.jdbc.column.type;
 
 /**
  * @author TruthBean
@@ -10,6 +10,8 @@ public interface JdbcTypeConstants {
     String INPUT_STREAM = "java.io.InputStream";
 
     String BIG_DECIMAL = "java.math.BigDecimal";
+
+    String BIG_INTEGER = "java.math.BigInteger";
 
     String BLOB = "java.sql.Blob";
 

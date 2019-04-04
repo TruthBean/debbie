@@ -69,6 +69,14 @@ public final class SingleDataSourceConnectionContext implements Closeable {
 
     @Override
     public void close() {
+        Connection connection = conThread.get();
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         conThread.remove();
     }
 }

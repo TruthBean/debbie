@@ -3,10 +3,10 @@ package com.truthbean.code.debbie.jdbc.repository;
 import com.truthbean.code.debbie.core.reflection.ClassNotMatchedException;
 import com.truthbean.code.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.code.debbie.core.reflection.TypeHelper;
-import com.truthbean.code.debbie.jdbc.JdbcTypeConstants;
+import com.truthbean.code.debbie.jdbc.column.type.JdbcTypeConstants;
 import com.truthbean.code.debbie.jdbc.annotation.SqlColumn;
-import com.truthbean.code.debbie.jdbc.column.ColumnData;
-import com.truthbean.code.debbie.jdbc.column.ColumnDataHelper;
+import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.code.debbie.jdbc.column.JdbcColumnHandler;
 import com.truthbean.code.debbie.jdbc.column.FStartColumnNameTransformer;
 import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.code.debbie.jdbc.util.JdbcUtils;
@@ -39,6 +39,10 @@ public class RepositoryHandler {
 
     public RepositoryHandler(DataSourceFactory dataSourceFactory) {
         connection = dataSourceFactory.getConnection();
+    }
+
+    public RepositoryHandler(Connection connection) {
+        this.connection = connection;
     }
 
     public int[] batch(String sql, Object[][] args) {
@@ -225,13 +229,13 @@ public class RepositoryHandler {
         }
     }
 
-    public List<List<ColumnData>> select(String sql, Object... args) {
+    public List<List<ColumnInfo>> select(String sql, Object... args) {
         ResultSet resultSet = preSelect(sql, args);
-        return ColumnDataHelper.getTableColumnData(resultSet, new FStartColumnNameTransformer());
+        return JdbcColumnHandler.getTableColumnData(resultSet, new FStartColumnNameTransformer());
     }
 
     public <T> List<T> select(String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnData>> selectResult = select(selectSql, args);
+        List<List<ColumnInfo>> selectResult = select(selectSql, args);
         List<T> result = new ArrayList<>();
         T obj;
         if (!TypeHelper.isBaseType(clazz)) {
@@ -241,9 +245,9 @@ public class RepositoryHandler {
                 result.add(obj);
             }
         } else {
-            for (List<ColumnData> map : selectResult) {
+            for (List<ColumnInfo> map : selectResult) {
                 if (map.size() == 1) {
-                    ColumnData data = map.get(0);
+                    ColumnInfo data = map.get(0);
                     if (data.getJavaClass() == clazz) {
                         result.add((T) data.getValue());
                     }
@@ -255,7 +259,7 @@ public class RepositoryHandler {
     }
 
     public <T> T selectOne(String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnData>> selectResult = select(selectSql, args);
+        List<List<ColumnInfo>> selectResult = select(selectSql, args);
         T result = null;
         if (selectResult.isEmpty()) {
             return null;
@@ -265,9 +269,9 @@ public class RepositoryHandler {
                 List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
                 result = transformer(selectResult.get(0), declaredFields, clazz);
             } else {
-                List<ColumnData> row = selectResult.get(0);
+                List<ColumnInfo> row = selectResult.get(0);
                 if (row.size() == 1) {
-                    ColumnData data = row.get(0);
+                    ColumnInfo data = row.get(0);
                     if (data.getJavaClass() == clazz) {
                         result = (T) data.getValue();
                     } else {
@@ -279,7 +283,7 @@ public class RepositoryHandler {
         return result;
     }
 
-    private <T> T transformer(List<ColumnData> map, List<Field> declaredFields, Class<T> clazz) {
+    private <T> T transformer(List<ColumnInfo> map, List<Field> declaredFields, Class<T> clazz) {
         T instance = null;
         try {
             instance = clazz.getDeclaredConstructor().newInstance();

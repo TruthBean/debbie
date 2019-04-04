@@ -6,5 +6,7 @@ package com.truthbean.code.debbie.jdbc.column;
  * Created on 2018-03-19 11:34.
  */
 public interface ColumnNameTransformer {
-    String changeColumnNameToPropertyName(String columnName);
+    String columnNameToPropertyName(String columnName);
+
+    String propertyNameToColumnName(String propertyName);
 }

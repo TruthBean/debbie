@@ -153,6 +153,11 @@ subprojects {
                             name.set("Rogar·Q (TruthBean)")
                             email.set("truthbean@outlook.com")
                         }
+                        developer {
+                            id.set("qu")
+                            name.set("璩诗斌")
+                            email.set("truthbean@foxmail.com")
+                        }
                     }
                     scm {
                         connection.set("scm:git:git://github.com/TruthBean/debbie.git")

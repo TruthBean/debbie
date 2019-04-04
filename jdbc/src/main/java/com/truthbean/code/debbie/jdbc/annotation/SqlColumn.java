@@ -21,4 +21,14 @@ public @interface SqlColumn {
      * @return column name
      */
     String name() default "";
+
+    boolean nullable() default false;
+
+    boolean unique() default false;
+
+    int charMaxLength() default 64;
+
+    String defaultValue() default "";
+
+    String comment() default "";
 }

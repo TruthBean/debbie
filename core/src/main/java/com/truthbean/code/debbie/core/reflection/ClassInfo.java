@@ -2,6 +2,7 @@ package com.truthbean.code.debbie.core.reflection;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,8 @@ public class ClassInfo {
     @SuppressWarnings("rawtypes")
     private Constructor[] constructors;
 
+    private List<Field> fields;
+
     private List<Method> methods;
     private Map<? extends Annotation, List<Method>> methodWithAnnotation;
 
@@ -30,6 +33,8 @@ public class ClassInfo {
         for (Annotation annotation : annotations) {
             classAnnotations.put(annotation.annotationType(), annotation);
         }
+
+        fields = ReflectionHelper.getDeclaredFields(clazz);
 
         this.constructors = clazz.getConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
@@ -56,6 +61,10 @@ public class ClassInfo {
 
     public Map<? extends Annotation, List<Method>> getMethodWithAnnotation() {
         return methodWithAnnotation;
+    }
+
+    public List<Field> getFields() {
+        return fields;
     }
 
     @Override

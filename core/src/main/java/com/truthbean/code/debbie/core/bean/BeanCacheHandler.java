@@ -120,6 +120,10 @@ final class BeanCacheHandler {
         return result;
     }
 
+    public static ClassInfo getRegisterBean(Class<?> bean) {
+        return BEAN_CLASSES.get(bean);
+    }
+
     /*protected static List<Method> getAnnotatedMethodsInAnnotatedBean
             (Class<? extends Annotation> classAnnotation, Class<? extends Annotation> methodAnnotation) {
 

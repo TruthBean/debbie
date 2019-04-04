@@ -2,6 +2,8 @@ package com.truthbean.code.debbie.jdbc.repository;
 
 import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
 
+import java.sql.Connection;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -11,6 +13,10 @@ public class DmlRepositoryHandler extends RepositoryHandler {
 
     public DmlRepositoryHandler(DataSourceFactory dataSourceFactory) {
         super(dataSourceFactory);
+    }
+
+    public DmlRepositoryHandler(Connection connection) {
+        super(connection);
     }
 
     public int deleteBy(String column, String value) {

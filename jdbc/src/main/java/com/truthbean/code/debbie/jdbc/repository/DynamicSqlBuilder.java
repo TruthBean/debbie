@@ -19,8 +19,14 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+
     public DynamicSqlBuilder databases() {
         dynamicSql.append(" DATABASES ");
+        return this;
+    }
+
+    public DynamicSqlBuilder use(String database) {
+        dynamicSql.append("USE `").append(database).append("` ");
         return this;
     }
 
@@ -35,7 +41,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder database(String database) {
-        dynamicSql.append(" DATABASE ").append(database);
+        dynamicSql.append(" DATABASE `").append(database).append("` ");
         return this;
     }
 
@@ -49,8 +55,72 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder table(String table, boolean ifNotExists) {
+        dynamicSql.append("TABLE ");
+        if (ifNotExists) {
+            dynamicSql.append("IF NOT EXISTS");
+        }
+        dynamicSql.append(" `").append(table).append("` ");
+        return this;
+    }
+
+    public DynamicSqlBuilder leftParenthesis(){
+        dynamicSql.append(" ( ");
+        return this;
+    }
+
+    public DynamicSqlBuilder rightParenthesis(){
+        dynamicSql.append(" ) ");
+        return this;
+    }
+
+    public DynamicSqlBuilder defaultValue(String defaultValue) {
+        dynamicSql.append(" DEFAULT ").append(defaultValue).append(" ");
+        return this;
+    }
+
+    public DynamicSqlBuilder comment(String comment) {
+        dynamicSql.append(" COMMENT '").append(comment).append("' ");
+        return this;
+    }
+
+    public DynamicSqlBuilder nullSql() {
+        dynamicSql.append(" NULL ");
+        return this;
+    }
+
+    public DynamicSqlBuilder primaryKey() {
+        dynamicSql.append(" PRIMARY KEY ");
+        return this;
+    }
+
+    public DynamicSqlBuilder unique() {
+        dynamicSql.append(" UNIQUE ");
+        return this;
+    }
+
+    public DynamicSqlBuilder ifSql() {
+        dynamicSql.append(" IF ");
+        return this;
+    }
+
+    public DynamicSqlBuilder not() {
+        dynamicSql.append(" NOT ");
+        return this;
+    }
+
+    public DynamicSqlBuilder exists() {
+        dynamicSql.append(" EXISTS ");
+        return this;
+    }
+
+    public DynamicSqlBuilder tinyint() {
+        dynamicSql.append(" TINYINT ");
+        return this;
+    }
+
     public DynamicSqlBuilder delete() {
-        dynamicSql.append("DELETE");
+        dynamicSql.append("DELETE ");
         return this;
     }
 
@@ -60,13 +130,24 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder select(String... columns) {
-        CollectionUtils.splitArray(columns, ", ", dynamicSql);
+        dynamicSql.append(" SELECT ");
+        if (columns != null && columns.length > 0) {
+            int size = columns.length;
+            for (int i = 0; i < size - 1; i++) {
+                if (columns[i] != null) {
+                    dynamicSql.append("`").append(columns[i]).append("`, ");
+                }
+            }
+            if (columns[size - 1] != null) {
+                dynamicSql.append("`").append(columns[size - 1]).append("` ");
+            }
+        }
         return this;
     }
 
     public DynamicSqlBuilder from(String table) {
         if (table != null) {
-            dynamicSql.append(" FROM ").append(table).append(" ");
+            dynamicSql.append(" FROM `").append(table).append("` ");
         }
         return this;
     }
@@ -87,12 +168,17 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder exist(String column) {
-        dynamicSql.append(" EXIST( ").append(column).append(" ) ");
+        dynamicSql.append(" EXIST( `").append(column).append("` ) ");
         return this;
     }
 
     public DynamicSqlBuilder eq(String condition1, String condition2) {
         dynamicSql.append(condition1).append(" = ").append(condition2);
+        return this;
+    }
+
+    public DynamicSqlBuilder extra(String extra) {
+        dynamicSql.append(extra);
         return this;
     }
 
