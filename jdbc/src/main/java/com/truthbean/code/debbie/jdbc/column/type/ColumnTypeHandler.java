@@ -1,6 +1,6 @@
 package com.truthbean.code.debbie.jdbc.column.type;
 
-import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.code.debbie.core.reflection.ClassLoaderUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -49,82 +49,93 @@ public class ColumnTypeHandler {
         return dataType;
     }
 
-    public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName) throws SQLException {
+    public static <T> T getColumnValue(ResultSet resultSet, int index, Class<T> columnClass, String columnClassName) throws SQLException {
         switch (columnClassName) {
             case JdbcTypeConstants.ARRAY:
-                return (T) resultSet.getArray(index);
+                return columnClass.cast(resultSet.getArray(index));
 
             case JdbcTypeConstants.INPUT_STREAM:
-                return (T) resultSet.getBinaryStream(index);
+                return columnClass.cast(resultSet.getBinaryStream(index));
 
             case JdbcTypeConstants.BIG_DECIMAL:
-                return (T) resultSet.getBigDecimal(index);
+                return columnClass.cast(resultSet.getBigDecimal(index));
 
             case JdbcTypeConstants.BLOB:
-                return (T) resultSet.getBlob(index);
+                return columnClass.cast(resultSet.getBlob(index));
 
             case JdbcTypeConstants.BOOLEAN:
-                return (T) Boolean.valueOf(resultSet.getBoolean(index));
+                return columnClass.cast(resultSet.getBoolean(index));
 
             case JdbcTypeConstants.BYTE:
-                return (T) Byte.valueOf(resultSet.getByte(index));
+                return columnClass.cast(resultSet.getByte(index));
 
             case JdbcTypeConstants.BYTE_ARRAY:
-                return (T) resultSet.getBytes(index);
+                return columnClass.cast(resultSet.getBytes(index));
 
             case JdbcTypeConstants.READER:
-                return (T) resultSet.getCharacterStream(index);
+                return columnClass.cast(resultSet.getCharacterStream(index));
             // getNCharacterStream
 
             case JdbcTypeConstants.CLOB:
-                return (T) resultSet.getClob(index);
+                return columnClass.cast(resultSet.getClob(index));
 
             case JdbcTypeConstants.DATE:
-                return (T) resultSet.getDate(index);
+                return columnClass.cast(resultSet.getDate(index));
 
             case JdbcTypeConstants.DOUBLE:
-                return (T) Double.valueOf(resultSet.getDouble(index));
+                return columnClass.cast(resultSet.getDouble(index));
 
             case JdbcTypeConstants.FLOAT:
-                return (T) Double.valueOf(resultSet.getFloat(index));
+                return columnClass.cast(resultSet.getFloat(index));
 
             case JdbcTypeConstants.INTEGER:
-                return (T) Integer.valueOf(resultSet.getInt(index));
+                return columnClass.cast(resultSet.getInt(index));
 
             case JdbcTypeConstants.LONG:
-                return (T) Long.valueOf(resultSet.getLong(index));
+                return columnClass.cast(resultSet.getLong(index));
 
             case JdbcTypeConstants.NCLOB:
-                return (T) resultSet.getNClob(index);
+                return columnClass.cast(resultSet.getNClob(index));
 
             case JdbcTypeConstants.STRING:
-                return (T) resultSet.getString(index);
+                return columnClass.cast(resultSet.getString(index));
             // resultSet.getNString(index)
 
             case JdbcTypeConstants.REF:
-                return (T) resultSet.getRef(index);
+                return columnClass.cast(resultSet.getRef(index));
 
             case JdbcTypeConstants.ROW_ID:
-                return (T) resultSet.getRowId(index);
+                return columnClass.cast(resultSet.getRowId(index));
 
             case JdbcTypeConstants.SHORT:
-                return (T) Short.valueOf(resultSet.getShort(index));
+                return columnClass.cast(resultSet.getShort(index));
 
             case JdbcTypeConstants.SQLXML:
-                return (T) resultSet.getSQLXML(index);
+                return columnClass.cast(resultSet.getSQLXML(index));
 
             case JdbcTypeConstants.TIME:
-                return (T) resultSet.getTime(index);
+                return columnClass.cast(resultSet.getTime(index));
 
             case JdbcTypeConstants.TIMESTAMP:
-                return (T) resultSet.getTimestamp(index);
+                return columnClass.cast(resultSet.getTimestamp(index));
 
             case JdbcTypeConstants.URL:
-                return (T) resultSet.getURL(index);
+                return columnClass.cast(resultSet.getURL(index));
 
             default:
-                return (T) resultSet.getObject(index);
+                return columnClass.cast(resultSet.getObject(index));
         }
+    }
+
+    public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName) throws SQLException {
+        try {
+            var classLoader = ClassLoaderUtils.getClassLoader(ColumnTypeHandler.class);
+            Class<T> columnClass = (Class<T>) classLoader.loadClass(columnClassName);
+            return getColumnValue(resultSet, index, columnClass, columnClassName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static JDBCType explain(Class<?> type) {

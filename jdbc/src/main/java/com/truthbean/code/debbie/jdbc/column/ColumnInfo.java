@@ -7,10 +7,11 @@ import java.sql.JDBCType;
  * @since 0.0.1
  * Created on 2018-03-19 11:18.
  */
-public class ColumnInfo<T> {
+public class ColumnInfo {
     private String propertyName;
 
     private String columnName;
+    private String columnDefaultValue;
 
     private String dataType;
     private JDBCType jdbcType;
@@ -33,9 +34,8 @@ public class ColumnInfo<T> {
 
     private Class javaClass;
 
-    private T value;
+    private Object value;
 
-    private String defaultValue;
 
     private boolean isPrimaryKey;
     private PrimaryKeyType primaryKeyType;
@@ -130,11 +130,11 @@ public class ColumnInfo<T> {
         this.optionType = optionType;
     }
 
-    public T getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(T value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 
@@ -154,12 +154,12 @@ public class ColumnInfo<T> {
         this.jdbcType = jdbcType;
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
+    public String getColumnDefaultValue() {
+        return columnDefaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+    public void setColumnDefaultValue(String defaultValue) {
+        this.columnDefaultValue = defaultValue;
     }
 
     public Boolean getNullable() {
@@ -199,6 +199,6 @@ public class ColumnInfo<T> {
                 + "\"scale\":" + scale + "," + "\"precision\":" + precision + ","
                 + "\"classType\":\"" + classType + "\"" + "," + "\"optionType\":\"" + optionType + "\"" + ","
                 + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + ","
-                + "\"primaryKeyType\":" + primaryKeyType + ","  + "\"defaultValue\":" + defaultValue + "}";
+                + "\"primaryKeyType\":" + primaryKeyType + ","  + "\"columnDefaultValue\":" + columnDefaultValue + "}";
     }
 }

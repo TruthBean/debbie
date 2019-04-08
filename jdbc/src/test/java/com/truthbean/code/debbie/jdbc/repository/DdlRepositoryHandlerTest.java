@@ -26,8 +26,7 @@ public class DdlRepositoryHandlerTest {
 
     @Test
     public void testCreateDatabase() {
-        var r = ddlRepositoryHandler.createDatabase("hello");
-        System.out.println(r);
+        ddlRepositoryHandler.createDatabase("hello");
     }
 
     @Test
@@ -38,32 +37,27 @@ public class DdlRepositoryHandlerTest {
 
     @Test
     public void testDropDatabase() {
-        var r = ddlRepositoryHandler.dropDatabase("hello");
-        System.out.println(r);
+        ddlRepositoryHandler.dropDatabase("hello");
     }
 
     @Test
     public void testShowTables() {
-        var r = ddlRepositoryHandler.userDatabase("mysql");
-        System.out.println(r);
+        ddlRepositoryHandler.userDatabase("mysql");
         var s = ddlRepositoryHandler.showTables();
         System.out.println(s);
     }
 
     @Test
     public void testCreateTable() {
-        var r = ddlRepositoryHandler.userDatabase("test");
-        System.out.println(r);
-        BeanInitializationHandler.init(Qu.class);
-        ddlRepositoryHandler.createTable(Qu.class);
+        ddlRepositoryHandler.userDatabase("test");
+        BeanInitializationHandler.init(Surname.class);
+        ddlRepositoryHandler.createTable(Surname.class);
     }
 
     @Test
     public void dropTable() {
-        var r = ddlRepositoryHandler.userDatabase("test");
-        System.out.println(r);
-        var s = ddlRepositoryHandler.dropTable("qu");
-        System.out.println(s);
+        ddlRepositoryHandler.userDatabase("test");
+        ddlRepositoryHandler.dropTable("surname");
     }
 
 }

@@ -3,14 +3,12 @@ package com.truthbean.code.debbie.jdbc.repository;
 import com.truthbean.code.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.code.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
-import com.truthbean.code.debbie.jdbc.column.JdbcColumnHandler;
 import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.JDBCType;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,10 +26,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         super(connection);
     }
 
-    public long createDatabase(String database) {
+    public void createDatabase(String database) {
         String sql = DynamicSqlBuilder.sql().create().database(database).builder();
         LOGGER.debug(sql);
-        return update(sql);
+        update(sql);
     }
 
     public List<String> showDatabases() {
@@ -40,16 +38,16 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         return select(sql, String.class);
     }
 
-    public long dropDatabase(String database) {
+    public void dropDatabase(String database) {
         String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
         LOGGER.debug(sql);
-        return update(sql);
+        update(sql);
     }
 
-    public long userDatabase(String database) {
+    public void userDatabase(String database) {
         var use = DynamicSqlBuilder.sql().use(database).builder();
         LOGGER.debug(use);
-        return update(use);
+        update(use);
     }
 
     public List<String> showTables() {
@@ -58,9 +56,9 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         return select(sql, String.class);
     }
 
-    public <E> long createTable(Class<E> entity) {
+    public <E> void createTable(Class<E> entity) {
         var classInfo = BeanInitializationHandler.getRegisterBean(entity);
-        var entityInfo = new EntityInfo();
+        var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();
         var table = sqlEntity.table();
@@ -71,14 +69,15 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         entityInfo.setCharset(sqlEntity.charset());
         entityInfo.setEngine(sqlEntity.engine());
 
-        var columns = super.getColumnInfo(classInfo);
+        var columns = EntityResolver.resolveClassInfo(classInfo);
         entityInfo.setColumnInfoList(columns);
-        return createTable(entityInfo);
+        createTable(entityInfo);
     }
 
-    public long createTable(EntityInfo entityInfo) {
+    public <E> void createTable(EntityInfo<E> entityInfo) {
         var columns = entityInfo.getColumnInfoList();
-        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create().table(entityInfo.getTable(), true).leftParenthesis();
+        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create()
+                .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
             for (int i = 0; i < size - 1; i++) {
@@ -106,7 +105,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.update(sql);
+        super.update(sql);
     }
 
     private void buildCreateTableColumns(DynamicSqlBuilder sqlBuilder, ColumnInfo iColumn) {
@@ -127,8 +126,8 @@ public class DdlRepositoryHandler extends RepositoryHandler {
             sqlBuilder.unique();
         }
 
-        if (iColumn.getDefaultValue() != null) {
-            sqlBuilder.defaultValue(iColumn.getDefaultValue());
+        if (iColumn.getColumnDefaultValue() != null) {
+            sqlBuilder.defaultValue(iColumn.getColumnDefaultValue());
         }
 
         if (iColumn.isPrimaryKey()) {
@@ -152,10 +151,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public long dropTable(String table) {
-        String sql = DynamicSqlBuilder.sql().drop().table(table, false).builder();
+    public void dropTable(String table) {
+        String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
         LOGGER.debug(sql);
-        return update(sql);
+        update(sql);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandler.class);

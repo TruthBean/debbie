@@ -220,7 +220,6 @@ public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandl
             int i = 0;
             while (i < fields.size()) {
                 InvokedParameter parameter = typeOf(fields.get(i), i);
-                //args.invokedParameter = parameter;
                 if (!TypeHelper.isBaseType(parameter.getType()) && parameter.getType() != MultipartFile.class) {
                     try {
                         Object newInstance = parameter.getType().getDeclaredConstructor().newInstance();

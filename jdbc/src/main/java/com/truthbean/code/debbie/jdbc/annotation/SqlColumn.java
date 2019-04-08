@@ -25,7 +25,7 @@ public @interface SqlColumn {
      */
     String name() default "";
 
-    boolean nullable() default false;
+    boolean nullable() default true;
 
     boolean unique() default false;
 

@@ -111,11 +111,11 @@ public final class TypeHelper {
         List<T> result = new ArrayList<>();
         for (Object object : values) {
             if (object.getClass() == clazz) {
-                result.add((T) object);
+                result.add(clazz.cast(object));
             } else if (object instanceof String) {
                 result.add(valueOf(clazz, (String) object));
             } else {
-                result.add((T) object);
+                result.add(clazz.cast(object));
             }
         }
         return result;
@@ -123,49 +123,50 @@ public final class TypeHelper {
 
     public static <T> T valueOf(Class<T> clazz, Object value) {
         if (value.getClass() == clazz) {
-            return (T) value;
+            return clazz.cast(value);
         } else if (value instanceof String) {
             return valueOf(clazz, (String) value);
         }
 
-        return (T) value;
+        return clazz.cast(value);
     }
 
     public static <T> T valueOf(Class<T> clazz, String value) {
         if (clazz == Integer.class || clazz == int.class) {
-            return (T) Integer.valueOf(value);
+            return clazz.cast(Integer.valueOf(value));
         }
 
         if (clazz == Short.class || clazz == short.class) {
-            return (T) Short.valueOf(value);
+            return clazz.cast(Short.valueOf(value));
         }
 
         if (clazz == Long.class || long.class == clazz) {
-            return (T) Long.valueOf(value);
+            return clazz.cast(Long.valueOf(value));
         }
 
         if (clazz == Float.class || clazz == float.class) {
-            return (T) Float.valueOf(value);
+            return clazz.cast(Float.valueOf(value));
         }
 
         if (clazz == Double.class || double.class == clazz) {
-            return (T) Double.valueOf(value);
+            return clazz.cast(Double.valueOf(value));
         }
 
         if (clazz == Boolean.class || clazz == boolean.class) {
-            return (T) Boolean.valueOf(value);
+            return clazz.cast(Boolean.valueOf(value));
         }
 
         if (clazz == Byte.class || clazz == byte.class) {
-            return (T) Byte.valueOf(value);
+            return clazz.cast(Byte.valueOf(value));
         }
 
-        if ((clazz == Character.class || clazz == char.class) && value.length() == 1) {
-            return (T) Character.valueOf(value.charAt(0));
+        var isChar = (clazz == Character.class || clazz == char.class) && value.length() == 1;
+        if (isChar) {
+            return clazz.cast(value.charAt(0));
         }
 
         if (clazz == String.class) {
-            return (T) value;
+            return clazz.cast(value);
         }
         return null;
     }

@@ -1,8 +1,8 @@
 package com.truthbean.code.debbie.jdbc.column;
 
 import com.truthbean.code.debbie.core.reflection.ReflectionHelper;
-import com.truthbean.code.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.code.debbie.jdbc.annotation.SqlColumn;
+import com.truthbean.code.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.code.debbie.jdbc.repository.DynamicSqlBuilder;
 import com.truthbean.code.debbie.jdbc.util.JdbcUtils;
 import org.slf4j.Logger;
@@ -19,11 +19,9 @@ import java.util.UUID;
  * @since 0.0.1
  * Created on 2018-03-19 11:21.
  */
-public class JdbcColumnHandler {
+public class JdbcColumnResolver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcColumnHandler.class);
-
-    public static List<List<ColumnInfo>> getTablecolumnInfo(ResultSet resultSet, ColumnNameTransformer columnNameTransformer) {
+    public static List<List<ColumnInfo>> resolveResultSetValue(ResultSet resultSet, ColumnNameTransformer columnNameTransformer) {
         List<List<ColumnInfo>> columnLists = new ArrayList<>();
         try {
             var resultSetMetaData = resultSet.getMetaData();
@@ -92,7 +90,7 @@ public class JdbcColumnHandler {
         return columnLists;
     }
 
-    public static List<ColumnInfo> getTablecolumnInfo(Connection connection, String tableName,
+    public static List<ColumnInfo> resolveColumns(Connection connection, String tableName,
                                                       ColumnNameTransformer columnNameTransformer) {
         List<ColumnInfo> columnList = new ArrayList<>();
         PreparedStatement preparedStatement = null;
@@ -103,7 +101,7 @@ public class JdbcColumnHandler {
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
 
-            columnList = getTablecolumnInfo(resultSet, columnNameTransformer).get(0);
+            columnList = resolveResultSetValue(resultSet, columnNameTransformer).get(0);
         } catch (SQLException e) {
             LOGGER.error(null, e);
         } finally {
@@ -113,15 +111,15 @@ public class JdbcColumnHandler {
         return columnList;
     }
 
-    public static <E> ColumnInfo resolveField(Field field, E entity) {
-        ColumnInfo columnInfo = getColumnInfo(field);
+    public static <E> ColumnInfo resolveFieldAndValue(Field field, E entity) {
+        ColumnInfo columnInfo = resolveField(field);
         var value = ReflectionHelper.invokeGetMethod(entity, field.getName());
         columnInfo.setValue(value);
         return columnInfo;
     }
 
-    public static ColumnInfo getColumnInfo(Field field) {
-        var columnInfo = new ColumnInfo<>();
+    public static ColumnInfo resolveField(Field field) {
+        var columnInfo = new ColumnInfo();
         SqlColumn sqlColumn = field.getAnnotation(SqlColumn.class);
         if (sqlColumn != null) {
             if (sqlColumn.id()) {
@@ -151,7 +149,7 @@ public class JdbcColumnHandler {
                 columnInfo.setUnique(sqlColumn.unique());
                 columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
                 if (!"".equals(sqlColumn.defaultValue())) {
-                    columnInfo.setDefaultValue(sqlColumn.defaultValue());
+                    columnInfo.setColumnDefaultValue(sqlColumn.defaultValue());
                 }
                 if (!"".equals(sqlColumn.comment().trim())) {
                     columnInfo.setComment(sqlColumn.comment());
@@ -163,8 +161,15 @@ public class JdbcColumnHandler {
             columnInfo.setColumnName(field.getName());
         }
         columnInfo.setJdbcType(ColumnTypeHandler.explain(field.getType()));
+        var isCharMaxLengthZero = (columnInfo.getJdbcType() == JDBCType.VARCHAR ||
+                columnInfo.getJdbcType() == JDBCType.LONGVARCHAR) && columnInfo.getCharMaxLength() == 0;
+        if (isCharMaxLengthZero) {
+            columnInfo.setCharMaxLength(64);
+        }
         columnInfo.setPropertyName(field.getName());
         columnInfo.setJavaClass(field.getType());
         return columnInfo;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcColumnResolver.class);
 }

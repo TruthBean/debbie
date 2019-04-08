@@ -1,7 +1,7 @@
 package com.truthbean.code.debbie.core.reflection;
 
+import com.truthbean.code.debbie.core.data.transformer.DataTransformerFactory;
 import com.truthbean.code.debbie.core.util.Constants;
-import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +24,40 @@ import java.util.jar.JarFile;
  * Created on 2019/3/23 11:23.
  */
 public class ReflectionHelper {
+    private static final ReflectionHelper INSTANCE = new ReflectionHelper();
+
     public static <T> T newInstance(Class<T> type) {
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
+    }
+
+    public static Type[] getActualTypes(Class clazz) {
+        if (clazz == Object.class || clazz == Void.class) {
+            return null;
+        }
+        Type[] types = clazz.getTypeParameters();
+        if (types != null && types.length > 0) {
+            return types;
+        }
+        Type genType = clazz.getGenericSuperclass();
+        if (genType == Object.class) {
+            Type[] interfaces = clazz.getGenericInterfaces();
+            for (var type: interfaces) {
+                if (type instanceof ParameterizedType) {
+                    Type[] params = ((ParameterizedType) type).getActualTypeArguments();
+                    if (params != null && params.length > 0) {
+                        return params;
+                    }
+                }
+            }
+        }
+        if (!(genType instanceof ParameterizedType)) {
+            return getActualTypes(clazz.getSuperclass());
+        }
+        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        if (params == null || params.length == 0) {
+            return null;
+        }
+        return params;
     }
 
     public static <T> T newInstance(Class<T> type, Class[] parameterTypes, Object[] args) {
@@ -38,7 +70,7 @@ public class ReflectionHelper {
 
     public static <T> T newInstance(final Constructor<T> constructor, final Object[] args) {
 
-        boolean flag = constructor.isAccessible();
+        boolean flag = constructor.canAccess(null);
         try {
             if (!flag) {
                 constructor.setAccessible(true);
@@ -87,13 +119,14 @@ public class ReflectionHelper {
         var methodName = "set" + handleFieldName(field.getName());
         try {
             var method = target.getClass().getMethod(methodName, field.getType());
-            return method.invoke(target, arg);
+            var factory = new DataTransformerFactory();
+            return method.invoke(target, factory.transform(arg, field.getType()));
         } catch (NoSuchMethodException e) {
-            LOGGER.error(field.getName() + " set method not found", e);
+            LOGGER.error(field.getName() + " set method not found. ", e);
         } catch (IllegalAccessException | InvocationTargetException e) {
             LOGGER.error("", e);
         } catch (IllegalArgumentException e) {
-            LOGGER.error("argument type is wrong", e);
+            LOGGER.error("argument type is wrong. ", e);
         }
         return null;
     }

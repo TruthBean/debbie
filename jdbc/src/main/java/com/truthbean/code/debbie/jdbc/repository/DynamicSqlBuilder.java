@@ -1,7 +1,5 @@
 package com.truthbean.code.debbie.jdbc.repository;
 
-import com.truthbean.code.debbie.core.util.CollectionUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +56,16 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder table(String table, boolean ifNotExists) {
+    public DynamicSqlBuilder tableIfExists(String table, boolean ifExists) {
+        dynamicSql.append("TABLE ");
+        if (ifExists) {
+            dynamicSql.append("IF EXISTS");
+        }
+        dynamicSql.append(" `").append(table).append("` ");
+        return this;
+    }
+
+    public DynamicSqlBuilder tableIfNotExists(String table, boolean ifNotExists) {
         dynamicSql.append("TABLE ");
         if (ifNotExists) {
             dynamicSql.append("IF NOT EXISTS");
@@ -157,6 +164,49 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder update() {
+        dynamicSql.append("UPDATE ");
+        return this;
+    }
+
+    public DynamicSqlBuilder update(String table) {
+        dynamicSql.append("UPDATE ").append(table).append(" ");
+        return this;
+    }
+
+    public DynamicSqlBuilder set() {
+        dynamicSql.append(" SET ");
+        return this;
+    }
+
+    public DynamicSqlBuilder set(String columns, String value) {
+        dynamicSql.append(" SET ").append(columns).append("=").append(value).append(" ");
+        return this;
+    }
+
+    public DynamicSqlBuilder set(String columns) {
+        dynamicSql.append(" SET ").append(columns).append("= ? ");
+        return this;
+    }
+
+    public DynamicSqlBuilder set(List<String> columns) {
+        dynamicSql.append(" SET ");
+        int size;
+        if (columns != null && (size = columns.size()) > 0) {
+            for (int i = 0; i < size - 1; i++) {
+                var iColumn = columns.get(i);
+                if (iColumn != null) {
+                    dynamicSql.append("`").append(iColumn).append("` = ?, ");
+                }
+            }
+            var iColumn = columns.get(size - 1);
+            if (iColumn != null) {
+                dynamicSql.append("`").append(iColumn).append("` = ? ");
+            }
+        }
+        return this;
+    }
+
     public DynamicSqlBuilder select(List<String> columns) {
         dynamicSql.append(" SELECT ");
         this.columns(columns);
@@ -250,7 +300,7 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder eq(String condition1, String condition2) {
+    public DynamicSqlBuilder eq(String condition1, Object condition2) {
         dynamicSql.append(condition1).append(" = ").append(condition2);
         return this;
     }

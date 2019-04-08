@@ -1,7 +1,6 @@
 package com.truthbean.code.debbie.jdbc.repository;
 
 import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
-import com.truthbean.code.debbie.jdbc.column.PrimaryKeyType;
 
 import java.util.List;
 
@@ -10,10 +9,12 @@ import java.util.List;
  * @since 0.0.1
  * Created on 2019/4/4 23:07.
  */
-public class EntityInfo {
+public class EntityInfo<E> {
+    private Class<E> javaType;
     private String table;
-    private PrimaryKeyType primaryKeyType;
-    private Class<?> primaryKeyClass;
+
+    private ColumnInfo primaryKey;
+
     private List<ColumnInfo> columnInfoList;
 
     private String charset;
@@ -27,12 +28,12 @@ public class EntityInfo {
         this.table = table;
     }
 
-    public PrimaryKeyType getPrimaryKeyType() {
-        return primaryKeyType;
+    public ColumnInfo getPrimaryKey() {
+        return primaryKey;
     }
 
-    public void setPrimaryKeyType(PrimaryKeyType primaryKeyType) {
-        this.primaryKeyType = primaryKeyType;
+    public void setPrimaryKey(ColumnInfo primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
     public List<ColumnInfo> getColumnInfoList() {
@@ -41,14 +42,6 @@ public class EntityInfo {
 
     public void setColumnInfoList(List<ColumnInfo> columnInfoList) {
         this.columnInfoList = columnInfoList;
-    }
-
-    public Class<?> getPrimaryKeyClass() {
-        return primaryKeyClass;
-    }
-
-    public void setPrimaryKeyClass(Class<?> primaryKeyClass) {
-        this.primaryKeyClass = primaryKeyClass;
     }
 
     public String getCharset() {
@@ -67,10 +60,18 @@ public class EntityInfo {
         this.engine = engine;
     }
 
+    public Class<E> getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(Class<E> javaType) {
+        this.javaType = javaType;
+    }
+
     @Override
     public String toString() {
-        return "{" + "\"table\":\"" + table + "\"" + "," + "\"primaryKeyType\":" + primaryKeyType + ","
-                + "\"primaryKeyClass\":" + primaryKeyClass + "," + "\"columnInfoList\":" + columnInfoList + ","
-                + "\"charset\":\"" + charset + "\"" + "," + "\"engine\":\"" + engine + "\"" + "}";
+        return "{\"table\":\"" + table + "\",\"primaryKey\":" + primaryKey +
+                ",\"columnInfoList\":" + columnInfoList + ",\"javaType\":" + javaType.getName() +
+                ",\"charset\":\"" + charset + "\",\"engine\":\"" + engine + "\"}";
     }
 }

@@ -44,7 +44,7 @@ public class InterfaceDynamicProxy {
         T result;
 
         try {
-            result = (T) proxyInstance;
+            result = targetInterface.cast(proxyInstance);
 
             return result;
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class InterfaceDynamicProxy {
     }
 
     public <T> T doDynamicProxy(Class targetInterface, T target) {
-        var targetClass = target.getClass();
+        Class<T> targetClass = (Class<T>) target.getClass();
         var classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         System.out.println(classLoader);
         var interfaces = new Class[]{targetInterface};
@@ -72,7 +72,7 @@ public class InterfaceDynamicProxy {
 
         T result;
         if (proxyClass.isInstance(target.getClass())) {
-            result = (T) proxyInstance;
+            result = targetClass.cast(proxyInstance);
         } else {
             LOGGER.error(proxyClass.getName() + " cast to " + targetClass.getName() + " error");
             // handle error
