@@ -3,7 +3,7 @@ package com.truthbean.code.debbie.jdbc.repository;
 import com.truthbean.code.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.code.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
-import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.code.debbie.jdbc.transaction.TransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,15 +18,11 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
-    public DdlRepositoryHandler(DataSourceFactory dataSourceFactory) {
-        super(dataSourceFactory);
-    }
-
     public DdlRepositoryHandler(Connection connection) {
         super(connection);
     }
 
-    public void createDatabase(String database) {
+    public void createDatabase(String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().create().database(database).builder();
         LOGGER.debug(sql);
         update(sql);
@@ -38,13 +34,13 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         return select(sql, String.class);
     }
 
-    public void dropDatabase(String database) {
+    public void dropDatabase(String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
         LOGGER.debug(sql);
         update(sql);
     }
 
-    public void userDatabase(String database) {
+    public void userDatabase(String database) throws TransactionException {
         var use = DynamicSqlBuilder.sql().use(database).builder();
         LOGGER.debug(use);
         update(use);
@@ -56,7 +52,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         return select(sql, String.class);
     }
 
-    public <E> void createTable(Class<E> entity) {
+    public <E> void createTable(Class<E> entity) throws TransactionException {
         var classInfo = BeanInitializationHandler.getRegisterBean(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
@@ -74,7 +70,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         createTable(entityInfo);
     }
 
-    public <E> void createTable(EntityInfo<E> entityInfo) {
+    public <E> void createTable(EntityInfo<E> entityInfo) throws TransactionException {
         var columns = entityInfo.getColumnInfoList();
         DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
@@ -151,7 +147,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public void dropTable(String table) {
+    public void dropTable(String table) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
         LOGGER.debug(sql);
         update(sql);

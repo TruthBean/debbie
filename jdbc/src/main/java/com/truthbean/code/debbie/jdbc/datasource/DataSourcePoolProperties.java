@@ -16,10 +16,24 @@ public class DataSourcePoolProperties extends DataSourceProperties {
     private static final String MAX_KEY = "debbie.datasource.pool.max-size";
     //===========================================================================
 
-    public DataSourcePoolProperties(){
+    public DataSourcePoolProperties() {
         initialPoolSize = getIntegerValue(INITIAL_POOL_SIZE_KEY, 10);
         increase = getIntegerValue(INCREASE_KEY, 1);
         maxPoolSize = getIntegerValue(MAX_KEY, 10);
+    }
+
+    @Override
+    public DataSourceConfiguration toConfiguration() {
+        var configuration = new DataSourcePoolConfiguration();
+        configuration.setDriverName(super.getDriverName());
+        configuration.setPassword(super.getUrl());
+        configuration.setUrl(super.getUrl());
+        configuration.setUser(super.getUser());
+
+        configuration.setIncrease(increase);
+        configuration.setInitialPoolSize(initialPoolSize);
+        configuration.setMaxPoolSize(maxPoolSize);
+        return configuration;
     }
 
     public int getIncrease() {

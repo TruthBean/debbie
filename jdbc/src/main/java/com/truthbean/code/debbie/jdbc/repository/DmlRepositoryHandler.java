@@ -2,7 +2,7 @@ package com.truthbean.code.debbie.jdbc.repository;
 
 import com.truthbean.code.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
-import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.code.debbie.jdbc.transaction.TransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,10 +16,6 @@ import java.util.List;
  * Created on 2019/4/3 23:23.
  */
 public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
-
-    public DmlRepositoryHandler(DataSourceFactory dataSourceFactory) {
-        super(dataSourceFactory);
-    }
 
     public DmlRepositoryHandler(Connection connection) {
         super(connection);
@@ -46,7 +42,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         private List<Object> conditionValues;
     }
 
-    public int deleteById(ID id) {
+    public int deleteById(ID id)  throws TransactionException {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
@@ -74,7 +70,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return conditionAndValue;
     }
 
-    public int delete(E condition) {
+    public int delete(E condition) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(condition);
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo);
@@ -88,7 +84,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return update(sql, columnValues.toArray());
     }
 
-    public ID insert(E entity) {
+    public ID insert(E entity) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -113,7 +109,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return (ID) super.insert(sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
     }
 
-    public boolean update(E entity) {
+    public boolean update(E entity) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -169,12 +165,19 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var conditionInfo = EntityResolver.resolveEntity(condition);
-        var conditionAndValues = resolveCondition(conditionInfo);
-        var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
-                .where().extra(conditionAndValues.conditionSql).builder();
+        var sqlBuilder = DynamicSqlBuilder.sql().select(columnNames).from(table);
+        Object[] args = null;
+
+        if (condition != null) {
+            var conditionInfo = EntityResolver.resolveEntity(condition);
+            var conditionAndValues = resolveCondition(conditionInfo);
+            sqlBuilder.where().extra(conditionAndValues.conditionSql);
+            args = conditionAndValues.conditionValues.toArray();
+        }
+
+        var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.select(sql, entityClass, conditionAndValues.conditionValues.toArray());
+        return super.select(sql, entityClass, args);
     }
 
     public E findById(ID id) {

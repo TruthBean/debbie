@@ -16,24 +16,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class SimpleDataSourceConnectionPool {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDataSourceConnectionPool.class);
-    private static final DataSourcePoolProperties PROPERTIES = new DataSourcePoolProperties();
-
-    static {
-        try {
-            Class.forName(PROPERTIES.getDriverName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private final int initSize = PROPERTIES.getInitialPoolSize();
-    private final int maxSize = PROPERTIES.getMaxPoolSize();
-    private final int increase = PROPERTIES.getIncrease();
 
     private Queue<Connection> connectionsPool = new ConcurrentLinkedQueue<>();
+    private final DataSourcePoolConfiguration configuration;
 
-    public SimpleDataSourceConnectionPool() {
-        for (int i = 0; i < initSize; i++) {
+    public SimpleDataSourceConnectionPool(DataSourcePoolConfiguration configuration) throws Exception {
+        this.configuration = configuration.clone();
+        Class.forName(configuration.getDriverName());
+
+        var driver = DriverManager.getDriver(configuration.getUrl());
+        DriverManager.registerDriver(driver);
+
+        for (int i = 0; i < configuration.getInitialPoolSize(); i++) {
             connectionsPool.add(createConnection());
         }
     }
@@ -44,7 +38,7 @@ public class SimpleDataSourceConnectionPool {
         if (size > 0) {
             connection = connectionsPool.poll();
         }
-        if (size <= initSize) {
+        if (size <= configuration.getInitialPoolSize()) {
             increaseConnection();
         }
         return connection;
@@ -52,6 +46,8 @@ public class SimpleDataSourceConnectionPool {
 
     private void increaseConnection() {
         int size = connectionsPool.size();
+        var maxSize = configuration.getMaxPoolSize();
+        var increase = configuration.getIncrease();
         if (size < maxSize) {
             int in;
             if (maxSize - size >= increase) {
@@ -67,7 +63,8 @@ public class SimpleDataSourceConnectionPool {
 
     private Connection createConnection() {
         try {
-            return DriverManager.getConnection(PROPERTIES.getUrl(), PROPERTIES.getUser(), PROPERTIES.getPassword());
+            return DriverManager.getConnection(configuration.getUrl(), configuration.getUser(),
+                    configuration.getPassword());
         } catch (SQLException e) {
             LOGGER.error("", e);
             throw new RuntimeException(e);

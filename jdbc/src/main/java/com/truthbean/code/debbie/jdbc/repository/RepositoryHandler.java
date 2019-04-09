@@ -8,7 +8,7 @@ import com.truthbean.code.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.code.debbie.jdbc.column.FStartColumnNameTransformer;
 import com.truthbean.code.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.code.debbie.jdbc.column.type.ColumnTypeHandler;
-import com.truthbean.code.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.code.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.code.debbie.jdbc.util.JdbcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +32,11 @@ public class RepositoryHandler {
 
     private Connection connection;
 
-    public RepositoryHandler(DataSourceFactory dataSourceFactory) {
-        connection = dataSourceFactory.getConnection();
-    }
-
     public RepositoryHandler(Connection connection) {
         this.connection = connection;
     }
 
-    public int[] batch(String sql, Object[][] args) {
+    public int[] batch(String sql, Object[][] args) throws TransactionException {
         PreparedStatement preparedStatement = null;
         int[] rows = null;
         try {
@@ -57,17 +53,18 @@ public class RepositoryHandler {
             rows = preparedStatement.executeBatch();
         } catch (SQLException ex) {
             LOGGER.error(null, ex);
+            throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(null, preparedStatement);
         }
         return rows;
     }
 
-    public Object rawInsert(String sql, boolean generatedKeys, Object... args) {
+    public Object rawInsert(String sql, boolean generatedKeys, Object... args) throws TransactionException {
         return insert(sql, generatedKeys, Object.class, args);
     }
 
-    public <K> K insert(String sql, boolean generatedKeys, Class<K> keyClass, Object... args) {
+    public <K> K insert(String sql, boolean generatedKeys, Class<K> keyClass, Object... args) throws TransactionException {
         K id = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -95,24 +92,26 @@ public class RepositoryHandler {
             }
         } catch (SQLException ex) {
             LOGGER.error("", ex);
+            throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(resultSet, preparedStatement);
         }
         return id;
     }
 
-    public int update(String sql, Object... args) {
+    public int update(String sql, Object... args) throws TransactionException{
         PreparedStatement preparedStatement = null;
         int rows = 0;
         try {
             preparedStatement = connection.prepareStatement(sql);
             int count = args == null ? 0 : args.length;
             for (int i = 0; i < count; i++) {
-                preparedStatement.setObject(i + 1, args[i]);
+                ColumnTypeHandler.setSqlArgValue(preparedStatement, i + 1, args[i]);
             }
             rows = preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             LOGGER.error("", ex);
+            throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(null, preparedStatement);
         }

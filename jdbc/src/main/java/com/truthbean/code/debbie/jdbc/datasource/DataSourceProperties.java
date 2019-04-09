@@ -18,13 +18,22 @@ public class DataSourceProperties extends AbstractProperties {
     private static final String URL_KEY = "debbie.datasource.url";
     private static final String USER_KEY = "debbie.datasource.user";
     private static final String PASSWORD_KEY = "debbie.datasource.password";
+
     //===========================================================================
-    public DataSourceProperties(){
+    public DataSourceProperties() {
         driverName = getStringValue(DRIVER_NAME_KEY, "com.mysql.jdbc.Driver");
         url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
         user = getStringValue(USER_KEY, "root");
         password = getStringValue(PASSWORD_KEY, null);
+    }
 
+    public DataSourceConfiguration toConfiguration() {
+        var configuration = new DataSourceConfiguration();
+        configuration.setDriverName(driverName);
+        configuration.setPassword(password);
+        configuration.setUrl(url);
+        configuration.setUser(user);
+        return configuration;
     }
 
     public String getDriverName() {
