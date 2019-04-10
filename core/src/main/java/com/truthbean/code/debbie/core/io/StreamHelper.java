@@ -1,6 +1,8 @@
 package com.truthbean.code.debbie.core.io;
 
 import com.truthbean.code.debbie.core.util.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
@@ -172,4 +174,52 @@ public final class StreamHelper {
     public static long copyLarge(Reader input, Writer output) throws IOException {
         return copyLarge(input, output, new char[DEFAULT_BUFFER_SIZE]);
     }
+
+    public static String getAndClose(InputStream stream) throws IOException {
+        String result;
+        try {
+            result = getString(stream);
+        } finally {
+            if (stream != null) {
+                close(stream);
+            }
+        }
+
+        return result;
+    }
+
+    public static String getString(InputStream stream) throws IOException {
+        if (stream == null) {
+            return "";
+        } else {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            StringBuilder content = new StringBuilder();
+
+            String newLine;
+            do {
+                newLine = reader.readLine();
+                if (newLine != null) {
+                    content.append(newLine).append('\n');
+                }
+            } while(newLine != null);
+
+            if (content.length() > 0) {
+                content.setLength(content.length() - 1);
+            }
+
+            return content.toString();
+        }
+    }
+
+    public static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                LOGGER.error("IOException closing stream", e);
+            }
+        }
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamHelper.class);
 }

@@ -27,34 +27,34 @@ public class ExampleRouter {
     }
 
     @Router(path = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
-    public Map<String, Object> helloXml(@RequestParam(name = "key", type = RequestParamType.QUERY) String key,
-                        @RequestParam(name = "value", type = RequestParamType.QUERY) List<Integer> value) {
+    public Map<String, Object> helloXml(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
+                        @RequestParam(name = "value", paramType = RequestParamType.QUERY) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloJson(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
-                                        @RequestParam(name = "value", type = RequestParamType.PARAM) List<Integer> value) {
+    public Map<String, Object> helloJson(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
+                                        @RequestParam(name = "value", paramType = RequestParamType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloBodyXml(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
-                                            @RequestParam(name = "value", type = RequestParamType.BODY,
-            requestType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
+    public Map<String, Object> helloBodyXml(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
+                                            @RequestParam(name = "value", paramType = RequestParamType.BODY,
+                                                    bodyType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
-    public Map<String, Object> helloBodyJson(@RequestParam(name = "key", type = RequestParamType.PARAM) String key,
-                                            @RequestParam(name = "value", type = RequestParamType.BODY,
-                                                    requestType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
+    public Map<String, Object> helloBodyJson(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
+                                            @RequestParam(name = "value", paramType = RequestParamType.BODY,
+                                                    bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;

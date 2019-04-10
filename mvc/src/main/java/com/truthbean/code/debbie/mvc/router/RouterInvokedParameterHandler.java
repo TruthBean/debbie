@@ -146,7 +146,7 @@ public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandl
             LOGGER.debug("annotation is RequestParam");
             RequestParam requestParam = (RequestParam) annotation;
 
-            switch (requestParam.type()) {
+            switch (requestParam.paramType()) {
                 case MIX:
                     if (!mixValues.isEmpty()) {
                         handleParam(mixValues, invokedParameter);
@@ -165,7 +165,7 @@ public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandl
                     }
                     break;
                 case BODY:
-                    handleBody(parameters.getBody(), requestParam.requestType(), invokedParameter);
+                    handleBody(parameters.getBody(), requestParam.bodyType(), invokedParameter);
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();
@@ -248,7 +248,7 @@ public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandl
         if (annotation != null && annotation instanceof RequestParam) {
             RequestParam requestParam = (RequestParam) annotation;
 
-            switch (requestParam.type()) {
+            switch (requestParam.paramType()) {
                 case MIX:
                     if (!mixValues.isEmpty()) {
                         handleFiled(mixValues, instance, field, invokedParameter);
@@ -267,7 +267,7 @@ public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandl
                     }
                     break;
                 case BODY:
-                    handleObjectFiled(parameters.getBody(), requestParam.requestType(), instance,
+                    handleObjectFiled(parameters.getBody(), requestParam.bodyType(), instance,
                             field, invokedParameter);
                     break;
                 case HEAD:

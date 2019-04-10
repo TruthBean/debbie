@@ -89,35 +89,41 @@ public class AbstractProperties {
         return value;
     }
 
-    public Boolean getBooleanValue(String key, boolean defaultValue) {
+    public boolean getBooleanValue(String key, boolean defaultValue) {
         var value = getValue(key);
-        Boolean result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            result = Boolean.valueOf(value);
-        }
-        return result;
-    }
-
-    public Integer getIntegerValue(String key, int defaultValue) {
-        var value = getValue(key);
-        Integer result = null;
+        boolean result;
         if (value == null) {
             result = defaultValue;
         } else {
             try {
-                result = Integer.valueOf(value);
+                result = Boolean.parseBoolean(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to int error", e);
+                LOGGER.error(value + " to bool error", e);
+                result = defaultValue;
             }
         }
         return result;
     }
 
-    public Long getLongValue(String key, long defaultValue) {
+    public int getIntegerValue(String key, int defaultValue) {
         var value = getValue(key);
-        Long result = null;
+        int result;
+        if (value == null) {
+            result = defaultValue;
+        } else {
+            try {
+                result = Integer.parseInt(value);
+            } catch (Exception e) {
+                LOGGER.error(value + " to int error", e);
+                result = defaultValue;
+            }
+        }
+        return result;
+    }
+
+    public long getLongValue(String key, long defaultValue) {
+        var value = getValue(key);
+        long result;
         if (value == null) {
             result = defaultValue;
         } else {
@@ -125,6 +131,7 @@ public class AbstractProperties {
                 result = Long.valueOf(value);
             } catch (Exception e) {
                 LOGGER.error(value + " to long error", e);
+                result = defaultValue;
             }
         }
         return result;

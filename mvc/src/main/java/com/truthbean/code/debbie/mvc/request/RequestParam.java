@@ -19,7 +19,7 @@ public @interface RequestParam {
      */
     String name() default "";
 
-    RequestParamType type() default RequestParamType.MIX;
+    RequestParamType paramType() default RequestParamType.MIX;
 
     String defaultValue() default "";
 
@@ -29,5 +29,5 @@ public @interface RequestParam {
      * if type is BODY, requestType must be specific
      * @return request body media type
      */
-    MediaType requestType() default MediaType.ANY;
+    MediaType bodyType() default MediaType.ANY;
 }
