@@ -4,7 +4,7 @@ import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.util.StringUtils;
 import com.truthbean.code.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.code.debbie.mvc.response.view.AbstractView;
-import com.truthbean.code.debbie.mvc.router.RouterHandler;
+import com.truthbean.code.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.code.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.code.debbie.servlet.response.view.JspView;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public class DispatcherServlet extends HttpServlet {
 
         var requestAdapter = new ServletRouterRequest(req);
 
-        var handler = new RouterHandler();
+        var handler = new MvcRouterHandler();
         var routerInfo = handler.getMatchedRouter(requestAdapter, configuration.getDefaultTypes());
         LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
         handler.handleRouter(routerInfo);

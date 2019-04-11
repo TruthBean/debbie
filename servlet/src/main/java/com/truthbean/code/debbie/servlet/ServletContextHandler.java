@@ -1,7 +1,7 @@
 package com.truthbean.code.debbie.servlet;
 
 import com.truthbean.code.debbie.core.bean.BeanInitializationHandler;
-import com.truthbean.code.debbie.mvc.router.RouterHandler;
+import com.truthbean.code.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.code.debbie.servlet.filter.CharacterEncodingFilter;
 import com.truthbean.code.debbie.servlet.filter.CorsFilter;
 
@@ -43,7 +43,7 @@ public class ServletContextHandler {
         EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(
                 DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.REQUEST,
                 DispatcherType.ASYNC, DispatcherType.ERROR
-                );
+        );
         servletContext.addFilter("characterEncodingFilter", new CharacterEncodingFilter())
                 .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
@@ -63,7 +63,6 @@ public class ServletContextHandler {
     }
 
     public void registerRouter() {
-        RouterHandler handler = new RouterHandler();
-        handler.registerRouter(servletConfiguration);
+        MvcRouterRegister.registerRouter(servletConfiguration);
     }
 }

@@ -1,6 +1,7 @@
 package com.truthbean.code.debbie.jdbc.repository;
 
 import com.truthbean.code.debbie.jdbc.annotation.SqlRepository;
+import com.truthbean.code.debbie.jdbc.entity.Surname;
 
 import java.sql.Connection;
 

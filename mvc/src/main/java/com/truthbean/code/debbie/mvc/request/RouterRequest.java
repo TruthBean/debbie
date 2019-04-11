@@ -1,11 +1,12 @@
 package com.truthbean.code.debbie.mvc.request;
 
 import com.truthbean.code.debbie.core.io.MediaType;
-import com.truthbean.code.debbie.mvc.RouterCookie;
 import com.truthbean.code.debbie.mvc.RouterSession;
 import com.truthbean.code.debbie.mvc.url.RouterPathAttribute;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +23,13 @@ public class RouterRequest implements Cloneable {
 
     private String url;
 
+    // TODO
     private List<RouterPathAttribute> pathAttributes;
+    private Map<String, List<String>> matrix;
 
     private Map<String, List<String>> headers;
 
-    private List<RouterCookie> cookies;
+    private List<HttpCookie> cookies;
 
     private RouterSession session;
 
@@ -34,7 +37,9 @@ public class RouterRequest implements Cloneable {
 
     private Map<String, List<String>> queries;
 
-    private InputStream body;
+    private InputStream inputStreamBody;
+    private String textBody;
+    private File fileBody;
 
     private MediaType contentType;
 
@@ -72,12 +77,40 @@ public class RouterRequest implements Cloneable {
         this.headers = headers;
     }
 
-    public List<RouterCookie> getCookies() {
+    public void addHeaders(Map<String, List<String>> headers) {
+        if (this.headers == null) {
+            this.headers = new HashMap<>();
+        }
+        this.headers.putAll(headers);
+    }
+
+    public void addHeader(String name, List<String> value) {
+        if (this.headers == null) {
+            this.headers = new HashMap<>();
+        }
+        this.headers.put(name, value);
+    }
+
+    public List<HttpCookie> getCookies() {
         return cookies;
     }
 
-    public void setCookies(List<RouterCookie> cookies) {
+    public void setCookies(List<HttpCookie> cookies) {
         this.cookies = cookies;
+    }
+
+    public void addCookies(List<HttpCookie> cookies) {
+        if (this.cookies == null) {
+            this.cookies = new ArrayList<>();
+        }
+        this.cookies.addAll(cookies);
+    }
+
+    public void addCookie(HttpCookie cookie) {
+        if (this.cookies == null) {
+            this.cookies = new ArrayList<>();
+        }
+        this.cookies.add(cookie);
     }
 
     public RouterSession getSession() {
@@ -116,6 +149,20 @@ public class RouterRequest implements Cloneable {
         this.parameters = parameters;
     }
 
+    public void addParameters(Map<String, List> parameters) {
+        if (this.parameters == null) {
+            this.parameters = new HashMap<>();
+        }
+        this.parameters.putAll(parameters);
+    }
+
+    public void addParameters(String name, List value) {
+        if (this.parameters == null) {
+            this.parameters = new HashMap<>();
+        }
+        this.parameters.put(name, value);
+    }
+
     public Map<String, List<String>> getQueries() {
         return queries;
     }
@@ -124,12 +171,26 @@ public class RouterRequest implements Cloneable {
         this.queries = queries;
     }
 
-    public InputStream getBody() {
-        return body;
+    public void addQueries(Map<String, List<String>> queries) {
+        if (this.queries == null) {
+            this.queries = new HashMap<>();
+        }
+        this.queries.putAll(queries);
     }
 
-    public void setBody(InputStream body) {
-        this.body = body;
+    public void addQueries(String name, List<String> value) {
+        if (this.queries == null) {
+            this.queries = new HashMap<>();
+        }
+        this.queries.put(name, value);
+    }
+
+    public InputStream getInputStreamBody() {
+        return inputStreamBody;
+    }
+
+    public void setInputStreamBody(InputStream body) {
+        this.inputStreamBody = body;
     }
 
     public MediaType getContentType() {
@@ -156,6 +217,22 @@ public class RouterRequest implements Cloneable {
         throw new UnsupportedOperationException();
     }
 
+    public String getTextBody() {
+        return textBody;
+    }
+
+    public void setTextBody(String textBody) {
+        this.textBody = textBody;
+    }
+
+    public File getFileBody() {
+        return fileBody;
+    }
+
+    public void setFileBody(File fileBody) {
+        this.fileBody = fileBody;
+    }
+
     @Override
     public RouterRequest clone() {
         RouterRequest clone;
@@ -166,9 +243,11 @@ public class RouterRequest implements Cloneable {
             clone = new RouterRequest();
             clone.method = method;
             clone.url = url;
-            clone.body = body;
+            clone.inputStreamBody = inputStreamBody;
             clone.contentType = contentType;
             clone.responseTypeInHeader = responseTypeInHeader;
+            clone.textBody = textBody;
+            clone.fileBody = fileBody;
         }
 
         clone.pathAttributes = new ArrayList<>(pathAttributes);
@@ -178,5 +257,24 @@ public class RouterRequest implements Cloneable {
         clone.parameters = new HashMap<>(parameters);
         clone.queries = new HashMap<>(queries);
         return clone;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"method\":" + method +
+                ",\"url\":\"" + url + '\"' +
+                ",\"pathAttributes\":" + pathAttributes +
+                ",\"headers\":" + headers +
+                ",\"cookies\":" + cookies +
+                ",\"session\":" + session +
+                ",\"parameters\":" + parameters +
+                ",\"queries\":" + queries +
+                ",\"textBody\":" + textBody +
+                ",\"fileBody\":" + fileBody +
+                ",\"inputStreamBody\":" + inputStreamBody +
+                ",\"contentType\":" + contentType +
+                ",\"responseTypeInHeader\":" + responseTypeInHeader +
+                '}';
     }
 }

@@ -5,7 +5,6 @@ import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.io.MultipartFile;
 import com.truthbean.code.debbie.core.net.url.QueryStringDecoder;
 import com.truthbean.code.debbie.core.net.url.UriUtils;
-import com.truthbean.code.debbie.mvc.RouterCookie;
 import com.truthbean.code.debbie.mvc.request.HttpMethod;
 import com.truthbean.code.debbie.mvc.request.RequestBody;
 import com.truthbean.code.debbie.mvc.request.RouterRequest;
@@ -22,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpCookie;
 import java.util.*;
 
 /**
@@ -80,11 +80,11 @@ public class ServletRouterRequest extends RouterRequest {
 
     private void setCookies() {
         var cookies = request.getCookies();
-        List<RouterCookie> result = new ArrayList<>();
+        List<HttpCookie> result = new ArrayList<>();
 
         if (cookies != null) {
             for (var cookie : cookies) {
-                result.add(new ServletRouterCookie(cookie));
+                result.add(new ServletRouterCookie(cookie).getHttpCookie());
             }
         }
         setCookies(result);
@@ -211,7 +211,7 @@ public class ServletRouterRequest extends RouterRequest {
 
     private void setBody() {
         try {
-            setBody(request.getInputStream());
+            setInputStreamBody(request.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }

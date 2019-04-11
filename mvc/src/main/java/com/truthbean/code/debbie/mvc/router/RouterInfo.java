@@ -148,7 +148,7 @@ public class RouterInfo implements Cloneable {
     private final List<InvokedParameter> notBaseTypeMethodParams = new ArrayList<>();
 
     public void setBaseTypeMethodParams() {
-        RouterInvokedParameterHandler handler = new RouterInvokedParameterHandler();
+        MvcRouterInvokedParameterHandler handler = new MvcRouterInvokedParameterHandler();
         for (InvokedParameter param : methodParams) {
             if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
                 baseTypeMethodParams.add(param);

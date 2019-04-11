@@ -25,9 +25,9 @@ import java.util.*;
  * Created on 2018-04-08 10:05.
  * @since 0.0.1
  */
-public class RouterInvokedParameterHandler extends AbstractInvokedParameterHandler {
+public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RouterInvokedParameterHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterInvokedParameterHandler.class);
 
     public List handleMethodParams(RouterRequestValues parameters, List<InvokedParameter> methodParams) {
         List<Object> result = new LinkedList<>();

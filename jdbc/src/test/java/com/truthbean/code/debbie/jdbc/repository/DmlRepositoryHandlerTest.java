@@ -3,6 +3,7 @@ package com.truthbean.code.debbie.jdbc.repository;
 import com.truthbean.code.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.code.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.code.debbie.jdbc.datasource.SingleDataSourceConnectionContext;
+import com.truthbean.code.debbie.jdbc.entity.Surname;
 import com.truthbean.code.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.code.debbie.jdbc.transaction.TransactionIsolationLevel;
 import org.junit.jupiter.api.AfterAll;

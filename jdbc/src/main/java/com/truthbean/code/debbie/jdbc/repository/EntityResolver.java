@@ -43,6 +43,7 @@ public class EntityResolver {
                 break;
             }
         }
+        entityInfo.setJavaType(entityClass);
         return entityInfo;
     }
 

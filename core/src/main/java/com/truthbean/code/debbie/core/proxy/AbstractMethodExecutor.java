@@ -1,0 +1,22 @@
+package com.truthbean.code.debbie.core.proxy;
+
+import java.lang.reflect.Method;
+
+/**
+ * @author TruthBean
+ * @since 0.0.1
+ */
+public abstract class AbstractMethodExecutor<T> {
+
+    public AbstractMethodExecutor(Class<T> interfaceType, Method method, Object configuration) {
+
+    }
+
+    /**
+     * execute method
+     * @param object proxy
+     * @param args method args
+     * @return method result
+     */
+    protected abstract Object execute(Object object, Object[] args);
+}

@@ -1,11 +1,12 @@
 package com.truthbean.code.debbie.mvc.router;
 
-import com.truthbean.code.debbie.mvc.RouterCookie;
+
 import com.truthbean.code.debbie.mvc.RouterSession;
 import com.truthbean.code.debbie.mvc.request.RouterRequest;
 import com.truthbean.code.debbie.mvc.url.RouterPathAttribute;
 
 import java.io.InputStream;
+import java.net.HttpCookie;
 import java.util.*;
 
 /**
@@ -43,7 +44,7 @@ public class RouterRequestValues {
         sessionAttributes = routerRequest.getSession().getAttributes();
 
         setMixValues();
-        body = routerRequest.getBody();
+        body = routerRequest.getInputStreamBody();
 
         this.routerRequest = routerRequest;
     }
@@ -85,14 +86,14 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(cookieAttributes);
     }
 
-    private void setCookieAttributes(List<RouterCookie> cookies) {
+    private void setCookieAttributes(List<HttpCookie> cookies) {
         for (int i = 0; i< cookies.size(); i++) {
-            RouterCookie iCookie = cookies.get(i);
+            HttpCookie iCookie = cookies.get(i);
             List value = new ArrayList();
             for (int j = i; j< cookies.size(); j++) {
-                RouterCookie routerCookie = cookies.get(j);
-                if (iCookie.getName().equalsIgnoreCase(routerCookie.getName())) {
-                    value.add(routerCookie.getValue());
+                HttpCookie httpCookie = cookies.get(j);
+                if (iCookie.getName().equalsIgnoreCase(httpCookie.getName())) {
+                    value.add(httpCookie.getValue());
                 }
             }
             this.cookieAttributes.put(iCookie.getName(), value);

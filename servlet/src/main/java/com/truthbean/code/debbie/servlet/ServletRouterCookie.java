@@ -1,30 +1,30 @@
 package com.truthbean.code.debbie.servlet;
 
-import com.truthbean.code.debbie.mvc.RouterCookie;
-
 import javax.servlet.http.Cookie;
-
-import java.util.Date;
+import java.net.HttpCookie;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/24 11:34.
  */
-public class ServletRouterCookie extends RouterCookie {
+public class ServletRouterCookie {
+    private HttpCookie httpCookie;
+
     public ServletRouterCookie(Cookie cookie) {
-        this.setName(cookie.getName());
-        this.setValue(cookie.getValue());
-        this.setPath(cookie.getPath());
-        this.setDomain(cookie.getDomain());
-        this.setMaxAge(cookie.getMaxAge());
-        this.setDiscard(cookie.getMaxAge() < 0);
-        this.setSecure(cookie.getSecure());
-        this.setVersion(cookie.getVersion());
-        this.setHttpOnly(cookie.isHttpOnly());
-        if ("Expires".equals(cookie.getName().toLowerCase())) {
-            this.setExpires(new Date(Date.parse(cookie.getValue())));
-        }
-        this.setComment(cookie.getComment());
+        httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+        httpCookie.setValue(cookie.getValue());
+        httpCookie.setPath(cookie.getPath());
+        httpCookie.setDomain(cookie.getDomain());
+        httpCookie.setMaxAge(cookie.getMaxAge());
+        httpCookie.setDiscard(cookie.getMaxAge() < 0);
+        httpCookie.setSecure(cookie.getSecure());
+        httpCookie.setVersion(cookie.getVersion());
+        httpCookie.setHttpOnly(cookie.isHttpOnly());
+        httpCookie.setComment(cookie.getComment());
+    }
+
+    public HttpCookie getHttpCookie() {
+        return httpCookie;
     }
 }

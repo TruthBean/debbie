@@ -13,6 +13,11 @@ public enum WatcherType {
     HTTP,
 
     /**
+     * http client watcher
+     */
+    HTTP_CLIENT,
+
+    /**
      * rpc watcher
      */
     RPC,

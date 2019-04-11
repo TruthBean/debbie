@@ -70,8 +70,12 @@ public class EntityInfo<E> {
 
     @Override
     public String toString() {
+        var javaTypeName = "";
+        if (javaType != null) {
+            javaTypeName = javaType.getName();
+        }
         return "{\"table\":\"" + table + "\",\"primaryKey\":" + primaryKey +
-                ",\"columnInfoList\":" + columnInfoList + ",\"javaType\":" + javaType.getName() +
+                ",\"columnInfoList\":" + columnInfoList + ",\"javaType\":" + javaTypeName +
                 ",\"charset\":\"" + charset + "\",\"engine\":\"" + engine + "\"}";
     }
 }

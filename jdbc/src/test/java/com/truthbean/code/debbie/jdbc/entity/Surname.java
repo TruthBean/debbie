@@ -1,4 +1,4 @@
-package com.truthbean.code.debbie.jdbc.repository;
+package com.truthbean.code.debbie.jdbc.entity;
 
 import com.truthbean.code.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.code.debbie.jdbc.annotation.SqlEntity;
