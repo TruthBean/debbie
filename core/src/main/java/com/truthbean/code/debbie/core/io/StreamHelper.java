@@ -178,7 +178,7 @@ public final class StreamHelper {
     public static String getAndClose(InputStream stream) throws IOException {
         String result;
         try {
-            result = getString(stream);
+            result = streamToString(stream);
         } finally {
             if (stream != null) {
                 close(stream);
@@ -188,7 +188,7 @@ public final class StreamHelper {
         return result;
     }
 
-    public static String getString(InputStream stream) throws IOException {
+    public static String streamToString(InputStream stream) throws IOException {
         if (stream == null) {
             return "";
         } else {

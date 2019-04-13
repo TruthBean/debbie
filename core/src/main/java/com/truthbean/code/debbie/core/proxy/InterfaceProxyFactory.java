@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author TruthBean
  * @since 0.0.1
  */
-public class InterfaceProxyFactory<T, E extends AbstractMethodExecutor> {
+public class InterfaceProxyFactory<T> {
     private final Class<T> interfaceType;
     private final Map<Method, AbstractMethodExecutor> methodCache = new ConcurrentHashMap<>();
     private Object configuration;

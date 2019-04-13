@@ -26,6 +26,13 @@ public class BeanScanConfiguration {
         }
     }
 
+    public void copyFrom(BeanScanConfiguration configuration) {
+        this.scanClasses.addAll(configuration.scanClasses);
+        this.scanBasePackages.addAll(configuration.scanBasePackages);
+        this.scanExcludePackages.addAll(configuration.scanExcludePackages);
+        this.scanExcludeClasses.addAll(configuration.scanExcludeClasses);
+    }
+
     public Set<String> getScanBasePackages() {
         return scanBasePackages;
     }

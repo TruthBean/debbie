@@ -16,7 +16,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * default response type
      */
-    private final List<MediaType> defaultTypes = new ArrayList<>(Collections.singletonList(MediaType.APPLICATION_JSON));
+    private final Set<MediaType> defaultTypes = new HashSet<>();
 
     // cors
     private boolean cors = false;
@@ -111,7 +111,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
         }
     }
 
-    public List<MediaType> getDefaultTypes() {
+    public Set<MediaType> getDefaultTypes() {
         return defaultTypes;
     }
 

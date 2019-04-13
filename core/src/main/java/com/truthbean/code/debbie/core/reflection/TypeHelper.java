@@ -104,7 +104,8 @@ public final class TypeHelper {
         }
     }
 
-    public static <T> List<T> valueOf(Class<T> clazz, List values) {
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> valueOf(Class<T> clazz, @SuppressWarnings("rawtypes") List values) {
         if (clazz == List.class) {
             return (List<T>) values;
         }
@@ -171,7 +172,7 @@ public final class TypeHelper {
         return null;
     }
 
-    public static boolean isOrValueOf(Class<?> clazz, List target) {
+    public static boolean isOrValueOf(Class<?> clazz, @SuppressWarnings("rawtypes") List target) {
         boolean result = true;
         if (clazz == List.class) {
             return true;
@@ -207,7 +208,7 @@ public final class TypeHelper {
         return false;
     }
 
-    public static Type[] getTypes(Class[] classes) {
+    public static Type[] getTypes(@SuppressWarnings("rawtypes") Class[] classes) {
         if (classes == null) {
             return null;
         }

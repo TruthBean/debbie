@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
  * @author TruthBean
  * @since 0.0.1
  */
-public abstract class AbstractMethodExecutor<T> {
+public abstract class AbstractMethodExecutor {
 
-    public AbstractMethodExecutor(Class<T> interfaceType, Method method, Object configuration) {
+    public AbstractMethodExecutor(Class<?> interfaceType, Method method, Object configuration) {
 
     }
 

@@ -5,6 +5,8 @@ package com.truthbean.code.debbie.core.data.transformer;
  * @since 0.0.1
  */
 public class NoDataTransformerMatchedException extends RuntimeException {
+    private static final long serialVersionUID = 617541828674906950L;
+
     public NoDataTransformerMatchedException() {
     }
 

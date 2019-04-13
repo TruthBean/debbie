@@ -25,6 +25,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return EntityResolver.resolveEntityClass(getEntityClass());
     }
 
+    @SuppressWarnings("unchecked")
     private Class<E> getEntityClass() {
         try {
             var types = ReflectionHelper.getActualTypes(getClass());
@@ -84,6 +85,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return update(sql, columnValues.toArray());
     }
 
+    @SuppressWarnings("unchecked")
     public ID insert(E entity) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();

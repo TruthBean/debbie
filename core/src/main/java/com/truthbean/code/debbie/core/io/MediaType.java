@@ -1,6 +1,7 @@
 package com.truthbean.code.debbie.core.io;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,29 +16,26 @@ public enum MediaType {
      * json with utf8
      */
     APPLICATION_JSON_UTF8("application/json;Charset=UTF-8"),
-
     APPLICATION_JSON("application/json"),
 
-    APPLICATION_XML_UTF8("application/xml;Charset=UTF-8"),
     APPLICATION_XML("application/xml"),
+    APPLICATION_XML_UTF8("application/xml;Charset=UTF-8"),
 
-    APPLICATION_JAVASCRIPT_UTF8("application/javascript;Charset=UTF-8"),
     APPLICATION_JAVASCRIPT("application/javascript"),
+    APPLICATION_JAVASCRIPT_UTF8("application/javascript;Charset=UTF-8"),
 
     IMAGE_PNG("image/png"),
-
     IMAGE_GIF("image/gif"),
-
     IMAGE_JPEG("image/jpeg"),
 
     TEXT_PLAIN("text/plain"),
     TEXT_PLAIN_UTF8("text/plain;Charset=UTF-8"),
 
+    TEXT_HTML("text/html"),
     TEXT_HTML_UTF8("text/html;Charset=UTF-8"),
 
     TEXT_CSS("text/css"),
-
-    TEXT_HTML("text/html"),
+    TEXT_CSS_UTF8("text/css;Charset=UTF-8"),
 
     APPLICATION_OCTET_STREAM("application/octet-stream"),
 
@@ -122,14 +120,25 @@ public enum MediaType {
         return APPLICATION_OCTET_STREAM;
     }
 
+    public static boolean contains(Collection<MediaType> all, MediaType target) {
+        var newTarget = MediaType.of(target.value);
+        for (var type: all) {
+            var newType = MediaType.of(type.value);
+            if (newTarget == newType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ============================================================================================================
 
     static class InternalMediaType {
         private static final String TOKEN = "([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)";
         private static final String QUOTED = "\"([^\"]*)\"";
         private static final Pattern TYPE_SUBTYPE = Pattern.compile(TOKEN + "/" + TOKEN);
-        private static final Pattern PARAMETER = Pattern.compile(
-                ";\\s*(?:" + TOKEN + "=(?:" + TOKEN + "|" + QUOTED + "))?");
+        private static final Pattern PARAMETER =
+                Pattern.compile(";\\s*(?:" + TOKEN + "=(?:" + TOKEN + "|" + QUOTED + "))?");
 
         private String mediaType;
         private String type;
@@ -172,9 +181,7 @@ public enum MediaType {
                 String token = parameter.group(2);
                 if (token != null) {
                     // If the token is 'single-quoted' it's invalid! But we're lenient and strip the quotes.
-                    charsetParameter = (token.startsWith("'") && token.endsWith("'") && token.length() > 2)
-                            ? token.substring(1, token.length() - 1)
-                            : token;
+                    charsetParameter = (token.startsWith("'") && token.endsWith("'") && token.length() > 2) ? token.substring(1, token.length() - 1) : token;
                 } else {
                     // Value is "double-quoted". That's valid and our regex group already strips the quotes.
                     charsetParameter = parameter.group(3);

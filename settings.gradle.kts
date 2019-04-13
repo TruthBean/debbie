@@ -2,10 +2,10 @@ rootProject.name = "debbie"
 
 val modules =
         arrayOf("core",
-                "httpclient", "jdbc", "mvc",
-                "servlet",
+                "jdbc", "mvc",
+                "servlet", "httpclient",
                 "boot",
-                "tomcat",
+                "tomcat", "undertow",
                 "example")
 
 modules.forEach { dir ->

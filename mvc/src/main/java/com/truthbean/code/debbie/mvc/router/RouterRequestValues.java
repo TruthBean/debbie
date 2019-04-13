@@ -30,21 +30,18 @@ public class RouterRequestValues {
     private final Map<String, List> mixValues = new HashMap<>();
 
     public RouterRequestValues(RouterRequest routerRequest) {
-        pathAttributes = new HashMap<>();
-        setPathAttributes(routerRequest.getPathAttributes());
 
-        queries = routerRequest.getQueries();
-        params = routerRequest.getParameters();
         headers = routerRequest.getHeaders();
 
         cookieAttributes = new HashMap<>();
         setCookieAttributes(routerRequest.getCookies());
 
         routerSession = routerRequest.getSession();
-        sessionAttributes = routerRequest.getSession().getAttributes();
+        if (routerSession != null) {
+            sessionAttributes = routerRequest.getSession().getAttributes();
+        }
 
         setMixValues();
-        body = routerRequest.getInputStreamBody();
 
         this.routerRequest = routerRequest;
     }
@@ -52,6 +49,7 @@ public class RouterRequestValues {
     public Map<String, List> getQueries() {
         if (queries == null) {
             queries = new HashMap<>();
+            queries.putAll(routerRequest.getQueries());
         }
         return Collections.unmodifiableMap(queries);
     }
@@ -65,11 +63,10 @@ public class RouterRequestValues {
     }
 
     public Map<String, List> getParams() {
+        if (params == null) {
+            params = routerRequest.getParameters();
+        }
         return params;
-    }
-
-    public void setParams(Map<String, List> params) {
-        this.params = params;
     }
 
     public Map<String, List> getHeaders() {
@@ -87,10 +84,10 @@ public class RouterRequestValues {
     }
 
     private void setCookieAttributes(List<HttpCookie> cookies) {
-        for (int i = 0; i< cookies.size(); i++) {
+        for (int i = 0; i < cookies.size(); i++) {
             HttpCookie iCookie = cookies.get(i);
             List value = new ArrayList();
-            for (int j = i; j< cookies.size(); j++) {
+            for (int j = i; j < cookies.size(); j++) {
                 HttpCookie httpCookie = cookies.get(j);
                 if (iCookie.getName().equalsIgnoreCase(httpCookie.getName())) {
                     value.add(httpCookie.getValue());
@@ -105,16 +102,23 @@ public class RouterRequestValues {
     }
 
     public InputStream getBody() {
+        if (body == null) {
+            body = routerRequest.getInputStreamBody();
+        }
         return body;
     }
 
     private void setPathAttributes(List<RouterPathAttribute> pathAttributes) {
-        for (RouterPathAttribute pathAttribute: pathAttributes) {
+        for (RouterPathAttribute pathAttribute : pathAttributes) {
             this.pathAttributes.put(pathAttribute.getName(), pathAttribute.getValue());
         }
     }
 
     public Map<String, List> getPathAttributes() {
+        if (pathAttributes != null) {
+            pathAttributes = new HashMap<>();
+            setPathAttributes(routerRequest.getPathAttributes());
+        }
         return pathAttributes;
     }
 
@@ -132,7 +136,7 @@ public class RouterRequestValues {
             mixValues.putAll(cookieAttributes);
         }
         if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
-            for (Map.Entry<String, Object> entry: sessionAttributes.entrySet()) {
+            for (Map.Entry<String, Object> entry : sessionAttributes.entrySet()) {
                 mixValues.put(entry.getKey(), Collections.singletonList(entry.getValue()));
             }
         }

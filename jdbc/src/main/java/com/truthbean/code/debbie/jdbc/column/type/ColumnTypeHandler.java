@@ -130,6 +130,7 @@ public class ColumnTypeHandler {
     public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName) throws SQLException {
         try {
             var classLoader = ClassLoaderUtils.getClassLoader(ColumnTypeHandler.class);
+            @SuppressWarnings("unchecked")
             Class<T> columnClass = (Class<T>) classLoader.loadClass(columnClassName);
             return getColumnValue(resultSet, index, columnClass, columnClassName);
         } catch (ClassNotFoundException e) {

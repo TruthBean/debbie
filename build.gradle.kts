@@ -37,6 +37,11 @@ val mavenRepositoryUrl =
 
 subprojects {
 
+    repositories {
+        mavenLocal()
+        maven("https://mirrors.huaweicloud.com/repository/maven/")
+    }
+
     version = projectVersion
 
     apply(plugin = "java")

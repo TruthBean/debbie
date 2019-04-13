@@ -22,7 +22,7 @@ import java.util.Map;
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientExecutor<T> extends AbstractMethodExecutor<T> {
+public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
     private HttpClientConfiguration configuration;
     private HttpClientAction httpClientAction;
@@ -55,7 +55,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor<T> {
             var request = new HttpClientRequest();
             request.setMethod(router.method());
             request.setUrl(url);
-            request.setContentType(router.responseType());
+            request.setContentType(router.requestType());
+            request.setResponseType(router.responseType());
 
             var parameters = method.getParameters();
             if (parameters != null) {

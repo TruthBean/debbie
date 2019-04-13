@@ -149,7 +149,7 @@ public final class JacksonUtils {
         var xmlMapper = XML_MAPPER.copy();
         T obj = null;
         try {
-            obj = XML_MAPPER.readValue(xmlInputStream, clazz);
+            obj = xmlMapper.readValue(xmlInputStream, clazz);
         } catch (IOException e) {
             LOGGER.error("xml inputStream to bean error", e);
         }

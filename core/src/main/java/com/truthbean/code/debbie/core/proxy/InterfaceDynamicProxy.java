@@ -23,6 +23,7 @@ public class InterfaceDynamicProxy {
             InterfaceMaker interfaceMaker = new InterfaceMaker();
             //抽取某个类的方法生成接口方法
             interfaceMaker.add(targetClass);
+            @SuppressWarnings("unchecked")
             Class<T> targetInterface = interfaceMaker.create();
             return doDynamicProxy(targetInterface, target);
         } catch (Exception e) {
@@ -59,7 +60,8 @@ public class InterfaceDynamicProxy {
         return result;
     }
 
-    public <T> T doDynamicProxy(Class targetInterface, T target) {
+    public <T> T doDynamicProxy(Class<? extends T> targetInterface, T target) {
+        @SuppressWarnings("unchecked")
         Class<T> targetClass = (Class<T>) target.getClass();
         var classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         System.out.println(classLoader);

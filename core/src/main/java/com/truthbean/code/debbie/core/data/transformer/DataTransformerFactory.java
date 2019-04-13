@@ -13,6 +13,7 @@ import java.util.ServiceLoader;
  */
 public class DataTransformerFactory {
 
+    @SuppressWarnings("unchecked")
     public <O, T> T transform(O origin, Class<T> target) {
         Type originType = origin.getClass();
 
@@ -20,6 +21,7 @@ public class DataTransformerFactory {
             return target.cast(origin);
         }
 
+        @SuppressWarnings("rawtypes")
         ServiceLoader<DataTransformer> serviceLoader = ServiceLoader.load(DataTransformer.class);
         for (var transformer: serviceLoader) {
             LOGGER.debug(transformer.getClass().getName());

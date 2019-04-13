@@ -157,6 +157,7 @@ public class AbstractProperties {
         return result;
     }
 
+    @SuppressWarnings("rawtypes")
     public List<Class> getClassListValue(String key, String split) {
         var value = getStringArrayValue(key, split);
         var classLoader = ClassLoaderUtils.getDefaultClassLoader();

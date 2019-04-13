@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
  * @since 0.0.1
  */
 public class MethodExecutorFactory {
+
     public static <T> AbstractMethodExecutor factory(Class<? extends AbstractMethodExecutor> executorClass,
                                                         Class<T> interfaceType, Method method, Object configuration) {
         try {

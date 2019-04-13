@@ -5,6 +5,7 @@ import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.io.MultipartFile;
 import com.truthbean.code.debbie.core.net.url.QueryStringDecoder;
 import com.truthbean.code.debbie.core.net.url.UriUtils;
+import com.truthbean.code.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.code.debbie.mvc.request.HttpMethod;
 import com.truthbean.code.debbie.mvc.request.RequestBody;
 import com.truthbean.code.debbie.mvc.request.RouterRequest;
@@ -29,7 +30,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2018-02-19 11:11
  */
-public class ServletRouterRequest extends RouterRequest {
+public class ServletRouterRequest extends DefaultRouterRequest {
 
     private HttpServletRequest request;
 
@@ -49,7 +50,7 @@ public class ServletRouterRequest extends RouterRequest {
         setBody();
 
         setContentType();
-        setResponseTypeInHeader();
+        setResponseType();
     }
 
     public HttpServletRequest getHttpServletRequest() {
@@ -226,7 +227,7 @@ public class ServletRouterRequest extends RouterRequest {
         }
     }
 
-    private void setResponseTypeInHeader() {
+    private void setResponseType() {
         var respType = request.getHeader("Response-Type");
         MediaType mediaType = MediaType.ANY;
         if (respType != null) {
@@ -237,7 +238,7 @@ public class ServletRouterRequest extends RouterRequest {
                 mediaType = UriUtils.getTypeByUriExt(ext);
             }
         }
-        setResponseTypeInHeader(mediaType);
+        setResponseType(mediaType);
     }
 
     @Override

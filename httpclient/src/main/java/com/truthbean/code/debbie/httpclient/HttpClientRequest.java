@@ -1,9 +1,9 @@
 package com.truthbean.code.debbie.httpclient;
 
 import com.truthbean.code.debbie.core.reflection.InvokedParameter;
-import com.truthbean.code.debbie.mvc.request.RouterRequest;
+import com.truthbean.code.debbie.mvc.request.DefaultRouterRequest;
 
-public class HttpClientRequest extends RouterRequest {
+public class HttpClientRequest extends DefaultRouterRequest {
     private InvokedParameter invokedParameter;
 
     public InvokedParameter getInvokedParameter() {

@@ -5,7 +5,7 @@ import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.reflection.ClassInfo;
 import com.truthbean.code.debbie.core.reflection.InvokedParameter;
 import com.truthbean.code.debbie.mvc.MvcConfiguration;
-import com.truthbean.code.debbie.mvc.response.RouterInvokeResultData;
+import com.truthbean.code.debbie.mvc.response.RouterInvokeResult;
 import com.truthbean.code.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,18 +49,24 @@ public class MvcRouterRegister {
                         routerInfo.setTemplateSuffix(router.templateSuffix());
                     }
 
-                    var response = new RouterInvokeResultData();
+                    routerInfo.setRequestType(router.requestType());
+
+                    var response = new RouterInvokeResult();
                     var defaultType = webConfiguration.getDefaultTypes();
+                    var responseType = router.responseType();
                     if (router.hasTemplate()) {
                         response.setHandler(ResponseHandlerProviderEnum.TEMPLATE_VIEW.getProvider());
-                        response.setResponseType(router.responseType());
+                        response.setResponseType(responseType);
                     } else {
                         response.setHandler(router.handlerFilter().getProvider());
-                        if (router.responseType() == MediaType.ANY && !defaultType.isEmpty()) {
-                            response.setResponseType(defaultType.get(0));
+                        if (responseType != MediaType.ANY) {
+                            response.setResponseType(responseType);
+                        } else if (!defaultType.isEmpty()) {
+                            response.setResponseType(defaultType.iterator().next());
+                        } else {
+                            throw new RuntimeException("responseType cannot be MediaType.ANY. Or config default response type!");
                         }
                     }
-                    response.setResponseType(router.responseType());
 
                     routerInfo.setResponse(response);
                     routerInfo.setMethodParams(methodParams);

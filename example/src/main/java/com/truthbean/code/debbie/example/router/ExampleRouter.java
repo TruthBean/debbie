@@ -43,7 +43,7 @@ public class ExampleRouter {
     }
 
     @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloBodyXml(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
+    public Map<String, Object> helloBodyXml(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
                                             @RequestParam(name = "value", paramType = RequestParamType.BODY,
                                                     bodyType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
@@ -52,7 +52,7 @@ public class ExampleRouter {
     }
 
     @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
-    public Map<String, Object> helloBodyJson(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
+    public Map<String, Object> helloBodyJson(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
                                             @RequestParam(name = "value", paramType = RequestParamType.BODY,
                                                     bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
@@ -72,5 +72,19 @@ public class ExampleRouter {
     @Router(path = "/index.html", hasTemplate = true, responseType = MediaType.TEXT_HTML_UTF8)
     public StaticResourcesView resource() {
         return new StaticResourcesView();
+    }
+
+    @Router(path = "/test.html", responseType = MediaType.TEXT_HTML_UTF8)
+    public String reponseHtml() {
+        return "<html><head><title>666</title></head><body><p>this is a demo</p></body></html>";
+    }
+
+    @Router(path = "/alias", hasTemplate = true)
+    public StaticResourcesView resourceAlias() {
+        var view = new StaticResourcesView();
+        view.setTemplate("index");
+        view.setSuffix(".html");
+        view.setText(true);
+        return view;
     }
 }

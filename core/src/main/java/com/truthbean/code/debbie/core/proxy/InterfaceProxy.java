@@ -41,11 +41,11 @@ public class InterfaceProxy<T> implements InvocationHandler {
         } catch (Throwable t) {
             throw ReflectionExceptionUtils.unwrapThrowable(t);
         }
-        final AbstractMethodExecutor mapperMethod = cachedMethodExecutor(method);
+        final AbstractMethodExecutor<?> mapperMethod = cachedMethodExecutor(method);
         return mapperMethod.execute(object, args);
     }
 
-    private AbstractMethodExecutor cachedMethodExecutor(Method method) {
+    private AbstractMethodExecutor<?> cachedMethodExecutor(Method method) {
         return methodCache.computeIfAbsent(method, v ->
                 MethodExecutorFactory.factory(executorClass, interfaceType, method, configuration));
     }

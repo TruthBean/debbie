@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -23,7 +23,7 @@ public class MvcRouterHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterHandler.class);
 
-    public static RouterInfo getMatchedRouter(RouterRequest routerRequest, List<MediaType> defaultType) {
+    public static RouterInfo getMatchedRouter(RouterRequest routerRequest, Set<MediaType> defaultType) {
         var url = routerRequest.getUrl();
         LOGGER.debug("router url: {}", url);
         RouterInfo result = null;
@@ -38,27 +38,42 @@ public class MvcRouterHandler {
                 }
             }
 
-            LOGGER.debug("match url " + matchUrl);
+            if (!matchUrl) {
+                continue;
+            }
+            LOGGER.debug("match url " + paths);
 
-            var matchMethod = routerInfo.getRequestMethod() == routerRequest.getMethod()
-                    || routerInfo.getRequestMethod() == HttpMethod.ALL;
-            LOGGER.debug("match method: " + matchMethod);
+            var requestMethod = routerInfo.getRequestMethod();
+            var matchMethod = requestMethod == routerRequest.getMethod() || requestMethod == HttpMethod.ALL;
+            if (!matchMethod) {
+                continue;
+            }
+            LOGGER.debug("match method: " + requestMethod);
 
             var responseType = routerInfo.getResponse().getResponseType();
-            var matchResponseType = routerRequest.getResponseTypeInHeader() == MediaType.ANY ||
-                    (responseType != MediaType.ANY && responseType == routerRequest.getResponseTypeInHeader()) ||
-                    (responseType == MediaType.ANY && defaultType.contains(responseType));
-            LOGGER.debug("match response type: " + matchResponseType);
-
-            var requestType = routerRequest.getContentType();
-
-            if (matchUrl && matchMethod && matchResponseType) {
-                result = routerInfo;
-                if (responseType == MediaType.ANY) {
-                    routerInfo.getResponse().setResponseType(defaultType.get(0));
-                }
-                break;
+            var responseTypeInRequestHeader = routerRequest.getResponseType();
+            var matchResponseType = responseTypeInRequestHeader == MediaType.ANY ||
+                    (responseType != MediaType.ANY && responseType == responseTypeInRequestHeader) ||
+                    (responseType == MediaType.ANY && MediaType.contains(defaultType, responseTypeInRequestHeader));
+            if (!matchResponseType) {
+                continue;
             }
+            LOGGER.debug("match response type: " + responseType);
+
+            var requestType = routerInfo.getRequestType();
+            var contextType = routerRequest.getContentType();
+            var matchRequestType = contextType == MediaType.ANY ||
+                    (requestType != MediaType.ANY && requestType == contextType) || (requestType == MediaType.ANY);
+            if (!matchRequestType) {
+                continue;
+            }
+            LOGGER.debug("match response type: " + requestType);
+
+            result = routerInfo;
+            if (responseType == MediaType.ANY) {
+                routerInfo.getResponse().setResponseType(defaultType.iterator().next());
+            }
+            break;
         }
 
         if (result == null) {
@@ -99,8 +114,8 @@ public class MvcRouterHandler {
             throw new NullPointerException("httpRequest is null");
         }
 
-        LOGGER.debug("params: " + httpRequest.getParameters());
-        LOGGER.debug("query: " + httpRequest.getQueries());
+         LOGGER.debug("params: " + httpRequest.getParameters());
+         LOGGER.debug("query: " + httpRequest.getQueries());
 
         var parameters = new RouterRequestValues(httpRequest);
 
@@ -111,14 +126,14 @@ public class MvcRouterHandler {
         var values = args.toArray();
         LOGGER.debug("values: " + Arrays.toString(values));
 
-        var beanInvoker = new BeanInvoker(routerInfo.getRouterClass());
+        var beanInvoker = new BeanInvoker<>(routerInfo.getRouterClass());
         var method = routerInfo.getMethod();
         var any = beanInvoker.invokeMethod(method, values);
         if (any == null) {
             throw new NullPointerException(method.getName() + " return null");
         }
 
-        for (InvokedParameter methodParam : routerInfo.getMethodParams()) {
+        for (InvokedParameter<?> methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
         }
 
@@ -131,7 +146,7 @@ public class MvcRouterHandler {
             var provider = ResponseHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType());
             var filter = provider.transform(any);
             if (filter == null) {
-                throw new RuntimeException(any.toString() + " to " + httpRequest.getResponseTypeInHeader().getValue() + " error");
+                throw new RuntimeException(any.toString() + " to " + httpRequest.getResponseType().getValue() + " error");
             }
             LOGGER.debug(filter.toString());
             return filter;

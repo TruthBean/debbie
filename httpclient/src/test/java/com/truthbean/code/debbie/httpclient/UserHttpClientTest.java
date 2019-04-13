@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class UserHttpClientTest {
 
-    private final Map<Class<?>, InterfaceProxyFactory<UserHttpClient, HttpClientExecutor<UserHttpClient>>> knownMappers = new HashMap<>();
+    private final Map<Class<?>, InterfaceProxyFactory<UserHttpClient>> knownMappers = new HashMap<>();
 
     private UserHttpClient userHttpClient;
 
@@ -18,7 +18,7 @@ public class UserHttpClientTest {
     public void before() {
         var configuration = new HttpClientProperties().toConfiguration();
         var type = UserHttpClient.class;
-        InterfaceProxyFactory<UserHttpClient, HttpClientExecutor<UserHttpClient>> interfaceProxyFactory = knownMappers.get(type);
+        InterfaceProxyFactory<UserHttpClient> interfaceProxyFactory = knownMappers.get(type);
         if (interfaceProxyFactory == null) {
             interfaceProxyFactory = new InterfaceProxyFactory<>(type, configuration);
             knownMappers.put(type, interfaceProxyFactory);

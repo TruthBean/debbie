@@ -29,7 +29,11 @@ public @interface Router {
 
     HttpMethod method() default HttpMethod.ALL;
 
-    MediaType responseType() default MediaType.ANY;
+    /**
+     * request type, same as Content-Type
+     * @return mediaType
+     */
+    MediaType requestType() default MediaType.ANY;
 
     /**
      * does view has template, like jsp, freemarker et.
@@ -41,5 +45,10 @@ public @interface Router {
 
     String templatePrefix() default "";
 
+    /**
+     * response type
+     * @return mediaType
+     */
+    MediaType responseType() default MediaType.ANY;
     ResponseHandlerProviderEnum handlerFilter() default ResponseHandlerProviderEnum.JSON_RESTFUL;
 }

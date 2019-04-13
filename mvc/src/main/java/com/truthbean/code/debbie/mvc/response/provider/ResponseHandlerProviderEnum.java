@@ -3,7 +3,9 @@ package com.truthbean.code.debbie.mvc.response.provider;
 import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.mvc.response.AbstractResponseHandler;
 import com.truthbean.code.debbie.mvc.response.view.AbstractTemplateViewHandler;
-import com.truthbean.code.debbie.mvc.response.view.NoTemplateHandlerProviderException;
+import com.truthbean.code.debbie.mvc.response.view.NoTemplateViewHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -48,7 +50,9 @@ public enum ResponseHandlerProviderEnum {
         if (handlerIterator.hasNext()) {
             search = handlerIterator.next();
         } else {
-            throw new NoTemplateHandlerProviderException();
+            final Logger logger = LoggerFactory.getLogger(ResponseHandlerProviderEnum.class);
+            logger.warn("no template handler provider");
+            search = new NoTemplateViewHandler();
         }
         return search;
     }

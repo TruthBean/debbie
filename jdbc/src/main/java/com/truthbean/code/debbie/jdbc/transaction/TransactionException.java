@@ -5,6 +5,11 @@ package com.truthbean.code.debbie.jdbc.transaction;
  * @since 0.0.1
  */
 public class TransactionException extends Exception {
+    /**
+     * auto generate uid
+     */
+    private static final long serialVersionUID = -5529320793687176184L;
+
     public TransactionException() {
     }
 

@@ -7,7 +7,7 @@ import com.truthbean.code.debbie.core.io.MediaType;
  * @since 0.0.1
  * Created on 2018-02-13 21:53
  */
-public class RouterInvokeResultData<T> {
+public class RouterInvokeResult<T> {
     private MediaType responseType;
 
     private T data;

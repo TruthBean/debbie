@@ -30,8 +30,10 @@ public class ClassInfo {
         this.clazz = clazz;
 
         var annotations = clazz.getAnnotations();
-        for (Annotation annotation : annotations) {
-            classAnnotations.put(annotation.annotationType(), annotation);
+        if (annotations != null && annotations.length > 0) {
+            for (Annotation annotation : annotations) {
+                classAnnotations.put(annotation.annotationType(), annotation);
+            }
         }
 
         fields = ReflectionHelper.getDeclaredFields(clazz);

@@ -1,12 +1,13 @@
 package com.truthbean.code.debbie.mvc.router;
 
+import com.truthbean.code.debbie.core.io.MediaType;
 import com.truthbean.code.debbie.core.io.MultipartFile;
 import com.truthbean.code.debbie.core.reflection.InvokedParameter;
 import com.truthbean.code.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.code.debbie.core.reflection.TypeHelper;
 import com.truthbean.code.debbie.mvc.request.HttpMethod;
 import com.truthbean.code.debbie.mvc.request.RouterRequest;
-import com.truthbean.code.debbie.mvc.response.RouterInvokeResultData;
+import com.truthbean.code.debbie.mvc.response.RouterInvokeResult;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -34,8 +35,9 @@ public class RouterInfo implements Cloneable {
 
     private HttpMethod requestMethod;
 
-    private RouterInvokeResultData response;
+    private RouterInvokeResult response;
 
+    private MediaType requestType;
     private RouterRequest request;
 
     private boolean hasTemplate;
@@ -114,12 +116,20 @@ public class RouterInfo implements Cloneable {
         this.requestMethod = requestMethod;
     }
 
-    public RouterInvokeResultData getResponse() {
+    public RouterInvokeResult getResponse() {
         return response;
     }
 
-    public void setResponse(RouterInvokeResultData response) {
+    public void setResponse(RouterInvokeResult response) {
         this.response = response;
+    }
+
+    public MediaType getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(MediaType requestType) {
+        this.requestType = requestType;
     }
 
     public RouterRequest getRequest() {

@@ -1,6 +1,5 @@
 package com.truthbean.code.debbie.core.util;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -53,8 +52,8 @@ public final class CollectionUtils {
         }
     }
 
-    public static void reverse(Map source, Map target) {
-        for (Object key : source.keySet()) {
+    public static <K, V> void reverse(Map<K, V> source, Map<V, K> target) {
+        for (var key : source.keySet()) {
             target.put(source.get(key), key);
         }
     }

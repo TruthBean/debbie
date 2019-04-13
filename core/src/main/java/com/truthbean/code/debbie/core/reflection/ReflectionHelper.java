@@ -24,13 +24,12 @@ import java.util.jar.JarFile;
  * Created on 2019/3/23 11:23.
  */
 public class ReflectionHelper {
-    private static final ReflectionHelper INSTANCE = new ReflectionHelper();
 
     public static <T> T newInstance(Class<T> type) {
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
 
-    public static Type[] getActualTypes(Class clazz) {
+    public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz) {
         if (clazz == Object.class || clazz == Void.class) {
             return null;
         }
@@ -60,7 +59,8 @@ public class ReflectionHelper {
         return params;
     }
 
-    public static <T> T newInstance(Class<T> type, Class[] parameterTypes, Object[] args) {
+    public static <T> T newInstance(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes, 
+            Object[] args) {
         var obj = getConstructor(type, parameterTypes);
         if (obj != null) {
             return newInstance(obj, args);
@@ -86,7 +86,8 @@ public class ReflectionHelper {
         return null;
     }
 
-    public static <T> Constructor<T> getConstructor(Class<T> type, Class[] parameterTypes) {
+    public static <T> Constructor<T> getConstructor(Class<T> type, 
+            @SuppressWarnings("rawtypes") Class[] parameterTypes) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(parameterTypes);
             if (constructor.trySetAccessible()) {
