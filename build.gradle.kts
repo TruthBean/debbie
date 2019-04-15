@@ -6,7 +6,7 @@ buildscript {
     }
 }
 
-group = "com.truthbean"
+group = "com.truthbean.debbie"
 
 allprojects {
     repositories {
@@ -126,7 +126,7 @@ subprojects {
         publications {
             create<MavenPublication>("uploadToMavenRepository") {
                 artifactId = project.name
-                group = "com.truthbean"
+                group = "com.truthbean.debbie"
                 version = projectVersion
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
@@ -142,7 +142,7 @@ subprojects {
                 pom {
                     artifactId = project.name
                     name.set(project.name)
-                    group = "com.truthbean"
+                    group = "com.truthbean.debbie"
                     version = projectVersion
                     description.set("a java microservice project")
                     url.set("http://debbie.truthbean.com/")

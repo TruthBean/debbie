@@ -16,24 +16,22 @@ public final class UriUtils {
     private UriUtils() {
     }
 
-    private static final String HOST_IPV4_PATTERN = "[^\\[//?#:]*";
+    public static UriComposition resolveUri(String uri) {
+        var uriComposition = new UriComposition();
 
-    private static final String HOST_IPV6_PATTERN = "\\[[\\p{XDigit}\\:\\.]*[%\\p{Alnum}]*\\]";
-
-    private static final String HOST_PATTERN = "(" + HOST_IPV6_PATTERN + "|" + HOST_IPV4_PATTERN + ")";
-
+        String[] tmp = uri.split("://");
+        var builder = new UriComposition.Builder().scheme(tmp[0]);
+        // todo
+        return builder.build();
+    }
 
     public static String getScheme(String url) {
         return url.split("://")[0];
     }
 
     public static String getHost(String url) {
-        System.out.println(0 + ": " + url.split(HOST_PATTERN)[0]);
-        System.out.println(1 + ": " + url.split(HOST_PATTERN)[1]);
-        System.out.println(2 + ": " + url.split(HOST_PATTERN)[2]);
-        System.out.println(3 + ": " + url.split(HOST_PATTERN)[3]);
-        System.out.println(4 + ": " + url.split(HOST_PATTERN)[4]);
-        System.out.println(5 + ": " + url.split(HOST_PATTERN)[5]);
+        var tmp = url.split("://")[1];
+        System.out.println(tmp);
         return null;
     }
 
@@ -72,7 +70,7 @@ public final class UriUtils {
     }
 
     public static void main(String[] args) {
-        String url = "https://user@password:debbie.truthbean.com/hello/hahahah?key1=name&key1=name&key1=name&key2=2&key3=3.45&4=";
+        String url = "https://user:password@debbie.truthbean.com/hello/hahahah?key1=name&key1=name&key1=name&key2=2&key3=3.45&4=";
         var queriesInUri = queriesInUri(url);
         System.out.println(queriesInUri.toString());
 

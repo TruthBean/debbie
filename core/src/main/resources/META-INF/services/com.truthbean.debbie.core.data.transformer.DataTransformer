@@ -1,0 +1,7 @@
+com.truthbean.debbie.core.data.transformer.date.DefaultTimeTransformer
+com.truthbean.debbie.core.data.transformer.text.DefaultTextTransformer
+com.truthbean.debbie.core.data.transformer.text.JsonNodeTransformer
+
+com.truthbean.debbie.core.data.transformer.text.UrlTransformer
+
+com.truthbean.debbie.core.data.transformer.numeric.LongToIntegerTransformer

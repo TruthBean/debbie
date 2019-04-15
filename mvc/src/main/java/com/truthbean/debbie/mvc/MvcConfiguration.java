@@ -2,7 +2,8 @@ package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.util.Splitter;
+
+import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import java.util.*;
@@ -102,9 +103,9 @@ public class MvcConfiguration extends BeanScanConfiguration {
     public Map<String, String> getCors() {
         if (cors) {
             Map<String, String> map = new HashMap<>();
-            map.put("Access-Control-Allow-Origin", Splitter.splitList(corsOrigins));
-            map.put("Access-Control-Allow-Methods", Splitter.splitList(corsHeaders));
-            map.put("Access-Control-Allow-Headers", Splitter.splitList(corsMethods));
+            map.put("Access-Control-Allow-Origin", StringUtils.joining(corsOrigins));
+            map.put("Access-Control-Allow-Methods", StringUtils.joining(corsHeaders));
+            map.put("Access-Control-Allow-Headers", StringUtils.joining(corsMethods));
             return map;
         } else {
             return null;

@@ -1,4 +1,4 @@
-package com.truthbean.code.debbie.example.router;
+package com.truthbean.debbie.example.router;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.watcher.Watcher;

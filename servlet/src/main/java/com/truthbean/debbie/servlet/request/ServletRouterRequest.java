@@ -4,7 +4,7 @@ import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.net.uri.QueryStringDecoder;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestBody;
@@ -235,7 +235,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         } else {
             var ext = FileNameUtils.getExtension(getUrl());
             if (ext != null && !"".equals(ext) && !"".equals(ext.trim())) {
-                mediaType = UriUtils.getTypeByUriExt(ext);
+                mediaType = MediaType.getTypeByUriExt(ext);
             }
         }
         setResponseType(mediaType);

@@ -33,6 +33,8 @@ public interface RouterRequest extends Cloneable {
 
     Map<String, List> getParameters();
 
+    Object getParameter(String name);
+
     Map<String, List<String>> getQueries();
 
     InputStream getInputStreamBody();

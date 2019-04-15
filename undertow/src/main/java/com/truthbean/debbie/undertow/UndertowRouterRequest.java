@@ -4,7 +4,7 @@ import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.io.StreamHelper;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -90,7 +90,7 @@ public class UndertowRouterRequest implements RouterRequest {
             if (ext == null || "".equals(ext.trim())) {
                 type = MediaType.ANY;
             } else {
-                type = UriUtils.getTypeByUriExt(ext);
+                type = MediaType.getTypeByUriExt(ext);
             }
         }
         return type;
@@ -238,6 +238,18 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
+    public Object getParameter(String name) {
+        var parameters = routerRequestCache.getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            var values = parameters.get(name);
+            if (values != null && !values.isEmpty()) {
+                return values.get(0);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Map<String, List<String>> getQueries() {
         return routerRequestCache.getQueries();
     }
@@ -287,8 +299,15 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public RouterRequest clone() {
-        return null;
+    public UndertowRouterRequest clone() {
+        UndertowRouterRequest clone;
+        try {
+            clone = (UndertowRouterRequest) super.clone();
+        } catch (CloneNotSupportedException e) {
+            LOGGER.error("", e);
+            clone = new UndertowRouterRequest(exchange);
+        }
+        return clone;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UndertowRouterRequest.class);

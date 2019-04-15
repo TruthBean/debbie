@@ -1,4 +1,4 @@
-package com.truthbean.code.debbie.example;
+package com.truthbean.debbie.example;
 
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.net.NetWorkUtils;

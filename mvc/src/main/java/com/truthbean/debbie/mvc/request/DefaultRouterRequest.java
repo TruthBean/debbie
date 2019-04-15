@@ -140,11 +140,12 @@ public class DefaultRouterRequest implements RouterRequest {
         return parameters;
     }
 
-    public String getParameter(String name) {
+    @Override
+    public Object getParameter(String name) {
         if (parameters != null && !parameters.isEmpty()) {
             var values = parameters.get(name);
             if (values != null && !values.isEmpty()) {
-                return (String) values.get(0);
+                return values.get(0);
             }
         }
         return null;
