@@ -6,7 +6,7 @@ buildscript {
     }
 }
 
-group = "com.truthbean.code"
+group = "com.truthbean"
 
 allprojects {
     repositories {
@@ -117,7 +117,7 @@ subprojects {
     }
 
     tasks.withType<Delete> {
-        delete(fileTree("$rootDir/dist/com/truthbean/code/debbie").matching {
+        delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
             include("**/$projectVersion/**")
         })
     }
@@ -126,7 +126,7 @@ subprojects {
         publications {
             create<MavenPublication>("uploadToMavenRepository") {
                 artifactId = project.name
-                group = "com.truthbean.code"
+                group = "com.truthbean"
                 version = projectVersion
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
@@ -142,10 +142,10 @@ subprojects {
                 pom {
                     artifactId = project.name
                     name.set(project.name)
-                    group = "com.truthbean.code"
+                    group = "com.truthbean"
                     version = projectVersion
                     description.set("a java microservice project")
-                    url.set("http://code.truthbean.com/debbie/")
+                    url.set("http://debbie.truthbean.com/")
                     licenses {
                         license {
                             name.set("MIT License")

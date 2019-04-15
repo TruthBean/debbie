@@ -1,12 +1,12 @@
 package com.truthbean.code.debbie.example.router;
 
-import com.truthbean.code.debbie.core.io.MediaType;
-import com.truthbean.code.debbie.core.watcher.Watcher;
-import com.truthbean.code.debbie.mvc.request.HttpMethod;
-import com.truthbean.code.debbie.mvc.request.RequestParam;
-import com.truthbean.code.debbie.mvc.request.RequestParamType;
-import com.truthbean.code.debbie.mvc.response.view.StaticResourcesView;
-import com.truthbean.code.debbie.mvc.router.Router;
+import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.watcher.Watcher;
+import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.request.RequestParam;
+import com.truthbean.debbie.mvc.request.RequestParamType;
+import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
+import com.truthbean.debbie.mvc.router.Router;
 
 import java.util.HashMap;
 import java.util.List;
