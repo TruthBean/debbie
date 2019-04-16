@@ -4,7 +4,7 @@ import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.io.StreamHelper;
-
+import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -204,8 +204,12 @@ public class UndertowRouterRequest implements RouterRequest {
 
     @Override
     public Map<String, List<String>> getMatrix() {
-        // TODO
-        return null;
+        var matrix = routerRequestCache.getMatrix();
+        if (matrix == null) {
+            matrix = UriUtils.resolveMatrixByPath(getUrl());
+            routerRequestCache.setMatrix(matrix);
+        }
+        return matrix;
     }
 
     @Override

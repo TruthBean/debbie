@@ -16,6 +16,7 @@ import java.util.*;
  */
 public class RouterRequestValues {
     private Map<String, List> pathAttributes;
+    private Map<String, List<String>> matrixAttributes;
 
     private Map<String, List<String>> queries;
     private Map<String, List> params;
@@ -43,6 +44,8 @@ public class RouterRequestValues {
 
         setMixValues();
 
+        this.matrixAttributes = routerRequest.getMatrix();
+
         this.routerRequest = routerRequest;
     }
 
@@ -52,6 +55,14 @@ public class RouterRequestValues {
             queries.putAll(routerRequest.getQueries());
         }
         return Collections.unmodifiableMap(queries);
+    }
+
+    public Map<String, List> getMatrixAttributes() {
+        if (matrixAttributes == null) {
+            matrixAttributes = new HashMap<>();
+            matrixAttributes.putAll(routerRequest.getMatrix());
+        }
+        return Collections.unmodifiableMap(matrixAttributes);
     }
 
     public RouterSession getRouterSession() {
@@ -139,6 +150,12 @@ public class RouterRequestValues {
             for (Map.Entry<String, Object> entry : sessionAttributes.entrySet()) {
                 mixValues.put(entry.getKey(), Collections.singletonList(entry.getValue()));
             }
+        }
+        if (pathAttributes != null && !pathAttributes.isEmpty()) {
+            mixValues.putAll(pathAttributes);
+        }
+        if (matrixAttributes != null && !matrixAttributes.isEmpty()) {
+            mixValues.putAll(matrixAttributes);
         }
     }
 

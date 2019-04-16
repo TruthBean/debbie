@@ -4,7 +4,7 @@ import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.net.uri.QueryStringDecoder;
-
+import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestBody;
@@ -38,6 +38,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         this.request = httpServletRequest;
         setMethod(HttpMethod.valueOf(request.getMethod()));
         setUrl(request.getRequestURI());
+        setMatrix(UriUtils.resolveMatrixByPath(getUrl()));
 
         setPathAttributes();
         setHeaders();

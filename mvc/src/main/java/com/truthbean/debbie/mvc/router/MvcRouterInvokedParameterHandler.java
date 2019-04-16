@@ -158,6 +158,18 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                         handleParam(queries, invokedParameter);
                     }
                     break;
+                case PATH:
+                    Map<String, List> paths = parameters.getPathAttributes();
+                    if (paths != null && !paths.isEmpty()) {
+                        handleParam(paths, invokedParameter);
+                    }
+                    break;
+                case MATRIX:
+                    Map<String, List> matrix = parameters.getMatrixAttributes();
+                    if (matrix != null && !matrix.isEmpty()) {
+                        handleParam(matrix, invokedParameter);
+                    }
+                    break;
                 case PARAM:
                     Map<String, List> params = parameters.getParams();
                     if (params != null && !params.isEmpty()) {
@@ -245,7 +257,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
-        if (annotation != null && annotation instanceof RequestParam) {
+        if (annotation instanceof RequestParam) {
             RequestParam requestParam = (RequestParam) annotation;
 
             switch (requestParam.paramType()) {
@@ -258,6 +270,18 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     Map<String, List> queries = parameters.getQueries();
                     if (queries != null && !queries.isEmpty()) {
                         handleFiled(queries, instance, field, invokedParameter);
+                    }
+                    break;
+                case PATH:
+                    Map<String, List> paths = parameters.getPathAttributes();
+                    if (paths != null && !paths.isEmpty()) {
+                        handleFiled(paths, instance, field, invokedParameter);
+                    }
+                    break;
+                case MATRIX:
+                    Map<String, List> matrix = parameters.getMatrixAttributes();
+                    if (matrix != null && !matrix.isEmpty()) {
+                        handleFiled(matrix, instance, field, invokedParameter);
                     }
                     break;
                 case PARAM:

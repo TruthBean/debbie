@@ -11,6 +11,17 @@ public enum RequestParamType {
      * query
      */
     QUERY,
+
+    /**
+     * uri matrix
+     */
+    MATRIX,
+
+    /**
+     * uri path
+     */
+    PATH,
+
     /**
      * params
      */

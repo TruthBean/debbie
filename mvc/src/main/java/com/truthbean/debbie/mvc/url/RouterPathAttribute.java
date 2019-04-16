@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  * @since 0.0.1
  * Created on 2019/3/16 09:27.
  */
-public class RouterPathAttribute<T> {
+public class RouterPathAttribute {
     private String name;
 
     private List<String> value;

@@ -42,6 +42,14 @@ public class ExampleRouter {
         return result;
     }
 
+    @Router(path = "/matrix", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
+    public Map<String, Object> helloMatrix(@RequestParam(name = "key", paramType = RequestParamType.MATRIX) String key,
+                                         @RequestParam(name = "value", paramType = RequestParamType.MATRIX) List<Integer> value) {
+        Map<String, Object> result = new HashMap<>();
+        result.put(key, value);
+        return result;
+    }
+
     @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloBodyXml(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
                                             @RequestParam(name = "value", paramType = RequestParamType.BODY,
