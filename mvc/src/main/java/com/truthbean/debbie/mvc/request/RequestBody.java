@@ -57,7 +57,6 @@ public class RequestBody {
                 while ((line = this.bufferedReader.readLine()) != null) {
                     result.add(line);
                 }
-                //this.bufferedReader.lines().forEach(result::add);
                 content = result;
             } catch (Exception e) {
                 e.printStackTrace();

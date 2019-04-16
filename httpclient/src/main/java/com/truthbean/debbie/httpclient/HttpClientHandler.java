@@ -1,5 +1,6 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,6 +237,7 @@ public class HttpClientHandler extends HttpHandler {
         if (response != null) {
             result = new HashMap<>();
             LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
+            LOGGER.debug(OPERATION_NAME + "通讯完成，http 状态：" + HttpStatus.valueOf(response.statusCode()));
             result.put("code", String.valueOf(response.statusCode()));
             if (response.body() != null) {
                 String responseBody = response.body();
