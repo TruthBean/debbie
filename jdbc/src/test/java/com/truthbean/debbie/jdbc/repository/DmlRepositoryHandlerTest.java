@@ -3,6 +3,7 @@ package com.truthbean.debbie.jdbc.repository;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.SingleDataSourceConnectionContext;
+import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
@@ -106,6 +107,18 @@ public class DmlRepositoryHandlerTest {
     @Test
     public void findList() {
         var l = dmlRepositoryHandler.findList(null);
+        System.out.println(l);
+    }
+
+    @Test
+    public void count() {
+        var l = dmlRepositoryHandler.count();
+        System.out.println(l);
+    }
+
+    @Test
+    public void findPaged() {
+        var l = dmlRepositoryHandler.findPaged(PageRequest.of(0, 10));
         System.out.println(l);
     }
 }

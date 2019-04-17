@@ -4,6 +4,7 @@ import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.servlet.filter.CharacterEncodingFilter;
 import com.truthbean.debbie.servlet.filter.CorsFilter;
+import com.truthbean.debbie.servlet.filter.csrf.CsrfFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -48,10 +49,16 @@ public class ServletContextHandler {
                 .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
         // cors filter
+        if (servletConfiguration.isEnableCors()) {
+            servletContext.addFilter("corsFilter", new CorsFilter(servletConfiguration))
+                    .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
+        }
 
-        // TODO: it not work??
-        servletContext.addFilter("corsFilter", new CorsFilter(servletConfiguration))
-                .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
+        // csrf filter
+        if (servletConfiguration.isEnableCrsf()) {
+            servletContext.addFilter("csrfFilter", new CsrfFilter())
+                    .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
+        }
 
         servletConfiguration.addScanClasses(classes);
         return servletConfiguration.getTargetClasses();

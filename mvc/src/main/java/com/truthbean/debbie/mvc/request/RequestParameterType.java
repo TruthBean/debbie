@@ -5,7 +5,7 @@ package com.truthbean.debbie.mvc.request;
  * @since 0.0.1
  * Created on 2018-03-11 13:20
  */
-public enum RequestParamType {
+public enum RequestParameterType {
 
     /**
      * query

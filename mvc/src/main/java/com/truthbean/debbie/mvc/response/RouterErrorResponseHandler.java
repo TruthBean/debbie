@@ -35,7 +35,7 @@ public final class RouterErrorResponseHandler {
         }
         resourcesNotFound.setResponse(routerResponse);
 
-        resourcesNotFound.setRequest(httpRequest.clone());
+        resourcesNotFound.setRequest(httpRequest.copy());
 
         return resourcesNotFound;
     }

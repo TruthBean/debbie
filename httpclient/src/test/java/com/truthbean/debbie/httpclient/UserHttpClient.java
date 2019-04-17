@@ -5,8 +5,8 @@ import com.truthbean.debbie.core.watcher.Watcher;
 import com.truthbean.debbie.core.watcher.WatcherType;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParam;
-import com.truthbean.debbie.mvc.request.RequestParamType;
+import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.router.Router;
 
 @HttpClientRouter(baseUrl = {"http://192.168.1.192:8080", "http://192.168.1.206:8080", "https://www.facebook.com"})
@@ -15,6 +15,6 @@ public interface UserHttpClient {
 
     @Router(value = "/login", method = HttpMethod.POST)
     <T> T login(
-            @RequestParam(paramType = RequestParamType.BODY, bodyType = MediaType.APPLICATION_JSON_UTF8) String body
+            @RequestParameter(paramType = RequestParameterType.BODY, bodyType = MediaType.APPLICATION_JSON_UTF8) String body
     );
 }

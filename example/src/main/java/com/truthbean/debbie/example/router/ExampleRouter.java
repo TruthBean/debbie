@@ -3,8 +3,8 @@ package com.truthbean.debbie.example.router;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.watcher.Watcher;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParam;
-import com.truthbean.debbie.mvc.request.RequestParamType;
+import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.mvc.router.Router;
 
@@ -27,32 +27,32 @@ public class ExampleRouter {
     }
 
     @Router(path = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
-    public Map<String, Object> helloXml(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
-                        @RequestParam(name = "value", paramType = RequestParamType.QUERY) List<Integer> value) {
+    public Map<String, Object> helloXml(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
+                        @RequestParameter(name = "value", paramType = RequestParameterType.QUERY) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloJson(@RequestParam(name = "key", paramType = RequestParamType.PARAM) String key,
-                                        @RequestParam(name = "value", paramType = RequestParamType.PARAM) List<Integer> value) {
+    public Map<String, Object> helloJson(@RequestParameter(name = "key", paramType = RequestParameterType.PARAM) String key,
+                                        @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/matrix", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloMatrix(@RequestParam(name = "key", paramType = RequestParamType.MATRIX) String key,
-                                         @RequestParam(name = "value", paramType = RequestParamType.MATRIX) List<Integer> value) {
+    public Map<String, Object> helloMatrix(@RequestParameter(name = "key", paramType = RequestParameterType.MATRIX) String key,
+                                         @RequestParameter(name = "value", paramType = RequestParameterType.MATRIX) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
     }
 
     @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
-    public Map<String, Object> helloBodyXml(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
-                                            @RequestParam(name = "value", paramType = RequestParamType.BODY,
+    public Map<String, Object> helloBodyXml(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
+                                            @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
                                                     bodyType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
@@ -60,8 +60,8 @@ public class ExampleRouter {
     }
 
     @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
-    public Map<String, Object> helloBodyJson(@RequestParam(name = "key", paramType = RequestParamType.QUERY) String key,
-                                            @RequestParam(name = "value", paramType = RequestParamType.BODY,
+    public Map<String, Object> helloBodyJson(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
+                                            @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
                                                     bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);

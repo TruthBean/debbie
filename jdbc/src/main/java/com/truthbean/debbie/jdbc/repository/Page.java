@@ -1,10 +1,14 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.jdbc.domain.PageRequest;
+
+import java.util.List;
+
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class Page {
+public class Page<T> {
 
     /**
      * previous page
@@ -19,78 +23,98 @@ public class Page {
     /**
      * next page
      */
-    private int nextPage;
+    private long nextPage;
 
     /**
-     * size of elements in one page
+     * pageSize of elements in one page
      */
-    private int size;
+    private int pageSize;
+
+
+    /**
+     * this page content
+     */
+    private List<T> content;
+
+    /**
+     * total page
+     */
+    private long totalPage;
+
+    private int offset;
 
     /**
      * total element size
      */
-    private int totalElement;
-
-    /**
-     * total page size
-     */
-    private int totalPage;
-
-    private int beginIndex;
-
-    private int lastIndex;
+    private long totalCount;
 
     public Page() {
     }
 
-    public Page(int currentPage, int size, int totalCount, int totalPage,
-                int previousPage, int nextPage, int beginPage, int lastPage) {
+    private Page(int currentPage, int offset, int pageSize,
+                 long totalCount, List<T> content,
+                 long totalPage, int previousPage, long nextPage) {
         this.currentPage = currentPage;
-        this.size = size;
-        this.totalElement = totalCount;
+        this.offset = offset;
+        this.pageSize = pageSize;
+
+        this.totalCount = totalCount;
+        this.content = content;
+
         this.totalPage = totalPage;
         this.previousPage = previousPage;
         this.nextPage = nextPage;
-        this.beginIndex = beginPage;
-        this.lastIndex = lastPage;
     }
 
     /**
-     * @param size 一页显示条数
      * @param currentPage 当前页
+     * @param pageSize    一页显示条数
      * @param totalCounts 总条数
      * @return Page
      */
-    public static Page createPage(int size, int currentPage, int totalCounts) {
+    public static <T> Page<T> createPage(int currentPage, int pageSize, long totalCounts, List<T> content) {
         //总页数
-        int totalPages = totalPages(size, totalCounts);
+        long totalPages = totalPages(pageSize, totalCounts);
         //前一页
         int previousPage = prePage(currentPage);
         //后一页
-        int nextPage = nextPage(currentPage, totalPages);
-        int beginIndex = beginIndex(size, currentPage);
-        int lastIndex = lastIndex(beginIndex, size);
-        return new Page(currentPage, size, totalCounts, totalPages, previousPage, nextPage, beginIndex, lastIndex);
+        long nextPage = nextPage(currentPage, totalPages);
+        int offset = getOffset(pageSize, currentPage);
+
+        return new Page<T>(currentPage, offset, pageSize,
+                totalCounts, content,
+                totalPages, previousPage, nextPage);
     }
 
     /**
-     * 停止搜索的地方
-     * @param beginIndex sql offset
-     * @param size sql limit
-     * @return lastIndex
+     * @param pageRequest page 信息
+     * @param totalCounts 总条数
+     * @return Page
      */
-    private static int lastIndex(int beginIndex, int size) {
-        return beginIndex + size;
+    public static <T> Page<T> createPage(PageRequest pageRequest, long totalCounts, List<T> content) {
+        int pageSize = pageRequest.getPageSize();
+        int currentPage = pageRequest.getCurrentPage();
+        //总页数
+        long totalPages = totalPages(pageSize, totalCounts);
+        //前一页
+        int previousPage = prePage(currentPage);
+        //后一页
+        long nextPage = nextPage(currentPage, totalPages);
+        int offset = pageRequest.getOffset();
+
+        return new Page<T>(currentPage, offset, pageSize,
+                totalCounts, content,
+                totalPages, previousPage, nextPage);
     }
 
     /**
      * 返回开始查询的地方
      */
-    private static int beginIndex(int size, int currentPage) {
-        return (currentPage - 1) * size;
+    private static int getOffset(int pageSize, int currentPage) {
+        return (currentPage - 1) * pageSize;
     }
 
-    private static int nextPage(int currentPage, int totalPages) {
+    private static long nextPage(int currentPage, long totalPages) {
         return (currentPage == totalPages) ? totalPages : (currentPage + 1);
     }
 
@@ -98,14 +122,14 @@ public class Page {
         return (currentPage == 1) ? 1 : (currentPage - 1);
     }
 
-    private static int totalPages(int size, int totalcounts) {
-        if (totalcounts == 0) {
+    private static long totalPages(int pageSize, long totalCounts) {
+        if (totalCounts == 0) {
             return 1;
         }
-        if (totalcounts % size == 0) {
-            return totalcounts / size;
+        if (totalCounts % pageSize == 0) {
+            return totalCounts / pageSize;
         } else {
-            return totalcounts / size + 1;
+            return totalCounts / pageSize + 1;
         }
     }
 
@@ -113,63 +137,45 @@ public class Page {
         return previousPage;
     }
 
-    public void setPreviousPage(int previousPage) {
-        this.previousPage = previousPage;
-    }
-
     public int getCurrentPage() {
         return currentPage;
     }
 
-    public void setCurrentPage(int currentPage) {
-        this.currentPage = currentPage;
-    }
-
-    public int getNextPage() {
+    public long getNextPage() {
         return nextPage;
     }
 
-    public void setNextPage(int nextPage) {
-        this.nextPage = nextPage;
+    public int getPageSize() {
+        return pageSize;
     }
 
-    public int getSize() {
-        return size;
+    public long getTotalCount() {
+        return totalCount;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getTotalElement() {
-        return totalElement;
-    }
-
-    public void setTotalElement(int totalElement) {
-        this.totalElement = totalElement;
-    }
-
-    public int getTotalPage() {
+    public long getTotalPage() {
         return totalPage;
     }
 
-    public void setTotalPage(int totalPage) {
-        this.totalPage = totalPage;
+    public int getOffset() {
+        return offset;
     }
 
-    public int getBeginIndex() {
-        return beginIndex;
+    public List<T> getContent() {
+        return content;
     }
 
-    public void setBeginIndex(int beginIndex) {
-        this.beginIndex = beginIndex;
-    }
-
-    public int getLastIndex() {
-        return lastIndex;
-    }
-
-    public void setLastIndex(int lastIndex) {
-        this.lastIndex = lastIndex;
+    @Override
+    public String toString() {
+        return "{" +
+                "\"previousPage\":" + previousPage +
+                ",\"currentPage\":" + currentPage +
+                ",\"content\":" + content +
+                ",\"nextPage\":" + nextPage +
+                ",\"totalPage\":" + totalPage +
+                ",\"pageSize\":" + pageSize +
+                ",\"offset\":" + offset +
+                ",\"totalCount\":" + totalCount +
+                '}';
     }
 }

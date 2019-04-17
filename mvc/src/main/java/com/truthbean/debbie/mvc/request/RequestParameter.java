@@ -12,14 +12,14 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequestParam {
+public @interface RequestParameter {
     /**
      * if type is BODY, name can be ""
      * @return name
      */
     String name() default "";
 
-    RequestParamType paramType() default RequestParamType.MIX;
+    RequestParameterType paramType() default RequestParameterType.MIX;
 
     String defaultValue() default "";
 

@@ -35,6 +35,10 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     private HttpServletRequest request;
 
     public ServletRouterRequest(HttpServletRequest httpServletRequest) {
+        this(UUID.randomUUID().toString(), httpServletRequest);
+    }
+
+    private ServletRouterRequest(String id, HttpServletRequest httpServletRequest) {
         this.request = httpServletRequest;
         setMethod(HttpMethod.valueOf(request.getMethod()));
         setUrl(request.getRequestURI());
@@ -52,6 +56,8 @@ public class ServletRouterRequest extends DefaultRouterRequest {
 
         setContentType();
         setResponseType();
+
+        super.setId(id);
     }
 
     public HttpServletRequest getHttpServletRequest() {
@@ -253,7 +259,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     }
 
     @Override
-    public RouterRequest clone() {
-        return new ServletRouterRequest(request);
+    public ServletRouterRequest copy() {
+        return new ServletRouterRequest(super.getId(), request);
     }
 }

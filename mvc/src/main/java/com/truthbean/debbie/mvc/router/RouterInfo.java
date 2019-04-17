@@ -260,7 +260,7 @@ public class RouterInfo implements Cloneable {
             clone.response = response;
         }
         if (request != null) {
-            clone.request = request.clone();
+            clone.request = request.copy();
         }
         clone.templatePrefix = templatePrefix;
         clone.templateSuffix = templateSuffix;

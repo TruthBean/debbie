@@ -20,10 +20,12 @@ public class MvcConfiguration extends BeanScanConfiguration {
     private final Set<MediaType> defaultTypes = new HashSet<>();
 
     // cors
-    private boolean cors = false;
+    private boolean enableCors = false;
     private List<String> corsOrigins;
     private List<HttpMethod> corsMethods;
     private List<String> corsHeaders;
+
+    private boolean enableCrsf = false;
 
     private String templateSuffix;
     private String templatePrefix;
@@ -38,7 +40,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     public void copyFrom(MvcConfiguration configuration) {
         this.defaultTypes.addAll(configuration.defaultTypes);
 
-        this.cors = configuration.cors;
+        this.enableCors = configuration.enableCors;
         this.corsOrigins = configuration.corsOrigins;
         this.corsMethods = configuration.corsMethods;
         this.corsHeaders = configuration.corsHeaders;
@@ -47,12 +49,16 @@ public class MvcConfiguration extends BeanScanConfiguration {
         this.templateSuffix = configuration.templateSuffix;
     }
 
-    public boolean isCors() {
-        return cors;
+    public boolean isEnableCors() {
+        return enableCors;
     }
 
-    protected void setCors(boolean cors) {
-        this.cors = cors;
+    public boolean isEnableCrsf() {
+        return enableCrsf;
+    }
+
+    protected void enableCors(boolean cors) {
+        this.enableCors = cors;
     }
 
     public List<String> getCorsOrigins() {
@@ -101,7 +107,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public Map<String, String> getCors() {
-        if (cors) {
+        if (enableCors) {
             Map<String, String> map = new HashMap<>();
             map.put("Access-Control-Allow-Origin", StringUtils.joining(corsOrigins));
             map.put("Access-Control-Allow-Methods", StringUtils.joining(corsHeaders));
@@ -127,14 +133,19 @@ public class MvcConfiguration extends BeanScanConfiguration {
             this.configuration = configuration;
         }
 
-        public Builder cors() {
-            configuration.cors = true;
+        public Builder enableCrsf() {
+            configuration.enableCrsf = true;
+            return this;
+        }
+
+        public Builder enableCors() {
+            configuration.enableCors = true;
             configuration.corsOrigins = Collections.singletonList("*");
             return this;
         }
 
-        public Builder cors(List<String> corsOrigins, List<HttpMethod> corsMethods, List<String> corsHeaders) {
-            configuration.cors = true;
+        public Builder enableCors(List<String> corsOrigins, List<HttpMethod> corsMethods, List<String> corsHeaders) {
+            configuration.enableCors = true;
             configuration.corsOrigins = corsOrigins;
             configuration.corsHeaders = corsHeaders;
             configuration.corsMethods = corsMethods;

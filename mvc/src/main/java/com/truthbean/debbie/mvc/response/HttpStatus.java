@@ -275,7 +275,7 @@ public enum HttpStatus {
     EXPECTATION_FAILED(417, "Expectation Failed"),
 
     /**
-     * 服务器拒绝尝试用 <a href="https://zh.wikipedia.org/wiki/超文本咖啡壶控制协议">“茶壶冲泡咖啡”</>。
+     * 服务器拒绝尝试用 <a href="https://zh.wikipedia.org/wiki/%E8%B6%85%E6%96%87%E6%9C%AC%E5%92%96%E5%95%A1%E5%A3%B6%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE">“茶壶冲泡咖啡”</a>。
      */
     I_AM_A_TEAPOT(418, "I'm a teapot"),
 

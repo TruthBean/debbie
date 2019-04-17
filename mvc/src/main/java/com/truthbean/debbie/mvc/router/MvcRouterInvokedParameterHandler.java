@@ -5,7 +5,7 @@ import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.RouterSession;
-import com.truthbean.debbie.mvc.request.RequestParam;
+import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.AbstractView;
@@ -142,11 +142,11 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
-        if (annotation instanceof RequestParam) {
-            LOGGER.debug("annotation is RequestParam");
-            RequestParam requestParam = (RequestParam) annotation;
+        if (annotation instanceof RequestParameter) {
+            LOGGER.debug("annotation is RequestParameter");
+            RequestParameter requestParameter = (RequestParameter) annotation;
 
-            switch (requestParam.paramType()) {
+            switch (requestParameter.paramType()) {
                 case MIX:
                     if (!mixValues.isEmpty()) {
                         handleParam(mixValues, invokedParameter);
@@ -177,7 +177,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     }
                     break;
                 case BODY:
-                    handleBody(parameters.getBody(), requestParam.bodyType(), invokedParameter);
+                    handleBody(parameters.getBody(), requestParameter.bodyType(), invokedParameter);
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();
@@ -201,8 +201,8 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     break;
             }
 
-            if (!requestParam.require() && invokedParameter.getValue() == null) {
-                handleParam(invokedParameter.getName(), requestParam.defaultValue(), invokedParameter);
+            if (!requestParameter.require() && invokedParameter.getValue() == null) {
+                handleParam(invokedParameter.getName(), requestParameter.defaultValue(), invokedParameter);
             }
         } else {
             if (!mixValues.isEmpty()) {
@@ -257,10 +257,10 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
-        if (annotation instanceof RequestParam) {
-            RequestParam requestParam = (RequestParam) annotation;
+        if (annotation instanceof RequestParameter) {
+            RequestParameter requestParameter = (RequestParameter) annotation;
 
-            switch (requestParam.paramType()) {
+            switch (requestParameter.paramType()) {
                 case MIX:
                     if (!mixValues.isEmpty()) {
                         handleFiled(mixValues, instance, field, invokedParameter);
@@ -291,7 +291,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     }
                     break;
                 case BODY:
-                    handleObjectFiled(parameters.getBody(), requestParam.bodyType(), instance,
+                    handleObjectFiled(parameters.getBody(), requestParameter.bodyType(), instance,
                             field, invokedParameter);
                     break;
                 case HEAD:
@@ -335,11 +335,11 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     invokedParameter.setName(name);
                 }
             }
-            RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
-            if (requestParam != null) {
-                invokedParameter.setName(requestParam.name());
+            RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
+            if (requestParameter != null) {
+                invokedParameter.setName(requestParameter.name());
             }
-            invokedParameter.setAnnotation(requestParam);
+            invokedParameter.setAnnotation(requestParameter);
 
             result.add(invokedParameter);
         }

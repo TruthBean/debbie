@@ -207,6 +207,11 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder select() {
+        dynamicSql.append(" SELECT ");
+        return this;
+    }
+
     public DynamicSqlBuilder select(List<String> columns) {
         dynamicSql.append(" SELECT ");
         this.columns(columns);
@@ -224,8 +229,18 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder count() {
+        dynamicSql.append(" COUNT(*) ");
+        return this;
+    }
+
+    public DynamicSqlBuilder count(String column) {
+        dynamicSql.append(" COUNT(").append(column).append(") ");
+        return this;
+    }
+
     public DynamicSqlBuilder columns(List<String> columns) {
-        int size = 0;
+        int size;
         if (columns != null && (size = columns.size()) > 0) {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
@@ -307,6 +322,16 @@ public class DynamicSqlBuilder {
 
     public DynamicSqlBuilder extra(String extra) {
         dynamicSql.append(extra);
+        return this;
+    }
+
+    public DynamicSqlBuilder limit(int offset, int limit) {
+        dynamicSql.append(" LIMIT ").append(offset).append(", ").append(limit).append(" ");
+        return this;
+    }
+
+    public DynamicSqlBuilder limit(int limit) {
+        dynamicSql.append(" LIMIT ").append(limit).append(" ");
         return this;
     }
 

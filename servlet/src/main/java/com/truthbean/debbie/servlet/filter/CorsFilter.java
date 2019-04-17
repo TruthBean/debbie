@@ -27,24 +27,22 @@ public class CorsFilter extends HttpFilter {
 
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (configuration.isCors()) {
-            LOGGER.debug("filter cors");
-            var cors = configuration.getCors();
-            if (cors != null && !cors.isEmpty()) {
-                cors.forEach(response::setHeader);
-            } else {
-                response.setHeader("Access-Control-Allow-Origin", "*");
+        LOGGER.debug("filter cors");
+        var cors = configuration.getCors();
+        if (cors != null && !cors.isEmpty()) {
+            cors.forEach(response::setHeader);
+        } else {
+            response.setHeader("Access-Control-Allow-Origin", "*");
 
-                response.setHeader("Access-Control-Allow-Headers", "User-Agent,Origin,Cache-Control,Content-type,Date,Server,withCredentials,AccessToken");
-                response.setHeader("Access-Control-Allow-Credentials", "true");
-                response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-                response.setHeader("Access-Control-Max-Age", "1209600");
-                response.setHeader("Access-Control-Expose-Headers", "accesstoken");
-                response.setHeader("Access-Control-Request-Headers", "accesstoken");
-                response.setHeader("Expires", "-1");
-                response.setHeader("Cache-Control", "no-cache");
-                response.setHeader("pragma", "no-cache");
-            }
+            response.setHeader("Access-Control-Allow-Headers", "User-Agent,Origin,Cache-Control,Content-type,Date,Server,withCredentials,AccessToken");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+            response.setHeader("Access-Control-Max-Age", "1209600");
+            response.setHeader("Access-Control-Expose-Headers", "accesstoken");
+            response.setHeader("Access-Control-Request-Headers", "accesstoken");
+            response.setHeader("Expires", "-1");
+            response.setHeader("Cache-Control", "no-cache");
+            response.setHeader("pragma", "no-cache");
         }
 
         chain.doFilter(request, response);

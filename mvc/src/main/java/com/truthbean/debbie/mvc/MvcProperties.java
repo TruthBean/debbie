@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 public class MvcProperties extends AbstractProperties {
     //===========================================================================
     private static final String SERVER_DEFAULT_TYPES = "debbie.web.default.types";
+    private static final String SERVER_CSRF = "debbie.web.csrf";
+
     private static final String SERVER_CORS = "debbie.web.cors";
     private static final String SERVER_CORS_ORIGINS = "debbie.web.cors.origins";
     private static final String SERVER_CORS_HEADERS = "debbie.web.cors.headers";
@@ -38,12 +40,17 @@ public class MvcProperties extends AbstractProperties {
 
         builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX));
 
+        boolean csrf = properties.getBooleanValue(SERVER_CSRF, false);
+        if (csrf) {
+            builder.enableCrsf();
+        }
+
         boolean cors = properties.getBooleanValue(SERVER_CORS, false);
         if (cors) {
             List<String> corsOrigins = properties.getStringListValue(SERVER_CORS_ORIGINS, ",");
             List<String> corsHeaders = properties.getStringListValue(SERVER_CORS_HEADERS, ",");
             List<HttpMethod> corsMethods = properties.getRequestMethodListValue(SERVER_CORS_METHODS, ",");
-            builder.cors(corsOrigins, corsMethods, corsHeaders);
+            builder.enableCors(corsOrigins, corsMethods, corsHeaders);
         }
 
         return builder.build();

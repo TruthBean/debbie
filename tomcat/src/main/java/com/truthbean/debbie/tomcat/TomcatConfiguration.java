@@ -17,7 +17,7 @@ public class TomcatConfiguration extends AbstractServerConfiguration {
         port(abstractServerConfiguration.getPort());
         host(abstractServerConfiguration.getHost());
         web(abstractServerConfiguration.isWeb());
-        setCors(abstractServerConfiguration.isCors());
+        enableCors(abstractServerConfiguration.isEnableCors());
         setCorsOrigins(abstractServerConfiguration.getCorsOrigins());
         setCorsHeaders(abstractServerConfiguration.getCorsHeaders());
         setCorsMethods(abstractServerConfiguration.getCorsMethods());

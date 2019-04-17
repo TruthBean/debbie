@@ -1,5 +1,8 @@
 package com.truthbean.debbie.servlet.filter.csrf;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpFilter;
@@ -17,6 +20,12 @@ public class CsrfFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-            chain.doFilter(request, response);
+        String csrfTokenInHeader = request.getHeader("CSRF-TOKEN");
+        logger.debug("crsfToken in header: " + csrfTokenInHeader);
+        String csrfTokenInParams = request.getParameter("_CSRF_TOKEN");
+        logger.debug("crsfToken in hidden form: " + csrfTokenInParams);
+        chain.doFilter(request, response);
     }
+
+    private final Logger logger = LoggerFactory.getLogger(CsrfFilter.class);
 }

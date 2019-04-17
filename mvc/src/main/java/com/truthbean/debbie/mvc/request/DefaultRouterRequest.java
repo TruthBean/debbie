@@ -18,6 +18,8 @@ import java.util.Map;
  * Created on 2019/04/13 12:28.
  */
 public class DefaultRouterRequest implements RouterRequest {
+    private String id;
+
     private HttpMethod method;
 
     private String url;
@@ -43,6 +45,15 @@ public class DefaultRouterRequest implements RouterRequest {
     private MediaType contentType;
 
     private MediaType responseType;
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @Override
     public HttpMethod getMethod() {
@@ -258,21 +269,16 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     @Override
-    public RouterRequest clone() {
-        DefaultRouterRequest clone;
-        try {
-            clone = (DefaultRouterRequest) super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            clone = new DefaultRouterRequest();
-            clone.method = method;
-            clone.url = url;
-            clone.inputStreamBody = inputStreamBody;
-            clone.contentType = contentType;
-            clone.responseType = responseType;
-            clone.textBody = textBody;
-            clone.fileBody = fileBody;
-        }
+    public RouterRequest copy() {
+        DefaultRouterRequest clone = new DefaultRouterRequest();
+        clone.id = id;
+        clone.method = method;
+        clone.url = url;
+        clone.inputStreamBody = inputStreamBody;
+        clone.contentType = contentType;
+        clone.responseType = responseType;
+        clone.textBody = textBody;
+        clone.fileBody = fileBody;
 
         clone.pathAttributes = new ArrayList<>(pathAttributes);
         clone.headers = new HashMap<>(headers);

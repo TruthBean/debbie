@@ -31,6 +31,7 @@ import java.util.*;
  * Created on 2019/3/16 11:01.
  */
 public class UndertowRouterRequest implements RouterRequest {
+    private String id;
     private final HttpServerExchange exchange;
 
     private final Map<String, List<String>> headers = new HashMap<>();
@@ -38,6 +39,11 @@ public class UndertowRouterRequest implements RouterRequest {
     private final DefaultRouterRequest routerRequestCache = new DefaultRouterRequest();
 
     public UndertowRouterRequest(HttpServerExchange exchange) {
+        this(UUID.randomUUID().toString(), exchange);
+    }
+
+    private UndertowRouterRequest(String id, HttpServerExchange exchange) {
+        this.id = id;
         this.exchange = exchange;
 
         routerRequestCache.setMethod(HttpMethod.valueOf(exchange.getRequestMethod().toString()));
@@ -53,7 +59,6 @@ public class UndertowRouterRequest implements RouterRequest {
 
         setParams(contentType);
         setQueries();
-
     }
 
     private void setPathAttributes() {
@@ -188,6 +193,11 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
     public HttpMethod getMethod() {
         return routerRequestCache.getMethod();
     }
@@ -303,15 +313,8 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public UndertowRouterRequest clone() {
-        UndertowRouterRequest clone;
-        try {
-            clone = (UndertowRouterRequest) super.clone();
-        } catch (CloneNotSupportedException e) {
-            LOGGER.error("", e);
-            clone = new UndertowRouterRequest(exchange);
-        }
-        return clone;
+    public UndertowRouterRequest copy() {
+        return new UndertowRouterRequest(id, exchange);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UndertowRouterRequest.class);

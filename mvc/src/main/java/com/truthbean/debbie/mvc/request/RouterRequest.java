@@ -15,7 +15,9 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-12-15 12:56.
  */
-public interface RouterRequest extends Cloneable {
+public interface RouterRequest {
+
+    String getId();
 
     HttpMethod getMethod();
 
@@ -51,5 +53,5 @@ public interface RouterRequest extends Cloneable {
 
     File getFileBody();
 
-    RouterRequest clone();
+    RouterRequest copy();
 }
