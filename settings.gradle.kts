@@ -3,7 +3,7 @@ rootProject.name = "debbie"
 val modules =
         arrayOf("core",
                 "jdbc", "mvc",
-                "servlet", "httpclient",
+                "servlet", "httpclient", "zaxxer",
                 "boot",
                 "tomcat", "undertow",
                 "example")

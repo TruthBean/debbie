@@ -17,14 +17,20 @@ import java.util.Optional;
  * @since 0.0.1
  * Created on 2019/4/3 23:23.
  */
-public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
-
-    public DmlRepositoryHandler(Connection connection) {
-        super(connection);
-    }
+public class DmlRepositoryHandler<E, ID> {
 
     private Class<E> entityClass;
+    private Class<ID> idClass;
     private EntityInfo<E> entityInfo;
+
+    private RepositoryHandler repositoryHandler;
+
+    public DmlRepositoryHandler(RepositoryHandler repositoryHandler, Class<E> entityClass, Class<ID> idClass) {
+        this.repositoryHandler = repositoryHandler;
+
+        this.entityClass = entityClass;
+        this.idClass = idClass;
+    }
 
     private EntityInfo<E> getEntityInfo() {
         if (entityInfo == null) {
@@ -56,12 +62,12 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         private List<Object> conditionValues;
     }
 
-    public int deleteById(ID id) throws TransactionException {
+    public boolean deleteById(ID id) throws TransactionException {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
         String sql = DynamicSqlBuilder.sql().delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
-        return update(sql, id);
+        return repositoryHandler.update(sql, id) > 0L;
     }
 
     private ConditionAndValue resolveCondition(EntityInfo<E> entityInfo) {
@@ -95,7 +101,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return update(sql, columnValues.toArray());
+        return repositoryHandler.update(sql, columnValues.toArray());
     }
 
     @SuppressWarnings("unchecked")
@@ -121,7 +127,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         LOGGER.debug(sql);
         var primaryKey = entityInfo.getPrimaryKey();
         var generatedKeys = primaryKey.getPrimaryKeyType() != null;
-        return (ID) super.insert(sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+        return (ID) repositoryHandler.insert(sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
     }
 
     public boolean update(E entity) throws TransactionException {
@@ -145,7 +151,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sql = DynamicSqlBuilder.sql().update(table).set(columnNames)
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         LOGGER.debug(sql);
-        return super.update(sql, columnValues.toArray()) == 1;
+        return repositoryHandler.update(sql, columnValues.toArray()) == 1;
     }
 
     public E findOne(E condition) {
@@ -165,7 +171,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().extra(conditionAndValues.conditionSql).builder();
         LOGGER.debug(sql);
-        return super.selectOne(sql, entityClass, conditionAndValues.conditionValues.toArray());
+        return repositoryHandler.selectOne(sql, entityClass, conditionAndValues.conditionValues.toArray());
     }
 
     private SqlAndArgs<E> prequery(E condition) {
@@ -203,7 +209,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
     public Page<E> findPaged(E condition, PageRequest pageable) {
@@ -213,7 +219,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         LOGGER.debug(sql);
 
         var count = count(condition);
-        List<E> content = super.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        List<E> content = repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
@@ -224,7 +230,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         LOGGER.debug(sql);
 
         var count = count();
-        List<E> content = super.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        List<E> content = repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
@@ -233,7 +239,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
     public Long count(E condition) {
@@ -253,7 +259,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.selectOne(sql, Long.class, args);
+        return repositoryHandler.selectOne(sql, Long.class, args);
     }
 
     public Long count() {
@@ -261,7 +267,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var table = entityInfo.getTable();
         var sql = DynamicSqlBuilder.sql().select().count().from(table).builder();
         LOGGER.debug(sql);
-        return super.selectOne(sql, Long.class);
+        return repositoryHandler.selectOne(sql, Long.class);
     }
 
     public E findById(ID id) {
@@ -281,7 +287,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         LOGGER.debug(">>>>>>>>>>>> " + sql);
         LOGGER.debug(">>>>>>>>>>>>> " + id);
-        return super.selectOne(sql, entityClass, id);
+        return repositoryHandler.selectOne(sql, entityClass, id);
     }
 
     public Optional<E> queryById(ID id) {

@@ -12,10 +12,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarFile;
 
 /**
@@ -186,6 +183,24 @@ public class ReflectionHelper {
             string += fieldName.substring(1);
         }
         return string;
+    }
+
+    public static <T> List<Class<? extends T>> getSubClass(Class<T> parentClass) {
+        List<Class<?>> allClass = new ArrayList<>();
+        // TODO
+        return getSubClass(allClass, parentClass);
+    }
+
+    public static <T> List<Class<? extends T>> getSubClass(List<Class<?>> allClass, Class<T> parentClass) {
+        List<Class<? extends T>> result = new ArrayList<>();
+        for (var clazz: allClass) {
+            boolean isTarget = (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()))
+                    && parentClass.isAssignableFrom(clazz);
+            if (isTarget) {
+                result.add((Class<? extends T>) clazz);
+            }
+        }
+        return result;
     }
 
     /**

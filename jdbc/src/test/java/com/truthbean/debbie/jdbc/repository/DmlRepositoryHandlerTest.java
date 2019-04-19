@@ -1,18 +1,18 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
-import com.truthbean.debbie.jdbc.datasource.SingleDataSourceConnectionContext;
+import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.Surname;
-import com.truthbean.debbie.jdbc.transaction.TransactionException;
-import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
@@ -21,35 +21,27 @@ import java.sql.Timestamp;
  * Created on 2019/4/4 21:57.
  */
 public class DmlRepositoryHandlerTest {
-    private static SingleDataSourceConnectionContext connectionContext;
+    private static SurnameRepository surnameRepository;
 
-    private static DmlRepositoryHandler<Surname, Long> dmlRepositoryHandler;
-    private static DdlRepositoryHandler ddlRepositoryHandler;
+    private static RepositoryHandler repositoryHandler;
 
     @BeforeAll
-    public static void before() {
+    public static void before() throws SQLException {
         BeanInitializationHandler.init(Surname.class);
 
         var config = new DataSourceProperties().toConfiguration();
-        connectionContext = SingleDataSourceConnectionContext.createInstance(config);
-        connectionContext.setTransactionIsolationLevel(TransactionIsolationLevel.READ_COMMITTED);
-        var connection = connectionContext.get();
+        DataSourceFactory factory = new DefaultDataSourceFactory();
+        factory.factory(config);
 
-        ddlRepositoryHandler = new DdlRepositoryHandler(connection);
-        try {
-            ddlRepositoryHandler.userDatabase("test");
-            connectionContext.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            connectionContext.rollback();
-        }
+        var connection = factory.getDataSource().getConnection();
 
-        dmlRepositoryHandler = new SurnameRepository(connection);
+        repositoryHandler = new DdlRepositoryHandler(connection);
+        surnameRepository = new SurnameRepository(repositoryHandler);
     }
 
     @AfterAll
     public static void after() {
-        connectionContext.close();
+        repositoryHandler.close();
     }
 
     @Test
@@ -59,66 +51,48 @@ public class DmlRepositoryHandlerTest {
         q.setOrigin("姬");
         q.setWebsite(new URL("https://www.qu.org"));
         q.setName("璩");
-        Long insert = null;
-        try {
-            insert = dmlRepositoryHandler.insert(q);
-            connectionContext.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            connectionContext.rollback();
-        }
-        System.out.println(insert);
+        var b = surnameRepository.save(q);
+        System.out.println(b);
+        System.out.println(q);
     }
 
     @Test
     public void testFindById() {
-        Surname surname = dmlRepositoryHandler.findById(1L);
+        Surname surname = surnameRepository.findById(1L);
         System.out.println(surname);
     }
 
     @Test
     public void testUpdate() throws MalformedURLException {
-        Surname surname = dmlRepositoryHandler.findById(1L);
+        Surname surname = surnameRepository.findById(1L);
         System.out.println(surname);
         surname.setWebsite(new URL("https://qu.org"));
-        try {
-            dmlRepositoryHandler.update(surname);
-            connectionContext.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            connectionContext.rollback();
-        }
+        var b = surnameRepository.update(surname);
+        System.out.println(b);
         System.out.println(surname);
     }
 
     @Test
     public void testDeleteById() {
-        int r = 0;
-        try {
-            r = dmlRepositoryHandler.deleteById(1L);
-            connectionContext.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            connectionContext.rollback();
-        }
-        System.out.println(r == 1);
+        var b = surnameRepository.delete(1L);
+        System.out.println(b);
     }
 
     @Test
     public void findList() {
-        var l = dmlRepositoryHandler.findList(null);
+        var l = surnameRepository.findAll();
         System.out.println(l);
     }
 
     @Test
     public void count() {
-        var l = dmlRepositoryHandler.count();
+        var l = surnameRepository.count();
         System.out.println(l);
     }
 
     @Test
     public void findPaged() {
-        var l = dmlRepositoryHandler.findPaged(PageRequest.of(0, 10));
+        var l = surnameRepository.findPaged(PageRequest.of(0, 10));
         System.out.println(l);
     }
 }

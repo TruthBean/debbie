@@ -4,7 +4,7 @@ package com.truthbean.debbie.jdbc.transaction;
  * @author TruthBean
  * @since 0.0.1
  */
-public class TransactionException extends Exception {
+public class TransactionException extends RuntimeException {
     /**
      * auto generate uid
      */

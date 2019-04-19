@@ -1,20 +1,37 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.sql.DataSource;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class DataSourceFactory {
+public interface DataSourceFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
+    /**
+     * create DataSourceFactory by application.properties
+     * @return DataSourceFactory
+     */
+    DataSourceFactory factory();
 
-    private SingleDataSourceConnectionContext connectionContext;
+    /**
+     * create DataSourceFactory by DataSource
+     * @param dataSource dataSource
+     * @return
+     */
+    DataSourceFactory factory(DataSource dataSource);
 
-    public DataSourceFactory(DataSourceConfiguration configuration) {
-        this.connectionContext = SingleDataSourceConnectionContext.createInstance(configuration);
-    }
+    /**
+     * create DataSourceFactory by DataSourceConfiguration
+     * @param configuration configuration
+     * @return DataSourceFactory
+     */
+    DataSourceFactory factory(DataSourceConfiguration configuration);
+
+    /**
+     * get DataSource
+     * @return DataSource
+     */
+    DataSource getDataSource();
 
 }

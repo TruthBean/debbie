@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.core.proxy.Action;
 import com.truthbean.debbie.core.reflection.ClassNotMatchedException;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
@@ -8,11 +9,13 @@ import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.FStartColumnNameTransformer;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
+import com.truthbean.debbie.jdbc.datasource.DataSourceContext;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,14 +23,12 @@ import java.util.List;
 
 /**
  * handle repository of curd
- * <p>
- * TODO page
  *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-14 11:53
  */
-public class RepositoryHandler {
+public class RepositoryHandler implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryHandler.class);
 
     private Connection connection;
@@ -38,7 +39,7 @@ public class RepositoryHandler {
 
     public int[] batch(String sql, Object[][] args) throws TransactionException {
         PreparedStatement preparedStatement = null;
-        int[] rows = null;
+        int[] rows;
         try {
             preparedStatement = connection.prepareStatement(sql);
             int count = args == null ? 0 : args.length;
@@ -99,7 +100,7 @@ public class RepositoryHandler {
         return id;
     }
 
-    public int update(String sql, Object... args) throws TransactionException{
+    public int update(String sql, Object... args) throws TransactionException {
         PreparedStatement preparedStatement = null;
         int rows = 0;
         try {
@@ -116,6 +117,26 @@ public class RepositoryHandler {
             JdbcUtils.close(null, preparedStatement);
         }
         return rows;
+    }
+
+    public void commit() {
+        try {
+            if (!connection.isReadOnly()) {
+                connection.commit();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("connection commit error. ", e);
+        }
+    }
+
+    public void rollback() {
+        try {
+            if (!connection.isReadOnly()) {
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("connection rollback error. ", e);
+        }
     }
 
     public ResultSet preSelect(String sql, Object... args) {
@@ -208,5 +229,28 @@ public class RepositoryHandler {
             }
         }
         return instance;
+    }
+
+    public <R> R actionTransactional(Action<R> action) {
+        R result = null;
+        try {
+            result = action.action();
+            commit();
+        } catch (Exception e) {
+            LOGGER.error("action error ", e);
+            rollback();
+        }
+        return result;
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (!connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

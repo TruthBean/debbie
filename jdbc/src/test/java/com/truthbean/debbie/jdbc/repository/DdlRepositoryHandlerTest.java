@@ -1,8 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
-import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
-import com.truthbean.debbie.jdbc.datasource.SingleDataSourceConnectionContext;
+import com.truthbean.debbie.jdbc.datasource.*;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
@@ -10,36 +9,36 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class DdlRepositoryHandlerTest {
+import java.sql.SQLException;
 
-    private static SingleDataSourceConnectionContext connectionContext;
+public class DdlRepositoryHandlerTest {
 
     private static DdlRepositoryHandler ddlRepositoryHandler;
 
     @BeforeAll
-    public static void before() {
+    public static void before() throws SQLException {
         var config = new DataSourceProperties().toConfiguration();
-        connectionContext = SingleDataSourceConnectionContext.createInstance(config);
-        connectionContext.setAutoCommit(false);
-        connectionContext.setTransactionIsolationLevel(TransactionIsolationLevel.NONE);
+        DataSourceFactory factory = new DefaultDataSourceFactory();
+        factory.factory(config);
 
-        var connection = connectionContext.get();
+        var connection = factory.getDataSource().getConnection();
+
         ddlRepositoryHandler = new DdlRepositoryHandler(connection);
     }
 
     @AfterAll
     public static void after() {
-        connectionContext.close();
+        DataSourceContext.closeConnection();
     }
 
     @Test
     public void testCreateDatabase() {
         try {
             ddlRepositoryHandler.createDatabase("hello");
-            connectionContext.commit();
+            ddlRepositoryHandler.commit();
         } catch (TransactionException e) {
             e.printStackTrace();
-            connectionContext.rollback();
+            ddlRepositoryHandler.rollback();
         }
     }
 
@@ -53,10 +52,10 @@ public class DdlRepositoryHandlerTest {
     public void testDropDatabase() {
         try {
             ddlRepositoryHandler.dropDatabase("hello");
-            connectionContext.commit();
+            ddlRepositoryHandler.commit();
         } catch (TransactionException e) {
             e.printStackTrace();
-            connectionContext.rollback();
+            ddlRepositoryHandler.rollback();
         }
     }
 
@@ -64,10 +63,10 @@ public class DdlRepositoryHandlerTest {
     public void testShowTables() {
         try {
             ddlRepositoryHandler.userDatabase("mysql");
-            connectionContext.commit();
+            ddlRepositoryHandler.commit();
         } catch (TransactionException e) {
             e.printStackTrace();
-            connectionContext.rollback();
+            ddlRepositoryHandler.rollback();
         }
         var s = ddlRepositoryHandler.showTables();
         System.out.println(s);
@@ -81,10 +80,10 @@ public class DdlRepositoryHandlerTest {
             BeanInitializationHandler.init(Surname.class);
             ddlRepositoryHandler.createTable(Surname.class);
 
-            connectionContext.commit();
+            ddlRepositoryHandler.commit();
         } catch (TransactionException e) {
             e.printStackTrace();
-            connectionContext.rollback();
+            ddlRepositoryHandler.rollback();
         }
     }
 
@@ -94,10 +93,10 @@ public class DdlRepositoryHandlerTest {
             ddlRepositoryHandler.userDatabase("test");
             ddlRepositoryHandler.dropTable("surname");
 
-            connectionContext.commit();
+            ddlRepositoryHandler.commit();
         } catch (TransactionException e) {
             e.printStackTrace();
-            connectionContext.rollback();
+            ddlRepositoryHandler.rollback();
         }
     }
 

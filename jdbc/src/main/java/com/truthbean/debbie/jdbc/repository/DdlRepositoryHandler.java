@@ -25,31 +25,31 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public void createDatabase(String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().create().database(database).builder();
         LOGGER.debug(sql);
-        update(sql);
+        super.update(sql);
     }
 
     public List<String> showDatabases() {
         String sql = DynamicSqlBuilder.sql().show().databases().builder();
         LOGGER.debug(sql);
-        return select(sql, String.class);
+        return super.select(sql, String.class);
     }
 
     public void dropDatabase(String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
         LOGGER.debug(sql);
-        update(sql);
+        super.update(sql);
     }
 
     public void userDatabase(String database) throws TransactionException {
         var use = DynamicSqlBuilder.sql().use(database).builder();
         LOGGER.debug(use);
-        update(use);
+        super.update(use);
     }
 
     public List<String> showTables() {
         String sql = DynamicSqlBuilder.sql().show().tables().builder();
         LOGGER.debug(sql);
-        return select(sql, String.class);
+        return super.select(sql, String.class);
     }
 
     public <E> void createTable(Class<E> entity) throws TransactionException {
@@ -150,7 +150,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public void dropTable(String table) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
         LOGGER.debug(sql);
-        update(sql);
+        super.update(sql);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandler.class);

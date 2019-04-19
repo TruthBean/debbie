@@ -9,6 +9,16 @@ public class DataSourcePoolConfiguration extends DataSourceConfiguration {
     private int increase;
     private int maxPoolSize;
 
+    public DataSourcePoolConfiguration(DataSourceConfiguration configuration) {
+        super(configuration);
+    }
+
+    public DataSourcePoolConfiguration(int initialPoolSize, int increase, int maxPoolSize) {
+        this.initialPoolSize = initialPoolSize;
+        this.increase = increase;
+        this.maxPoolSize = maxPoolSize;
+    }
+
     public int getInitialPoolSize() {
         return initialPoolSize;
     }
@@ -34,7 +44,7 @@ public class DataSourcePoolConfiguration extends DataSourceConfiguration {
     }
 
     @Override
-    protected DataSourcePoolConfiguration clone() throws CloneNotSupportedException {
+    protected DataSourcePoolConfiguration clone() {
         return (DataSourcePoolConfiguration) super.clone();
     }
 }

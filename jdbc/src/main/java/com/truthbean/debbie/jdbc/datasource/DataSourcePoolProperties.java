@@ -24,16 +24,7 @@ public class DataSourcePoolProperties extends DataSourceProperties {
 
     @Override
     public DataSourceConfiguration toConfiguration() {
-        var configuration = new DataSourcePoolConfiguration();
-        configuration.setDriverName(super.getDriverName());
-        configuration.setPassword(super.getUrl());
-        configuration.setUrl(super.getUrl());
-        configuration.setUser(super.getUser());
-
-        configuration.setIncrease(increase);
-        configuration.setInitialPoolSize(initialPoolSize);
-        configuration.setMaxPoolSize(maxPoolSize);
-        return configuration;
+        return new DataSourcePoolConfiguration(super.toConfiguration());
     }
 
     public int getIncrease() {
