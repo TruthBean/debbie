@@ -3,13 +3,16 @@ package com.truthbean.debbie.jdbc.datasource;
 import com.truthbean.debbie.core.properties.AbstractProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
 public class DataSourceProperties extends AbstractProperties {
-    private DataSourceConfiguration configuration;
+    private final DataSourceConfiguration configuration;
 
     //===========================================================================
     private static final String DRIVER_NAME_KEY = "debbie.datasource.driver-name";
@@ -20,31 +23,35 @@ public class DataSourceProperties extends AbstractProperties {
     private static final String AUTO_COMMIT = "debbie.datasource.auto-commit";
     private static final String DEFAULT_TRANSACTION_ISOLATION_LEVEL = "debbie.datasource.default-transaction-isolation-level";
 
-    // TODO
     private static final String DRIVER_PROPERTIES_PREFIX = "debbie.datasource.driver.";
 
     //===========================================================================
-    public DataSourceProperties() {
-        this.configuration = new DataSourceConfiguration();
+    private static final DataSourceProperties INSTANCE = new DataSourceProperties();
+
+    DataSourceProperties() {
+        configuration = new DataSourceConfiguration();
 
         String driverName = getStringValue(DRIVER_NAME_KEY, "com.mysql.jdbc.Driver");
-        this.configuration.setDriverName(driverName);
+        configuration.setDriverName(driverName);
 
         String url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
-        this.configuration.setUrl(url);
+        configuration.setUrl(url);
 
         String user = getStringValue(USER_KEY, "root");
-        this.configuration.setUser(user);
+        configuration.setUser(user);
 
         String password = getStringValue(PASSWORD_KEY, null);
-        this.configuration.setPassword(password);
+        configuration.setPassword(password);
 
         Boolean autoCommit = getBooleanValue(AUTO_COMMIT, false);
-        this.configuration.setAutoCommit(autoCommit);
+        configuration.setAutoCommit(autoCommit);
 
         TransactionIsolationLevel transactionIsolationLevel =
                 getTransactionIsolationLevelValue(DEFAULT_TRANSACTION_ISOLATION_LEVEL, TransactionIsolationLevel.READ_COMMITTED);
-        this.configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
+        configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
+
+        Map<String, Object> driverProperties = new HashMap<>(getMatchedKey(DRIVER_PROPERTIES_PREFIX));
+        configuration.setDriverProperties(driverProperties);
     }
 
     public TransactionIsolationLevel getTransactionIsolationLevelValue(String key, TransactionIsolationLevel defaultValue) {
@@ -52,8 +59,12 @@ public class DataSourceProperties extends AbstractProperties {
         return TransactionIsolationLevel.valueOf(stringValue);
     }
 
-    public DataSourceConfiguration toConfiguration() {
-        return configuration;
+    public static DataSourceProperties getInstance() {
+        return INSTANCE;
+    }
+
+    public static DataSourceConfiguration toConfiguration() {
+        return INSTANCE.configuration;
     }
 
 }

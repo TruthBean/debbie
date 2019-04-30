@@ -1,10 +1,13 @@
 package com.truthbean.debbie.core.io;
 
 import com.truthbean.debbie.core.util.Constants;
+import com.truthbean.debbie.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author TruthBean
@@ -23,6 +26,25 @@ public final class StreamHelper {
     public static BufferedReader toBufferedReader(InputStream inputStream) {
         var inputStreamReader = new InputStreamReader(inputStream);
         return new BufferedReader(inputStreamReader);
+    }
+
+    public static List<String> readFile(File file) {
+        List<String> result = new ArrayList<>();
+        try {
+            if (file.exists() && file.isFile() && file.canRead()) {
+                FileReader reader = new FileReader(file);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (!"".equals(line.trim())) {
+                        result.add(line.trim());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**

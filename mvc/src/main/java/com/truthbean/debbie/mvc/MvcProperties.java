@@ -28,7 +28,7 @@ public class MvcProperties extends AbstractProperties {
 
     //===========================================================================
 
-    public static MvcConfiguration loadProperties() {
+    public static MvcConfiguration toConfiguration() {
         MvcProperties properties = new MvcProperties();
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder();

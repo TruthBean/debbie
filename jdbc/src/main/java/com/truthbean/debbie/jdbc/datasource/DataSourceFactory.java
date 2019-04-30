@@ -17,7 +17,7 @@ public interface DataSourceFactory {
     /**
      * create DataSourceFactory by DataSource
      * @param dataSource dataSource
-     * @return
+     * @return DataSourceFactory
      */
     DataSourceFactory factory(DataSource dataSource);
 

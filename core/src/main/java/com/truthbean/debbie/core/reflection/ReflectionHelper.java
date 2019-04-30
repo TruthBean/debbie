@@ -83,6 +83,19 @@ public class ReflectionHelper {
         return null;
     }
 
+    public static Object invokeStaticMethod(String methodName, Class<?> targetClass) {
+        try {
+            Method declaredMethod = targetClass.getDeclaredMethod(methodName);
+            if (declaredMethod.trySetAccessible()) {
+                declaredMethod.setAccessible(true);
+            }
+            return declaredMethod.invoke(null);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static <T> Constructor<T> getConstructor(Class<T> type, 
             @SuppressWarnings("rawtypes") Class[] parameterTypes) {
         try {

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.debbie.core.properties.DebbieConfiguration;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Map;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DataSourceConfiguration implements Cloneable {
+public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     private String driverName;
     private String url;
     private String user;

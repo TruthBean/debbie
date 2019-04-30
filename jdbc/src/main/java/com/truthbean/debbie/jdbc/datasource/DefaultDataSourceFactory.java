@@ -12,7 +12,7 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
 
     @Override
     public DataSourceFactory factory() {
-        this.configuration = new DataSourceProperties().toConfiguration();
+        this.configuration = DataSourceProperties.toConfiguration();
         this.dataSource = new DefaultDataSource(configuration);
         return this;
     }

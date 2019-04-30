@@ -1,5 +1,6 @@
 package com.truthbean.debbie.core.bean;
 
+import com.truthbean.debbie.core.properties.DebbieConfiguration;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 
 import java.util.*;
@@ -9,7 +10,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/3/5 23:16.
  */
-public class BeanScanConfiguration {
+public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<Class<?>> scanClasses = new HashSet<>();
 
     private final Set<String> scanBasePackages = new HashSet<>();

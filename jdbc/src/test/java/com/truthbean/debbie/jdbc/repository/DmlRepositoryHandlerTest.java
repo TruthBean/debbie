@@ -29,7 +29,7 @@ public class DmlRepositoryHandlerTest {
     public static void before() throws SQLException {
         BeanInitializationHandler.init(Surname.class);
 
-        var config = new DataSourceProperties().toConfiguration();
+        var config = DataSourceProperties.toConfiguration();
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 

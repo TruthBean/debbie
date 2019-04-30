@@ -14,13 +14,13 @@ public class ServletProperties extends MvcProperties {
     private static final String DISPATCHER_MAPPING = "debbie.web.servlet.dispatcher-mapping";
     //========================================================================================
 
-    public static ServletConfiguration loadProperties() {
+    public static ServletConfiguration toConfiguration() {
         final ServletProperties properties = new ServletProperties();
 
         ServletConfiguration configuration = new ServletConfiguration();
         configuration.setDispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/"));
 
-        MvcConfiguration webConfiguration = MvcProperties.loadProperties();
+        MvcConfiguration webConfiguration = MvcProperties.toConfiguration();
         configuration.copyFrom(webConfiguration);
         return configuration;
     }

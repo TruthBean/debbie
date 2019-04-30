@@ -7,7 +7,7 @@ import com.truthbean.debbie.core.properties.AbstractProperties;
  * @since 0.0.1
  */
 public class HttpClientProperties extends AbstractProperties {
-    private final HttpClientConfiguration configuration = new HttpClientConfiguration();
+    private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
 
     //===========================================================================
     private static final String PROXY_HOST_KEY = "debbie.httpclient.proxy.host";
@@ -37,7 +37,7 @@ public class HttpClientProperties extends AbstractProperties {
         configuration.setInsecure(getBooleanValue(INSECURE_KEY, false));
     }
 
-    public HttpClientConfiguration toConfiguration() {
+    public static HttpClientConfiguration toConfiguration() {
         return configuration;
     }
 }

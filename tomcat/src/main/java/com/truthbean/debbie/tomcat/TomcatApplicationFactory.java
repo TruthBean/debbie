@@ -1,6 +1,8 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
+import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.core.StandardContext;
@@ -35,18 +37,7 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
 
     private final Tomcat server = new Tomcat();
 
-    @Override
-    public void factory(TomcatConfiguration configuration) {
-        server.setPort(configuration.getPort());
-        server.setHostname(configuration.getHost());
-
-        try {
-            Path tempPath = Files.createTempDirectory("tomcat-base-dir");
-            server.setBaseDir(tempPath.toString());
-        } catch (IOException e) {
-            LOGGER.error("create tomcat-base-dir in temp directory error", e);
-        }
-
+    private String configWebappDir(TomcatConfiguration configuration) {
         String webappDir = configuration.getWebappDir();
         var webappPath = new File(webappDir);
         if (!webappPath.exists()) {
@@ -59,6 +50,21 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
             webappDir = webappPath.getAbsolutePath();
         }
 
+        return webappDir;
+    }
+
+    private void config(TomcatConfiguration configuration) {
+        server.setPort(configuration.getPort());
+        server.setHostname(configuration.getHost());
+
+        try {
+            Path tempPath = Files.createTempDirectory("tomcat-base-dir");
+            server.setBaseDir(tempPath.toString());
+        } catch (IOException e) {
+            LOGGER.error("create tomcat-base-dir in temp directory error", e);
+        }
+
+        String webappDir = configWebappDir(configuration);
         StandardContext ctx = (StandardContext) server.addWebapp("", webappDir);
         ctx.setParentClassLoader(getClass().getClassLoader());
 
@@ -81,24 +87,34 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
     }
 
     @Override
-    public void run(String... args) {
-        try {
-            server.init();
-            server.getConnector();
-            server.start();
-        } catch (LifecycleException e) {
-            LOGGER.error("tomcat start error", e);
-        }
+    public DebbieApplication factory(TomcatConfiguration configuration) {
+        config(configuration);
+        return tomcatApplication();
     }
 
-    @Override
-    public void exit(String... args) {
-        try {
-            server.stop();
-            server.destroy();
-        } catch (LifecycleException e) {
-            LOGGER.error("tomcat stop error", e);
-        }
+    private DebbieApplication tomcatApplication() {
+        return new DebbieApplication() {
+            @Override
+            public void start(String... args) {
+                try {
+                    server.init();
+                    server.getConnector();
+                    server.start();
+                } catch (LifecycleException e) {
+                    LOGGER.error("tomcat start error", e);
+                }
+            }
+
+            @Override
+            public void exit(String... args) {
+                try {
+                    server.stop();
+                    server.destroy();
+                } catch (LifecycleException e) {
+                    LOGGER.error("tomcat stop error", e);
+                }
+            }
+        };
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TomcatApplicationFactory.class);

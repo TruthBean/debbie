@@ -67,9 +67,11 @@ public class Page<T> {
     }
 
     /**
+     * @param <T> T
      * @param currentPage 当前页
      * @param pageSize    一页显示条数
      * @param totalCounts 总条数
+     * @param content page content
      * @return Page
      */
     public static <T> Page<T> createPage(int currentPage, int pageSize, long totalCounts, List<T> content) {
@@ -87,8 +89,10 @@ public class Page<T> {
     }
 
     /**
+     * @param <T> T
      * @param pageRequest page 信息
      * @param totalCounts 总条数
+     * @param content page content
      * @return Page
      */
     public static <T> Page<T> createPage(PageRequest pageRequest, long totalCounts, List<T> content) {

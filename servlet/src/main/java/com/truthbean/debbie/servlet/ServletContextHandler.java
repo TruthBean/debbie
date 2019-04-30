@@ -29,7 +29,7 @@ public class ServletContextHandler {
             // TODO 提供properties无法加载的方案
 
         } else {
-            servletConfiguration = ServletProperties.loadProperties();
+            servletConfiguration = ServletProperties.toConfiguration();
         }
     }
 

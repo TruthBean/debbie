@@ -15,7 +15,7 @@ public class TomcatProperties extends AbstractServerProperties {
     private static final String TOMCAT_WEBAPP = "debbie.server.tomcat.webapp";
     //===========================================================================
 
-    public static TomcatConfiguration loadProperties() {
+    public static TomcatConfiguration toConfiguration() {
         TomcatProperties properties = new TomcatProperties();
         TomcatConfiguration configuration = new TomcatConfiguration();
 

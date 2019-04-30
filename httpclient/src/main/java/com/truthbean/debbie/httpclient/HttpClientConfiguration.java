@@ -1,10 +1,12 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.core.properties.DebbieConfiguration;
+
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientConfiguration {
+public class HttpClientConfiguration implements DebbieConfiguration {
     private String proxyHost;
     private int proxyPort;
 

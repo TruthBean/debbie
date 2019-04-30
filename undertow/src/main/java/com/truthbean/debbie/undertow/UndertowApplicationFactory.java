@@ -1,6 +1,7 @@
 package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
@@ -20,7 +21,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
     }
 
     @Override
-    public void factory(UndertowConfiguration configuration) {
+    public DebbieApplication factory(UndertowConfiguration configuration) {
         BeanInitializationHandler.init(configuration.getTargetClasses());
         MvcRouterRegister.registerRouter(configuration);
         // Undertow builder
@@ -29,16 +30,18 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
                 .addHttpListener(configuration.getPort(), configuration.getHost())
                 // Default Handler
                 .setHandler(new DispatcherHttpHandler(configuration)).build();
-    }
 
-    @Override
-    public void run(String... args) {
-        this.server.start();
-    }
+        return new DebbieApplication() {
+            @Override
+            public void start(String... args) {
+                server.start();
+            }
 
-    @Override
-    public void exit(String... args) {
-        this.server.stop();
+            @Override
+            public void exit(String... args) {
+                server.stop();
+            }
+        };
     }
 
 }

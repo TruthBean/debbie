@@ -12,11 +12,11 @@ import com.truthbean.debbie.mvc.MvcProperties;
  * Created on 2019/4/12 23:58.
  */
 public class UndertowProperties extends AbstractServerProperties {
-    public static UndertowConfiguration loadProperties() {
+    public static UndertowConfiguration toConfiguration() {
         UndertowConfiguration configuration = new UndertowConfiguration();
 
-        BeanScanConfiguration beanConfiguration = ClassesScanProperties.getBeanConfiguration();
-        MvcConfiguration mvcConfiguration = MvcProperties.loadProperties();
+        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration();
+        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration();
         configuration.copyFrom(mvcConfiguration);
         configuration.copyFrom(beanConfiguration);
 

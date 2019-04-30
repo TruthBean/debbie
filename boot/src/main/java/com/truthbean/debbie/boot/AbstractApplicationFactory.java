@@ -25,19 +25,9 @@ public abstract class AbstractApplicationFactory<C extends BeanScanConfiguration
     /**
      * application factory
      * @param configuration application configuration
+     *
+     * @return DebbieApplication
      */
-    public abstract void factory(C configuration);
-
-    /**
-     * run application
-     * @param args args
-     */
-    public abstract void run(String... args);
-
-    /**
-     * exit application
-     * @param args args
-     */
-    public abstract void exit(String... args);
+    public abstract DebbieApplication factory(C configuration);
 
 }

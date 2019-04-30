@@ -17,7 +17,7 @@ public class DdlRepositoryHandlerTest {
 
     @BeforeAll
     public static void before() throws SQLException {
-        var config = new DataSourceProperties().toConfiguration();
+        var config = DataSourceProperties.toConfiguration();
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 

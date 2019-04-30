@@ -1,6 +1,5 @@
 package com.truthbean.debbie.core.properties;
 
-import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.core.util.Constants;
 import org.slf4j.Logger;
@@ -53,10 +52,6 @@ public class AbstractProperties {
         }
     }
 
-    public static <C extends BeanScanConfiguration> C loadProperties() {
-        throw new UnsupportedOperationException();
-    }
-
     public static boolean isPropertiesEmpty() {
         return PROPERTIES.isEmpty();
     }
@@ -67,6 +62,20 @@ public class AbstractProperties {
             AbstractProperties.readPropertiesFile();
         }
         return properties;
+    }
+
+    public Map<String, Object> getMatchedKey(String keyPrefix) {
+        if (keyPrefix == null || "".equals(keyPrefix.trim())) {
+            throw new RuntimeException("illegal keyPrefix");
+        }
+        var properties = getProperties();
+        Map<String, Object> result = new HashMap<>();
+        properties.forEach((k, v) -> {
+            if (k instanceof String && ((String) k).startsWith(keyPrefix)) {
+                result.put((String) k, (String) v);
+            }
+        });
+        return result;
     }
 
     public String getValue(String key) {
