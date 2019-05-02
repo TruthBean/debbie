@@ -61,7 +61,7 @@ public final class StringUtils {
     public static boolean isNotEmpty(Object obj) {
         if (obj instanceof String) {
             String str = (String) obj;
-            return !"".equals(str) && !str.isEmpty();
+            return !str.isBlank();
         } else {
             return false;
         }

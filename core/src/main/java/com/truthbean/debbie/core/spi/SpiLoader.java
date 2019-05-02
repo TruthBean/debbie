@@ -19,7 +19,12 @@ public class SpiLoader {
     private static final String SPI = "com.truthbean.debbie.spi";
 
     public static <S> S loadProvider(Class<S> serviceClass) {
-        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass);
+        var classLoader = ClassLoaderUtils.getClassLoader(SpiLoader.class);
+        return loadProvider(serviceClass, classLoader);
+    }
+
+    public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader) {
+        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         Iterator<S> search = serviceLoader.iterator();
         if (search.hasNext()) {
             return search.next();
@@ -69,11 +74,10 @@ public class SpiLoader {
         return result;
     }
 
-    public static <P extends AbstractProperties> Map<Class<P>, Class> loadPropertiesClasses() {
+    public static <P extends AbstractProperties> Map<Class<P>, Class> loadPropertiesClasses(ClassLoader classLoader) {
         Map<Class<P>, Class> result = new HashMap<>();
 
         var spi = META_INF + "/" + SPI + "/debbie-properties";
-        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
         try {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {

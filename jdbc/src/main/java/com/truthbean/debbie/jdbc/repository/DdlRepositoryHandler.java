@@ -58,7 +58,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();
         var table = sqlEntity.table();
-        if ("".equals(table.trim())) {
+        if (table.isBlank()) {
             table = entityClass.getSimpleName().toLowerCase();
         }
         entityInfo.setTable(table);
@@ -91,12 +91,12 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         sqlBuilder.rightParenthesis();
 
         var engine = entityInfo.getEngine();
-        if (!"".equals(engine.trim())) {
+        if (!engine.isBlank()) {
             sqlBuilder.engine(engine);
         }
 
         var charset = entityInfo.getCharset();
-        if (!"".equals(charset.trim())) {
+        if (!charset.isBlank()) {
             sqlBuilder.defaultCharset(charset);
         }
         var sql = sqlBuilder.builder();

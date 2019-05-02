@@ -36,7 +36,7 @@ public final class StreamHelper {
                 BufferedReader bufferedReader = new BufferedReader(reader);
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    if (!"".equals(line.trim())) {
+                    if (!line.isBlank()) {
                         result.add(line.trim());
                     }
                 }

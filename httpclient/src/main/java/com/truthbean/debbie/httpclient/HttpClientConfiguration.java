@@ -48,7 +48,7 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     }
 
     public boolean useProxy() {
-        return proxyHost != null && !"".equals(proxyHost.trim()) && proxyPort > 0;
+        return proxyHost != null && !proxyHost.isBlank() && proxyPort > 0;
     }
 
     public int getRetryTime() {
@@ -88,8 +88,8 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     }
 
     public boolean needAuth() {
-        return authUser != null && !"".equals(authUser.trim())
-                && authPassword != null && "".equals(authPassword.trim());
+        return authUser != null && !authUser.isBlank()
+                && authPassword != null && !authPassword.isBlank();
     }
 
     public boolean isInsecure() {

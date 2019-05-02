@@ -38,7 +38,7 @@ public class RouterPathSplicer {
         }
 
         for (String path : paths) {
-            if (path != null && !"".equals(path.trim())) {
+            if (path != null && !path.isBlank()) {
                 return false;
             }
         }
@@ -49,7 +49,7 @@ public class RouterPathSplicer {
     private static List<String> trimPaths(String[] paths) {
         List<String> copy = Arrays.asList(paths);
         for (String path : paths) {
-            if (path == null || "".equals(path.trim())) {
+            if (path == null || path.isBlank()) {
                 copy.remove(path);
             }
         }
@@ -58,7 +58,7 @@ public class RouterPathSplicer {
 
     public static List<String> splicePaths(String apiPrefix, Router prefixRouter, Router router) {
         var apiPrefixAfterTrim = apiPrefix;
-        if (!"".equals(apiPrefix.trim()) && apiPrefix.endsWith("/")) {
+        if (!apiPrefix.isBlank() && apiPrefix.endsWith("/")) {
             apiPrefixAfterTrim = apiPrefix.substring(0, apiPrefix.length() - 1);
         }
         var paths = splicePaths(prefixRouter, router);
@@ -73,7 +73,7 @@ public class RouterPathSplicer {
 
     public static List<String> splicePaths(String apiPrefix, List<String> prefixRouter, Router router) {
         var apiPrefixAfterTrim = apiPrefix;
-        if (!"".equals(apiPrefix.trim()) && apiPrefix.endsWith("/")) {
+        if (!apiPrefix.isBlank() && apiPrefix.endsWith("/")) {
             apiPrefixAfterTrim = apiPrefix.substring(0, apiPrefix.length() - 1);
         }
         var paths = splicePaths(prefixRouter, router);
@@ -112,7 +112,7 @@ public class RouterPathSplicer {
             if (!isEmptyPaths(pathRegex)) {
                 for (var p : prefixPaths) {
                     for (var s : pathRegex) {
-                        if (s == null || "".equals(s.trim())) {
+                        if (s == null || s.isBlank()) {
                             newPaths.add(p);
                         } else {
                             newPaths.add(p + s);

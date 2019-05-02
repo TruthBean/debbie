@@ -38,12 +38,12 @@ public class MvcRouterRegister {
                     routerInfo.setRequestMethod(router.method());
 
                     routerInfo.setHasTemplate(router.hasTemplate());
-                    if ("".equals(router.templatePrefix().trim())) {
+                    if (router.templatePrefix().isBlank()) {
                         routerInfo.setTemplatePrefix(webConfiguration.getTemplatePrefix());
                     } else {
                         routerInfo.setTemplatePrefix(router.templatePrefix());
                     }
-                    if ("".equals(router.templateSuffix().trim())) {
+                    if (router.templatePrefix().isBlank()) {
                         routerInfo.setTemplateSuffix(webConfiguration.getTemplateSuffix());
                     } else {
                         routerInfo.setTemplateSuffix(router.templateSuffix());

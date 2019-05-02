@@ -51,7 +51,7 @@ public class EntityResolver {
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();
         var table = sqlEntity.table();
-        if ("".equals(table.trim())) {
+        if (table.isBlank()) {
             table = entityClass.getSimpleName().toLowerCase();
         }
         return table;

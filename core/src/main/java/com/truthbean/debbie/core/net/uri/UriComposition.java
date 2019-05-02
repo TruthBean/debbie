@@ -75,14 +75,14 @@ public class UriComposition {
         }
 
         public Builder scheme(String scheme) {
-            if (scheme != null && !"".equals(scheme.trim())) {
+            if (scheme != null && !scheme.isBlank()) {
                 uriComposition.scheme = scheme.trim();
             }
             return this;
         }
 
         public Builder username(String username) {
-            if (username != null && !"".equals(username)) {
+            if (username != null && !username.isBlank()) {
                 uriComposition.username = username;
             }
             return this;
@@ -94,7 +94,7 @@ public class UriComposition {
         }
 
         public Builder host(String host) {
-            if (host != null && !"".equals(host)) {
+            if (host != null && !host.isBlank()) {
                 uriComposition.host = host;
             }
             return this;
@@ -122,7 +122,7 @@ public class UriComposition {
             if (uriComposition.paths == null) {
                 uriComposition.paths = new ArrayList<>();
             }
-            if (path != null && !"".equals(path)) {
+            if (path != null && !path.isBlank()) {
                 uriComposition.paths.add(path);
             }
             return this;

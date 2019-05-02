@@ -3,6 +3,9 @@ package com.truthbean.debbie.boot;
 import com.truthbean.debbie.boot.exception.NoApplicationProviderException;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.core.spi.NoServiceProviderException;
+import com.truthbean.debbie.core.spi.SpiLoader;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -13,14 +16,18 @@ import java.util.ServiceLoader;
  * Created on 2019/3/23 14:09.
  */
 public class DebbieApplicationFactory {
-    private static final AbstractApplicationFactory APPLICATION = loadApplication();
+    private static final AbstractApplicationFactory application = loadApplication();
 
     private static AbstractApplicationFactory loadApplication() {
+        /* not work in java 11
+        var classLoader = ClassLoaderUtils.getClassLoader(DebbieApplicationFactory.class);
+        return SpiLoader.loadProvider(AbstractApplicationFactory.class, classLoader);
+        */
         AbstractApplicationFactory search;
         ServiceLoader<AbstractApplicationFactory> serviceLoader = ServiceLoader.load(AbstractApplicationFactory.class);
-        Iterator<AbstractApplicationFactory> searchs = serviceLoader.iterator();
-        if (searchs.hasNext()) {
-            search = searchs.next();
+        Iterator<AbstractApplicationFactory> iterator = serviceLoader.iterator();
+        if (iterator.hasNext()) {
+            search = iterator.next();
         } else {
             throw new NoApplicationProviderException();
         }
@@ -37,11 +44,11 @@ public class DebbieApplicationFactory {
 
     public static <C extends BeanScanConfiguration> DebbieApplication factory(C configuration) {
         // by javaConfig
-        return APPLICATION.factory(configuration);
+        return application.factory(configuration);
     }
 
     public static DebbieApplication factory() {
         var configuration = DebbieConfigurationFactory.factoryServer();
-        return APPLICATION.factory(configuration);
+        return application.factory(configuration);
     }
 }

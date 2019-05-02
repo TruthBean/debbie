@@ -68,7 +68,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                     if (requestParameter != null) {
                         var type = parameter.getType();
                         var name = requestParameter.name();
-                        if ("".equals(name.trim())) {
+                        if (name.isBlank()) {
                             name = parameter.getName();
                         }
                         invokedParameter.setName(name);

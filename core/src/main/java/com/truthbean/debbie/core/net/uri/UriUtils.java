@@ -62,7 +62,7 @@ public final class UriUtils {
         var partLength = pathArray.length;
         for (int i = 0; i < partLength - 1; i++) {
             var tempPath = pathArray[i];
-            if (tempPath != null && !"".equals(tempPath.trim())) {
+            if (tempPath != null && !tempPath.isBlank()) {
                 builder.addPath(pathArray[i]);
             }
         }

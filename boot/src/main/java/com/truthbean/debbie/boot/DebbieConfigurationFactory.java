@@ -19,8 +19,8 @@ public class DebbieConfigurationFactory {
 
     private static Map<Class<?>, Object> configurations = new HashMap<>();
 
-    private static void loadConfiguration() {
-        Map<Class<AbstractProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses();
+    private static void loadConfiguration(ClassLoader classLoader) {
+        Map<Class<AbstractProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
         classClassMap.forEach((key, value) -> {
             System.out.println("...........");
             System.out.println(key);
@@ -33,7 +33,8 @@ public class DebbieConfigurationFactory {
 
     public static <C extends DebbieConfiguration> C factory(Class<C> configurationClass) {
         if (configurations.isEmpty()) {
-            loadConfiguration();
+            var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+            loadConfiguration(classLoader);
         }
         for (Map.Entry<Class<?>, Object> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();

@@ -217,7 +217,7 @@ public class RepositoryHandler implements Closeable {
             if (column != null) {
                 columnName = column.name();
             }
-            if ("".equals(columnName.trim())) {
+            if (columnName.isBlank()) {
                 columnName = field.getName();
             }
             for (var entry : map) {

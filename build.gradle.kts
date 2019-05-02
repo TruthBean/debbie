@@ -54,23 +54,6 @@ subprojects {
     apply(plugin = "idea")
     apply(plugin = "eclipse")
 
-    tasks.withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.compilerArgs.add("-Xlint:unchecked")
-    }
-
-    configure<JavaPluginConvention> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    tasks.withType<Javadoc> {
-        options {
-            encoding = "UTF-8"
-            charset("UTF-8")
-        }
-    }
-
     dependencies {
         val jupiterVersion = "5.4.0"
         "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
@@ -78,136 +61,160 @@ subprojects {
         "testImplementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     }
 
-    tasks.withType<Jar> {
-        archiveVersion.set(projectVersion)
-        manifest.attributes["Implementation-Title"] = project.name
-        manifest.attributes["Implementation-Version"] = projectVersion
-        manifest.attributes["Created-By"] =
-                "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
-    }
+    afterEvaluate {
+        val originName = project.name.substring(7)
+        val moduleName = "com.truthbean.debbie.$originName"
 
-    val sourcesJar by tasks.registering(Jar::class) {
-        group = "jar"
-        dependsOn(JavaPlugin.CLASSES_TASK_NAME)
-        archiveClassifier.set("sources")
-        from(project.the<SourceSetContainer>()["main"].allSource)
-    }
-
-    tasks.withType<Javadoc> {
-        options {
-            encoding = "UTF-8"
-            charset("UTF-8")
+        tasks.withType<JavaCompile> {
+            options.encoding = "UTF-8"
+            options.compilerArgs.add("-Xlint:unchecked")
+            options.isDebug = true
+            options.isFork = true
         }
 
-        if (JavaVersion.current().isJava9Compatible) {
-            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+        configure<JavaPluginConvention> {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
         }
-    }
 
-    val javadocJar by tasks.registering(Jar::class) {
-        group = "jar"
-        dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
-        archiveClassifier.set("javadoc")
-        from(tasks["javadoc"])
-    }
+        tasks.withType<Jar> {
+            archiveVersion.set(projectVersion)
+            manifest.attributes["Implementation-Title"] = project.name
+            manifest.attributes["Implementation-Version"] = projectVersion
+            manifest.attributes["Created-By"] =
+                    "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
+        }
 
-    artifacts {
-        add("archives", javadocJar)
-        add("archives", sourcesJar)
-    }
+        val sourcesJar by tasks.registering(Jar::class) {
+            group = "jar"
+            dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+            archiveClassifier.set("sources")
+            from(project.the<SourceSetContainer>()["main"].allSource)
+        }
 
-    tasks.withType<Delete> {
-        delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
-            include("**/$projectVersion/**")
-        })
-    }
+        tasks.withType<Javadoc> {
+            options {
+                encoding = "UTF-8"
+                charset("UTF-8")
+            }
 
-    publishing {
-        publications {
-            create<MavenPublication>("uploadToMavenRepository") {
-                artifactId = project.name
-                group = "com.truthbean.debbie"
-                version = projectVersion
-                from(components["java"])
-                artifact(tasks["sourcesJar"])
-                artifact(tasks["javadocJar"])
-                versionMapping {
-                    usage("java-api") {
-                        fromResolutionOf("runtimeClasspath")
-                    }
-                    usage("java-runtime") {
-                        fromResolutionResult()
-                    }
-                }
-                pom {
+            if (JavaVersion.current().isJava9Compatible) {
+                (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+            }
+
+            inputs.property("moduleName", moduleName)
+            doFirst {
+                (options as StandardJavadocDocletOptions).addStringOption("-module-path", classpath.asPath)
+            }
+        }
+
+        val javadocJar by tasks.registering(Jar::class) {
+            group = "jar"
+            dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
+            archiveClassifier.set("javadoc")
+            from(tasks["javadoc"])
+        }
+
+        artifacts {
+            add("archives", javadocJar)
+            add("archives", sourcesJar)
+        }
+
+        tasks.withType<Delete> {
+            delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
+                include("**/$projectVersion/**")
+            })
+            delete(File("$rootDir/$originName/out"))
+            delete(File("$rootDir/$originName/build"))
+        }
+
+        publishing {
+            publications {
+                create<MavenPublication>("uploadToMavenRepository") {
                     artifactId = project.name
-                    name.set(project.name)
                     group = "com.truthbean.debbie"
                     version = projectVersion
-                    description.set("a java microservice project")
-                    url.set("http://debbie.truthbean.com/")
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://github.com/truthbean/debbie/blob/master/LICENSE")
+                    from(components["java"])
+                    artifact(tasks["sourcesJar"])
+                    artifact(tasks["javadocJar"])
+                    versionMapping {
+                        usage("java-api") {
+                            fromResolutionOf("runtimeClasspath")
+                        }
+                        usage("java-runtime") {
+                            fromResolutionResult()
                         }
                     }
-                    developers {
-                        developer {
-                            id.set("truthbean")
-                            name.set("Rogar·Q (TruthBean)")
-                            email.set("truthbean@outlook.com")
+                    pom {
+                        artifactId = project.name
+                        name.set(project.name)
+                        group = "com.truthbean.debbie"
+                        version = projectVersion
+                        description.set("a java microservice project")
+                        url.set("http://debbie.truthbean.com/")
+                        licenses {
+                            license {
+                                name.set("MIT License")
+                                url.set("https://github.com/truthbean/debbie/blob/master/LICENSE")
+                            }
                         }
-                        developer {
-                            id.set("qu")
-                            name.set("璩诗斌")
-                            email.set("truthbean@foxmail.com")
+                        developers {
+                            developer {
+                                id.set("truthbean")
+                                name.set("Rogar·Q (TruthBean)")
+                                email.set("truthbean@outlook.com")
+                            }
+                            developer {
+                                id.set("qu")
+                                name.set("璩诗斌")
+                                email.set("truthbean@foxmail.com")
+                            }
+                        }
+                        scm {
+                            connection.set("scm:git:git://github.com/TruthBean/debbie.git")
+                            developerConnection.set("scm:git:ssh://github.com/TruthBean/debbie.git")
+                            url.set("https://github.com/TruthBean/debbie")
+                        }
+                        issueManagement {
+                            system.set("github")
+                            url.set("https://github.com/truthbean/debbie/issues")
                         }
                     }
-                    scm {
-                        connection.set("scm:git:git://github.com/TruthBean/debbie.git")
-                        developerConnection.set("scm:git:ssh://github.com/TruthBean/debbie.git")
-                        url.set("https://github.com/TruthBean/debbie")
-                    }
-                    issueManagement {
-                        system.set("github")
-                        url.set("https://github.com/truthbean/debbie/issues")
+                }
+            }
+
+            repositories {
+                maven {
+                    url = uri(mavenRepositoryUrl)
+                    credentials {
+                        val sonatypeUsername: String? by project
+                        username = if (sonatypeUsername == null) "" else sonatypeUsername
+
+                        val sonatypePassword: String? by project
+                        password = if (sonatypePassword == null) "" else sonatypePassword
                     }
                 }
             }
         }
 
-        repositories {
-            maven {
-                url = uri(mavenRepositoryUrl)
-                credentials {
-                    val sonatypeUsername: String? by project
-                    username = if (sonatypeUsername == null) "" else sonatypeUsername
+        // 进行数字签名
+        signing {
+            isRequired = isReleaseBuild && gradle.taskGraph.hasTask("uploadToMavenRepository")
+            sign(publishing.publications["uploadToMavenRepository"])
+        }
 
-                    val sonatypePassword: String? by project
-                    password = if (sonatypePassword == null) "" else sonatypePassword
-                }
+        eclipse {
+            classpath {
+                isDownloadJavadoc = true
+                isDownloadSources = true
             }
         }
-    }
 
-    // 进行数字签名
-    signing {
-        isRequired = isReleaseBuild && gradle.taskGraph.hasTask("uploadToMavenRepository")
-        sign(publishing.publications["uploadToMavenRepository"])
-    }
-
-    eclipse {
-        classpath {
-            isDownloadJavadoc = true
-            isDownloadSources = true
-        }
-    }
-
-    idea {
-        module {
-            isDownloadJavadoc = true
-            isDownloadSources = true
+        idea {
+            module {
+                isDownloadJavadoc = true
+                isDownloadSources = true
+            }
         }
     }
 

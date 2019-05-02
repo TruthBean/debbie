@@ -6,7 +6,8 @@ val modules =
                 "servlet", "httpclient", "zaxxer",
                 "boot",
                 "tomcat", "undertow", "netty",
-                "example")
+                "example"
+        )
 
 modules.forEach { dir ->
     include(dir)

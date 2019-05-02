@@ -65,7 +65,7 @@ public class AbstractProperties {
     }
 
     public Map<String, Object> getMatchedKey(String keyPrefix) {
-        if (keyPrefix == null || "".equals(keyPrefix.trim())) {
+        if (keyPrefix == null || keyPrefix.isBlank()) {
             throw new RuntimeException("illegal keyPrefix");
         }
         var properties = getProperties();
@@ -79,7 +79,7 @@ public class AbstractProperties {
     }
 
     public String getValue(String key) {
-        if (key == null || "".equals(key.trim())) {
+        if (key == null || key.isBlank()) {
             throw new RuntimeException("illegal key");
         }
         var properties = getProperties();
@@ -148,7 +148,7 @@ public class AbstractProperties {
 
     public String[] getStringArrayValue(String key, String split) {
         var value = getValue(key);
-        if (split == null || "".equals(split)) {
+        if (split == null || split.isBlank()) {
             throw new RuntimeException("illegal split");
         }
         if (value != null) {

@@ -102,8 +102,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public boolean noTemplate() {
-        return (templateSuffix == null || "".equals(templateSuffix)) &&
-                (templatePrefix == null || "".equals(templatePrefix));
+        return (templateSuffix == null || templateSuffix.isBlank()) &&
+                (templatePrefix == null || templatePrefix.isBlank());
     }
 
     public Map<String, String> getCors() {

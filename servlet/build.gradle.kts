@@ -7,6 +7,7 @@ dependencies {
     compile("org.glassfish.web:javax.servlet.jsp.jstl:1.2.4") {
         exclude(group = "javax.servlet", module = "servlet-api")
         exclude(group = "javax.servlet.jsp", module = "jsp-api")
+        exclude(group = "javax.servlet.jsp.jstl", module = "jstl-api")
     }
 
     compile("commons-fileupload:commons-fileupload:1.4") {

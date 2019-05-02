@@ -92,7 +92,7 @@ public class UndertowRouterRequest implements RouterRequest {
             type = MediaType.of(headerValues.element());
         } else {
             String ext = FileNameUtils.getExtension(getUrl());
-            if (ext == null || "".equals(ext.trim())) {
+            if (ext == null || ext.isBlank()) {
                 type = MediaType.ANY;
             } else {
                 type = MediaType.getTypeByUriExt(ext);

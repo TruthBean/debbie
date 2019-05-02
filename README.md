@@ -1,6 +1,9 @@
 # debbie
 for microservice
 
+## construction
+
+
 ## 目标
 --------
 1.先实现一个mvc内核

@@ -44,7 +44,7 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
 
     public void check() {
         if (web) {
-            boolean illegal = (host == null || "".equals(host)) || port <= 0;
+            boolean illegal = (host == null || host.isBlank()) || port <= 0;
             if (illegal) {
                 throw new RuntimeException("host is null or port is wrong");
             }

@@ -241,7 +241,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
             mediaType = MediaType.of(respType);
         } else {
             var ext = FileNameUtils.getExtension(getUrl());
-            if (ext != null && !"".equals(ext) && !"".equals(ext.trim())) {
+            if (ext != null && !ext.isBlank()) {
                 mediaType = MediaType.getTypeByUriExt(ext);
             }
         }

@@ -124,7 +124,7 @@ public class JdbcColumnResolver {
         if (sqlColumn != null) {
             if (sqlColumn.id()) {
                 var columnName = sqlColumn.name();
-                if (!"".equals(columnName.trim())) {
+                if (!columnName.isBlank()) {
                     columnInfo.setColumnName(columnName);
                 } else {
                     columnInfo.setColumnName(field.getName());
@@ -133,14 +133,14 @@ public class JdbcColumnResolver {
                 if (field.getType() == UUID.class) {
                     columnInfo.setCharMaxLength(64);
                 }
-                if (!"".equals(sqlColumn.comment().trim())) {
+                if (!sqlColumn.comment().isBlank()) {
                     columnInfo.setComment(sqlColumn.comment());
                 }
                 columnInfo.setPrimaryKey(true);
                 columnInfo.setPrimaryKeyType(sqlColumn.primaryKey());
             } else {
                 var columnName = sqlColumn.name();
-                if (!"".equals(columnName.trim())) {
+                if (!columnName.isBlank()) {
                     columnInfo.setColumnName(columnName);
                 } else {
                     columnInfo.setColumnName(field.getName());
@@ -148,10 +148,10 @@ public class JdbcColumnResolver {
                 columnInfo.setNullable(sqlColumn.nullable());
                 columnInfo.setUnique(sqlColumn.unique());
                 columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
-                if (!"".equals(sqlColumn.defaultValue())) {
+                if (!sqlColumn.defaultValue().isBlank()) {
                     columnInfo.setColumnDefaultValue(sqlColumn.defaultValue());
                 }
-                if (!"".equals(sqlColumn.comment().trim())) {
+                if (!sqlColumn.comment().isBlank()) {
                     columnInfo.setComment(sqlColumn.comment());
                 }
                 columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
