@@ -33,6 +33,6 @@ hs_err_pid*
 .idea/
 
 # vscode
-#.vscode/
+.vscode/
 
 */bin/
