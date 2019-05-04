@@ -101,11 +101,6 @@ subprojects {
             if (JavaVersion.current().isJava9Compatible) {
                 (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
             }
-
-            inputs.property("moduleName", moduleName)
-            doFirst {
-                (options as StandardJavadocDocletOptions).addStringOption("-module-path", classpath.asPath)
-            }
         }
 
         val javadocJar by tasks.registering(Jar::class) {

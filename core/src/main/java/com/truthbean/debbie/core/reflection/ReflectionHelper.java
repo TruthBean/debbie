@@ -1,6 +1,7 @@
 package com.truthbean.debbie.core.reflection;
 
 import com.truthbean.debbie.core.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.core.io.StreamHelper;
 import com.truthbean.debbie.core.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,16 +113,23 @@ public class ReflectionHelper {
 
     public static List<Field> getDeclaredFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
-        for (var superClass = clazz; superClass != Object.class; superClass = superClass.getSuperclass()) {
-            fields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            Field[] declaredFields = superClass.getDeclaredFields();
+            if (declaredFields.length > 0) {
+                fields.addAll(Arrays.asList(declaredFields));
+            }
         }
         return fields;
     }
 
     public static List<Method> getDeclaredMethods(Class<?> clazz) {
         List<Method> fields = new ArrayList<>();
-        for (var superClass = clazz; superClass != Object.class; superClass = superClass.getSuperclass()) {
-            fields.addAll(Arrays.asList(superClass.getDeclaredMethods()));
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
+            Method[] declaredMethods = superClass.getDeclaredMethods();
+            if (declaredMethods.length > 0) {
+                fields.addAll(Arrays.asList(declaredMethods));
+            }
         }
         return fields;
     }
@@ -236,7 +244,7 @@ public class ReflectionHelper {
         // 定义一个枚举的集合 并进行循环来处理这个目录下的things
         Enumeration<URL> dirs;
         try {
-            dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
+            dirs = classLoader.getResources(packageDirName);
             // 循环迭代下去
             while (dirs.hasMoreElements()) {
                 // 获取下一个元素
@@ -250,49 +258,9 @@ public class ReflectionHelper {
                     // 以文件的方式扫描整个包下的文件 并添加到集合中
                     findAndAddClassesInPackageByFile(classLoader, packageName, filePath, recursive, classes);
                 } else if ("jar".equals(protocol)) {
-                    // 如果是jar包文件
-                    // 定义一个JarFile
-                    JarFile jar;
-                    try {
-                        // 获取jar
-                        jar = ((JarURLConnection) url.openConnection()).getJarFile();
-                        // 从此jar包 得到一个枚举类
-                        var entries = jar.entries();
-                        // 同样的进行循环迭代
-                        while (entries.hasMoreElements()) {
-                            // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
-                            var entry = entries.nextElement();
-                            var name = entry.getName();
-                            // 如果是以/开头的
-                            if (name.charAt(0) == '/') {
-                                // 获取后面的字符串
-                                name = name.substring(1);
-                            }
-                            // 如果前半部分和定义的包名相同
-                            if (name.startsWith(packageDirName)) {
-                                int idx = name.lastIndexOf('/');
-                                // 如果以"/"结尾 是一个包
-                                if (idx != -1) {
-                                    // 获取包名 把"/"替换成"."
-                                    packageName = name.substring(0, idx).replace('/', '.');
-                                }
-                                // 如果可以迭代下去 并且是一个包
-                                // 如果是一个.class文件 而且不是目录
-                                if (name.endsWith(".class") && !entry.isDirectory()) {
-                                    // 去掉后面的".class" 获取真正的类名
-                                    var className = name.substring(packageName.length() + 1, name.length() - 6);
-                                    try {
-                                        // 添加到classes
-                                        classes.add(classLoader.loadClass(packageName + '.' + className));
-                                    } catch (ClassNotFoundException e) {
-                                        LOGGER.error("", e);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error("", e);
-                    }
+                    var tmp = StreamHelper.getClassFromJarByPackageName(packageName,
+                            url, packageDirName, classLoader);
+                    classes.addAll(tmp);
                 }
             }
         } catch (IOException e) {

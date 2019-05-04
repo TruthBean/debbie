@@ -13,8 +13,14 @@ import com.truthbean.debbie.mvc.MvcProperties;
  */
 public class NettyProperties extends AbstractServerProperties {
 
+    private static NettyConfiguration configuration;
+
     public static NettyConfiguration toConfiguration() {
-        NettyConfiguration configuration = new NettyConfiguration();
+        if (configuration != null) {
+            return configuration;
+        }
+
+        configuration = new NettyConfiguration();
 
         BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration();
         MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration();

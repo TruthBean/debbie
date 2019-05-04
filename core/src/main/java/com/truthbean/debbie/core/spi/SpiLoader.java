@@ -3,6 +3,8 @@ package com.truthbean.debbie.core.spi;
 import com.truthbean.debbie.core.io.StreamHelper;
 import com.truthbean.debbie.core.properties.AbstractProperties;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,14 +56,14 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                System.out.println(url);
+                LOGGER.debug(url.toString());
                 var file = new File(url.getFile());
                 if (file.exists() && file.isDirectory()) {
                     result.add(file);
                     String[] list = file.list();
                     if (list != null) {
                         for (String s : list) {
-                            System.out.println(s);
+                            LOGGER.debug(s);
                         }
                     }
 
@@ -82,10 +84,16 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                System.out.println(url);
-                var file = new File(url.getFile());
-                List<String> strings = StreamHelper.readFile(file);
-                resolveClass(strings, result, classLoader);
+                LOGGER.debug(url.toString());
+                var protocol = url.getProtocol();
+                if ("file".equals(protocol)) {
+                    var file = new File(url.getFile());
+                    List<String> strings = StreamHelper.readFile(file);
+                    resolveClass(strings, result, classLoader);
+                } else if ("jar".equals(protocol)) {
+                    List<String> strings = StreamHelper.readFileInJar(spi, url, classLoader);
+                    resolveClass(strings, result, classLoader);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -118,4 +126,6 @@ public class SpiLoader {
             }
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpiLoader.class);
 }

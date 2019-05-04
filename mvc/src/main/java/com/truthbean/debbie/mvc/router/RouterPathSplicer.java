@@ -76,7 +76,12 @@ public class RouterPathSplicer {
         if (!apiPrefix.isBlank() && apiPrefix.endsWith("/")) {
             apiPrefixAfterTrim = apiPrefix.substring(0, apiPrefix.length() - 1);
         }
-        var paths = splicePaths(prefixRouter, router);
+        Set<String> paths;
+        if (prefixRouter != null) {
+            paths = splicePaths(prefixRouter, router);
+        } else {
+            paths = splicePaths(router);
+        }
 
         List<String> list = new ArrayList<>();
         for (String s : paths) {
@@ -87,8 +92,11 @@ public class RouterPathSplicer {
     }
 
     private static Set<String> splicePaths(Router prefixRouter, Router router) {
-        var prefixPathRegex = resolvePath(prefixRouter);
-        return splicePaths(prefixPathRegex, router);
+        if (prefixRouter != null) {
+            var prefixPathRegex = resolvePath(prefixRouter);
+            return splicePaths(prefixPathRegex, router);
+        }
+        return splicePaths(router);
     }
 
     public static List<Pattern> splicePathRegex(Router prefixRouter, Router router) {
@@ -108,33 +116,41 @@ public class RouterPathSplicer {
 
         Set<String> newPaths = new HashSet<>();
 
-        if (prefixPaths != null) {
-            if (!isEmptyPaths(pathRegex)) {
-                for (var p : prefixPaths) {
-                    for (var s : pathRegex) {
-                        if (s == null || s.isBlank()) {
-                            newPaths.add(p);
-                        } else {
-                            newPaths.add(p + s);
-                        }
+        if (!isEmptyPaths(pathRegex)) {
+            for (var p : prefixPaths) {
+                for (var s : pathRegex) {
+                    if (s == null || s.isBlank()) {
+                        newPaths.add(p);
+                    } else {
+                        newPaths.add(p + s);
                     }
                 }
-            } else {
-                newPaths.addAll(prefixPaths);
             }
         } else {
-            if (!isEmptyPaths(pathRegex)) {
-                var paths = trimPaths(pathRegex);
-                for (var s : paths) {
-                    if (!s.startsWith("/")) {
-                        newPaths.add("/" + s);
-                    } else {
-                        newPaths.add(s);
-                    }
+            newPaths.addAll(prefixPaths);
+        }
+        return newPaths;
+    }
+
+    public static Set<String> splicePaths(Router router) {
+        var pathRegex = router.value();
+        if (isEmptyPaths(pathRegex)) {
+            pathRegex = router.path();
+        }
+
+        Set<String> newPaths = new HashSet<>();
+
+        if (!isEmptyPaths(pathRegex)) {
+            var paths = trimPaths(pathRegex);
+            for (var s : paths) {
+                if (!s.startsWith("/")) {
+                    newPaths.add("/" + s);
+                } else {
+                    newPaths.add(s);
                 }
-            } else {
-                throw new RuntimeException("router value or pathRegex cannot be empty");
             }
+        } else {
+            throw new RuntimeException("router value or pathRegex cannot be empty");
         }
         return newPaths;
     }

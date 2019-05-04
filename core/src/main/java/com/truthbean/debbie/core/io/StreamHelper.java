@@ -1,13 +1,18 @@
 package com.truthbean.debbie.core.io;
 
+import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.core.util.Constants;
-import com.truthbean.debbie.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * @author TruthBean
@@ -45,6 +50,93 @@ public final class StreamHelper {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static List<String> readFileInJar(String filePartPath, URL url, ClassLoader classLoader) {
+        List<String> result = new ArrayList<>();
+        try {
+            List<JarEntry> filesInJar = getFilesInJar(url);
+            for (JarEntry innerPath : filesInJar) {
+                readFileInJar(innerPath.getName(), filePartPath, classLoader, result);
+            }
+
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return result;
+    }
+
+    private static List<JarEntry> getFilesInJar(URL url) {
+        List<JarEntry> filesInJar = new ArrayList<>();
+        try {
+            // 获取jar
+            JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
+            // 从此jar包 得到一个枚举类
+            var entries = jar.entries();
+            // 同样的进行循环迭代
+            while (entries.hasMoreElements()) {
+                // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
+                var entry = entries.nextElement();
+                filesInJar.add(entry);
+            }
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return filesInJar;
+    }
+
+    private static void readFileInJar(String innerPath, String filePartPath, ClassLoader classLoader, List<String> result) throws IOException {
+        if (innerPath.endsWith(filePartPath)) {
+            InputStream inputStream = classLoader.getResourceAsStream(innerPath);
+            assert inputStream != null;
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (!line.isBlank()) {
+                    result.add(line.trim());
+                }
+            }
+        }
+    }
+
+    public static List<Class<?>> getClassFromJarByPackageName(String packageName, URL url, String packageDirName, ClassLoader classLoader) {
+        List<Class<?>> result = new ArrayList<>();
+        List<JarEntry> filesInJar = getFilesInJar(url);
+        for (JarEntry entry : filesInJar) {
+            getClassesUnderPackageInJar(packageName, entry, packageDirName, classLoader, result);
+        }
+        return result;
+    }
+
+    private static void getClassesUnderPackageInJar(String packageName, JarEntry entry, String packageDirName,
+                                                              ClassLoader classLoader, List<Class<?>> classes) {
+        var name = entry.getName();
+        // 如果是以/开头的
+        if (name.charAt(0) == '/') {
+            // 获取后面的字符串
+            name = name.substring(1);
+        }
+        // 如果前半部分和定义的包名相同
+        if (name.startsWith(packageDirName)) {
+            int idx = name.lastIndexOf('/');
+            // 如果以"/"结尾 是一个包
+            if (idx != -1) {
+                // 获取包名 把"/"替换成"."
+                packageName = name.substring(0, idx).replace('/', '.');
+            }
+            // 如果可以迭代下去 并且是一个包
+            // 如果是一个.class文件 而且不是目录
+            if (name.endsWith(".class") && !entry.isDirectory()) {
+                // 去掉后面的".class" 获取真正的类名
+                var className = name.substring(packageName.length() + 1, name.length() - 6);
+                try {
+                    // 添加到classes
+                    classes.add(classLoader.loadClass(packageName + '.' + className));
+                } catch (ClassNotFoundException e) {
+                    LOGGER.error("", e);
+                }
+            }
+        }
     }
 
     /**
@@ -121,8 +213,7 @@ public final class StreamHelper {
      * @throws IOException if an I/O error occurs
      * @since 1.3
      */
-    public static long copyLarge(InputStream input, OutputStream output)
-            throws IOException {
+    public static long copyLarge(InputStream input, OutputStream output) throws IOException {
         return copyLarge(input, output, new byte[DEFAULT_BUFFER_SIZE]);
     }
 
@@ -142,8 +233,7 @@ public final class StreamHelper {
      * @throws IOException if an I/O error occurs
      * @since 2.2
      */
-    public static long copyLarge(InputStream input, OutputStream output, byte[] buffer)
-            throws IOException {
+    public static long copyLarge(InputStream input, OutputStream output, byte[] buffer) throws IOException {
         long count = 0;
         int n = 0;
         while (Constants.EOF != (n = input.read(buffer))) {
@@ -223,7 +313,7 @@ public final class StreamHelper {
                 if (newLine != null) {
                     content.append(newLine).append('\n');
                 }
-            } while(newLine != null);
+            } while (newLine != null);
 
             if (content.length() > 0) {
                 content.setLength(content.length() - 1);

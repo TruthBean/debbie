@@ -1,6 +1,8 @@
 package com.truthbean.debbie.core.net.uri;
 
 import com.truthbean.debbie.core.util.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,10 +38,12 @@ public final class UriUtils {
         builder.scheme(url.getProtocol());
 
         var userInfo = url.getUserInfo();
-        System.out.println(userInfo);
-        var tmp = userInfo.split(":");
-        builder.username(tmp[0]);
-        builder.password(tmp[1]);
+        if (userInfo != null) {
+            LOGGER.debug(userInfo);
+            var tmp = userInfo.split(":");
+            builder.username(tmp[0]);
+            builder.password(tmp[1]);
+        }
 
         builder.host(url.getHost());
         var port = url.getPort() > 0 ? url.getPort() : 80;
@@ -49,7 +53,7 @@ public final class UriUtils {
 
         var tmpPath = paths;
         if (paths.contains(";")) {
-            tmp = paths.split(";");
+            var tmp = paths.split(";");
             tmpPath = tmp[0];
 
             for (int i = 1; i < tmp.length; i++) {
@@ -69,7 +73,7 @@ public final class UriUtils {
 
         var lastPath = pathArray[partLength - 1];
         if (lastPath.contains(".")) {
-            tmp = lastPath.split("\\.");
+            var tmp = lastPath.split("\\.");
             builder.addPath(tmp[0]);
             builder.suffix(tmp[tmp.length - 1]);
         } else {
@@ -80,7 +84,9 @@ public final class UriUtils {
         builder.queries(resolveParam(queries));
 
         var fragment = url.getRef();
-        builder.fragment(resolveFragment(fragment));
+        if (fragment != null) {
+            builder.fragment(resolveFragment(fragment));
+        }
 
         return builder.build();
     }
@@ -256,7 +262,13 @@ public final class UriUtils {
     }
 
     public static String uri(String uri) {
-        return uri.split("\\" + Constants.QUESTION_MARK)[0];
+        if (uri.contains("?")) {
+            return uri.split("\\" + Constants.QUESTION_MARK)[0];
+        }
+        if (uri.contains("#")) {
+            return uri.split("#")[0];
+        }
+        return uri;
     }
 
     public static Map<String, List<String>> queriesInUri(String uri) {
@@ -311,5 +323,7 @@ public final class UriUtils {
             result.put(k, values);
         });
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UriUtils.class);
 
 }

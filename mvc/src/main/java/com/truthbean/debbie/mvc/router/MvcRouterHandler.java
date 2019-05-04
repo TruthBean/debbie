@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -44,26 +45,31 @@ public class MvcRouterHandler {
             LOGGER.debug("match uri " + paths);
 
             var requestMethod = routerInfo.getRequestMethod();
-            var matchMethod = requestMethod == routerRequest.getMethod() || requestMethod == HttpMethod.ALL;
+            var matchMethod = requestMethod.contains(routerRequest.getMethod()) || requestMethod.contains(HttpMethod.ALL);
             if (!matchMethod) {
                 continue;
             }
             LOGGER.debug("match method: " + requestMethod);
 
             var responseType = routerInfo.getResponse().getResponseType();
+            LOGGER.debug("responseType: " + responseType);
             var responseTypeInRequestHeader = routerRequest.getResponseType();
-            var matchResponseType = responseTypeInRequestHeader == MediaType.ANY ||
-                    (responseType != MediaType.ANY && responseType == responseTypeInRequestHeader) ||
-                    (responseType == MediaType.ANY && MediaType.contains(defaultType, responseTypeInRequestHeader));
+            LOGGER.debug("responseTypeInRequestHeader: " + responseTypeInRequestHeader);
+            var matchResponseType = MediaType.ANY.isSame(responseTypeInRequestHeader) ||
+                    (!MediaType.ANY.isSame(responseType) && responseType.isSame(responseTypeInRequestHeader)) ||
+                    (MediaType.ANY.isSame(responseType) && MediaType.contains(defaultType, responseTypeInRequestHeader));
             if (!matchResponseType) {
                 continue;
             }
             LOGGER.debug("match response type: " + responseType);
 
             var requestType = routerInfo.getRequestType();
+            LOGGER.debug("requestType: " + requestType);
             var contextType = routerRequest.getContentType();
-            var matchRequestType = contextType == MediaType.ANY ||
-                    (requestType != MediaType.ANY && requestType == contextType) || (requestType == MediaType.ANY);
+            LOGGER.debug("contextType: " + contextType);
+            var matchRequestType = MediaType.ANY.isSame(contextType) ||
+                    (!MediaType.ANY.isSame(requestType)  && requestType.isSame(contextType))
+                    || (MediaType.ANY.isSame(requestType));
             if (!matchRequestType) {
                 continue;
             }
@@ -71,7 +77,12 @@ public class MvcRouterHandler {
 
             result = routerInfo;
             if (responseType == MediaType.ANY) {
-                routerInfo.getResponse().setResponseType(defaultType.iterator().next());
+                MediaType next = MediaType.APPLICATION_JSON_UTF8;
+                Iterator<MediaType> iterator = defaultType.iterator();
+                if (iterator.hasNext()) {
+                    next = iterator.next();
+                }
+                routerInfo.getResponse().setResponseType(next);
             }
             break;
         }

@@ -3,7 +3,7 @@ package com.truthbean.debbie.netty;
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
-import com.truthbean.debbie.core.properties.ClassesScanProperties;
+import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -11,6 +11,8 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -31,6 +33,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
             @Override
             public void start(String... args) {
                 run(configuration);
+                LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 
             @Override
@@ -75,5 +78,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
     private void stop() {
         // todo
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyApplicationFactory.class);
 
 }

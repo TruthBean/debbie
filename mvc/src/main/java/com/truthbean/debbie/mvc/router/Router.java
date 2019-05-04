@@ -27,7 +27,7 @@ public @interface Router {
      */
     String[] path() default "";
 
-    HttpMethod method() default HttpMethod.ALL;
+    HttpMethod[] method() default HttpMethod.ALL;
 
     /**
      * request type, same as Content-Type

@@ -22,8 +22,13 @@ public class DataSourcePoolProperties extends DataSourceProperties {
         maxPoolSize = getIntegerValue(MAX_KEY, 10);
     }
 
+    private static DataSourceConfiguration configuration;
+
     public static DataSourceConfiguration toConfiguration() {
-        return new DataSourcePoolConfiguration(DataSourceProperties.toConfiguration());
+        if (configuration == null) {
+            configuration = new DataSourcePoolConfiguration(DataSourceProperties.toConfiguration());
+        }
+        return configuration;
     }
 
     public int getIncrease() {

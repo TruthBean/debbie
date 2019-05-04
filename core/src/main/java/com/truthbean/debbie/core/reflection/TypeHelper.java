@@ -77,8 +77,7 @@ public final class TypeHelper {
     }
 
     public static boolean isBaseType(Class<?> clazz) {
-        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz)
-                || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
     }
 
     public static boolean isArrayType(Class<?> clazz) {
@@ -90,16 +89,14 @@ public final class TypeHelper {
             return true;
         } else {
             if (NumericUtils.isInteger(target)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
-                        || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(target)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim()))
-                    && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim())) && (clazz == Boolean.class || clazz == boolean.class);
 
         }
     }
@@ -134,36 +131,36 @@ public final class TypeHelper {
 
     public static <T> T valueOf(Class<T> clazz, String value) {
         if (clazz == Integer.class || clazz == int.class) {
-            return clazz.cast(Integer.valueOf(value));
+            return (T) Integer.valueOf(value);
         }
 
         if (clazz == Short.class || clazz == short.class) {
-            return clazz.cast(Short.valueOf(value));
+            return (T) Short.valueOf(value);
         }
 
         if (clazz == Long.class || long.class == clazz) {
-            return clazz.cast(Long.valueOf(value));
+            return (T) Long.valueOf(value);
         }
 
         if (clazz == Float.class || clazz == float.class) {
-            return clazz.cast(Float.valueOf(value));
+            return (T) Float.valueOf(value);
         }
 
         if (clazz == Double.class || double.class == clazz) {
-            return clazz.cast(Double.valueOf(value));
+            return (T) Double.valueOf(value);
         }
 
         if (clazz == Boolean.class || clazz == boolean.class) {
-            return clazz.cast(Boolean.valueOf(value));
+            return (T) Boolean.valueOf(value);
         }
 
         if (clazz == Byte.class || clazz == byte.class) {
-            return clazz.cast(Byte.valueOf(value));
+            return (T) Byte.valueOf(value);
         }
 
         var isChar = (clazz == Character.class || clazz == char.class) && value.length() == 1;
         if (isChar) {
-            return clazz.cast(value.charAt(0));
+            return (T) Character.valueOf(value.charAt(0));
         }
 
         if (clazz == String.class) {
@@ -193,16 +190,14 @@ public final class TypeHelper {
         } else if (target instanceof String) {
             String str = (String) target;
             if (NumericUtils.isInteger(str)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
-                        || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(str)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim()))
-                    && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim())) && (clazz == Boolean.class || clazz == boolean.class);
 
         }
         return false;

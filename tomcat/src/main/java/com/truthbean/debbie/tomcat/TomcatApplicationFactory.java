@@ -3,6 +3,7 @@ package com.truthbean.debbie.tomcat;
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
+import com.truthbean.debbie.core.net.NetWorkUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.core.StandardContext;
@@ -89,10 +90,10 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
     @Override
     public DebbieApplication factory(TomcatConfiguration configuration) {
         config(configuration);
-        return tomcatApplication();
+        return tomcatApplication(configuration);
     }
 
-    private DebbieApplication tomcatApplication() {
+    private DebbieApplication tomcatApplication(TomcatConfiguration configuration) {
         return new DebbieApplication() {
             @Override
             public void start(String... args) {
@@ -100,6 +101,7 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
                     server.init();
                     server.getConnector();
                     server.start();
+                    LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat start error", e);
                 }

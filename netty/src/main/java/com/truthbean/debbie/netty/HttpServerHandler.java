@@ -1,9 +1,6 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.net.uri.UriUtils;
-import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
-import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterInvokeResult;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
@@ -13,12 +10,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.multipart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
@@ -34,8 +30,11 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private boolean keepAlive;
-    private DefaultRouterRequest routerRequest;
+    private NettyRouterRequest routerRequest;
     private final NettyConfiguration configuration;
+
+    private HttpPostRequestDecoder decoder;
+    private static final HttpDataFactory nettyHttpDataFactory = new DefaultHttpDataFactory();
 
     public HttpServerHandler(NettyConfiguration configuration) {
         this.configuration = configuration;
@@ -46,33 +45,52 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         LOGGER.debug(msg.getClass().getName());
         if (msg instanceof io.netty.handler.codec.http.HttpRequest) {
             io.netty.handler.codec.http.HttpRequest httpRequest = (io.netty.handler.codec.http.HttpRequest) msg;
-            io.netty.handler.codec.http.HttpMethod httpMethod = httpRequest.method();
 
-            String uri = httpRequest.uri();
-            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(uri);
-            Map<String, List<String>> queries = queryStringDecoder.parameters();
-            uri = UriUtils.uri(uri);
-
-            this.routerRequest = new DefaultRouterRequest();
-            this.routerRequest.setMethod(com.truthbean.debbie.mvc.request.HttpMethod.valueOf(httpMethod.name()));
-            this.routerRequest.setUrl(uri);
-
-            Map<String, List<String>> headers = new HashMap<>();
-            httpRequest.headers().names().forEach(name -> headers.put(name, httpRequest.headers().getAll(name)));
-            this.routerRequest.setHeaders(headers);
-            this.routerRequest.setResponseType(MediaType.APPLICATION_JSON);
-            this.routerRequest.setParameters(new HashMap<>());
-            this.routerRequest.setQueries(queries);
+            routerRequest = new NettyRouterRequest(httpRequest, configuration.getHost(), configuration.getPort());
+            decoder = new HttpPostRequestDecoder(nettyHttpDataFactory, httpRequest);
 
             if (HttpUtil.is100ContinueExpected(httpRequest)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
             }
             keepAlive = HttpUtil.isKeepAlive(httpRequest);
         }
+        if (msg instanceof HttpContent) {
+            HttpContent httpContent = (HttpContent) msg;
+            ByteBuf content = httpContent.content();
+            assert routerRequest != null;
+            routerRequest.setInputStreamBody(content);
+
+            decoder.offer(httpContent);
+            while (decoder.hasNext()) {
+                InterfaceHttpData data = decoder.next();
+                if (data != null) {
+                    try {
+                        writeHttpData(data);
+                    } finally {
+                        data.release();
+                    }
+                }
+            }
+        }
         if (msg instanceof LastHttpContent) {
             LastHttpContent httpContent = (LastHttpContent) msg;
 
-            ByteBuf content = httpContent.content();
+            /*decoder.offer(httpContent);
+            while (decoder.hasNext()) {
+                InterfaceHttpData data = decoder.next();
+                if (data != null) {
+                    try {
+                        writeHttpData(data);
+                    } finally {
+                        data.release();
+                    }
+                }
+            }*/
+
+            HttpHeaders trailer = httpContent.trailingHeaders();
+            assert routerRequest != null;
+            routerRequest.setParameters(trailer);
+
             RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration.getDefaultTypes());
             MvcRouterHandler.handleRouter(routerInfo);
             RouterInvokeResult invokeResult = routerInfo.getResponse();
@@ -104,6 +122,32 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // Close the connection when an exception is raised.
         cause.printStackTrace();
         ctx.close();
+    }
+
+    private void writeHttpData(InterfaceHttpData data) {
+        /**
+         * HttpDataType有三种类型
+         * Attribute, FileUpload, InternalAttribute
+         */
+        if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+            Attribute attribute = (Attribute) data;
+            String value;
+            try {
+                value = attribute.getValue();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                LOGGER.error("BODY Attribute: " + attribute.getHttpDataType().name() + ":"
+                        + attribute.getName() + " Error while reading value: " + e1.getMessage());
+                return;
+            }
+            if (value.length() > 100) {
+                LOGGER.error("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":"
+                        + attribute.getName() + " data too long");
+            } else {
+                LOGGER.debug("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":"
+                        + attribute.toString() + "\r\n");
+            }
+        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);

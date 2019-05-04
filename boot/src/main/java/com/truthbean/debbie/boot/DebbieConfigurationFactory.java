@@ -22,8 +22,6 @@ public class DebbieConfigurationFactory {
     private static void loadConfiguration(ClassLoader classLoader) {
         Map<Class<AbstractProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
         classClassMap.forEach((key, value) -> {
-            System.out.println("...........");
-            System.out.println(key);
             Object configuration = ReflectionHelper.invokeStaticMethod("toConfiguration", key);
             // should not be null
             assert configuration != null;

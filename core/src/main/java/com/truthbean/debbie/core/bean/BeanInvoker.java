@@ -28,10 +28,9 @@ public class BeanInvoker<Bean> {
     }
 
     // TODO cache
-    private void createBean(){
+    private void createBean() {
         try {
             var constructor = beanClass.getConstructor();
-            // constructor.setAccessible(true);
             this.bean = constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             LOGGER.error("new instance by default constructor error", e);

@@ -33,7 +33,7 @@ public class RouterInfo implements Cloneable {
 
     private List<Pattern> paths;
 
-    private HttpMethod requestMethod;
+    private List<HttpMethod> requestMethod;
 
     private RouterInvokeResult<?> response;
 
@@ -108,11 +108,11 @@ public class RouterInfo implements Cloneable {
         this.paths = paths;
     }
 
-    public HttpMethod getRequestMethod() {
+    public List<HttpMethod> getRequestMethod() {
         return requestMethod;
     }
 
-    public void setRequestMethod(HttpMethod requestMethod) {
+    public void setRequestMethod(List<HttpMethod> requestMethod) {
         this.requestMethod = requestMethod;
     }
 

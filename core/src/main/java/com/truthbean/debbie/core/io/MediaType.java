@@ -79,6 +79,10 @@ public enum MediaType {
         return value;
     }
 
+    public boolean isSame(MediaType other) {
+        return isSame(this, other);
+    }
+
     public static String RESPONSE_TYPE = "Response-Type";
 
     public static String CONTENT_TYPE = "content-type";
@@ -129,6 +133,18 @@ public enum MediaType {
             }
         }
         return false;
+    }
+
+    public static boolean isSame(MediaType mediaType1, MediaType mediaType2) {
+        if (mediaType1 == null && mediaType2 == null) {
+            return true;
+        }
+        if (mediaType1 == null || mediaType2 == null) {
+            return false;
+        }
+        var newType1 = MediaType.of(mediaType1.value);
+        var newType2 = MediaType.of(mediaType2.value);
+        return newType1 == newType2;
     }
 
     public static MediaType getTypeByUriExt(String ext) {

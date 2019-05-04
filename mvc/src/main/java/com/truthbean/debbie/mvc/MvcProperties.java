@@ -28,7 +28,17 @@ public class MvcProperties extends AbstractProperties {
 
     //===========================================================================
 
+    private static MvcConfiguration configurationCache;
+
     public static MvcConfiguration toConfiguration() {
+        if (configurationCache != null) {
+            return configurationCache;
+        }
+        buildConfiguration();
+        return configurationCache;
+    }
+
+    private static void buildConfiguration() {
         MvcProperties properties = new MvcProperties();
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder();
@@ -53,7 +63,7 @@ public class MvcProperties extends AbstractProperties {
             builder.enableCors(corsOrigins, corsMethods, corsHeaders);
         }
 
-        return builder.build();
+        configurationCache = builder.build();
     }
 
     public List<MediaType> getMediaTypeListValue(String key, String split) {

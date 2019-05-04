@@ -280,12 +280,37 @@ public class DefaultRouterRequest implements RouterRequest {
         clone.textBody = textBody;
         clone.fileBody = fileBody;
 
-        clone.pathAttributes = new ArrayList<>(pathAttributes);
-        clone.headers = new HashMap<>(headers);
-        clone.cookies = new ArrayList<>(cookies);
+        if (pathAttributes == null) {
+            clone.pathAttributes = new ArrayList<>();
+        } else {
+            clone.pathAttributes = new ArrayList<>(pathAttributes);
+        }
+
+        if (headers == null) {
+            clone.headers = new HashMap<>();
+        } else {
+            clone.headers = new HashMap<>(headers);
+        }
+
+        if (cookies == null) {
+            clone.cookies = new ArrayList<>();
+        } else {
+            clone.cookies = new ArrayList<>(cookies);
+        }
+
         clone.session = session;
-        clone.parameters = new HashMap<>(parameters);
-        clone.queries = new HashMap<>(queries);
+
+        if (parameters == null) {
+            clone.parameters = new HashMap<>();
+        } else {
+            clone.parameters = new HashMap<>(parameters);
+        }
+
+        if (queries == null) {
+            clone.queries = new HashMap<>();
+        } else {
+            clone.queries = new HashMap<>(queries);
+        }
         return clone;
     }
 

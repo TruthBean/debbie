@@ -17,8 +17,8 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-02-14 15:07.
  */
-@Watcher
-@Router("example")
+// @Watcher
+// @Router("example")
 public class ExampleRouter {
 
     @Router(path = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
@@ -34,7 +34,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(path = "/json", method = {HttpMethod.POST, HttpMethod.GET}, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloJson(@RequestParameter(name = "key", paramType = RequestParameterType.PARAM) String key,
                                         @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();

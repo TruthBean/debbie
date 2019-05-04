@@ -3,6 +3,7 @@ package com.truthbean.debbie.httpclient;
 import com.truthbean.debbie.core.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.router.Router;
@@ -13,10 +14,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.HttpCookie;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -50,37 +48,46 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
         }
         this.httpClientAction = new HttpClientAction(this.configuration);
 
-        var urls = RouterPathSplicer.splicePaths(Arrays.asList(routerBaseUrl), router);
+        Set<String> urls;
+        if (routerBaseUrl.length > 0) {
+            urls = RouterPathSplicer.splicePaths(Arrays.asList(routerBaseUrl), router);
+        } else {
+            urls = RouterPathSplicer.splicePaths(router);
+        }
+
+        var routerMethod = router.method();
         for (String url : urls) {
-            var request = new HttpClientRequest();
-            request.setMethod(router.method());
-            request.setUrl(url);
-            request.setContentType(router.requestType());
-            request.setResponseType(router.responseType());
+            for (HttpMethod httpMethod : routerMethod) {
+                var request = new HttpClientRequest();
+                request.setMethod(httpMethod);
+                request.setUrl(url);
+                request.setContentType(router.requestType());
+                request.setResponseType(router.responseType());
 
-            var parameters = method.getParameters();
-            if (parameters != null) {
-                for (int i = 0; i < parameters.length; i++) {
-                    var parameter = parameters[i];
-                    var invokedParameter = new InvokedParameter();
+                var parameters = method.getParameters();
+                if (parameters != null) {
+                    for (int i = 0; i < parameters.length; i++) {
+                        var parameter = parameters[i];
+                        var invokedParameter = new InvokedParameter();
 
-                    RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
-                    if (requestParameter != null) {
-                        var type = parameter.getType();
-                        var name = requestParameter.name();
-                        if (name.isBlank()) {
-                            name = parameter.getName();
+                        RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
+                        if (requestParameter != null) {
+                            var type = parameter.getType();
+                            var name = requestParameter.name();
+                            if (name.isBlank()) {
+                                name = parameter.getName();
+                            }
+                            invokedParameter.setName(name);
+                            invokedParameter.setIndex(i);
+                            invokedParameter.setAnnotation(requestParameter);
+                            invokedParameter.setType(type);
                         }
-                        invokedParameter.setName(name);
-                        invokedParameter.setIndex(i);
-                        invokedParameter.setAnnotation(requestParameter);
-                        invokedParameter.setType(type);
-                    }
 
-                    request.setInvokedParameter(invokedParameter);
+                        request.setInvokedParameter(invokedParameter);
+                    }
                 }
+                requests.add(request);
             }
-            requests.add(request);
         }
     }
 

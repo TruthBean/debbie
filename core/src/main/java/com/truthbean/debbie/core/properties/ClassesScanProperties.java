@@ -69,8 +69,14 @@ public class ClassesScanProperties extends AbstractProperties {
         return scanExcludeClasses;
     }
 
+    private static BeanScanConfiguration configuration;
+
     public static BeanScanConfiguration toConfiguration() {
-        BeanScanConfiguration configuration = new BeanScanConfiguration();
+        if (configuration != null) {
+            return configuration;
+        }
+
+        configuration = new BeanScanConfiguration();
         configuration.addScanBasePackages(scanBasePackages);
         configuration.addScanClasses(scanClasses);
         configuration.addScanExcludeClasses(scanExcludeClasses);

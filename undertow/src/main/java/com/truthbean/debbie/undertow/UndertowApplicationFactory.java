@@ -3,9 +3,12 @@ package com.truthbean.debbie.undertow;
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
 import io.undertow.Undertow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -35,6 +38,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             @Override
             public void start(String... args) {
                 server.start();
+                LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 
             @Override
@@ -43,5 +47,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             }
         };
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UndertowApplicationFactory.class);
 
 }
