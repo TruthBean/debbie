@@ -25,6 +25,8 @@ public class DataSourceProperties extends AbstractProperties {
 
     private static final String DRIVER_PROPERTIES_PREFIX = "debbie.datasource.driver.";
 
+    private static final String DATA_SOURCE_FACTORY = "debbie.datasource.factory";
+
     //===========================================================================
     private static final DataSourceProperties INSTANCE = new DataSourceProperties();
 
@@ -52,6 +54,11 @@ public class DataSourceProperties extends AbstractProperties {
 
         Map<String, Object> driverProperties = new HashMap<>(getMatchedKey(DRIVER_PROPERTIES_PREFIX));
         configuration.setDriverProperties(driverProperties);
+
+        var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
+        Class<? extends DataSourceFactory> dataSourceFactoryClass =
+                (Class<? extends DataSourceFactory>) getClassValue(DATA_SOURCE_FACTORY, defaultClassName);
+        configuration.setDataSourceFactoryClass(dataSourceFactoryClass);
     }
 
     public TransactionIsolationLevel getTransactionIsolationLevelValue(String key, TransactionIsolationLevel defaultValue) {

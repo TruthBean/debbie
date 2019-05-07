@@ -1,9 +1,12 @@
 package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.servlet.filter.CharacterEncodingFilter;
 import com.truthbean.debbie.servlet.filter.CorsFilter;
+import com.truthbean.debbie.servlet.filter.RouterFilterWrapper;
 import com.truthbean.debbie.servlet.filter.csrf.CsrfFilter;
 
 import javax.servlet.DispatcherType;
@@ -37,14 +40,34 @@ public class ServletContextHandler {
             (ServletContext servletContext, Set<Class<?>> classes) {
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration);
+
+        // servlet <url-pattern> should start with / or * and cannot contain **
+        var dispatcherMapping = servletConfiguration.getDispatcherMapping().replace("**", "*");
         servletContext.addServlet("dispatcherHandler", dispatcherServlet)
-                .addMapping(servletConfiguration.getDispatcherMapping());
+                .addMapping(dispatcherMapping);
+
+        servletConfiguration.addScanClasses(classes);
+        return servletConfiguration.getTargetClasses();
+    }
+
+    public static ServletContextHandler loadPropertiesAndHandle(ServletContext servletContext, Set<Class<?>> classes) {
+        setServletConfiguration();
+        return new ServletContextHandler(handleServletContextAndScanClasses(servletContext, classes));
+    }
+
+    public void registerRouter() {
+        MvcRouterRegister.registerRouter(servletConfiguration);
+    }
+
+    public void registerFilter(ServletContext servletContext) {
+        RouterFilterManager.registerFilter(servletConfiguration);
 
         // CharacterEncoding
         EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(
                 DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.REQUEST,
                 DispatcherType.ASYNC, DispatcherType.ERROR
         );
+
         servletContext.addFilter("characterEncodingFilter", new CharacterEncodingFilter())
                 .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
@@ -60,16 +83,11 @@ public class ServletContextHandler {
                     .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
         }
 
-        servletConfiguration.addScanClasses(classes);
-        return servletConfiguration.getTargetClasses();
-    }
-
-    public static ServletContextHandler loadPropertiesAndHandle(ServletContext servletContext, Set<Class<?>> classes) {
-        setServletConfiguration();
-        return new ServletContextHandler(handleServletContextAndScanClasses(servletContext, classes));
-    }
-
-    public void registerRouter() {
-        MvcRouterRegister.registerRouter(servletConfiguration);
+        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
+        filters.forEach(filter -> {
+            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilter());
+            servletContext.addFilter(filter.getName(), filterWrapper)
+                    .addMappingForUrlPatterns(dispatcherTypes, true, filter.getUrlPatterns());
+        });
     }
 }

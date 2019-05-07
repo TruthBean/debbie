@@ -14,6 +14,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author TruthBean
@@ -23,25 +25,15 @@ import java.sql.Timestamp;
 public class DmlRepositoryHandlerTest {
     private static SurnameRepository surnameRepository;
 
-    private static RepositoryHandler repositoryHandler;
-
     @BeforeAll
-    public static void before() throws SQLException {
+    public static void before() {
         BeanInitializationHandler.init(Surname.class);
 
         var config = DataSourceProperties.toConfiguration();
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        var connection = factory.getDataSource().getConnection();
-
-        repositoryHandler = new DdlRepositoryHandler(connection);
-        surnameRepository = new SurnameRepository(repositoryHandler);
-    }
-
-    @AfterAll
-    public static void after() {
-        repositoryHandler.close();
+        surnameRepository = new SurnameRepository();
     }
 
     @Test
@@ -58,13 +50,25 @@ public class DmlRepositoryHandlerTest {
 
     @Test
     public void testFindById() {
-        Surname surname = surnameRepository.findById(1L);
+        Optional<Surname> surname = surnameRepository.findById(2L);
         System.out.println(surname);
     }
 
     @Test
+    public void testTransaction() throws MalformedURLException {
+        var q = new Surname();
+        q.setBegin(new Timestamp(System.currentTimeMillis()));
+        q.setOrigin("姬");
+        q.setWebsite(new URL("https://www.ye.org"));
+        q.setName("叶");
+        var result = surnameRepository.saveAndDelete(q, 2L);
+        System.out.println(result);
+    }
+
+    @Test
     public void testUpdate() throws MalformedURLException {
-        Surname surname = surnameRepository.findById(1L);
+        Optional<Surname> surnameOptional = surnameRepository.findById(1L);
+        Surname surname = surnameOptional.get();
         System.out.println(surname);
         surname.setWebsite(new URL("https://qu.org"));
         var b = surnameRepository.update(surname);
@@ -81,7 +85,12 @@ public class DmlRepositoryHandlerTest {
     @Test
     public void findList() {
         var l = surnameRepository.findAll();
-        System.out.println(l);
+        try {
+            System.out.println(l.get());
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test

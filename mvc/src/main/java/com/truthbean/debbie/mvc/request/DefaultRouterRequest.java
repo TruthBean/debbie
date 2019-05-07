@@ -1,8 +1,9 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.net.uri.UriPathFragment;
+import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 
 import java.io.File;
 import java.io.InputStream;
@@ -24,8 +25,7 @@ public class DefaultRouterRequest implements RouterRequest {
 
     private String url;
 
-    // TODO
-    private List<RouterPathAttribute> pathAttributes;
+    private Map<String, List<String>> pathAttributes;
     private Map<String, List<String>> matrix;
 
     private Map<String, List<String>> headers;
@@ -45,6 +45,8 @@ public class DefaultRouterRequest implements RouterRequest {
     private MediaType contentType;
 
     private MediaType responseType;
+
+    private final Map<String, Object> requestAttribute = new HashMap<>();
 
     @Override
     public String getId() {
@@ -69,12 +71,32 @@ public class DefaultRouterRequest implements RouterRequest {
         return url;
     }
 
+    @Override
+    public void addAttribute(String name, Object value) {
+        requestAttribute.put(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        requestAttribute.remove(name);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return requestAttribute.get(name);
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return requestAttribute;
+    }
+
     public void setUrl(String url) {
         this.url = url;
     }
 
     @Override
-    public List<RouterPathAttribute> getPathAttributes() {
+    public Map<String, List<String>> getPathAttributes() {
         return pathAttributes;
     }
 
@@ -87,7 +109,7 @@ public class DefaultRouterRequest implements RouterRequest {
         this.matrix = matrix;
     }
 
-    public void setPathAttributes(List<RouterPathAttribute> pathAttributes) {
+    public void setPathAttributes(Map<String, List<String>> pathAttributes) {
         this.pathAttributes = pathAttributes;
     }
 
@@ -281,9 +303,9 @@ public class DefaultRouterRequest implements RouterRequest {
         clone.fileBody = fileBody;
 
         if (pathAttributes == null) {
-            clone.pathAttributes = new ArrayList<>();
+            clone.pathAttributes = new HashMap<>();
         } else {
-            clone.pathAttributes = new ArrayList<>(pathAttributes);
+            clone.pathAttributes = new HashMap<>(pathAttributes);
         }
 
         if (headers == null) {

@@ -13,7 +13,7 @@ import com.truthbean.debbie.mvc.MvcProperties;
 public class ServletProperties extends MvcProperties {
 
     //========================================================================================
-    private static final String DISPATCHER_MAPPING = "debbie.web.servlet.dispatcher-mapping";
+
     //========================================================================================
 
     private static ServletConfiguration configuration;
@@ -25,7 +25,6 @@ public class ServletProperties extends MvcProperties {
         configuration = new ServletConfiguration();
 
         final ServletProperties properties = new ServletProperties();
-        configuration.setDispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/"));
 
         MvcConfiguration webConfiguration = MvcProperties.toConfiguration();
         configuration.copyFrom(webConfiguration);

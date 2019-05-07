@@ -18,41 +18,37 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
-    public DdlRepositoryHandler(Connection connection) {
-        super(connection);
-    }
-
-    public void createDatabase(String database) throws TransactionException {
+    public int createDatabase(Connection connection, String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().create().database(database).builder();
         LOGGER.debug(sql);
-        super.update(sql);
+        return super.update(connection, sql);
     }
 
-    public List<String> showDatabases() {
+    public List<String> showDatabases(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().databases().builder();
         LOGGER.debug(sql);
-        return super.select(sql, String.class);
+        return super.select(connection, sql, String.class);
     }
 
-    public void dropDatabase(String database) throws TransactionException {
+    public int dropDatabase(Connection connection, String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
         LOGGER.debug(sql);
-        super.update(sql);
+        return super.update(connection, sql);
     }
 
-    public void userDatabase(String database) throws TransactionException {
+    public int userDatabase(Connection connection, String database) throws TransactionException {
         var use = DynamicSqlBuilder.sql().use(database).builder();
         LOGGER.debug(use);
-        super.update(use);
+        return super.update(connection, use);
     }
 
-    public List<String> showTables() {
+    public List<String> showTables(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().tables().builder();
         LOGGER.debug(sql);
-        return super.select(sql, String.class);
+        return super.select(connection, sql, String.class);
     }
 
-    public <E> void createTable(Class<E> entity) throws TransactionException {
+    public <E> void createTable(Connection connection, Class<E> entity) throws TransactionException {
         var classInfo = BeanInitializationHandler.getRegisterBean(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
@@ -67,10 +63,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
         var columns = EntityResolver.resolveClassInfo(classInfo);
         entityInfo.setColumnInfoList(columns);
-        createTable(entityInfo);
+        createTable(connection, entityInfo);
     }
 
-    public <E> void createTable(EntityInfo<E> entityInfo) throws TransactionException {
+    public <E> void createTable(Connection connection, EntityInfo<E> entityInfo) throws TransactionException {
         var columns = entityInfo.getColumnInfoList();
         DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
@@ -101,7 +97,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        super.update(sql);
+        super.update(connection, sql);
     }
 
     private void buildCreateTableColumns(DynamicSqlBuilder sqlBuilder, ColumnInfo iColumn) {
@@ -147,10 +143,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public void dropTable(String table) throws TransactionException {
+    public void dropTable(Connection connection, String table) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
         LOGGER.debug(sql);
-        super.update(sql);
+        super.update(connection, sql);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandler.class);

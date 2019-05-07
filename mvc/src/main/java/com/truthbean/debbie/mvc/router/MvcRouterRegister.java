@@ -9,6 +9,7 @@ import com.truthbean.debbie.core.watcher.WatcherType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.response.RouterInvokeResult;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,11 @@ public class MvcRouterRegister {
                 var routerInfo = new RouterInfo();
                 routerInfo.setRouterClass(classInfo.getClazz());
                 routerInfo.setMethod(method);
-                routerInfo.setPaths(RouterPathSplicer.splicePathRegex(prefixRouter, router));
+
+                List<RouterPathFragments> routerPathFragments =
+                        RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), prefixRouter, router);
+                routerInfo.setPaths(routerPathFragments);
+
                 routerInfo.setRequestMethod(Arrays.asList(router.method()));
 
                 routerInfo.setHasTemplate(router.hasTemplate());
@@ -80,7 +85,7 @@ public class MvcRouterRegister {
 
                 routerInfo.setResponse(response);
                 routerInfo.setMethodParams(methodParams);
-                LOGGER.debug("register router:" + routerInfo);
+                LOGGER.debug("register router: " + routerInfo);
                 ROUTER_INFO_SET.add(routerInfo);
             }
         }

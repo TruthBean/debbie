@@ -77,7 +77,8 @@ public final class TypeHelper {
     }
 
     public static boolean isBaseType(Class<?> clazz) {
-        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz)
+                || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
     }
 
     public static boolean isArrayType(Class<?> clazz) {
@@ -89,14 +90,16 @@ public final class TypeHelper {
             return true;
         } else {
             if (NumericUtils.isInteger(target)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
+                        || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(target)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim())) && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim()))
+                    && (clazz == Boolean.class || clazz == boolean.class);
 
         }
     }
@@ -131,36 +134,76 @@ public final class TypeHelper {
 
     public static <T> T valueOf(Class<T> clazz, String value) {
         if (clazz == Integer.class || clazz == int.class) {
-            return (T) Integer.valueOf(value);
+            try {
+                return (T) Integer.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Short.class || clazz == short.class) {
-            return (T) Short.valueOf(value);
+            try {
+                return (T) Short.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Long.class || long.class == clazz) {
-            return (T) Long.valueOf(value);
+            try {
+                return (T) Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Float.class || clazz == float.class) {
-            return (T) Float.valueOf(value);
+            try {
+                return (T) Float.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Double.class || double.class == clazz) {
-            return (T) Double.valueOf(value);
+            try {
+                return (T) Double.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Boolean.class || clazz == boolean.class) {
-            return (T) Boolean.valueOf(value);
+            try {
+                return (T) Boolean.valueOf(value);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == Byte.class || clazz == byte.class) {
-            return (T) Byte.valueOf(value);
+            try {
+                return (T) Byte.valueOf(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         var isChar = (clazz == Character.class || clazz == char.class) && value.length() == 1;
         if (isChar) {
-            return (T) Character.valueOf(value.charAt(0));
+            try {
+                return (T) Character.valueOf(value.charAt(0));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         if (clazz == String.class) {
@@ -190,14 +233,16 @@ public final class TypeHelper {
         } else if (target instanceof String) {
             String str = (String) target;
             if (NumericUtils.isInteger(str)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
+                        || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(str)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim())) && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim()))
+                    && (clazz == Boolean.class || clazz == boolean.class);
 
         }
         return false;

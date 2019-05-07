@@ -4,6 +4,7 @@ import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.core.net.NetWorkUtils;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -29,6 +30,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
     public DebbieApplication factory(NettyConfiguration configuration) {
         BeanInitializationHandler.init(configuration.getTargetClasses());
         MvcRouterRegister.registerRouter(configuration);
+        RouterFilterManager.registerFilter(configuration);
         return new DebbieApplication() {
             @Override
             public void start(String... args) {

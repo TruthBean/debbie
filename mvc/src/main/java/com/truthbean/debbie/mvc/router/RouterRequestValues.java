@@ -3,7 +3,6 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 
 import java.io.InputStream;
 import java.net.HttpCookie;
@@ -23,6 +22,7 @@ public class RouterRequestValues {
     private Map<String, List<String>> headers;
     private Map<String, List> cookieAttributes;
     private Map<String, Object> sessionAttributes;
+    private Map<String, Object> innerAttributes;
     private InputStream body;
 
     private RouterSession routerSession;
@@ -41,6 +41,7 @@ public class RouterRequestValues {
         if (routerSession != null) {
             sessionAttributes = routerRequest.getSession().getAttributes();
         }
+        innerAttributes = routerRequest.getAttributes();
 
         setMixValues();
 
@@ -112,6 +113,10 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(sessionAttributes);
     }
 
+    public Map<String, Object> getInnerAttributes() {
+        return Collections.unmodifiableMap(innerAttributes);
+    }
+
     public InputStream getBody() {
         if (body == null) {
             body = routerRequest.getInputStreamBody();
@@ -119,16 +124,10 @@ public class RouterRequestValues {
         return body;
     }
 
-    private void setPathAttributes(List<RouterPathAttribute> pathAttributes) {
-        for (RouterPathAttribute pathAttribute : pathAttributes) {
-            this.pathAttributes.put(pathAttribute.getName(), pathAttribute.getValue());
-        }
-    }
-
     public Map<String, List> getPathAttributes() {
-        if (pathAttributes != null) {
+        if (pathAttributes == null) {
             pathAttributes = new HashMap<>();
-            setPathAttributes(routerRequest.getPathAttributes());
+            this.pathAttributes.putAll(routerRequest.getPathAttributes());
         }
         return pathAttributes;
     }
@@ -156,6 +155,11 @@ public class RouterRequestValues {
         }
         if (matrixAttributes != null && !matrixAttributes.isEmpty()) {
             mixValues.putAll(matrixAttributes);
+        }
+        if (innerAttributes != null && !innerAttributes.isEmpty()) {
+            for (Map.Entry<String, Object> entry : innerAttributes.entrySet()) {
+                mixValues.put(entry.getKey(), Collections.singletonList(entry.getValue()));
+            }
         }
     }
 

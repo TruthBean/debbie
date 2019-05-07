@@ -91,9 +91,35 @@ public final class UriUtils {
         return builder.build();
     }
 
-    /*public static UriComposition resolveUri(String uri) {
+    public static String getScheme(String uri) {
+        if (uri.contains("://")) {
+            String[] split4Scheme = uri.split("://");
+            return split4Scheme[0].trim();
+        }
+        return null;
+    }
+
+    public static List<UriPathFragment> getPathFragment(String uri) {
+        List<UriPathFragment> result = new ArrayList<>();
+        var urlPaths = getPaths(uri);
+        String[] paths = urlPaths.split("/");
+        for (String path: paths) {
+            if (!path.isBlank()) {
+                UriPathFragment fragment = new UriPathFragment();
+                fragment.setFragment(path);
+                result.add(fragment);
+            }
+        }
+        return result;
+    }
+
+    public static UriComposition resolveUri(String uri) {
         String[] split4Scheme = uri.split("://");
-        var builder = new UriComposition.Builder().scheme(split4Scheme[0]);
+        var scheme = getScheme(uri);
+        var builder = new UriComposition.Builder();
+        if (scheme != null) {
+            builder.scheme(getScheme(uri));
+        }
 
         String schemeSpecificPart;
         String querySpecific = null;
@@ -191,7 +217,7 @@ public final class UriUtils {
         }
 
         return builder.build();
-    }*/
+    }
 
     public static Map<String, List<String>> resolveMatrixByPath(String path) {
         Map<String, List<String>> result = new HashMap<>();
@@ -257,11 +283,29 @@ public final class UriUtils {
         return result;
     }
 
-    public static String getScheme(String url) {
-        return url.split("://")[0];
+    public static String getPaths(String uri) {
+        if (uri.contains("://")) {
+            uri = uri.split("://")[1];
+            uri = uri.substring(uri.indexOf("/"));
+        }
+        if (uri.contains("?")) {
+            return uri.split("\\" + Constants.QUESTION_MARK)[0];
+        }
+        if (uri.contains("#")) {
+            return uri.split("#")[0];
+        }
+        return uri;
     }
 
-    public static String uri(String uri) {
+    public static String getPathsWithoutMatrix(String uri) {
+        if (uri.contains("://")) {
+            uri = uri.split("://")[1];
+            uri = uri.substring(uri.indexOf("/"));
+        }
+        if (uri.contains(";")) {
+            var temp = uri.split(";");
+            uri = temp[0];
+        }
         if (uri.contains("?")) {
             return uri.split("\\" + Constants.QUESTION_MARK)[0];
         }

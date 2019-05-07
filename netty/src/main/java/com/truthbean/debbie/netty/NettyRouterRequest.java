@@ -3,12 +3,12 @@ package com.truthbean.debbie.netty;
 import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.net.uri.UriComposition;
+import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.HttpCookie;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -61,7 +60,7 @@ public class NettyRouterRequest implements RouterRequest {
         LOGGER.debug("url ..... " + uri);
 
         String rawUrl = "http://" + host + ":" + port + uri;
-        URL url = null;
+        URL url;
         try {
             url = new URL(rawUrl);
         } catch (MalformedURLException e) {
@@ -74,8 +73,9 @@ public class NettyRouterRequest implements RouterRequest {
         Map<String, List<String>> queries = queryStringDecoder.parameters();
         this.routerRequestCache.setQueries(queries);
 
-        uri = UriUtils.uri(uri);
+        uri = UriUtils.getPaths(uri);
         this.routerRequestCache.setUrl(uri);
+        this.routerRequestCache.setPathAttributes(new HashMap<>());
 
         this.routerRequestCache.setMatrix(composition.getMatrix());
 
@@ -158,7 +158,27 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
-    public List<RouterPathAttribute> getPathAttributes() {
+    public void addAttribute(String name, Object value) {
+        routerRequestCache.addAttribute(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        routerRequestCache.removeAttribute(name);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return routerRequestCache.getAttribute(name);
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return routerRequestCache.getAttributes();
+    }
+
+    @Override
+    public Map<String, List<String>> getPathAttributes() {
         return routerRequestCache.getPathAttributes();
     }
 

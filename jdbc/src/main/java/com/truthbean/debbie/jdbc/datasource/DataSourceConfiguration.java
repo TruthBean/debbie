@@ -21,6 +21,8 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
 
     private Map<String, Object> driverProperties;
 
+    private Class<? extends DataSourceFactory> dataSourceFactoryClass;
+
     public DataSourceConfiguration() {
     }
 
@@ -35,6 +37,8 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
 
         this.driverProperties = new HashMap<>();
         this.driverProperties.putAll(configuration.driverProperties);
+
+        this.dataSourceFactoryClass = configuration.dataSourceFactoryClass;
     }
 
     public String getDriverName() {
@@ -91,6 +95,14 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
 
     public void setDriverProperties(Map<String, Object> driverProperties) {
         this.driverProperties = driverProperties;
+    }
+
+    public Class<? extends DataSourceFactory> getDataSourceFactoryClass() {
+        return dataSourceFactoryClass;
+    }
+
+    public void setDataSourceFactoryClass(Class<? extends DataSourceFactory> dataSourceFactoryClass) {
+        this.dataSourceFactoryClass = dataSourceFactoryClass;
     }
 
     @Override

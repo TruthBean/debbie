@@ -17,17 +17,13 @@ import java.util.Optional;
  * @since 0.0.1
  * Created on 2019/4/3 23:23.
  */
-public class DmlRepositoryHandler<E, ID> {
+public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     private Class<E> entityClass;
     private Class<ID> idClass;
     private EntityInfo<E> entityInfo;
 
-    private RepositoryHandler repositoryHandler;
-
-    public DmlRepositoryHandler(RepositoryHandler repositoryHandler, Class<E> entityClass, Class<ID> idClass) {
-        this.repositoryHandler = repositoryHandler;
-
+    public DmlRepositoryHandler(Class<E> entityClass, Class<ID> idClass) {
         this.entityClass = entityClass;
         this.idClass = idClass;
     }
@@ -62,12 +58,12 @@ public class DmlRepositoryHandler<E, ID> {
         private List<Object> conditionValues;
     }
 
-    public boolean deleteById(ID id) throws TransactionException {
+    public boolean deleteById(Connection connection, ID id) throws TransactionException {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
         String sql = DynamicSqlBuilder.sql().delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
-        return repositoryHandler.update(sql, id) > 0L;
+        return super.update(connection, sql, id) > 0L;
     }
 
     private ConditionAndValue resolveCondition(EntityInfo<E> entityInfo) {
@@ -76,13 +72,12 @@ public class DmlRepositoryHandler<E, ID> {
         var sqlBuilder = DynamicSqlBuilder.sql().eq("1", "1");
         List<Object> columnValues = new LinkedList<>();
 
-        for (ColumnInfo column : columns) {
-            var value = column.getValue();
-            if (value != null) {
-                columnValues.add(column.getValue());
-                sqlBuilder.and(column.getColumnName() + " = ?");
-            }
-        }
+        columns.stream()
+                .filter(column -> column.getValue() != null)
+                .forEach(column -> {
+                    columnValues.add(column.getValue());
+                    sqlBuilder.and(column.getColumnName() + " = ?");
+                });
 
         var conditionAndValue = new ConditionAndValue();
         conditionAndValue.conditionSql = sqlBuilder.builder();
@@ -90,7 +85,7 @@ public class DmlRepositoryHandler<E, ID> {
         return conditionAndValue;
     }
 
-    public int delete(E condition) throws TransactionException {
+    public int delete(Connection connection, E condition) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(condition);
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo);
@@ -101,11 +96,11 @@ public class DmlRepositoryHandler<E, ID> {
 
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return repositoryHandler.update(sql, columnValues.toArray());
+        return super.update(connection, sql, columnValues.toArray());
     }
 
     @SuppressWarnings("unchecked")
-    public ID insert(E entity) throws TransactionException {
+    public ID insert(Connection connection, E entity) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -113,24 +108,23 @@ public class DmlRepositoryHandler<E, ID> {
         List<String> columnNames = new LinkedList<>();
         List<Object> columnValues = new LinkedList<>();
         List<Object> signs = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            var value = column.getValue();
-            if (value != null) {
-                columnValues.add(column.getValue());
-                columnNames.add(column.getColumnName());
-                signs.add("?");
-            }
-        }
+        columns.stream()
+                .filter(column -> column.getValue() != null)
+                .forEach(column -> {
+                    columnValues.add(column.getValue());
+                    columnNames.add(column.getColumnName());
+                    signs.add("?");
+                });
 
         var sql = DynamicSqlBuilder.sql().insert().extra(table).leftParenthesis()
                 .columns(columnNames).rightParenthesis().values(signs).builder();
         LOGGER.debug(sql);
         var primaryKey = entityInfo.getPrimaryKey();
         var generatedKeys = primaryKey.getPrimaryKeyType() != null;
-        return (ID) repositoryHandler.insert(sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+        return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
     }
 
-    public boolean update(E entity) throws TransactionException {
+    public boolean update(Connection connection, E entity) throws TransactionException {
         var entityInfo = EntityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -151,10 +145,10 @@ public class DmlRepositoryHandler<E, ID> {
         var sql = DynamicSqlBuilder.sql().update(table).set(columnNames)
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         LOGGER.debug(sql);
-        return repositoryHandler.update(sql, columnValues.toArray()) == 1;
+        return super.update(connection, sql, columnValues.toArray()) == 1;
     }
 
-    public E findOne(E condition) {
+    public E findOne(Connection connection, E condition) {
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
 
@@ -171,7 +165,7 @@ public class DmlRepositoryHandler<E, ID> {
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().extra(conditionAndValues.conditionSql).builder();
         LOGGER.debug(sql);
-        return repositoryHandler.selectOne(sql, entityClass, conditionAndValues.conditionValues.toArray());
+        return super.selectOne(connection, sql, entityClass, conditionAndValues.conditionValues.toArray());
     }
 
     private SqlAndArgs<E> prequery(E condition) {
@@ -204,45 +198,45 @@ public class DmlRepositoryHandler<E, ID> {
         return sqlAndArgs;
     }
 
-    public List<E> findList(E condition) {
+    public List<E> findList(Connection connection, E condition) {
         SqlAndArgs<E> sqlAndArgs = prequery(condition);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Page<E> findPaged(E condition, PageRequest pageable) {
+    public Page<E> findPaged(Connection connection, E condition, PageRequest pageable) {
         SqlAndArgs<E> sqlAndArgs = prequery(condition);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
         LOGGER.debug(sql);
 
-        var count = count(condition);
-        List<E> content = repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        var count = count(connection, condition);
+        List<E> content = super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public Page<E> findPaged(PageRequest pageable) {
+    public Page<E> findPaged(Connection connection, PageRequest pageable) {
         SqlAndArgs<E> sqlAndArgs = prequery(null);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
         LOGGER.debug(sql);
 
-        var count = count();
-        List<E> content = repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        var count = count(connection);
+        List<E> content = super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public List<E> findAll() {
+    public List<E> findAll(Connection connection) {
         SqlAndArgs<E> sqlAndArgs = prequery(null);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return repositoryHandler.select(sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Long count(E condition) {
+    public Long count(Connection connection, E condition) {
         var entityInfo = getEntityInfo();
 
         var table = entityInfo.getTable();
@@ -259,18 +253,18 @@ public class DmlRepositoryHandler<E, ID> {
 
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return repositoryHandler.selectOne(sql, Long.class, args);
+        return super.selectOne(connection, sql, Long.class, args);
     }
 
-    public Long count() {
+    public Long count(Connection connection) {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var sql = DynamicSqlBuilder.sql().select().count().from(table).builder();
         LOGGER.debug(sql);
-        return repositoryHandler.selectOne(sql, Long.class);
+        return super.selectOne(connection, sql, Long.class);
     }
 
-    public E findById(ID id) {
+    public E findById(Connection connection, ID id) {
         var entityClass = getEntityClass();
         var entityInfo = EntityResolver.resolveEntityClass(entityClass);
 
@@ -287,11 +281,11 @@ public class DmlRepositoryHandler<E, ID> {
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         LOGGER.debug(">>>>>>>>>>>> " + sql);
         LOGGER.debug(">>>>>>>>>>>>> " + id);
-        return repositoryHandler.selectOne(sql, entityClass, id);
+        return super.selectOne(connection, sql, entityClass, id);
     }
 
-    public Optional<E> queryById(ID id) {
-        E result = findById(id);
+    public Optional<E> queryById(Connection connection, ID id) {
+        E result = findById(connection, id);
         if (result == null) {
             return Optional.empty();
         }

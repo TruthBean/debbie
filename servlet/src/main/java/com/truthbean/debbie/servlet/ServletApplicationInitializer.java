@@ -22,6 +22,7 @@ public class ServletApplicationInitializer implements ServletContainerInitialize
         LOGGER.info("ServletContainerInitializer onStartup ...");
         var handler = ServletContextHandler.loadPropertiesAndHandle(ctx, classes);
         handler.registerRouter();
+        handler.registerFilter(ctx);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServletApplicationInitializer.class);

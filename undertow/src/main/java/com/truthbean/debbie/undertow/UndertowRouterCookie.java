@@ -14,11 +14,13 @@ public class UndertowRouterCookie {
 
     public UndertowRouterCookie(Cookie cookie) {
         httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-        httpCookie.setValue(cookie.getValue());
         httpCookie.setPath(cookie.getPath());
         httpCookie.setDomain(cookie.getDomain());
-        httpCookie.setMaxAge(cookie.getMaxAge());
-        httpCookie.setDiscard(cookie.getMaxAge() < 0);
+        var maxAge = cookie.getMaxAge();
+        if (maxAge != null) {
+            httpCookie.setMaxAge(maxAge);
+            httpCookie.setDiscard(maxAge < 0);
+        }
         httpCookie.setSecure(cookie.isSecure());
         httpCookie.setVersion(cookie.getVersion());
         httpCookie.setHttpOnly(cookie.isHttpOnly());

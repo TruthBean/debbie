@@ -2,17 +2,20 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.bean.BeanInvoker;
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -31,14 +34,7 @@ public class MvcRouterHandler {
         var set = MvcRouterRegister.getRouterInfoSet();
         for (var routerInfo : set) {
             var paths = routerInfo.getPaths();
-            var matchUrl = false;
-            for (var pattern : paths) {
-                if (pattern.matcher(url).find()) {
-                    matchUrl = true;
-                    break;
-                }
-            }
-
+            var matchUrl = matchRouterPath(url, paths, routerRequest, false);
             if (!matchUrl) {
                 continue;
             }
@@ -97,6 +93,45 @@ public class MvcRouterHandler {
         }
     }
 
+    public static boolean matchRouterPath(String url, List<RouterPathFragments> paths, RouterRequest routerRequest,
+                                          boolean withoutMatrix) {
+        var matchUrl = false;
+        //TODO: 优先匹配静态资源...
+
+        if (!matchUrl) {
+            // if has no matched, then match no variable path
+            for (var pattern : paths) {
+                if (!pattern.hasVariable()) {
+                    if (pattern.getRawPath().equalsIgnoreCase(url)) {
+                        matchUrl = true;
+                        break;
+                    }
+                }
+            }
+
+            // if has no matched, then match variable path
+            if (!matchUrl) {
+                for (var pattern : paths) {
+                    if (pattern.hasVariable()) {
+                        if (pattern.getPattern().matcher(url).find()) {
+                            matchUrl = true;
+                            var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
+                            routerRequest.getPathAttributes().putAll(pathAttributes);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // if has no matched, then remove matrix
+            if (!matchUrl && !withoutMatrix) {
+                url = UriUtils.getPathsWithoutMatrix(url);
+                matchUrl = matchRouterPath(url, paths, routerRequest, true);
+            }
+        }
+        return matchUrl;
+    }
+
     public static void handleRouter(RouterInfo routerInfo) {
         Object responseValue;
         if (routerInfo.getErrorInfo() != null) {
@@ -105,7 +140,8 @@ public class MvcRouterHandler {
             return;
         }
         try {
-            responseValue = action(routerInfo);
+            RouterInvoker invoker = new RouterInvoker(routerInfo);
+            responseValue = invoker.action();
         } catch (Exception e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);
@@ -113,54 +149,5 @@ public class MvcRouterHandler {
         }
 
         routerInfo.getResponse().setData(responseValue);
-    }
-
-    private static Object action(RouterInfo routerInfo) {
-        if (routerInfo == null) {
-            return null;
-        }
-
-        var httpRequest = routerInfo.getRequest();
-        if (httpRequest == null) {
-            throw new NullPointerException("httpRequest is null");
-        }
-
-        LOGGER.debug("params: " + httpRequest.getParameters());
-        LOGGER.debug("query: " + httpRequest.getQueries());
-
-        var parameters = new RouterRequestValues(httpRequest);
-
-        var handler = new MvcRouterInvokedParameterHandler();
-        var args = handler.handleMethodParams(parameters, routerInfo.getMethodParams());
-        LOGGER.debug("args: " + args);
-
-        var values = args.toArray();
-        LOGGER.debug("values: " + Arrays.toString(values));
-
-        var beanInvoker = new BeanInvoker<>(routerInfo.getRouterClass());
-        var method = routerInfo.getMethod();
-        var any = beanInvoker.invokeMethod(method, values);
-        if (any == null) {
-            throw new NullPointerException(method.getName() + " return null");
-        }
-
-        for (InvokedParameter methodParam : routerInfo.getMethodParams()) {
-            methodParam.setValue(null);
-        }
-
-        if (routerInfo.hasTemplate()) {
-            if (any instanceof StaticResourcesView) {
-                return ((StaticResourcesView) any).render();
-            }
-            return any;
-        } else {
-            var provider = ResponseHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType());
-            var filter = provider.transform(any);
-            if (filter == null) {
-                throw new RuntimeException(any.toString() + " to " + httpRequest.getResponseType().getValue() + " error");
-            }
-            LOGGER.debug(filter.toString());
-            return filter;
-        }
     }
 }

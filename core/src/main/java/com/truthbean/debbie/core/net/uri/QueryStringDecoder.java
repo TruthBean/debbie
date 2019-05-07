@@ -228,7 +228,7 @@ public class QueryStringDecoder {
         if (s.charAt(from) == '?') {
             from++;
         }
-        Map<String, List<String>> params = new LinkedHashMap<String, List<String>>();
+        Map<String, List<String>> params = new LinkedHashMap<>();
         int nameStart = from;
         int valueStart = -1;
         int i;
@@ -243,7 +243,6 @@ public class QueryStringDecoder {
                 }
                 break;
             case '&':
-            case ';':
                 if (addParam(s, nameStart, valueStart, i, params, charset)) {
                     paramsLimit--;
                     if (paramsLimit == 0) {

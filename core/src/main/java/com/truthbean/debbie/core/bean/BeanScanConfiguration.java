@@ -73,20 +73,20 @@ public class BeanScanConfiguration implements DebbieConfiguration {
             classes.addAll(scanClasses);
         }
         if (!scanBasePackages.isEmpty()) {
-            for (String packageName: scanBasePackages) {
+            scanBasePackages.forEach(packageName -> {
                 List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName);
                 classes.addAll(classList);
-            }
+            });
         }
         if (!scanExcludeClasses.isEmpty()) {
             classes.removeAll(scanExcludeClasses);
         }
         if (!scanExcludePackages.isEmpty()) {
             // TODO: 后期优化
-            for (String packageName: scanBasePackages) {
+            scanBasePackages.forEach(packageName -> {
                 List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName);
                 classes.removeAll(classList);
-            }
+            });
         }
         return Collections.unmodifiableSet(classes);
     }

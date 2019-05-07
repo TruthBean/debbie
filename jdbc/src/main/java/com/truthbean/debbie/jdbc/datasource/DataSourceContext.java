@@ -16,13 +16,14 @@ public class DataSourceContext {
 
     private static DataSourceFactory dataSourceFactory;
 
-    public static <D extends DataSourceFactory> void registerDataSourceFactory(Class<D> dataSourceFactoryClass,
+    public static DataSourceFactory registerDataSourceFactory(Class<? extends DataSourceFactory> dataSourceFactoryClass,
                                                  DataSourceConfiguration configuration) {
         DataSourceFactory dataSourceFactory = ReflectionHelper.newInstance(dataSourceFactoryClass);
         DataSourceContext.dataSourceFactory = dataSourceFactory.factory(configuration);
+        return DataSourceContext.dataSourceFactory;
     }
 
-    public static <D extends DataSourceFactory> void registerDataSourceFactory(DataSourceFactory dataSourceFactory) {
+    public static void registerDataSourceFactory(DataSourceFactory dataSourceFactory) {
         DataSourceContext.dataSourceFactory = dataSourceFactory;
     }
 

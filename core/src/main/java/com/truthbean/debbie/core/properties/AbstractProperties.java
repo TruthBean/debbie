@@ -186,6 +186,21 @@ public class AbstractProperties {
         return result;
     }
 
+    @SuppressWarnings("rawtypes")
+    public Class<?> getClassValue(String key, String defaultClass) {
+        var className = getStringValue(key, defaultClass);
+        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+        Class<?> result = null;
+        if (className != null) {
+            try {
+                result = classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                LOGGER.error("class (" + className + ") not found", e);
+            }
+        }
+        return result;
+    }
+
     public Set<Class<?>> getClassSetValue(String key, String split) {
         var value = getStringArrayValue(key, split);
         var classLoader = ClassLoaderUtils.getDefaultClassLoader();

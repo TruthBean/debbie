@@ -19,11 +19,11 @@ public class DebbieApplicationFactory {
     private static final AbstractApplicationFactory application = loadApplication();
 
     private static AbstractApplicationFactory loadApplication() {
-        /* not work in java 11
+        /* not work in java 11*/
         var classLoader = ClassLoaderUtils.getClassLoader(DebbieApplicationFactory.class);
         return SpiLoader.loadProvider(AbstractApplicationFactory.class, classLoader);
-        */
-        AbstractApplicationFactory search;
+
+        /*AbstractApplicationFactory search;
         ServiceLoader<AbstractApplicationFactory> serviceLoader = ServiceLoader.load(AbstractApplicationFactory.class);
         Iterator<AbstractApplicationFactory> iterator = serviceLoader.iterator();
         if (iterator.hasNext()) {
@@ -31,7 +31,7 @@ public class DebbieApplicationFactory {
         } else {
             throw new NoApplicationProviderException();
         }
-        return search;
+        return search;*/
     }
 
     public static <P extends AbstractProperties, C extends BeanScanConfiguration> DebbieApplication factory

@@ -9,7 +9,6 @@ import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
@@ -49,23 +48,14 @@ public class UndertowRouterRequest implements RouterRequest {
         routerRequestCache.setMethod(HttpMethod.valueOf(exchange.getRequestMethod().toString()));
         routerRequestCache.setUrl(exchange.getRequestURI());
 
-        setPathAttributes();
+        routerRequestCache.setPathAttributes(new HashMap<>());
         setHeaders();
-
-        List<String> contentType = this.headers.get("Content-Type");
-        List<String> responseType = this.headers.get("Response-Type");
 
         setCookies();
 
+        List<String> contentType = this.headers.get("Content-Type");
         setParams(contentType);
         setQueries();
-    }
-
-    private void setPathAttributes() {
-        List<RouterPathAttribute> result = new ArrayList<>();
-        var regex = "{\\s}";
-        // todo
-        routerRequestCache.setPathAttributes(result);
     }
 
     private void setHeaders() {
@@ -140,7 +130,8 @@ public class UndertowRouterRequest implements RouterRequest {
         exchange.getPathParameters().forEach((k, v) -> parameters.put(k, new ArrayList<>(v)));
 
         if (contentType != null && !contentType.isEmpty()) {
-            if (contentType.contains(MediaType.APPLICATION_FORM_URLENCODED.getValue()) || contentType.contains(MediaType.MULTIPART_FORM_DATA.getValue())) {
+            if (contentType.contains(MediaType.APPLICATION_FORM_URLENCODED.getValue())
+                    || contentType.contains(MediaType.MULTIPART_FORM_DATA.getValue())) {
                 parameters.putAll(getFormData());
             }
         }
@@ -208,7 +199,27 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public List<RouterPathAttribute> getPathAttributes() {
+    public void addAttribute(String name, Object value) {
+        routerRequestCache.addAttribute(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        routerRequestCache.removeAttribute(name);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return routerRequestCache.getAttribute(name);
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return routerRequestCache.getAttributes();
+    }
+
+    @Override
+    public Map<String, List<String>> getPathAttributes() {
         return routerRequestCache.getPathAttributes();
     }
 

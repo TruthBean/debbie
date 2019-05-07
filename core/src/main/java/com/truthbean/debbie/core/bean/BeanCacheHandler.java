@@ -35,10 +35,10 @@ final class BeanCacheHandler {
         CLASS_INFO_SET.add(beanClassInfo);
 
         List<Method> declaredMethods = beanClassInfo.getMethods();
-        for (var method: declaredMethods) {
+        declaredMethods.forEach(method -> {
             var annotations = method.getDeclaredAnnotations();
             if (annotations != null) {
-                for (Annotation annotation: annotations) {
+                for (Annotation annotation : annotations) {
                     var methodAnnotation = annotation.annotationType();
                     METHOD_ANNOTATION.add(methodAnnotation);
 
@@ -46,23 +46,21 @@ final class BeanCacheHandler {
                     annotationMethodBeans.add(beanClassInfo);
                 }
             }
-        }
+        });
 
         var classAnnotation = beanClassInfo.getClassAnnotations();
         if (!classAnnotation.isEmpty()) {
             var annotations = classAnnotation.keySet();
             CLASS_ANNOTATION.addAll(annotations);
 
-            for (var annotation: annotations) {
-                if (beanClass.isAnnotationPresent(annotation)) {
-                    var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
-                    if (classMethodMap == null) {
-                        classMethodMap = new HashMap<>();
-                    }
-                    classMethodMap.put(beanClass, declaredMethods);
-                    BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
+            annotations.stream().filter(beanClass::isAnnotationPresent).forEach(annotation -> {
+                var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
+                if (classMethodMap == null) {
+                    classMethodMap = new HashMap<>();
                 }
-            }
+                classMethodMap.put(beanClass, declaredMethods);
+                BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
+            });
         }
 
     }
@@ -79,9 +77,7 @@ final class BeanCacheHandler {
     }
 
     protected static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames) {
-        for (String packageName: packageNames) {
-            register(classAnnotation, packageName);
-        }
+        packageNames.forEach(packageName -> register(classAnnotation, packageName));
     }
 
     protected static void register(String packageName) {
@@ -92,9 +88,7 @@ final class BeanCacheHandler {
     }
 
     protected static void register(List<String> packageNames) {
-        for (String packageName: packageNames) {
-            register(packageName);
-        }
+        packageNames.forEach(BeanCacheHandler::register);
     }
 
     protected static List<Method> getBeanMethods(Class<?> beanClass) {
@@ -111,11 +105,9 @@ final class BeanCacheHandler {
 
         Set<ClassInfo> result = new HashSet<>();
 
-        for (ClassInfo classInfo : classInfoSet) {
-            if (classInfo.getClassAnnotations().containsKey(annotationClass)) {
-                result.add(classInfo);
-            }
-        }
+        classInfoSet.stream()
+                .filter(classInfo -> classInfo.getClassAnnotations().containsKey(annotationClass))
+                .forEach(result::add);
 
         return result;
     }

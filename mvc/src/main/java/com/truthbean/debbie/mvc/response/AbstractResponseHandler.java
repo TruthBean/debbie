@@ -9,7 +9,7 @@ import com.truthbean.debbie.core.data.transformer.DataTransformer;
  */
 public abstract class AbstractResponseHandler<S, V> implements DataTransformer<S, V> {
 
-    public final S reverse(String s) {
+    public final S reverse(String ingored) {
         throw new UnsupportedOperationException();
     }
 }

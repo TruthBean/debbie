@@ -1,29 +1,29 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
-import com.truthbean.debbie.jdbc.datasource.*;
+import com.truthbean.debbie.jdbc.datasource.DataSourceContext;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;
 import com.truthbean.debbie.jdbc.entity.Surname;
-import com.truthbean.debbie.jdbc.transaction.TransactionException;
-import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 
 public class DdlRepositoryHandlerTest {
 
     private static DdlRepositoryHandler ddlRepositoryHandler;
+    private static DataSourceFactory factory;
 
     @BeforeAll
-    public static void before() throws SQLException {
+    public static void before() {
         var config = DataSourceProperties.toConfiguration();
-        DataSourceFactory factory = new DefaultDataSourceFactory();
+        factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        var connection = factory.getDataSource().getConnection();
-
-        ddlRepositoryHandler = new DdlRepositoryHandler(connection);
+        ddlRepositoryHandler = new DdlRepositoryHandler();
     }
 
     @AfterAll
@@ -32,72 +32,60 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testCreateDatabase() {
-        try {
-            ddlRepositoryHandler.createDatabase("hello");
-            ddlRepositoryHandler.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            ddlRepositoryHandler.rollback();
-        }
+    public void testCreateDatabase() throws ExecutionException, InterruptedException {
+        var connection = factory.getConnection();
+        var r = RepositoryAction.asyncActionTransactional(connection, () ->
+                ddlRepositoryHandler.createDatabase(connection, "hello"));
+        System.out.println(r.get());
     }
 
     @Test
     public void testShowDatabases() {
-        var r = ddlRepositoryHandler.showDatabases();
+        var connection = factory.getConnection();
+        var r = RepositoryAction.action(connection, () -> ddlRepositoryHandler.showDatabases(connection));
         System.out.println(r);
     }
 
     @Test
     public void testDropDatabase() {
-        try {
-            ddlRepositoryHandler.dropDatabase("hello");
-            ddlRepositoryHandler.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            ddlRepositoryHandler.rollback();
-        }
+        var connection = factory.getConnection();
+        var r = RepositoryAction.actionTransactional(connection, () ->
+                ddlRepositoryHandler.dropDatabase(connection, "hello")
+        );
+        System.out.println(r);
     }
 
     @Test
     public void testShowTables() {
-        try {
-            ddlRepositoryHandler.userDatabase("mysql");
-            ddlRepositoryHandler.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            ddlRepositoryHandler.rollback();
-        }
-        var s = ddlRepositoryHandler.showTables();
-        System.out.println(s);
+        var connection = factory.getConnection();
+        var r = RepositoryAction.actionTransactional(connection, () -> {
+            ddlRepositoryHandler.userDatabase(connection, "mysql");
+            return ddlRepositoryHandler.showTables(connection);
+        });
+        System.out.println(r);
     }
 
     @Test
     public void testCreateTable() {
-        try {
-            ddlRepositoryHandler.userDatabase("test");
-
+        var connection = factory.getConnection();
+        var r = RepositoryAction.actionTransactional(connection, () -> {
+            ddlRepositoryHandler.userDatabase(connection, "test");
             BeanInitializationHandler.init(Surname.class);
-            ddlRepositoryHandler.createTable(Surname.class);
-
-            ddlRepositoryHandler.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            ddlRepositoryHandler.rollback();
-        }
+            ddlRepositoryHandler.createTable(connection, Surname.class);
+            return ddlRepositoryHandler.showTables(connection);
+        });
+        System.out.println(r);
     }
 
     @Test
     public void dropTable() {
-        try {
-            ddlRepositoryHandler.userDatabase("test");
-            ddlRepositoryHandler.dropTable("surname");
-
-            ddlRepositoryHandler.commit();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-            ddlRepositoryHandler.rollback();
-        }
+        var connection = factory.getConnection();
+        var r = RepositoryAction.actionTransactional(connection, () -> {
+            ddlRepositoryHandler.userDatabase(connection, "test");
+            ddlRepositoryHandler.dropTable(connection, "surname");
+            return ddlRepositoryHandler.showTables(connection);
+        });
+        System.out.println(r);
     }
 
 }

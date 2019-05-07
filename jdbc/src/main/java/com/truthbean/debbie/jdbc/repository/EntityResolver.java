@@ -61,9 +61,7 @@ public class EntityResolver {
         List<ColumnInfo> columns = new ArrayList<>();
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {
-            for (var field : fields) {
-                columns.add(JdbcColumnResolver.resolveField(field));
-            }
+            fields.forEach(field -> columns.add(JdbcColumnResolver.resolveField(field)));
         }
         return columns;
     }
@@ -72,9 +70,7 @@ public class EntityResolver {
         List<ColumnInfo> columns = new ArrayList<>();
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {
-            for (var field : fields) {
-                columns.add(JdbcColumnResolver.resolveFieldAndValue(field, entity));
-            }
+            fields.forEach(field -> columns.add(JdbcColumnResolver.resolveFieldAndValue(field, entity)));
         }
         return columns;
     }

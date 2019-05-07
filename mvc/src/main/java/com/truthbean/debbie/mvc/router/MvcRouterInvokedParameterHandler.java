@@ -64,36 +64,21 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         if (TypeHelper.isBaseType(invokedParameter.getType())
                 || invokedParameter.getType() == MultipartFile.class) {
 
-            Map<String, List> queries = parameters.getQueries();
-            if (queries != null && !queries.isEmpty()) {
-                handleParam(queries, invokedParameter);
-            }
-
-            Map<String, List> params = parameters.getParams();
-            if (params != null && !params.isEmpty()) {
-                handleParam(params, invokedParameter);
-            }
-
-            Map<String, List> headers = parameters.getHeaders();
-            if (headers != null && !headers.isEmpty()) {
-                handleParam(headers, invokedParameter);
-            }
-
-            Map<String, List> pathAttributes = parameters.getPathAttributes();
-            if (pathAttributes != null && !pathAttributes.isEmpty()) {
-                handleParam(pathAttributes, invokedParameter);
-            }
-
-            Map<String, List> cookieAttributes = parameters.getCookieAttributes();
-            if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
-                handleParam(cookieAttributes, invokedParameter);
-            }
-
-            Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
-            if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
-                handleSession(sessionAttributes, invokedParameter);
-            }
-
+            // query
+            handleParam(parameters.getQueries(), invokedParameter);
+            // param
+            handleParam(parameters.getParams(), invokedParameter);
+            // header
+            handleParam(parameters.getHeaders(), invokedParameter);
+            // path
+            handleParam(parameters.getPathAttributes(), invokedParameter);
+            // cookie
+            handleParam(parameters.getCookieAttributes(), invokedParameter);
+            // session
+            handleObject(parameters.getSessionAttributes(), invokedParameter);
+            // inner
+            handleObject(parameters.getInnerAttributes(), invokedParameter);
+            // body
             InputStream body = parameters.getBody();
             if (body != null) {
                 // TODO
@@ -130,7 +115,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     }
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
                     if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
-                        // handleSession(sessionAttributes,newInstance, fields.get(i), parameter);
+                        // handleFiled(sessionAttributes,newInstance, fields.get(i), parameter);
                     }
                 }
             }
@@ -148,54 +133,40 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
 
             switch (requestParameter.paramType()) {
                 case MIX:
-                    if (!mixValues.isEmpty()) {
-                        handleParam(mixValues, invokedParameter);
-                    }
+                    handleParam(mixValues, invokedParameter);
                     break;
                 case QUERY:
-                    Map<String, List> queries = parameters.getQueries();
-                    if (queries != null && !queries.isEmpty()) {
-                        handleParam(queries, invokedParameter);
-                    }
+                    handleParam(parameters.getQueries(), invokedParameter);
                     break;
                 case PATH:
-                    Map<String, List> paths = parameters.getPathAttributes();
-                    if (paths != null && !paths.isEmpty()) {
-                        handleParam(paths, invokedParameter);
-                    }
+                    handleParam(parameters.getPathAttributes(), invokedParameter);
                     break;
                 case MATRIX:
                     Map<String, List> matrix = parameters.getMatrixAttributes();
-                    if (matrix != null && !matrix.isEmpty()) {
-                        handleParam(matrix, invokedParameter);
-                    }
+                    handleParam(matrix, invokedParameter);
                     break;
                 case PARAM:
                     Map<String, List> params = parameters.getParams();
-                    if (params != null && !params.isEmpty()) {
-                        handleParam(params, invokedParameter);
-                    }
+                    handleParam(params, invokedParameter);
                     break;
                 case BODY:
                     handleBody(parameters.getBody(), requestParameter.bodyType(), invokedParameter);
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();
-                    if (headers != null && !headers.isEmpty()) {
-                        handleParam(headers, invokedParameter);
-                    }
+                    handleParam(headers, invokedParameter);
                     break;
                 case COOKIE:
                     Map<String, List> cookieAttributes = parameters.getCookieAttributes();
-                    if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
-                        handleParam(cookieAttributes, invokedParameter);
-                    }
+                    handleParam(cookieAttributes, invokedParameter);
                     break;
                 case SESSION:
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
-                    if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
-                        handleSession(sessionAttributes, invokedParameter);
-                    }
+                    handleObject(sessionAttributes, invokedParameter);
+                    break;
+                case INNER:
+                    Map<String, Object> requestAttributes = parameters.getInnerAttributes();
+                    handleObject(requestAttributes, invokedParameter);
                     break;
                 default:
                     break;
@@ -215,12 +186,9 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
     }
 
     public void handle(RouterRequestValues parameters, InvokedParameter invokedParameter) {
-        if (TypeHelper.isBaseType(invokedParameter.getType())
-                || invokedParameter.getType() == MultipartFile.class
-                || TypeHelper.isArrayType(invokedParameter.getType())) {
-            LOGGER.debug("type is base type");
-            doHandleParam(parameters, invokedParameter);
-        } else {
+        doHandleParam(parameters, invokedParameter);
+
+        if (invokedParameter.getValue() == null) {
             List<Field> fields = ReflectionHelper.getDeclaredFields(invokedParameter.getType());
             Object instance = null;
             try {
@@ -251,6 +219,13 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
             invokedParameter.setValue(instance);
             doHandleParam(parameters, invokedParameter);
         }
+
+        /*if (TypeHelper.isBaseType(invokedParameter.getType())
+                || invokedParameter.getType() == MultipartFile.class
+                || TypeHelper.isArrayType(invokedParameter.getType())) {
+            LOGGER.debug("type is base type");
+            doHandleParam(parameters, invokedParameter);
+        }*/
     }
 
     public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field, InvokedParameter invokedParameter) {
@@ -297,19 +272,25 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();
                     if (headers != null && !headers.isEmpty()) {
-                        handleParam(headers, invokedParameter);
+                        handleFiled(headers, instance, field, invokedParameter);
                     }
                     break;
                 case COOKIE:
                     Map<String, List> cookieAttributes = parameters.getCookieAttributes();
                     if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
-                        handleParam(cookieAttributes, invokedParameter);
+                        handleFiled(cookieAttributes, instance, field, invokedParameter);
                     }
                     break;
                 case SESSION:
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
                     if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
-                        handleSession(sessionAttributes, invokedParameter);
+                        handleObject(sessionAttributes, invokedParameter);
+                    }
+                    break;
+                case INNER:
+                    Map<String, Object> requestAttributes = parameters.getInnerAttributes();
+                    if (requestAttributes != null && !requestAttributes.isEmpty()) {
+                        handleObject(requestAttributes, invokedParameter);
                     }
                     break;
                 default:

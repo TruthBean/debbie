@@ -1,6 +1,5 @@
 package com.truthbean.debbie.core.io;
 
-import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.core.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -85,7 +83,8 @@ public final class StreamHelper {
         return filesInJar;
     }
 
-    private static void readFileInJar(String innerPath, String filePartPath, ClassLoader classLoader, List<String> result) throws IOException {
+    private static void readFileInJar(String innerPath, String filePartPath, ClassLoader classLoader,
+                                      List<String> result) throws IOException {
         if (innerPath.endsWith(filePartPath)) {
             InputStream inputStream = classLoader.getResourceAsStream(innerPath);
             assert inputStream != null;
@@ -99,7 +98,8 @@ public final class StreamHelper {
         }
     }
 
-    public static List<Class<?>> getClassFromJarByPackageName(String packageName, URL url, String packageDirName, ClassLoader classLoader) {
+    public static List<Class<?>> getClassFromJarByPackageName(String packageName, URL url, String packageDirName,
+                                                              ClassLoader classLoader) {
         List<Class<?>> result = new ArrayList<>();
         List<JarEntry> filesInJar = getFilesInJar(url);
         for (JarEntry entry : filesInJar) {

@@ -4,11 +4,17 @@ import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.core.net.NetWorkUtils;
+import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
+import com.truthbean.debbie.undertow.handler.HttpHandlerFilter;
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -27,12 +33,20 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
     public DebbieApplication factory(UndertowConfiguration configuration) {
         BeanInitializationHandler.init(configuration.getTargetClasses());
         MvcRouterRegister.registerRouter(configuration);
+        RouterFilterManager.registerFilter(configuration);
+
+        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
+        HttpHandler next = new DispatcherHttpHandler(configuration);
+        for (RouterFilterInfo filter : filters) {
+            next = new HttpHandlerFilter(next, filter);
+        }
+
         // Undertow builder
         server = Undertow.builder()
                 // Listener binding
                 .addHttpListener(configuration.getPort(), configuration.getHost())
                 // Default Handler
-                .setHandler(new DispatcherHttpHandler(configuration)).build();
+                .setHandler(next).build();
 
         return new DebbieApplication() {
             @Override

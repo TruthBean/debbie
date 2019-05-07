@@ -9,7 +9,7 @@ import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.FStartColumnNameTransformer;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
-import com.truthbean.debbie.jdbc.datasource.DataSourceContext;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import org.slf4j.Logger;
@@ -28,16 +28,10 @@ import java.util.List;
  * @since 0.0.1
  * Created on 2018-03-14 11:53
  */
-public class RepositoryHandler implements Closeable {
+public class RepositoryHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryHandler.class);
 
-    private Connection connection;
-
-    public RepositoryHandler(Connection connection) {
-        this.connection = connection;
-    }
-
-    public int[] batch(String sql, Object[][] args) throws TransactionException {
+    public int[] batch(Connection connection, String sql, Object[][] args) throws TransactionException {
         PreparedStatement preparedStatement = null;
         int[] rows;
         try {
@@ -61,11 +55,13 @@ public class RepositoryHandler implements Closeable {
         return rows;
     }
 
-    public Object rawInsert(String sql, boolean generatedKeys, Object... args) throws TransactionException {
-        return insert(sql, generatedKeys, Object.class, args);
+    public Object rawInsert(Connection connection, String sql, boolean generatedKeys, Object... args)
+            throws TransactionException {
+        return insert(connection, sql, generatedKeys, Object.class, args);
     }
 
-    public <K> K insert(String sql, boolean generatedKeys, Class<K> keyClass, Object... args) throws TransactionException {
+    public <K> K insert(Connection connection, String sql, boolean generatedKeys, Class<K> keyClass, Object... args)
+            throws TransactionException {
         K id = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -100,7 +96,7 @@ public class RepositoryHandler implements Closeable {
         return id;
     }
 
-    public int update(String sql, Object... args) throws TransactionException {
+    public int update(Connection connection, String sql, Object... args) throws TransactionException {
         PreparedStatement preparedStatement = null;
         int rows = 0;
         try {
@@ -119,27 +115,7 @@ public class RepositoryHandler implements Closeable {
         return rows;
     }
 
-    public void commit() {
-        try {
-            if (!connection.isReadOnly()) {
-                connection.commit();
-            }
-        } catch (SQLException e) {
-            LOGGER.error("connection commit error. ", e);
-        }
-    }
-
-    public void rollback() {
-        try {
-            if (!connection.isReadOnly()) {
-                connection.rollback();
-            }
-        } catch (SQLException e) {
-            LOGGER.error("connection rollback error. ", e);
-        }
-    }
-
-    public ResultSet preSelect(String sql, Object... args) {
+    public ResultSet preSelect(Connection connection, String sql, Object... args) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             if (args != null) {
@@ -154,21 +130,17 @@ public class RepositoryHandler implements Closeable {
         }
     }
 
-    public List<List<ColumnInfo>> select(String sql, Object... args) {
-        ResultSet resultSet = preSelect(sql, args);
+    public List<List<ColumnInfo>> select(Connection connection, String sql, Object... args) {
+        ResultSet resultSet = preSelect(connection, sql, args);
         return JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
     }
 
-    public <T> List<T> select(String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> selectResult = select(selectSql, args);
+    public <T> List<T> select(Connection connection, String selectSql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> selectResult = select(connection, selectSql, args);
         List<T> result = new ArrayList<>();
-        T obj;
         if (!TypeHelper.isBaseType(clazz)) {
             List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
-            for (var map : selectResult) {
-                obj = transformer(map, declaredFields, clazz);
-                result.add(obj);
-            }
+            selectResult.forEach(map -> result.add(transformer(map, declaredFields, clazz)));
         } else {
             for (List<ColumnInfo> map : selectResult) {
                 if (map.size() == 1) {
@@ -183,8 +155,8 @@ public class RepositoryHandler implements Closeable {
         return result;
     }
 
-    public <T> T selectOne(String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> selectResult = select(selectSql, args);
+    public <T> T selectOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> selectResult = select(connection, selectSql, args);
         T result = null;
         if (selectResult.isEmpty()) {
             return null;
@@ -229,28 +201,5 @@ public class RepositoryHandler implements Closeable {
             }
         }
         return instance;
-    }
-
-    public <R> R actionTransactional(Action<R> action) {
-        R result = null;
-        try {
-            result = action.action();
-            commit();
-        } catch (Exception e) {
-            LOGGER.error("action error ", e);
-            rollback();
-        }
-        return result;
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (!connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

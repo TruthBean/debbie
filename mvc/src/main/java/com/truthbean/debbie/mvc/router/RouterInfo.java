@@ -2,12 +2,14 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
+import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterInvokeResult;
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,7 +33,7 @@ public class RouterInfo implements Cloneable {
 
     private Class<?> routerClass;
 
-    private List<Pattern> paths;
+    private List<RouterPathFragments> paths;
 
     private List<HttpMethod> requestMethod;
 
@@ -100,11 +102,11 @@ public class RouterInfo implements Cloneable {
         this.routerClass = routerClass;
     }
 
-    public List<Pattern> getPaths() {
+    public List<RouterPathFragments> getPaths() {
         return paths;
     }
 
-    public void setPaths(List<Pattern> paths) {
+    public void setPaths(List<RouterPathFragments> paths) {
         this.paths = paths;
     }
 

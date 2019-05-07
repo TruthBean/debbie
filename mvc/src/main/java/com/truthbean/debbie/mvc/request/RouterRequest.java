@@ -1,8 +1,8 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.mvc.RouterSession;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 
 import java.io.File;
 import java.io.InputStream;
@@ -23,7 +23,33 @@ public interface RouterRequest {
 
     String getUrl();
 
-    List<RouterPathAttribute> getPathAttributes();
+    /**
+     * add request attribute
+     * @param name name
+     * @param value value
+     */
+    void addAttribute(String name, Object value);
+
+    /**
+     * remove request attribute
+     * @param name name
+     */
+    void removeAttribute(String name);
+
+    /**
+     * get request attribute value by name
+     * @param name name
+     * @return request attribute value
+     */
+    Object getAttribute(String name);
+
+    /**
+     * get request attributes
+     * @return map
+     */
+    Map<String, Object> getAttributes();
+
+    Map<String, List<String>> getPathAttributes();
 
     Map<String, List<String>> getMatrix();
 

@@ -1,6 +1,11 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.core.net.uri.UriPathFragment;
+import com.truthbean.debbie.core.net.uri.UriUtils;
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
+
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -8,6 +13,9 @@ import java.util.regex.Pattern;
  * @since 0.0.1
  */
 public class RouterPathSplicer {
+
+    private static final String VARIABLE_REGEX = "\\{[^/]+?\\}";
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
 
     private static List<String> resolvePath(Router router) {
         if (router != null) {
@@ -56,16 +64,24 @@ public class RouterPathSplicer {
         return copy;
     }
 
-    public static List<String> splicePaths(String apiPrefix, Router prefixRouter, Router router) {
-        var apiPrefixAfterTrim = apiPrefix;
-        if (!apiPrefix.isBlank() && apiPrefix.endsWith("/")) {
-            apiPrefixAfterTrim = apiPrefix.substring(0, apiPrefix.length() - 1);
+    public static List<String> splicePaths(String dispatcherMapping, Router prefixRouter, Router router) {
+        if (!dispatcherMapping.isBlank()) {
+            if (!dispatcherMapping.startsWith("/")) {
+                dispatcherMapping = "/" + dispatcherMapping;
+            }
+            if (dispatcherMapping.endsWith("/")) {
+                dispatcherMapping = dispatcherMapping.substring(0, dispatcherMapping.length() - 1);
+            }
         }
         var paths = splicePaths(prefixRouter, router);
 
         List<String> list = new ArrayList<>();
         for (String s : paths) {
-            list.add(apiPrefixAfterTrim + s);
+            if (dispatcherMapping.endsWith("**") && s.startsWith("/")) {
+                s = s.substring(1);
+            }
+            s = dispatcherMapping.replace("**", s);
+            list.add(s);
         }
 
         return list;
@@ -108,6 +124,57 @@ public class RouterPathSplicer {
         return patterns;
     }
 
+    public static Map<String, List<String>> getPathVariable(String routerPath, String targetUrl) {
+        Map<String, List<String>> result = new HashMap<>();
+        String[] split = routerPath.split(VARIABLE_REGEX);
+        for (String s: split) {
+            String[] values = targetUrl.split(s);
+            String[] names = routerPath.split(s);
+            for (int i = 0; i < names.length; i++) {
+                var name = names[i];
+                var value = values[i];
+                if (!name.isBlank()) {
+                    name = name.substring(1, name.length() - 1);
+                    var resultCopy = new HashMap<>(result);
+                    List<String> list;
+                    if (resultCopy.containsKey(name)) {
+                        list = resultCopy.get(name);
+                    } else {
+                        list = new ArrayList<>();
+                    }
+                    list.add(value);
+                    result.put(name, list);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static List<RouterPathFragments> splicePathFragment(String dispatcherMapping, Router prefixRouter, Router router) {
+        var paths = splicePaths(dispatcherMapping, prefixRouter, router);
+        List<RouterPathFragments> patterns = new ArrayList<>();
+        for (String path : paths) {
+            var fragment = new RouterPathFragments();
+            List<UriPathFragment> pathFragments = UriUtils.getPathFragment(path);
+            for (var pathFragment: pathFragments) {
+                var regex = pathFragment.getFragment();
+                if (regex.contains("*")) {
+                    regex = regex.replace("*", "\\*");
+                }
+                Matcher matcher = VARIABLE_PATTERN.matcher(regex);
+                while (matcher.find()) {
+                    String group = matcher.group();
+                    pathFragment.addPathVariable(group, new ArrayList<>());
+                    regex = regex.replace(group, "[\\w]*");
+                }
+                pathFragment.setPattern(Pattern.compile(regex));
+            }
+            fragment.setPathFragments(pathFragments).setPattern().setRawPath().setVariable();
+            patterns.add(fragment);
+        }
+        return patterns;
+    }
+
     public static Set<String> splicePaths(List<String> prefixPaths, Router router) {
         var pathRegex = router.value();
         if (isEmptyPaths(pathRegex)) {
@@ -142,13 +209,13 @@ public class RouterPathSplicer {
 
         if (!isEmptyPaths(pathRegex)) {
             var paths = trimPaths(pathRegex);
-            for (var s : paths) {
+            paths.forEach(s -> {
                 if (!s.startsWith("/")) {
                     newPaths.add("/" + s);
                 } else {
                     newPaths.add(s);
                 }
-            }
+            });
         } else {
             throw new RuntimeException("router value or pathRegex cannot be empty");
         }

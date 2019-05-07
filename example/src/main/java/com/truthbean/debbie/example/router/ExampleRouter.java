@@ -11,14 +11,15 @@ import com.truthbean.debbie.mvc.router.Router;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-02-14 15:07.
  */
-// @Watcher
-// @Router("example")
+@Watcher
+@Router("example")
 public class ExampleRouter {
 
     @Router(path = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
@@ -28,7 +29,7 @@ public class ExampleRouter {
 
     @Router(path = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloXml(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
-                        @RequestParameter(name = "value", paramType = RequestParameterType.QUERY) List<Integer> value) {
+                                        @RequestParameter(name = "value", paramType = RequestParameterType.QUERY) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
@@ -36,7 +37,7 @@ public class ExampleRouter {
 
     @Router(path = "/json", method = {HttpMethod.POST, HttpMethod.GET}, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloJson(@RequestParameter(name = "key", paramType = RequestParameterType.PARAM) String key,
-                                        @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
+                                         @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
@@ -44,7 +45,7 @@ public class ExampleRouter {
 
     @Router(path = "/matrix", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloMatrix(@RequestParameter(name = "key", paramType = RequestParameterType.MATRIX) String key,
-                                         @RequestParameter(name = "value", paramType = RequestParameterType.MATRIX) List<Integer> value) {
+                                           @RequestParameter(name = "value", paramType = RequestParameterType.MATRIX) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
@@ -61,8 +62,8 @@ public class ExampleRouter {
 
     @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloBodyJson(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
-                                            @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
-                                                    bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
+                                             @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
+                                                     bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
         Map<String, Object> result = new HashMap<>();
         result.put(key, value);
         return result;
@@ -94,5 +95,19 @@ public class ExampleRouter {
         view.setSuffix(".html");
         view.setText(true);
         return view;
+    }
+
+    @Router(path = "/{id}/{id}")
+    public String testPathAttribute(
+            @RequestParameter(name = "id", paramType = RequestParameterType.PATH, require = false, defaultValue = "0")
+                    List<Integer> id) {
+        return "<html><head><title>" + id + "</title></head><body><p>this is a path attribute test</p></body></html>";
+    }
+
+    @Router(path = "/inner")
+    public String testPathAttribute(
+            @RequestParameter(name = "token", paramType = RequestParameterType.INNER, require = false, defaultValue = "")
+                    UUID id) {
+        return "<html><head><title>" + id.toString() + "</title></head><body><p>this is a path attribute test</p></body></html>";
     }
 }

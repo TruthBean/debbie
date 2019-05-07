@@ -49,6 +49,11 @@ public enum RequestParameterType {
     /**
      * cookie attribute
      */
-    COOKIE
+    COOKIE,
+
+    /**
+     * inner attribute
+     */
+    INNER
 
 }

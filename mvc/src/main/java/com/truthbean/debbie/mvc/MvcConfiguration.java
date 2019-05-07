@@ -4,6 +4,7 @@ import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.io.MediaType;
 
 import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import java.util.*;
@@ -14,6 +15,9 @@ import java.util.*;
  * Created on 2019/2/25 22:08.
  */
 public class MvcConfiguration extends BeanScanConfiguration {
+
+    private String dispatcherMapping;
+
     /**
      * default response type
      */
@@ -38,6 +42,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public void copyFrom(MvcConfiguration configuration) {
+        this.dispatcherMapping = configuration.dispatcherMapping;
+
         this.defaultTypes.addAll(configuration.defaultTypes);
 
         this.enableCors = configuration.enableCors;
@@ -47,6 +53,14 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
         this.templatePrefix = configuration.templatePrefix;
         this.templateSuffix = configuration.templateSuffix;
+    }
+
+    public String getDispatcherMapping() {
+        return dispatcherMapping;
+    }
+
+    public void setDispatcherMapping(String dispatcherMapping) {
+        this.dispatcherMapping = dispatcherMapping;
     }
 
     public boolean isEnableCors() {
@@ -160,6 +174,28 @@ public class MvcConfiguration extends BeanScanConfiguration {
         public Builder template(String suffix, String prefix) {
             configuration.templateSuffix = suffix;
             configuration.templatePrefix = prefix;
+            return this;
+        }
+
+        /**
+         * use ** to replace path, like **.do, /api/**, /api/**.do
+         * NOT: but do not support multi **, like /api/**-controller/**.do
+         */
+        public Builder dispatcherMapping(String dispatcherMapping) {
+            int startCount = 0;
+            char[] chars = dispatcherMapping.toCharArray();
+            for (char c: chars) {
+                if (c == '*') {
+                    startCount++;
+                }
+            }
+
+            if (startCount == 2) {
+                configuration.dispatcherMapping = dispatcherMapping;
+            } else {
+                throw new DispatcherMappingFormatException(
+                        "##debbie.web.dispatcher-mapping## only support **, like **.do, /api/**, /api/**.do, not support * or multi **");
+            }
             return this;
         }
 

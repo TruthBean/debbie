@@ -15,6 +15,12 @@ import java.util.stream.Collectors;
  */
 public class MvcProperties extends AbstractProperties {
     //===========================================================================
+    /**
+     * use ** to replace path, like **.do, /api/**, /api/**.do
+     * NOT: but do not support multi **, like /api/**-controller/**.do
+     */
+    private static final String DISPATCHER_MAPPING = "debbie.web.dispatcher-mapping";
+
     private static final String SERVER_DEFAULT_TYPES = "debbie.web.default.types";
     private static final String SERVER_CSRF = "debbie.web.csrf";
 
@@ -42,6 +48,8 @@ public class MvcProperties extends AbstractProperties {
         MvcProperties properties = new MvcProperties();
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder();
+
+        builder.dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/"));
 
         List<MediaType> defaultTypes = properties.getMediaTypeListValue(SERVER_DEFAULT_TYPES, ",");
         if (defaultTypes != null && !defaultTypes.isEmpty()) {

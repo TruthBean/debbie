@@ -8,8 +8,6 @@ import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestBody;
-import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.url.RouterPathAttribute;
 import com.truthbean.debbie.servlet.ServletRouterCookie;
 import com.truthbean.debbie.servlet.ServletRouterSession;
 import org.apache.commons.fileupload.FileItem;
@@ -44,31 +42,26 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         setUrl(request.getRequestURI());
         setMatrix(UriUtils.resolveMatrixByPath(getUrl()));
 
-        setPathAttributes();
+        setPathAttributes(new HashMap<>());
         setHeaders();
         setCookies();
 
         setSession(new ServletRouterSession(request));
 
-        setParams();
         setQueries(queries(request.getQueryString()));
+        setParams();
         setBody();
 
         setContentType();
         setResponseType();
+
+        setRequestAttribute();
 
         super.setId(id);
     }
 
     public HttpServletRequest getHttpServletRequest() {
         return request;
-    }
-
-    private void setPathAttributes() {
-        List<RouterPathAttribute> result = new ArrayList<>();
-        var regex = "{\\s}";
-        // todo
-        setPathAttributes(result);
     }
 
     private void setHeaders() {
@@ -124,9 +117,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
                 RequestBody requestBody = new RequestBody(request.getReader());
                 var queries = queries(requestBody.getContent().get(0));
                 Map<String, List> map = new HashMap<>();
-                for (var entry : queries.entrySet()) {
-                    map.put(entry.getKey(), entry.getValue());
-                }
+                queries.forEach(map::put);
                 return map;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -168,11 +159,9 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     }
 
     private void processFormField(Map<String, List<FileItem>> items, Map<String, List> map) {
-        for (var item : items.entrySet()) {
-            var key = item.getKey();
-            var value = item.getValue();
+        items.forEach((key, value) -> {
             List<Object> values = new ArrayList<>();
-            for (var fileItem : value) {
+            value.forEach(fileItem -> {
                 if (fileItem.isFormField()) {
                     try {
                         values.add(fileItem.getString("UTF-8"));
@@ -191,18 +180,18 @@ public class ServletRouterRequest extends DefaultRouterRequest {
                     multipartFile.setContent(fileItem.get());
                     values.add(multipartFile);
                 }
-            }
+            });
             map.put(key, values);
-        }
+        });
     }
 
     private Map<String, List<String>> queries(String url) {
         return queries(url, false);
     }
 
-    private Map<String, List<String>> queries(String url, boolean flag) {
+    private Map<String, List<String>> queries(String url, boolean encode) {
         Map<String, List<String>> map = new HashMap<>();
-        if (flag) {
+        if (encode) {
             if (url != null) {
                 var decoder = new QueryStringDecoder(url);
                 map.putAll(decoder.parameters());
@@ -246,6 +235,14 @@ public class ServletRouterRequest extends DefaultRouterRequest {
             }
         }
         setResponseType(mediaType);
+    }
+
+    private void setRequestAttribute() {
+        Enumeration<String> attributeNames = request.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            var name = attributeNames.nextElement();
+            super.addAttribute(name, request.getAttribute(name));
+        }
     }
 
     @Override

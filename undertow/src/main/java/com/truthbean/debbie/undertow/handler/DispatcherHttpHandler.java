@@ -7,6 +7,7 @@ import com.truthbean.debbie.undertow.UndertowConfiguration;
 import com.truthbean.debbie.undertow.UndertowRouterRequest;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.AttachmentKey;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -21,6 +22,7 @@ import java.nio.ByteBuffer;
  */
 public class DispatcherHttpHandler implements HttpHandler {
 
+    private AttachmentKey<UndertowRouterRequest> request;
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherHttpHandler.class);
 
     private UndertowConfiguration configuration;
@@ -29,8 +31,15 @@ public class DispatcherHttpHandler implements HttpHandler {
         this.configuration = configuration;
     }
 
+    public void setRequest(AttachmentKey<UndertowRouterRequest> request) {
+        this.request = request;
+    }
+
     private RouterRequest getHttpRequestInfo(final HttpServerExchange exchange) {
-        RouterRequest httpRequest = new UndertowRouterRequest(exchange);
+        UndertowRouterRequest httpRequest = exchange.getAttachment(request);
+        if (httpRequest == null) {
+            httpRequest = new UndertowRouterRequest(exchange);
+        }
 
         HeaderMap responseHeaders = exchange.getResponseHeaders();
         var cors = this.configuration.getCors();

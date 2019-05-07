@@ -1,25 +1,27 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.Surname;
 
+import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Future;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class SurnameRepository extends DmlRepositoryHandler<Surname, Long> {
-    private RepositoryHandler repositoryHandler;
-
-    public SurnameRepository(RepositoryHandler repositoryHandler) {
-        super(repositoryHandler, Surname.class, Long.class);
-        this.repositoryHandler = repositoryHandler;
-    }
+public class SurnameRepository {
+    private DataSourceFactory factory = DataSourceFactory.defaultFactory();
+    private DmlRepositoryHandler<Surname, Long> repositoryHandler =
+            new DmlRepositoryHandler<>(Surname.class, Long.class);
 
     public boolean save(Surname surname) {
-        Long id = repositoryHandler.actionTransactional(() -> {
-            Long insert = super.insert(surname);
+        Connection connection = factory.getConnection();
+        Long id = RepositoryAction.actionTransactional(connection, () -> {
+            Long insert = repositoryHandler.insert(connection, surname);
             surname.setId(insert);
             return insert;
         });
@@ -30,28 +32,45 @@ public class SurnameRepository extends DmlRepositoryHandler<Surname, Long> {
         return result;
     }
 
-    public Surname findById(Long id) {
-        return super.findById(id);
+    public List<Surname> saveAndDelete(Surname surname, Long deleteId) {
+        Connection connection = factory.getConnection();
+        return RepositoryAction.actionTransactional(connection, () -> {
+            Long insert = repositoryHandler.insert(connection, surname);
+            surname.setId(insert);
+            System.out.println(1/0);
+            repositoryHandler.deleteById(connection, deleteId);
+            return repositoryHandler.findAll(connection);
+        });
+    }
+
+    public Optional<Surname> findById(Long id) {
+        Connection connection = factory.getConnection();
+        return RepositoryAction.actionOptional(connection, () -> repositoryHandler.findById(connection, id));
     }
 
     public boolean update(Surname surname) {
-        return repositoryHandler.actionTransactional(() -> super.update(surname));
+        Connection connection = factory.getConnection();
+        return RepositoryAction.actionTransactional(connection, () -> repositoryHandler.update(connection, surname));
     }
 
     public boolean delete(Long id) {
-        return repositoryHandler.actionTransactional(() -> super.deleteById(id));
+        Connection connection = factory.getConnection();
+        return RepositoryAction.actionTransactional(connection, () -> repositoryHandler.deleteById(connection, id));
     }
 
-    public List<Surname> findAll() {
-        return super.findAll();
+    public Future<List<Surname>> findAll() {
+        Connection connection = factory.getConnection();
+        return RepositoryAction.asyncAction(connection, () -> repositoryHandler.findAll(connection));
     }
 
     public Long count() {
-        return super.count();
+        Connection connection = factory.getConnection();
+        return RepositoryAction.action(connection, () -> repositoryHandler.count(connection));
     }
 
     public Page<Surname> findPaged(PageRequest pageRequest) {
-        return super.findPaged(pageRequest);
+        Connection connection = factory.getConnection();
+        return RepositoryAction.action(connection, () -> repositoryHandler.findPaged(connection, pageRequest));
     }
 
 }

@@ -45,7 +45,6 @@ public abstract class AbstractInvokedParameterHandler {
                 }
             }
         }
-
     }
 
     public void handleObjectFiled(InputStream inputStream, MediaType type,
@@ -70,25 +69,27 @@ public abstract class AbstractInvokedParameterHandler {
     }
 
     public void handleParam(Map<String, List> map, InvokedParameter invokedParameter) {
-        for (Map.Entry<String, List> entry : map.entrySet()) {
-            boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
-                    TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+        if (map != null && !map.isEmpty()) {
+            for (Map.Entry<String, List> entry : map.entrySet()) {
+                boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
+                        TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
 
-            if (flag) {
-                Object value;
-                if (TypeHelper.isArrayType(invokedParameter.getType())) {
-                    value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue());
-                } else {
-                    value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue().get(0));
+                if (flag) {
+                    Object value;
+                    if (TypeHelper.isArrayType(invokedParameter.getType())) {
+                        value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue());
+                    } else {
+                        value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue().get(0));
+                    }
+                    invokedParameter.setName(entry.getKey());
+                    invokedParameter.setValue(value);
+                    break;
                 }
-                invokedParameter.setName(entry.getKey());
-                invokedParameter.setValue(value);
-                break;
             }
         }
     }
 
-    public void handleSession(Map<String, Object> map, InvokedParameter invokedParameter) {
+    public void handleObject(Map<String, Object> map, InvokedParameter invokedParameter) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
                     TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
