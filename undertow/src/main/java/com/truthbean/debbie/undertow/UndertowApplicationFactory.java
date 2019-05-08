@@ -4,8 +4,8 @@ import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.core.net.NetWorkUtils;
-import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
-import com.truthbean.debbie.mvc.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
 import com.truthbean.debbie.undertow.handler.HttpHandlerFilter;
@@ -14,7 +14,7 @@ import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author TruthBean
@@ -35,7 +35,8 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
 
-        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
+        // reverse order to fix the chain order
+        List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         HttpHandler next = new DispatcherHttpHandler(configuration);
         for (RouterFilterInfo filter : filters) {
             next = new HttpHandlerFilter(next, filter);

@@ -50,4 +50,8 @@ public abstract class AbstractTemplateView extends AbstractView {
     public boolean isRedirect() {
         return redirect;
     }
+
+    public static boolean isTemplateView(Object any){
+        return any instanceof AbstractTemplateView;
+    }
 }

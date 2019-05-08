@@ -9,6 +9,15 @@ public class ResponseEntity {
     private String message;
     private Object data;
 
+    public ResponseEntity() {
+    }
+
+    public ResponseEntity(int status, String message, Object data) {
+        this.status = status;
+        this.message = message;
+        this.data = data;
+    }
+
     public int getStatus() {
         return status;
     }

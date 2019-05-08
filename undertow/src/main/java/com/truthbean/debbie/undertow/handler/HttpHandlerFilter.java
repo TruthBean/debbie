@@ -1,9 +1,10 @@
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.mvc.filter.RouterFilter;
-import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
-import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.request.filter.RouterFilter;
+import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
+import com.truthbean.debbie.undertow.UndertowResponseHandler;
 import com.truthbean.debbie.undertow.UndertowRouterRequest;
+import com.truthbean.debbie.undertow.UndertowRouterResponse;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
@@ -38,12 +39,15 @@ public class HttpHandlerFilter implements HttpHandler {
         if (routerRequest == null) {
             routerRequest = new UndertowRouterRequest(exchange);
         }
+
+        UndertowRouterResponse routerResponse = new UndertowRouterResponse();
+
         String url = exchange.getRequestURI();
         List<Pattern> urlPattern = filterInfo.getUrlPattern();
         RouterFilter routerFilter = filterInfo.getRouterFilter();
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
-                if (routerFilter.doFilter(routerRequest)) {
+                if (routerFilter.doFilter(routerRequest, routerResponse)) {
                     Map<String, Object> attributes = routerRequest.getAttributes();
                     if (attributes!=null && !attributes.isEmpty()) {
                         exchange.putAttachment(request, routerRequest);
@@ -52,9 +56,12 @@ public class HttpHandlerFilter implements HttpHandler {
                         ((DispatcherHttpHandler) next).setRequest(request);
                     }
                     next.handleRequest(exchange);
+                } else {
+                    UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
+                    handler.handle(routerResponse);
                 }
+                break;
             }
         }
-
     }
 }

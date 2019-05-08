@@ -1,8 +1,11 @@
 package com.truthbean.debbie.servlet.filter;
 
-import com.truthbean.debbie.mvc.filter.RouterFilter;
+import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
+import com.truthbean.debbie.servlet.response.ServletResponseHandler;
+import com.truthbean.debbie.servlet.response.ServletRouterResponse;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpFilter;
@@ -24,21 +27,24 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
     }
 
     @Override
-    public boolean doFilter(RouterRequest request) {
-        return this.filter.doFilter(request);
+    public boolean doFilter(RouterRequest request, RouterResponse response) {
+        return this.filter.doFilter(request, response);
     }
 
     @Override
     public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         ServletRouterRequest routerRequest = new ServletRouterRequest(request);
-        if (this.doFilter(routerRequest)) {
+        ServletRouterResponse routerResponse = new ServletRouterResponse(response);
+        if (this.doFilter(routerRequest, routerResponse)) {
             Map<String, Object> attributes = routerRequest.getAttributes();
             if (attributes!=null && !attributes.isEmpty()) {
                 attributes.forEach(request::setAttribute);
             }
             chain.doFilter(request, response);
+        } else {
+            ServletResponseHandler handler = new ServletResponseHandler(request, response);
+            handler.handle(routerResponse);
         }
-
     }
 }

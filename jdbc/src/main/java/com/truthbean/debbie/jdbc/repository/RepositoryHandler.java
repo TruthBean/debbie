@@ -1,6 +1,5 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.proxy.Action;
 import com.truthbean.debbie.core.reflection.ClassNotMatchedException;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;

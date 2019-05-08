@@ -23,9 +23,15 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     private Class<ID> idClass;
     private EntityInfo<E> entityInfo;
 
-    public DmlRepositoryHandler(Class<E> entityClass, Class<ID> idClass) {
-        this.entityClass = entityClass;
-        this.idClass = idClass;
+    public DmlRepositoryHandler() {
+    }
+
+    public static <E, ID> DmlRepositoryHandler<E, ID> of(Class<E> entityClass, Class<ID> idClass) {
+        var handler = new DmlRepositoryHandler<E, ID>();
+        handler.entityClass = entityClass;
+        handler.idClass = idClass;
+
+        return handler;
     }
 
     private EntityInfo<E> getEntityInfo() {

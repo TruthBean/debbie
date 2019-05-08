@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 public class SurnameRepository {
     private DataSourceFactory factory = DataSourceFactory.defaultFactory();
     private DmlRepositoryHandler<Surname, Long> repositoryHandler =
-            new DmlRepositoryHandler<>(Surname.class, Long.class);
+            DmlRepositoryHandler.of(Surname.class, Long.class);
 
     public boolean save(Surname surname) {
         Connection connection = factory.getConnection();

@@ -1,4 +1,4 @@
-package com.truthbean.debbie.mvc.filter;
+package com.truthbean.debbie.mvc.request.filter;
 
 import com.truthbean.debbie.core.bean.BeanInitializationHandler;
 import com.truthbean.debbie.core.reflection.ClassInfo;
@@ -8,11 +8,9 @@ import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author TruthBean
@@ -63,6 +61,12 @@ public class RouterFilterManager {
 
     public static Set<RouterFilterInfo> getFilters() {
         return Collections.unmodifiableSet(FILTERS);
+    }
+
+    public static List<RouterFilterInfo> getReverseOrderFilters() {
+        var filters = getFilters();
+        return filters.stream().sorted((o1, o2) -> Integer.compare(o2.getOrder(), o1.getOrder()))
+                .collect(Collectors.toList());
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterFilterManager.class);

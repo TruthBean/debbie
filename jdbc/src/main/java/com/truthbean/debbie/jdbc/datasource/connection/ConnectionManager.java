@@ -1,4 +1,4 @@
-package com.truthbean.debbie.jdbc.datasource;
+package com.truthbean.debbie.jdbc.datasource.connection;
 
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
@@ -14,7 +14,7 @@ public class ConnectionManager implements Closeable {
     /**
      * 实例化一个线程
      */
-    private final ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
 
     private boolean autoCommit;
     private TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED;
@@ -46,7 +46,7 @@ public class ConnectionManager implements Closeable {
      *
      * @return connection
      */
-    public Connection get() {
+    public static Connection get() {
         return connectionThreadLocal.get();
     }
 

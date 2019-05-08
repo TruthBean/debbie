@@ -7,6 +7,7 @@ import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
@@ -132,12 +133,21 @@ public class MvcRouterHandler {
         return matchUrl;
     }
 
-    public static void handleRouter(RouterInfo routerInfo) {
+    public static RouterResponse handleRouter(RouterInfo routerInfo) {
+        RouterResponse routerResponse = new RouterResponse();
+
+        routerResponse.setHasTemplate(routerInfo.hasTemplate());
+        routerResponse.setTemplateSuffix(routerInfo.getTemplateSuffix());
+        routerResponse.setTemplatePrefix(routerInfo.getTemplatePrefix());
+
+        routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
+
         Object responseValue;
         if (routerInfo.getErrorInfo() != null) {
             responseValue = routerInfo.getErrorInfo();
+            routerResponse.setContent(responseValue);
             routerInfo.getResponse().setData(responseValue);
-            return;
+            return routerResponse;
         }
         try {
             RouterInvoker invoker = new RouterInvoker(routerInfo);
@@ -149,5 +159,7 @@ public class MvcRouterHandler {
         }
 
         routerInfo.getResponse().setData(responseValue);
+        routerResponse.setContent(responseValue);
+        return routerResponse;
     }
 }

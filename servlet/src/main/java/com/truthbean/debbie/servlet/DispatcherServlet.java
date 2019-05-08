@@ -2,10 +2,12 @@ package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.AbstractView;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
+import com.truthbean.debbie.servlet.response.ServletResponseHandler;
 import com.truthbean.debbie.servlet.response.view.JspView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,42 +80,11 @@ public class DispatcherServlet extends HttpServlet {
 
         var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration.getDefaultTypes());
         LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
-        MvcRouterHandler.handleRouter(routerInfo);
-        var any = routerInfo.getResponse().getData();
+        RouterResponse response = MvcRouterHandler.handleRouter(routerInfo);
 
-        if (any == null) {
-            LOGGER.debug("response is null");
-        } else if (isTemplateView(any)) {
-            var jspView = new JspView();
-            if (any instanceof AbstractTemplateView) {
-                jspView.from((AbstractTemplateView) any);
-            }
-            jspView.setHttpServletRequest(req);
-            jspView.setHttpServletResponse(resp);
-            if (!StringUtils.isBlank(routerInfo.getTemplatePrefix())) {
-                jspView.setPrefix(routerInfo.getTemplatePrefix());
-            }
-            if (!StringUtils.isBlank(routerInfo.getTemplateSuffix())) {
-                jspView.setSuffix(routerInfo.getTemplateSuffix());
-            }
-            jspView.transfer();
-        } else if (any instanceof byte[]) {
-            resp.reset();
-            resp.setContentType(MediaType.APPLICATION_OCTET_STREAM.getValue());
-            resp.setContentLength(((byte[]) any).length);
-            try (var outputStream = resp.getOutputStream()) {
-                outputStream.write((byte[]) any);
-            }
-        } else {
-            LOGGER.debug(any.toString());
-            resp.reset();
-            resp.setContentType(routerInfo.getResponse().getResponseType().getValue());
-            resp.getWriter().println(any);
-        }
-    }
-
-    private boolean isTemplateView(Object any){
-        return any instanceof AbstractTemplateView || any instanceof AbstractView;
+        // handle response
+        ServletResponseHandler handler = new ServletResponseHandler(req, resp);
+        handler.handle(response);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherServlet.class);
