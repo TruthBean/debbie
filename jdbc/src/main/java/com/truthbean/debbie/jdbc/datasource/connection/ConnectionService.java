@@ -6,7 +6,9 @@ import java.sql.Connection;
  * @author TruthBean
  * @since 0.0.1
  */
-public interface ConnectionCallable<V> extends ConnectionService {
+public interface ConnectionService {
 
-    V call(Connection connection);
+    default Connection getConnection() {
+        return ConnectionBinder.get();
+    }
 }

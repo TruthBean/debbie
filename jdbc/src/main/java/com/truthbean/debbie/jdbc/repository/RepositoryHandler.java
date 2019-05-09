@@ -87,7 +87,6 @@ public class RepositoryHandler {
                 }
             }
         } catch (SQLException ex) {
-            LOGGER.error("", ex);
             throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(resultSet, preparedStatement);

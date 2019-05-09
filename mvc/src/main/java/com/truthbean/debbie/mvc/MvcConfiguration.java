@@ -180,6 +180,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
         /**
          * use ** to replace path, like **.do, /api/**, /api/**.do
          * NOT: but do not support multi **, like /api/**-controller/**.do
+         * @param dispatcherMapping dispatcher mapping
+         * @return Builder
          */
         public Builder dispatcherMapping(String dispatcherMapping) {
             int startCount = 0;

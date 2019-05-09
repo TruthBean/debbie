@@ -1,5 +1,6 @@
 package com.truthbean.debbie.core.bean;
 
+import com.truthbean.debbie.core.reflection.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +20,12 @@ public class BeanInvoker<Bean> {
     private static final Map<String, Method> BEAN_METHODS = new HashMap<>();
 
     private Bean bean;
+    private ClassInfo classInfo;
 
     public BeanInvoker(Class<Bean> beanClass) {
         this.beanClass = beanClass;
         var methods = BeanCacheHandler.getBeanMethods(beanClass);
+        this.classInfo = BeanCacheHandler.getRegisterBean(beanClass);
         methods.forEach(method -> BEAN_METHODS.put(method.getName(), method));
         createBean();
     }
@@ -35,6 +38,14 @@ public class BeanInvoker<Bean> {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             LOGGER.error("new instance by default constructor error", e);
         }
+    }
+
+    public Bean getBean() {
+        return bean;
+    }
+
+    public ClassInfo getClassInfo() {
+        return classInfo;
     }
 
     public Object invokeMethod(String methodName, Object[] parameters) {

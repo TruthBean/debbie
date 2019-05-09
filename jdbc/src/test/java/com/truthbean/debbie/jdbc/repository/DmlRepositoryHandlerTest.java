@@ -1,18 +1,16 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.Surname;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +25,8 @@ public class DmlRepositoryHandlerTest {
 
     @BeforeAll
     public static void before() {
-        BeanInitializationHandler.init(Surname.class);
+        var beanInitialization = new BeanInitialization();
+        beanInitialization.init(Surname.class);
 
         var config = DataSourceProperties.toConfiguration();
         DataSourceFactory factory = new DefaultDataSourceFactory();

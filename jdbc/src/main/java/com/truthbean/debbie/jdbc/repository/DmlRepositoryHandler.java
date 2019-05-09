@@ -23,6 +23,8 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     private Class<ID> idClass;
     private EntityInfo<E> entityInfo;
 
+    private EntityResolver entityResolver = new EntityResolver();
+
     public DmlRepositoryHandler() {
     }
 
@@ -36,7 +38,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     private EntityInfo<E> getEntityInfo() {
         if (entityInfo == null) {
-            entityInfo = EntityResolver.resolveEntityClass(getEntityClass());
+            entityInfo = entityResolver.resolveEntityClass(getEntityClass());
         }
         return entityInfo;
     }
@@ -92,7 +94,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     public int delete(Connection connection, E condition) throws TransactionException {
-        var entityInfo = EntityResolver.resolveEntity(condition);
+        var entityInfo = entityResolver.resolveEntity(condition);
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo);
 
@@ -107,7 +109,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     @SuppressWarnings("unchecked")
     public ID insert(Connection connection, E entity) throws TransactionException {
-        var entityInfo = EntityResolver.resolveEntity(entity);
+        var entityInfo = entityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
@@ -131,7 +133,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     public boolean update(Connection connection, E entity) throws TransactionException {
-        var entityInfo = EntityResolver.resolveEntity(entity);
+        var entityInfo = entityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
         var primaryKey = entityInfo.getPrimaryKey();
@@ -166,7 +168,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var conditionInfo = EntityResolver.resolveEntity(condition);
+        var conditionInfo = entityResolver.resolveEntity(condition);
         var conditionAndValues = resolveCondition(conditionInfo);
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().extra(conditionAndValues.conditionSql).builder();
@@ -190,7 +192,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         Object[] args = null;
 
         if (condition != null) {
-            var conditionInfo = EntityResolver.resolveEntity(condition);
+            var conditionInfo = entityResolver.resolveEntity(condition);
             var conditionAndValues = resolveCondition(conditionInfo);
             sqlBuilder.where().extra(conditionAndValues.conditionSql);
             args = conditionAndValues.conditionValues.toArray();
@@ -251,7 +253,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         Object[] args = null;
 
         if (condition != null) {
-            var conditionInfo = EntityResolver.resolveEntity(condition);
+            var conditionInfo = entityResolver.resolveEntity(condition);
             var conditionAndValues = resolveCondition(conditionInfo);
             sqlBuilder.where().extra(conditionAndValues.conditionSql);
             args = conditionAndValues.conditionValues.toArray();
@@ -272,7 +274,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     public E findById(Connection connection, ID id) {
         var entityClass = getEntityClass();
-        var entityInfo = EntityResolver.resolveEntityClass(entityClass);
+        var entityInfo = entityResolver.resolveEntityClass(entityClass);
 
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();

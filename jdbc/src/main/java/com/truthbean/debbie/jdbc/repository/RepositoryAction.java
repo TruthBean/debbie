@@ -18,7 +18,7 @@ public class RepositoryAction {
     private static <R> Connection getConnection(ConnectionCallable<R> action) {
         var connection = action.getConnection();
         if (connection == null) {
-            throw new RuntimeException("ConnectionManager did not bind connection yet !");
+            throw new RuntimeException("ConnectionBinder did not bind connection yet !");
         }
         return connection;
     }

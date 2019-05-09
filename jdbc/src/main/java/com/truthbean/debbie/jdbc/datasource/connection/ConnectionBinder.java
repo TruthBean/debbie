@@ -1,5 +1,8 @@
 package com.truthbean.debbie.jdbc.datasource.connection;
 
+import com.truthbean.debbie.core.reflection.ReflectionHelper;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
 import java.io.Closeable;
@@ -10,7 +13,10 @@ import java.sql.SQLException;
  * @author TruthBean
  * @since 0.0.1
  */
-public class ConnectionManager implements Closeable {
+public class ConnectionBinder implements Closeable {
+
+    private static volatile DataSourceFactory dataSourceFactory;
+
     /**
      * 实例化一个线程
      */
@@ -27,6 +33,19 @@ public class ConnectionManager implements Closeable {
         if (transactionIsolationLevel != null) {
             this.transactionIsolationLevel = transactionIsolationLevel;
         }
+    }
+
+    public DataSourceFactory getDataSourceFactory(DataSourceConfiguration configuration) {
+        if (dataSourceFactory == null) {
+            synchronized (ConnectionBinder.class) {
+                if (dataSourceFactory == null) {
+                    DataSourceFactory factory = ReflectionHelper.newInstance(configuration.getDataSourceFactoryClass());
+                    dataSourceFactory = factory.factory(configuration);
+                }
+            }
+
+        }
+        return dataSourceFactory;
     }
 
     public void bind(Connection connection) {
@@ -67,23 +86,23 @@ public class ConnectionManager implements Closeable {
 
     public void commit() {
         var connection = connectionThreadLocal.get();
-        if (connection != null) {
-            try {
+        try {
+            if (connection != null && !connection.isReadOnly() && !connection.getAutoCommit()) {
                 connection.commit();
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     public void rollback() {
         var connection = connectionThreadLocal.get();
-        if (connection != null) {
-            try {
+        try {
+            if (connection != null && !connection.isReadOnly()) {
                 connection.rollback();
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
@@ -49,7 +49,8 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     }
 
     public <E> void createTable(Connection connection, Class<E> entity) throws TransactionException {
-        var classInfo = BeanInitializationHandler.getRegisterBean(entity);
+        BeanInitialization beanInitialization = new BeanInitialization();
+        var classInfo = beanInitialization.getRegisterBean(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();

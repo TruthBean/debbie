@@ -1,5 +1,8 @@
 package com.truthbean.debbie.mvc.request.filter;
 
+import com.truthbean.debbie.core.bean.BeanComponent;
+import com.truthbean.debbie.core.bean.BeanInjectType;
+
 import java.lang.annotation.*;
 
 /**
@@ -9,9 +12,12 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@BeanComponent
 public @interface Filter {
 
     String name() default "";
+
+    BeanInjectType type() default BeanInjectType.SINGLETON;
 
     String[] value() default {};
 

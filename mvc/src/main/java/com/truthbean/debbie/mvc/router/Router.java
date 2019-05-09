@@ -1,5 +1,7 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.core.bean.BeanComponent;
+import com.truthbean.debbie.core.bean.BeanInjectType;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
@@ -14,7 +16,21 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@BeanComponent
 public @interface Router {
+
+    /**
+     * router bean name
+     * @return router bean name
+     */
+    String name() default "";
+
+    /**
+     * router always be singleton
+     * @return BeanInjectType
+     */
+    BeanInjectType type() default BeanInjectType.SINGLETON;
+
     /**
      * same as path
      * @return path regex

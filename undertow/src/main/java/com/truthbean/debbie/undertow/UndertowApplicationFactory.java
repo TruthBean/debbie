@@ -2,7 +2,7 @@ package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
@@ -31,7 +31,8 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
 
     @Override
     public DebbieApplication factory(UndertowConfiguration configuration) {
-        BeanInitializationHandler.init(configuration.getTargetClasses());
+        BeanInitialization beanInitialization = new BeanInitialization();
+        beanInitialization.init(configuration.getTargetClasses());
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
 

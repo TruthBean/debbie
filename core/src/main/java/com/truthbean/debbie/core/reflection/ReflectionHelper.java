@@ -150,6 +150,30 @@ public class ReflectionHelper {
         return null;
     }
 
+    public static void setField(Object target, Field field, Object value) {
+        try {
+            if (field.trySetAccessible()) {
+                field.setAccessible(true);
+            }
+            field.set(target, value);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static <T> T invokeMethod(Object target, Method method, Object... parameters) {
+        try {
+            if (parameters == null || parameters.length == 0) {
+                return (T) method.invoke(target);
+            } else {
+                return (T) method.invoke(target, parameters);
+            }
+        } catch (IllegalAccessException | InvocationTargetException | ClassCastException e) {
+            LOGGER.error("invokeMethod error", e);
+        }
+        return null;
+    }
+
     /**
      * invoke set method
      *

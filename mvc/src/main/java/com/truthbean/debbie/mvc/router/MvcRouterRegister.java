@@ -1,6 +1,7 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.bean.BeanInitialization;
+import com.truthbean.debbie.core.bean.DebbieBeanInfo;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
@@ -24,7 +25,8 @@ public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
     public static void registerRouter(MvcConfiguration webConfiguration) {
-        Set<ClassInfo> classInfoSet = BeanInitializationHandler.getAnnotatedMethodBean(Router.class);
+        BeanInitialization beanInitialization = new BeanInitialization();
+        Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedMethodBean(Router.class);
         for (var classInfo : classInfoSet) {
             var classAnnotations = classInfo.getClassAnnotations();
             Watcher watcher = (Watcher) classAnnotations.get(Watcher.class);

@@ -1,6 +1,5 @@
 package com.truthbean.debbie.core.bean;
 
-import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,18 +17,18 @@ final class BeanCacheHandler {
     private BeanCacheHandler() {
     }
 
-    private static final Map<Class<?>, ClassInfo> BEAN_CLASSES = new HashMap<>();
-    private static final Set<ClassInfo> CLASS_INFO_SET = new HashSet<>();
+    private static final Map<Class<?>, DebbieBeanInfo> BEAN_CLASSES = new HashMap<>();
+    private static final Set<DebbieBeanInfo> CLASS_INFO_SET = new HashSet<>();
 
     private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Map<Class<?>, List<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
 
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
-    private static final Map<Class<? extends Annotation>, Set<ClassInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
+    private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
     protected static void register(Class<?> beanClass) {
-        LOGGER.debug("register class " + beanClass.getName());
-        var beanClassInfo = new ClassInfo(beanClass);
+        // LOGGER.debug("register class " + beanClass.getName());
+        var beanClassInfo = new DebbieBeanInfo(beanClass);
 
         BEAN_CLASSES.put(beanClass, beanClassInfo);
         CLASS_INFO_SET.add(beanClassInfo);
@@ -100,10 +99,10 @@ final class BeanCacheHandler {
         return BEAN_CLASSES.get(beanClass).getMethods();
     }
 
-    protected static <T extends Annotation> Set<ClassInfo> getAnnotatedClass(Class<T> annotationClass) {
+    protected static <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {
         var classInfoSet = CLASS_INFO_SET;
 
-        Set<ClassInfo> result = new HashSet<>();
+        Set<DebbieBeanInfo> result = new HashSet<>();
 
         classInfoSet.stream()
                 .filter(classInfo -> classInfo.getClassAnnotations().containsKey(annotationClass))
@@ -112,7 +111,7 @@ final class BeanCacheHandler {
         return result;
     }
 
-    public static ClassInfo getRegisterBean(Class<?> bean) {
+    public static DebbieBeanInfo getRegisterBean(Class<?> bean) {
         return BEAN_CLASSES.get(bean);
     }
 
@@ -121,8 +120,46 @@ final class BeanCacheHandler {
 
     }*/
 
-    protected static Set<ClassInfo> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
+    protected static Set<DebbieBeanInfo> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
         return ANNOTATION_METHOD_BEANS.get(methodAnnotation);
+    }
+
+    protected static Set<DebbieBeanInfo> getBeansByInterface(Class<?> interfaceType) {
+        if (!BEAN_CLASSES.containsKey(interfaceType)) {
+            return null;
+        }
+
+        Set<DebbieBeanInfo> classInfoSet = new HashSet<>();
+
+        BEAN_CLASSES.forEach((clazz, beanInfo) -> {
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces != null && interfaces.length > 0) {
+                for (Class<?> i : interfaces) {
+                    if (i == interfaceType) {
+                        classInfoSet.add(beanInfo);
+                    }
+                }
+            }
+        });
+
+        return classInfoSet;
+    }
+
+    protected static Set<DebbieBeanInfo> getBeanByAbstractSuper(Class<?> abstractType) {
+        if (!BEAN_CLASSES.containsKey(abstractType)) {
+            return null;
+        }
+
+        Set<DebbieBeanInfo> classInfoSet = new HashSet<>();
+
+        BEAN_CLASSES.forEach((clazz, beanInfo) -> {
+            Class<?> superclass = clazz.getSuperclass();
+            if (superclass != null && superclass != Object.class && superclass != Void.class) {
+                classInfoSet.add(beanInfo);
+            }
+        });
+
+        return classInfoSet;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanCacheHandler.class);

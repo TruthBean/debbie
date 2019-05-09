@@ -1,6 +1,7 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.BeanInitializationHandler;
+import com.truthbean.debbie.core.bean.BeanInitialization;
+import com.truthbean.debbie.core.bean.DebbieBeanInfo;
 import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.mvc.MvcConfiguration;
@@ -20,7 +21,8 @@ public class RouterFilterManager {
     private static final Set<RouterFilterInfo> FILTERS = new TreeSet<>();
 
     public static void registerFilter(MvcConfiguration webConfiguration) {
-        Set<ClassInfo> classInfoSet = BeanInitializationHandler.getAnnotatedClass(Filter.class);
+        BeanInitialization beanInitialization = new BeanInitialization();
+        Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Filter.class);
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);
         }
