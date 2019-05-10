@@ -22,7 +22,7 @@ class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy> {
     }
 
     @Override
-    public void whenExceptionCached(Exception e) {
+    public void whenExceptionCached(Throwable e) {
         LOGGER.debug("runing when method(" + methodName + ") invoke throw exception and cached ..", e);
     }
 

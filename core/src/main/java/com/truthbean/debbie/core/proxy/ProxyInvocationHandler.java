@@ -46,8 +46,8 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             invoke = method.invoke(target, args);
             proxyHandler.after();
         } catch (Exception e) {
-            LOGGER.error(methodName + " invoke error. \n", e);
-            proxyHandler.whenExceptionCached(e);
+            LOGGER.error(methodName + " invoke error. \n", e.getCause());
+            proxyHandler.whenExceptionCached(e.getCause());
         } finally {
             proxyHandler.finallyRun();
         }

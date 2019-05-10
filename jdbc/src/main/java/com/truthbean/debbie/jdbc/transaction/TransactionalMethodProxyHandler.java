@@ -42,9 +42,20 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
-    public void whenExceptionCached(Exception e) {
+    public void whenExceptionCached(Throwable e) {
         LOGGER.debug("runing when method invoke throw exception and cached ..");
-        connectionBinder.rollback();
+        if (jdbcTransactional.forceCommit()) {
+            LOGGER.debug("force commit ..");
+            connectionBinder.commit();
+        } else {
+            if (jdbcTransactional.rollbackFor().isInstance(e)) {
+                connectionBinder.rollback();
+                LOGGER.debug("rollback ..");
+            } else {
+                LOGGER.debug("not rollback for this exception(" + e.getClass().getName() + "), it committed");
+                connectionBinder.commit();
+            }
+        }
     }
 
     @Override

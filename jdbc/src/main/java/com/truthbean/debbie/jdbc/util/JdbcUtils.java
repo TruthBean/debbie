@@ -27,18 +27,18 @@ public class JdbcUtils {
     public static void close(ResultSet resultSet, PreparedStatement preparedStatement) {
         try {
             if (resultSet != null) {
+                LOGGER.debug("resultSet close ..");
                 resultSet.close();
             }
         } catch (SQLException e) {
-            resultSet = null;
             LOGGER.error("ResultSet关闭失败!", e);
         } finally {
             try {
                 if (preparedStatement != null) {
+                    LOGGER.debug("preparedStatement close ..");
                     preparedStatement.close();
                 }
             } catch (SQLException e) {
-                preparedStatement = null;
                 LOGGER.error("PreparedStatement关闭失败!", e);
             }
         }
@@ -49,7 +49,6 @@ public class JdbcUtils {
             try {
                 connection.close();
             } catch (SQLException e) {
-                connection = null;
                 LOGGER.error("数据库连接关闭失败!", e);
             }
         }

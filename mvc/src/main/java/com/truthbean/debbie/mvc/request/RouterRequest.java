@@ -1,7 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -53,9 +52,19 @@ public interface RouterRequest {
 
     Map<String, List<String>> getMatrix();
 
-    Map<String, List<String>> getHeaders();
+    HttpHeader getHeader();
 
     List<HttpCookie> getCookies();
+
+    default HttpCookie getCookie(String name) {
+        var cookies = getCookies();
+        for (HttpCookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie;
+            }
+        }
+        return null;
+    }
 
     RouterSession getSession();
 
@@ -64,6 +73,15 @@ public interface RouterRequest {
     Object getParameter(String name);
 
     Map<String, List<String>> getQueries();
+
+    default String getQuery(String name) {
+        var queries = getQueries();
+        var values = queries.get(name);
+        if (values != null && !values.isEmpty()) {
+            return values.get(0);
+        }
+        return null;
+    }
 
     InputStream getInputStreamBody();
 

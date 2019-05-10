@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.jdbc.datasource.DataSourceContext;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;

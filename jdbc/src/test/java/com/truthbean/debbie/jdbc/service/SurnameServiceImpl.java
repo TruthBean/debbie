@@ -15,12 +15,11 @@ public class SurnameServiceImpl implements SurnameService {
     private SurnameJdbcRepository surnameJdbcRepository;
 
     public boolean save(Surname surname) {
-        Long id = surnameJdbcRepository.insert(surname);
-        boolean result = id > 0L;
-        if (result) {
-            surname.setId(id);
-        }
-        return result;
+        var all = surnameJdbcRepository.findAll();
+        System.out.println(all);
+        boolean id = surnameJdbcRepository.update(surname);
+        System.out.println(surname.getId() / 0L);
+        return id;
     }
 
     public Optional<Surname> selectById(Long id) {

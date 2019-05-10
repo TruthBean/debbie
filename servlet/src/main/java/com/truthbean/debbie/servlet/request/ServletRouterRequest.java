@@ -107,10 +107,10 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     }
 
     private Map<String, List> getParamsInBody() {
-        var headers = getHeaders();
+        var headers = getHeader();
         String type = MediaType.ANY.getValue();
-        if (headers.get(MediaType.CONTENT_TYPE) != null) {
-            type = headers.get(MediaType.CONTENT_TYPE).get(0);
+        if (headers.getHeader(MediaType.CONTENT_TYPE) != null) {
+            type = headers.getHeader(MediaType.CONTENT_TYPE);
         }
         if (MediaType.APPLICATION_FORM_URLENCODED.getValue().equals(type)) {
             try {

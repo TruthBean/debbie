@@ -7,6 +7,10 @@ import java.lang.annotation.*;
 
 /**
  * jdbc connection transactional
+ *
+ * 1. If forceCommit is true, whether or not it throws exception, connection will commit
+ * 2. As forceCommit is false, if rollbackFor is instanceOf the exception it will rollback
+ *
  * @author TruthBean
  * @since 0.0.1
  */
@@ -17,4 +21,8 @@ import java.lang.annotation.*;
 public @interface JdbcTransactional {
 
     boolean readonly() default false;
+
+    boolean forceCommit() default false;
+
+    Class<? extends Throwable> rollbackFor() default Exception.class;
 }

@@ -13,7 +13,7 @@ public interface MethodProxyHandler<A extends Annotation> {
     default void after() {
     }
 
-    default void whenExceptionCached(Exception e) {
+    default void whenExceptionCached(Throwable e) {
         e.printStackTrace();
     }
 

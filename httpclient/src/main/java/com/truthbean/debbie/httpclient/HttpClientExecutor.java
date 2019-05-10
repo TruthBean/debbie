@@ -110,16 +110,17 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 if (annotation instanceof RequestParameter) {
                     RequestParameter requestParameter = (RequestParameter) annotation;
                     var type = requestParameter.paramType();
+                    var header = request.getHeader();
                     if (type == RequestParameterType.HEAD) {
                         var headerName = requestParameter.name();
                         if (arg instanceof String) {
-                            request.addHeader(headerName, List.of((String) arg));
+                            header.addHeader(headerName, List.of((String) arg));
                         } else if (arg instanceof List) {
-                            request.addHeader(headerName, (List<String>) arg);
+                            header.addHeader(headerName, (List<String>) arg);
                         } else if (arg instanceof Map) {
-                            request.addHeaders((Map<String, List<String>>) arg);
+                            header.addHeaders((Map<String, List<String>>) arg);
                         } else {
-                            request.addHeader(headerName, List.of(arg.toString()));
+                            header.addHeader(headerName, List.of(arg.toString()));
                         }
                     } else if (type == RequestParameterType.COOKIE) {
                         var cookieName = requestParameter.name();
@@ -130,11 +131,11 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         if (arg instanceof String) {
                             request.addQueries(queryName, List.of((String) arg));
                         } else if (arg instanceof List) {
-                            request.addHeader(queryName, (List<String>) arg);
+                            header.addHeader(queryName, (List<String>) arg);
                         } else if (arg instanceof Map) {
                             request.addQueries((Map<String, List<String>>) arg);
                         } else {
-                            request.addHeader(queryName, List.of(arg.toString()));
+                            header.addHeader(queryName, List.of(arg.toString()));
                         }
                     } else if (type == RequestParameterType.PARAM) {
                         var paramName = requestParameter.name();

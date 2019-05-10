@@ -1,19 +1,21 @@
-package com.truthbean.debbie.jdbc.datasource;
+package com.truthbean.debbie.jdbc.datasource.pool;
+
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class DataSourcePoolConfiguration extends DataSourceConfiguration {
+public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration {
     private int initialPoolSize;
     private int increase;
     private int maxPoolSize;
 
-    public DataSourcePoolConfiguration(DataSourceConfiguration configuration) {
+    public DefaultDataSourcePoolConfiguration(DataSourceConfiguration configuration) {
         super(configuration);
     }
 
-    public DataSourcePoolConfiguration(int initialPoolSize, int increase, int maxPoolSize) {
+    public DefaultDataSourcePoolConfiguration(int initialPoolSize, int increase, int maxPoolSize) {
         this.initialPoolSize = initialPoolSize;
         this.increase = increase;
         this.maxPoolSize = maxPoolSize;
@@ -44,7 +46,7 @@ public class DataSourcePoolConfiguration extends DataSourceConfiguration {
     }
 
     @Override
-    protected DataSourcePoolConfiguration clone() {
-        return (DataSourcePoolConfiguration) super.clone();
+    public DefaultDataSourcePoolConfiguration clone() {
+        return (DefaultDataSourcePoolConfiguration) super.clone();
     }
 }

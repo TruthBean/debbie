@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,9 @@ public class SimpleDataSourceConnectionPool {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDataSourceConnectionPool.class);
 
     private Queue<Connection> connectionsPool = new ConcurrentLinkedQueue<>();
-    private final DataSourcePoolConfiguration configuration;
+    private final DefaultDataSourcePoolConfiguration configuration;
 
-    public SimpleDataSourceConnectionPool(DataSourcePoolConfiguration configuration) throws Exception {
+    public SimpleDataSourceConnectionPool(DefaultDataSourcePoolConfiguration configuration) throws Exception {
         this.configuration = configuration.clone();
         Class.forName(configuration.getDriverName());
 

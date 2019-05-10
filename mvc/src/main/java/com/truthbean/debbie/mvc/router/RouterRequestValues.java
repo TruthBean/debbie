@@ -32,7 +32,7 @@ public class RouterRequestValues {
 
     public RouterRequestValues(RouterRequest routerRequest) {
 
-        headers = routerRequest.getHeaders();
+        headers = routerRequest.getHeader().getHeaders();
 
         cookieAttributes = new HashMap<>();
         setCookieAttributes(routerRequest.getCookies());

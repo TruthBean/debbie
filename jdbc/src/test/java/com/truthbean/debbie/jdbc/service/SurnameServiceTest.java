@@ -24,10 +24,11 @@ class SurnameServiceTest {
     @Test
     void save() throws MalformedURLException {
         var q = new Surname();
+        q.setId(27L);
         q.setBegin(new Timestamp(System.currentTimeMillis()));
-        q.setOrigin("姬");
-        q.setWebsite(new URL("https://www.zhao.org"));
-        q.setName("赵");
+        q.setOrigin("1");
+        q.setWebsite(new URL("https://www.zhu.org"));
+        q.setName("zhu");
         var b = surnameService.save(q);
         System.out.println(b);
         System.out.println(q);

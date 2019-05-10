@@ -7,6 +7,7 @@ import com.truthbean.debbie.core.io.StreamHelper;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
+import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import io.undertow.server.HttpServerExchange;
@@ -234,8 +235,8 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List<String>> getHeaders() {
-        return routerRequestCache.getHeaders();
+    public HttpHeader getHeader() {
+        return routerRequestCache.getHeader();
     }
 
     @Override

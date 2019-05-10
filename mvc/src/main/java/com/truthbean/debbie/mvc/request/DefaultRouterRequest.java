@@ -1,8 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
-import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -28,7 +26,7 @@ public class DefaultRouterRequest implements RouterRequest {
     private Map<String, List<String>> pathAttributes;
     private Map<String, List<String>> matrix;
 
-    private Map<String, List<String>> headers;
+    private HttpHeader header = new HttpHeader();
 
     private List<HttpCookie> cookies;
 
@@ -114,26 +112,12 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List<String>> getHeaders() {
-        return headers;
+    public HttpHeader getHeader() {
+        return header;
     }
 
     public void setHeaders(Map<String, List<String>> headers) {
-        this.headers = headers;
-    }
-
-    public void addHeaders(Map<String, List<String>> headers) {
-        if (this.headers == null) {
-            this.headers = new HashMap<>();
-        }
-        this.headers.putAll(headers);
-    }
-
-    public void addHeader(String name, List<String> value) {
-        if (this.headers == null) {
-            this.headers = new HashMap<>();
-        }
-        this.headers.put(name, value);
+        this.header.addHeaders(headers);
     }
 
     @Override
@@ -308,11 +292,7 @@ public class DefaultRouterRequest implements RouterRequest {
             clone.pathAttributes = new HashMap<>(pathAttributes);
         }
 
-        if (headers == null) {
-            clone.headers = new HashMap<>();
-        } else {
-            clone.headers = new HashMap<>(headers);
-        }
+        clone.header = header.copy();
 
         if (cookies == null) {
             clone.cookies = new ArrayList<>();
@@ -342,7 +322,7 @@ public class DefaultRouterRequest implements RouterRequest {
                 "\"method\":" + method +
                 ",\"uri\":\"" + url + '\"' +
                 ",\"pathAttributes\":" + pathAttributes +
-                ",\"headers\":" + headers +
+                ",\"header\":" + header +
                 ",\"cookies\":" + cookies +
                 ",\"session\":" + session +
                 ",\"parameters\":" + parameters +

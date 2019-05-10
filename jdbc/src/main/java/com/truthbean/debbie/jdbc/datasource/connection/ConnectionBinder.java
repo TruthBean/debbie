@@ -4,6 +4,8 @@ import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.sql.Connection;
@@ -22,7 +24,7 @@ public class ConnectionBinder implements Closeable {
      */
     private static final ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
 
-    private boolean autoCommit;
+    private boolean autoCommit = false;
     private TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED;
 
     public void setAutoCommit(boolean autoCommit) {
@@ -88,10 +90,11 @@ public class ConnectionBinder implements Closeable {
         var connection = connectionThreadLocal.get();
         try {
             if (connection != null && !connection.isReadOnly() && !connection.getAutoCommit()) {
+                LOGGER.debug("commit ...");
                 connection.commit();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("commit error for " + e.getMessage());
         }
     }
 
@@ -99,10 +102,13 @@ public class ConnectionBinder implements Closeable {
         var connection = connectionThreadLocal.get();
         try {
             if (connection != null && !connection.isReadOnly()) {
+                LOGGER.debug("rollback ...");
                 connection.rollback();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("rollback error for " + e.getMessage());
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionBinder.class);
 }

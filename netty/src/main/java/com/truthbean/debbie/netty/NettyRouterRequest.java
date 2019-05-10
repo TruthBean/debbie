@@ -7,6 +7,7 @@ import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
+import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import io.netty.buffer.ByteBuf;
@@ -188,8 +189,8 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List<String>> getHeaders() {
-        return routerRequestCache.getHeaders();
+    public HttpHeader getHeader() {
+        return routerRequestCache.getHeader();
     }
 
     @Override

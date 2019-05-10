@@ -14,7 +14,7 @@ import java.util.Map;
 public class DataSourceProperties extends AbstractProperties {
     private final DataSourceConfiguration configuration;
 
-    //===========================================================================
+    //=================================================================================================================
     private static final String DRIVER_NAME_KEY = "debbie.datasource.driver-name";
     private static final String URL_KEY = "debbie.datasource.url";
     private static final String USER_KEY = "debbie.datasource.user";
@@ -26,11 +26,10 @@ public class DataSourceProperties extends AbstractProperties {
     private static final String DRIVER_PROPERTIES_PREFIX = "debbie.datasource.driver.";
 
     private static final String DATA_SOURCE_FACTORY = "debbie.datasource.factory";
-
-    //===========================================================================
+    //=================================================================================================================
     private static final DataSourceProperties INSTANCE = new DataSourceProperties();
 
-    DataSourceProperties() {
+    public DataSourceProperties() {
         configuration = new DataSourceConfiguration();
 
         String driverName = getStringValue(DRIVER_NAME_KEY, "com.mysql.jdbc.Driver");
@@ -68,6 +67,10 @@ public class DataSourceProperties extends AbstractProperties {
 
     public static DataSourceProperties getInstance() {
         return INSTANCE;
+    }
+
+    public DataSourceConfiguration getConfiguration() {
+        return configuration;
     }
 
     public static DataSourceConfiguration toConfiguration() {

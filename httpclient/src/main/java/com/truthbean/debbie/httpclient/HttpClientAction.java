@@ -103,11 +103,10 @@ public class HttpClientAction extends HttpHandler {
         }
         var builder = HttpRequest.newBuilder(uri);
 
-        var headers = request.getHeaders();
-        if (headers != null && !headers.isEmpty()) {
-            for (var entry : headers.entrySet()) {
-                builder.header(entry.getKey(), String.join(";", entry.getValue()));
-            }
+        var header = request.getHeader();
+        if (header != null && !header.isEmpty()) {
+            var headers = header.getHeaders();
+            headers.forEach((key, value) -> builder.header(key, String.join(";", value)));
         }
 
         var cookies = request.getCookies();
