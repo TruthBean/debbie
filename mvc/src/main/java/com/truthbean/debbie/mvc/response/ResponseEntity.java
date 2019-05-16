@@ -4,15 +4,15 @@ package com.truthbean.debbie.mvc.response;
  * @author TruthBean
  * @since 0.0.1
  */
-public class ResponseEntity {
+public class ResponseEntity<D> {
     private int status;
     private String message;
-    private Object data;
+    private D data;
 
     public ResponseEntity() {
     }
 
-    public ResponseEntity(int status, String message, Object data) {
+    public ResponseEntity(int status, String message, D data) {
         this.status = status;
         this.message = message;
         this.data = data;
@@ -38,7 +38,7 @@ public class ResponseEntity {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(D data) {
         this.data = data;
     }
 }

@@ -3,6 +3,8 @@ package com.truthbean.debbie.jdbc.repository;
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.debbie.jdbc.entity.EntityInfo;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public List<String> showDatabases(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().databases().builder();
         LOGGER.debug(sql);
-        return super.select(connection, sql, String.class);
+        return super.query(connection, sql, String.class);
     }
 
     public int dropDatabase(Connection connection, String database) throws TransactionException {
@@ -45,7 +47,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public List<String> showTables(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().tables().builder();
         LOGGER.debug(sql);
-        return super.select(connection, sql, String.class);
+        return super.query(connection, sql, String.class);
     }
 
     public <E> void createTable(Connection connection, Class<E> entity) throws TransactionException {

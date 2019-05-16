@@ -54,7 +54,7 @@ public class RepositoryHandler {
         return rows;
     }
 
-    public Object rawInsert(Connection connection, String sql, boolean generatedKeys, Object... args)
+    public Object insert(Connection connection, String sql, boolean generatedKeys, Object... args)
             throws TransactionException {
         return insert(connection, sql, generatedKeys, Object.class, args);
     }
@@ -113,7 +113,7 @@ public class RepositoryHandler {
         return rows;
     }
 
-    public ResultSet preSelect(Connection connection, String sql, Object... args) {
+    public ResultSet executeQuery(Connection connection, String sql, Object... args) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             if (args != null) {
@@ -128,13 +128,13 @@ public class RepositoryHandler {
         }
     }
 
-    public List<List<ColumnInfo>> select(Connection connection, String sql, Object... args) {
-        ResultSet resultSet = preSelect(connection, sql, args);
+    public List<List<ColumnInfo>> query(Connection connection, String sql, Object... args) {
+        ResultSet resultSet = executeQuery(connection, sql, args);
         return JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
     }
 
-    public <T> List<T> select(Connection connection, String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> selectResult = select(connection, selectSql, args);
+    public <T> List<T> query(Connection connection, String selectSql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         List<T> result = new ArrayList<>();
         if (!TypeHelper.isBaseType(clazz)) {
             List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
@@ -153,8 +153,8 @@ public class RepositoryHandler {
         return result;
     }
 
-    public <T> T selectOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> selectResult = select(connection, selectSql, args);
+    public <T> T queryOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         T result = null;
         if (selectResult.isEmpty()) {
             return null;

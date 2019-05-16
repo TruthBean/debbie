@@ -5,8 +5,10 @@ import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,14 +90,14 @@ public class BeanFactory {
         return factoryWithProxy(clazz, beanInterface);
     }
 
-    public static void resolveDependentBean(Object object, ClassInfo classInfo) {
+    public static void resolveDependentBean(Object object, ClassInfo<?> classInfo) {
         List<Field> fields = classInfo.getFields();
         if (fields != null && !fields.isEmpty()) {
-            fields.forEach(field -> resolveDependentBean(object, field));
+            fields.forEach(field -> resolveFieldDependentBean(object, field));
         }
     }
 
-    private static void resolveDependentBean(Object object, Field field) {
+    private static void resolveFieldDependentBean(Object object, Field field) {
         var beanInject = field.getAnnotation(BeanInject.class);
         if (beanInject != null) {
             String name = beanInject.name();
@@ -120,6 +122,37 @@ public class BeanFactory {
                 }
             }
         }
+    }
+
+    public static Object getParameterBean(Parameter parameter) {
+        var beanInject = parameter.getAnnotation(BeanInject.class);
+        if (beanInject != null) {
+            String name = beanInject.name();
+            if (!name.isBlank()) {
+                var value = factory(name);
+                if (value != null) {
+                    return value;
+                } else {
+                    if (beanInject.require()) {
+                        throw new NoBeanException("no bean " + name + " found .");
+                    }
+                }
+            } else {
+                Class<?> type = parameter.getType();
+                var value = factory(type);
+                if (value != null) {
+                    return value;
+                } else {
+                    if (beanInject.require()) {
+                        throw new NoBeanException("no bean " + name + " found .");
+                    }
+                }
+            }
+        } else {
+            // todo if inject is exist
+            // parameter.getAnnotation(Inject.class);
+        }
+        throw new NoBeanException("no bean " + parameter.getName() + " found .");
     }
 
     public static <Bean> BeanInvoker<Bean> factoryBeanInvoker(Class<Bean> beanClass) {

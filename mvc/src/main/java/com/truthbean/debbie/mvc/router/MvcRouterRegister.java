@@ -37,7 +37,7 @@ public class MvcRouterRegister {
     }
 
     private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
-                                       ClassInfo classInfo, MvcConfiguration webConfiguration) {
+                                       ClassInfo<?> classInfo, MvcConfiguration webConfiguration) {
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         for (var method : methods) {

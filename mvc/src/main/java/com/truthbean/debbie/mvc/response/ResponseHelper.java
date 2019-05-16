@@ -4,15 +4,20 @@ package com.truthbean.debbie.mvc.response;
  * @author TruthBean
  * @since 0.0.1
  */
-public final class ResponseHelper {
-
-    private ResponseHelper() {
-    }
+public class ResponseHelper {
 
     public static ResponseEntity success(String message) {
         var entity = new ResponseEntity();
         entity.setStatus(0);
         entity.setMessage(message);
+        return entity;
+    }
+
+    public static <D> ResponseEntity success(String message, D data) {
+        var entity = new ResponseEntity<D>();
+        entity.setStatus(0);
+        entity.setMessage(message);
+        entity.setData(data);
         return entity;
     }
 
@@ -35,5 +40,13 @@ public final class ResponseHelper {
         response.setStatus(404);
         response.setMessage("resources not found");
         return response;
+    }
+
+    public static <D> ResponseEntity response(int status, String message, D data) {
+        var entity = new ResponseEntity<D>();
+        entity.setStatus(status);
+        entity.setMessage(message);
+        entity.setData(data);
+        return entity;
     }
 }

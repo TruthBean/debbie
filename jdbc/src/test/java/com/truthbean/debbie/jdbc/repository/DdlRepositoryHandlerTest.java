@@ -35,7 +35,7 @@ public class DdlRepositoryHandlerTest {
     @Test
     public void testCreateDatabase() throws ExecutionException, InterruptedException {
         var connection = factory.getConnection();
-        var r = RepositoryAction.asyncActionTransactional(connection, () ->
+        var r = RepositoryCallback.asyncActionTransactional(connection, () ->
                 ddlRepositoryHandler.createDatabase(connection, "hello"));
         System.out.println(r.get());
     }
@@ -43,14 +43,14 @@ public class DdlRepositoryHandlerTest {
     @Test
     public void testShowDatabases() {
         var connection = factory.getConnection();
-        var r = RepositoryAction.action(connection, () -> ddlRepositoryHandler.showDatabases(connection));
+        var r = RepositoryCallback.action(connection, () -> ddlRepositoryHandler.showDatabases(connection));
         System.out.println(r);
     }
 
     @Test
     public void testDropDatabase() {
         var connection = factory.getConnection();
-        var r = RepositoryAction.actionTransactional(connection, () ->
+        var r = RepositoryCallback.actionTransactional(connection, () ->
                 ddlRepositoryHandler.dropDatabase(connection, "hello")
         );
         System.out.println(r);
@@ -59,7 +59,7 @@ public class DdlRepositoryHandlerTest {
     @Test
     public void testShowTables() {
         var connection = factory.getConnection();
-        var r = RepositoryAction.actionTransactional(connection, () -> {
+        var r = RepositoryCallback.actionTransactional(connection, () -> {
             ddlRepositoryHandler.userDatabase(connection, "mysql");
             return ddlRepositoryHandler.showTables(connection);
         });
@@ -69,7 +69,7 @@ public class DdlRepositoryHandlerTest {
     @Test
     public void testCreateTable() {
         var connection = factory.getConnection();
-        var r = RepositoryAction.actionTransactional(connection, () -> {
+        var r = RepositoryCallback.actionTransactional(connection, () -> {
             ddlRepositoryHandler.userDatabase(connection, "test");
             beanInitialization.init(Surname.class);
             ddlRepositoryHandler.createTable(connection, Surname.class);
@@ -81,7 +81,7 @@ public class DdlRepositoryHandlerTest {
     @Test
     public void dropTable() {
         var connection = factory.getConnection();
-        var r = RepositoryAction.actionTransactional(connection, () -> {
+        var r = RepositoryCallback.actionTransactional(connection, () -> {
             ddlRepositoryHandler.userDatabase(connection, "test");
             ddlRepositoryHandler.dropTable(connection, "surname");
             return ddlRepositoryHandler.showTables(connection);

@@ -5,8 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +35,40 @@ public class BeanInvoker<Bean> {
     // TODO cache
     private void createBean() {
         try {
-            var constructor = beanClass.getConstructor();
-            this.bean = constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            // get all constructor
+            Constructor<Bean>[] constructors = classInfo.getConstructors();
+            // find on params constructor
+            for (Constructor<Bean> constructor : constructors) {
+                int parameterCount = constructor.getParameterCount();
+                if (parameterCount == 0) {
+                    this.bean = constructor.newInstance();
+                    break;
+                }
+            }
+
+            // if has no Non params constructor
+            // find a constructor its all param has BeanInject or Inject annotation
+            if (this.bean == null) {
+                for (Constructor<Bean> constructor : constructors) {
+                    int parameterCount = constructor.getParameterCount();
+                    if (parameterCount > 0) {
+                        Parameter[] parameters = constructor.getParameters();
+                        Object[] params = new Object[parameterCount];
+                        for (int i = 0; i < parameterCount; i++) {
+                            Parameter parameter = parameters[i];
+                            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+                            if (annotation != null) {
+                                params[i] = BeanFactory.getParameterBean(parameter);
+                            } else {
+                                break;
+                            }
+                        }
+                        this.bean = constructor.newInstance(params);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
             LOGGER.error("new instance by default constructor error", e);
         }
     }

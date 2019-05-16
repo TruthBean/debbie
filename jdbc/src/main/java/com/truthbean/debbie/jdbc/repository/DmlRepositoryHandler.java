@@ -2,7 +2,10 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
+import com.truthbean.debbie.jdbc.entity.EntityInfo;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +159,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, columnValues.toArray()) == 1;
     }
 
-    public E findOne(Connection connection, E condition) {
+    public E selectOne(Connection connection, E condition) {
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
 
@@ -173,10 +176,10 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().extra(conditionAndValues.conditionSql).builder();
         LOGGER.debug(sql);
-        return super.selectOne(connection, sql, entityClass, conditionAndValues.conditionValues.toArray());
+        return super.queryOne(connection, sql, entityClass, conditionAndValues.conditionValues.toArray());
     }
 
-    private SqlAndArgs<E> prequery(E condition) {
+    private SqlAndArgs<E> preSelect(E condition) {
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
 
@@ -206,42 +209,42 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
-    public List<E> findList(Connection connection, E condition) {
-        SqlAndArgs<E> sqlAndArgs = prequery(condition);
+    public List<E> selectList(Connection connection, E condition) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(condition);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Page<E> findPaged(Connection connection, E condition, PageRequest pageable) {
-        SqlAndArgs<E> sqlAndArgs = prequery(condition);
+    public Page<E> selectPaged(Connection connection, E condition, PageRequest pageable) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(condition);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
         LOGGER.debug(sql);
 
         var count = count(connection, condition);
-        List<E> content = super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public Page<E> findPaged(Connection connection, PageRequest pageable) {
-        SqlAndArgs<E> sqlAndArgs = prequery(null);
+    public Page<E> selectPaged(Connection connection, PageRequest pageable) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(null);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
         LOGGER.debug(sql);
 
         var count = count(connection);
-        List<E> content = super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public List<E> findAll(Connection connection) {
-        SqlAndArgs<E> sqlAndArgs = prequery(null);
+    public List<E> selectAll(Connection connection) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(null);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.select(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
     public Long count(Connection connection, E condition) {
@@ -261,7 +264,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = sqlBuilder.builder();
         LOGGER.debug(sql);
-        return super.selectOne(connection, sql, Long.class, args);
+        return super.queryOne(connection, sql, Long.class, args);
     }
 
     public Long count(Connection connection) {
@@ -269,10 +272,10 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var table = entityInfo.getTable();
         var sql = DynamicSqlBuilder.sql().select().count().from(table).builder();
         LOGGER.debug(sql);
-        return super.selectOne(connection, sql, Long.class);
+        return super.queryOne(connection, sql, Long.class);
     }
 
-    public E findById(Connection connection, ID id) {
+    public E selectById(Connection connection, ID id) {
         var entityClass = getEntityClass();
         var entityInfo = entityResolver.resolveEntityClass(entityClass);
 
@@ -289,11 +292,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         LOGGER.debug(">>>>>>>>>>>> " + sql);
         LOGGER.debug(">>>>>>>>>>>>> " + id);
-        return super.selectOne(connection, sql, entityClass, id);
+        return super.queryOne(connection, sql, entityClass, id);
     }
 
-    public Optional<E> queryById(Connection connection, ID id) {
-        E result = findById(connection, id);
+    public Optional<E> selectOptionalById(Connection connection, ID id) {
+        E result = selectById(connection, id);
         if (result == null) {
             return Optional.empty();
         }
