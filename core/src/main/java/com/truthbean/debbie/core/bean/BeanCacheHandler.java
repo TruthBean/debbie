@@ -47,7 +47,7 @@ final class BeanCacheHandler {
             }
         });
 
-        var classAnnotation = beanClassInfo.getClassAnnotations();
+        Map<Class<? extends Annotation>, Annotation> classAnnotation = beanClassInfo.getClassAnnotations();
         if (!classAnnotation.isEmpty()) {
             var annotations = classAnnotation.keySet();
             CLASS_ANNOTATION.addAll(annotations);

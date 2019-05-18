@@ -61,7 +61,7 @@ public class EntityResolver {
 
     public static List<ColumnInfo> resolveClassInfo(ClassInfo<?> classInfo) {
         List<ColumnInfo> columns = new ArrayList<>();
-        var fields = classInfo.getFields();
+        List<Field> fields = classInfo.getFields();
         if (!fields.isEmpty()) {
             fields.forEach(field -> columns.add(JdbcColumnResolver.resolveField(field)));
         }

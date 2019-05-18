@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.core.bean.BeanInject;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
@@ -10,6 +11,10 @@ import java.util.Optional;
 
 @SqlRepository
 public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
+
+    public SurnameJdbcRepository(@BeanInject TmpRepository tmpRepository) {
+        System.out.println(tmpRepository);
+    }
 
     public boolean save(Surname surname) {
         Long id = super.insert(surname);
