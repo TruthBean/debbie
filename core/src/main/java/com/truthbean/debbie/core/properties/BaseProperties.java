@@ -16,12 +16,12 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2018-03-19 12:27.
  */
-public class AbstractProperties {
+public class BaseProperties {
 
     /**
      * slf4j logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProperties.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseProperties.class);
 
     /**
      * properties
@@ -36,7 +36,7 @@ public class AbstractProperties {
      * read from properties file
      */
     private static void readPropertiesFile() {
-        var classLoader = ClassLoaderUtils.getClassLoader(AbstractProperties.class);
+        var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var url = classLoader.getResource(Constants.APPLICATION_PROPERTIES);
         if (url == null) {
             LOGGER.warn(Constants.APPLICATION_PROPERTIES + " not found，You SHOULD not use with properties function.");
@@ -57,19 +57,19 @@ public class AbstractProperties {
     }
 
     public Properties getProperties() {
-        var properties = AbstractProperties.PROPERTIES;
+        var properties = BaseProperties.PROPERTIES;
         if (properties.isEmpty()) {
-            AbstractProperties.readPropertiesFile();
+            BaseProperties.readPropertiesFile();
         }
         return properties;
     }
 
-    public Map<String, Object> getMatchedKey(String keyPrefix) {
+    public Map<String, String> getMatchedKey(String keyPrefix) {
         if (keyPrefix == null || keyPrefix.isBlank()) {
             throw new RuntimeException("illegal keyPrefix");
         }
         var properties = getProperties();
-        Map<String, Object> result = new HashMap<>();
+        Map<String, String> result = new HashMap<>();
         properties.forEach((k, v) -> {
             if (k instanceof String && ((String) k).startsWith(keyPrefix)) {
                 result.put((String) k, (String) v);

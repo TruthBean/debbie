@@ -2,6 +2,7 @@ package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.core.proxy.MethodProxyHandler;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.connection.ConnectionBinder;
@@ -26,7 +27,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     @Override
     public void before() {
         LOGGER.debug("runing before method invoke ..");
-        var config = DataSourceProperties.toConfiguration();
+        var config = DataSourceConfigurationFactory.factory();
         DataSourceFactory factory = connectionBinder.getDataSourceFactory(config);
         factory.factory(config);
         connectionBinder.bind(factory.getConnection());

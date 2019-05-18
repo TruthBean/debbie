@@ -1,4 +1,4 @@
-package com.truthbean.debbie.jdbc.repository;
+package com.truthbean.debbie.jdbc.entity;
 
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 

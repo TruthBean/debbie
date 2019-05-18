@@ -1,12 +1,12 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientProperties extends AbstractProperties {
+public class HttpClientProperties extends BaseProperties {
     private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
 
     //===========================================================================

@@ -17,11 +17,14 @@ public final class TypeHelper {
 
     private static final Map<String, Class<?>> CLASS_MAP = new HashMap<>();
 
+    private static final Map<Class<?>, Class<?>> BASE_TYPE_MAP = new HashMap<>();
+
     static {
         CLASS_MAP.put(Integer.class.getName(), Integer.class);
         CLASS_MAP.put(int.class.getName(), int.class);
         CLASS_MAP.put(Short.class.getName(), Short.class);
         CLASS_MAP.put(short.class.getName(), short.class);
+        CLASS_MAP.put(long.class.getName(), long.class);
         CLASS_MAP.put(Long.class.getName(), Long.class);
         CLASS_MAP.put(float.class.getName(), Float.class);
         CLASS_MAP.put(Float.class.getName(), float.class);
@@ -34,6 +37,24 @@ public final class TypeHelper {
         CLASS_MAP.put(Byte.class.getName(), Byte.class);
         CLASS_MAP.put(byte.class.getName(), byte.class);
         CLASS_MAP.put(Object.class.getName(), Object.class);
+
+        BASE_TYPE_MAP.put(int.class, Integer.class);
+        BASE_TYPE_MAP.put(short.class, Short.class);
+        BASE_TYPE_MAP.put(long.class, Long.class);
+        BASE_TYPE_MAP.put(float.class, Float.class);
+        BASE_TYPE_MAP.put(double.class, Double.class);
+        BASE_TYPE_MAP.put(boolean.class, Boolean.class);
+        BASE_TYPE_MAP.put(char.class, Character.class);
+        BASE_TYPE_MAP.put(byte.class, Byte.class);
+    }
+
+    public static Class<?> getWrapperClass(Class<?> baseType) {
+        for (Map.Entry<Class<?>, Class<?>> classClassEntry : BASE_TYPE_MAP.entrySet()) {
+            if (classClassEntry.getKey() == baseType) {
+                return classClassEntry.getValue();
+            }
+        }
+        return null;
     }
 
     public static Class<?> getClass(String className) {
@@ -77,8 +98,11 @@ public final class TypeHelper {
     }
 
     public static boolean isBaseType(Class<?> clazz) {
-        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz)
-                || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+    }
+
+    public static boolean isRawBaseType(Class<?> clazz) {
+        return boolean.class == clazz || double.class == clazz || float.class == clazz || int.class == clazz || long.class == clazz || short.class == clazz || char.class == clazz || byte.class == clazz;
     }
 
     public static boolean isArrayType(Class<?> clazz) {
@@ -90,16 +114,14 @@ public final class TypeHelper {
             return true;
         } else {
             if (NumericUtils.isInteger(target)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
-                        || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(target)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim()))
-                    && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim())) && (clazz == Boolean.class || clazz == boolean.class);
 
         }
     }
@@ -212,6 +234,81 @@ public final class TypeHelper {
         return null;
     }
 
+    public static Object unwarp(Object value) {
+        if (value instanceof Integer) {
+            try {
+                return ((Integer) value).intValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Short) {
+            try {
+                return ((Short) value).shortValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Long) {
+            try {
+                return ((Long) value).longValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Float) {
+            try {
+                return ((Float) value).floatValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Double) {
+            try {
+                return ((Double) value).doubleValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Boolean) {
+            try {
+                return ((Boolean) value).booleanValue();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Byte) {
+            try {
+                return ((Byte) value).byteValue();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        if (value instanceof Character) {
+            try {
+                return ((Character) value).charValue();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return null;
+    }
+
     public static boolean isOrValueOf(Class<?> clazz, @SuppressWarnings("rawtypes") List target) {
         boolean result = true;
         if (clazz == List.class) {
@@ -233,16 +330,14 @@ public final class TypeHelper {
         } else if (target instanceof String) {
             String str = (String) target;
             if (NumericUtils.isInteger(str)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class
-                        || clazz == Long.class || clazz == long.class;
+                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
             }
 
             if (NumericUtils.isDecimal(str)) {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim()))
-                    && (clazz == Boolean.class || clazz == boolean.class);
+            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim())) && (clazz == Boolean.class || clazz == boolean.class);
 
         }
         return false;

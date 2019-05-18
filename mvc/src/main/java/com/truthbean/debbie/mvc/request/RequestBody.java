@@ -25,14 +25,14 @@ public class RequestBody {
 
     private List<String> content;
 
-    RequestBody(byte[] bytes) {
+    public RequestBody(byte[] bytes) {
         this.bytes = bytes;
         this.inputStream = new ByteArrayInputStream(bytes);
         this.bufferedReader = StreamHelper.toBufferedReader(bytes);
         getContent();
     }
 
-    RequestBody(InputStream inputStream) {
+    public RequestBody(InputStream inputStream) {
         this.inputStream = inputStream;
         this.bytes = StreamHelper.toByteArray(inputStream);
         this.bufferedReader = StreamHelper.toBufferedReader(inputStream);

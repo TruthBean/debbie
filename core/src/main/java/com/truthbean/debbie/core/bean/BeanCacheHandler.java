@@ -18,7 +18,7 @@ final class BeanCacheHandler {
     }
 
     private static final Map<Class<?>, DebbieBeanInfo> BEAN_CLASSES = new HashMap<>();
-    private static final Set<DebbieBeanInfo> CLASS_INFO_SET = new HashSet<>();
+    private static final Set<DebbieBeanInfo<?>> CLASS_INFO_SET = new HashSet<>();
 
     private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Map<Class<?>, List<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
@@ -28,7 +28,7 @@ final class BeanCacheHandler {
 
     protected static void register(Class<?> beanClass) {
         // LOGGER.debug("register class " + beanClass.getName());
-        var beanClassInfo = new DebbieBeanInfo(beanClass);
+        var beanClassInfo = new DebbieBeanInfo<>(beanClass);
 
         BEAN_CLASSES.put(beanClass, beanClassInfo);
         CLASS_INFO_SET.add(beanClassInfo);
@@ -96,7 +96,7 @@ final class BeanCacheHandler {
             LOGGER.error(beanClass.getName() + " has not register");
             throw new RuntimeException(beanClass.getName() + " has not register");
         }
-        return BEAN_CLASSES.get(beanClass).getMethods();
+        return classInfoSet.get(beanClass).getMethods();
     }
 
     protected static <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {

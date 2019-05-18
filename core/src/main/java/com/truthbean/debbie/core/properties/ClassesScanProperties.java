@@ -12,7 +12,7 @@ import java.util.Set;
  * @since 0.0.1
  * Created on 2019/3/5 21:58.
  */
-public class ClassesScanProperties extends AbstractProperties {
+public class ClassesScanProperties extends BaseProperties {
     private static Set<Class<?>> scanClasses = new HashSet<>();
 
     private static Set<String> scanBasePackages = new HashSet<>();

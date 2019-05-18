@@ -1,6 +1,6 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.boot.AbstractServerProperties;
+import com.truthbean.debbie.boot.BaseServerProperties;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.properties.ClassesScanProperties;
 import com.truthbean.debbie.mvc.MvcConfiguration;
@@ -11,7 +11,7 @@ import com.truthbean.debbie.mvc.MvcProperties;
  * @since 0.0.1
  * Created on 2019/4/30 22:37.
  */
-public class NettyProperties extends AbstractServerProperties {
+public class NettyProperties extends BaseServerProperties {
 
     private static NettyConfiguration configuration;
 

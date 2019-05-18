@@ -1,6 +1,5 @@
-package com.truthbean.debbie.jdbc.datasource;
+package com.truthbean.debbie.jdbc.datasource.pool;
 
-import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

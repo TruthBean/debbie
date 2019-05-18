@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends AbstractProperties {
+public class DataSourceProperties extends BaseProperties {
     private final DataSourceConfiguration configuration;
 
     //=================================================================================================================
@@ -48,7 +48,7 @@ public class DataSourceProperties extends AbstractProperties {
         configuration.setAutoCommit(autoCommit);
 
         TransactionIsolationLevel transactionIsolationLevel =
-                getTransactionIsolationLevelValue(DEFAULT_TRANSACTION_ISOLATION_LEVEL, TransactionIsolationLevel.READ_COMMITTED);
+                getTransactionIsolationLevelValue(DEFAULT_TRANSACTION_ISOLATION_LEVEL, TransactionIsolationLevel.TRANSACTION_READ_COMMITTED);
         configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
 
         Map<String, Object> driverProperties = new HashMap<>(getMatchedKey(DRIVER_PROPERTIES_PREFIX));

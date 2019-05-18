@@ -11,8 +11,12 @@ import java.sql.Connection;
  */
 public interface DataSourceFactory {
 
-    static DataSourceFactory defaultFactory() {
-        var config = DataSourceProperties.toConfiguration();
+    /**
+     * create DataSourceFactory by application.properties
+     * @return DataSourceFactory
+     */
+    static DataSourceFactory factory() {
+        var config = DataSourceConfigurationFactory.factory();
         return loadFactory(config);
     }
 
@@ -20,12 +24,6 @@ public interface DataSourceFactory {
         DataSourceFactory factory = ReflectionHelper.newInstance(configuration.getDataSourceFactoryClass());
         return factory.factory(configuration);
     }
-
-    /**
-     * create DataSourceFactory by application.properties
-     * @return DataSourceFactory
-     */
-    DataSourceFactory factory();
 
     /**
      * create DataSourceFactory by DataSource

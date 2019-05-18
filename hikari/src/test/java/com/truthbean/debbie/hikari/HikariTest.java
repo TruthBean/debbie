@@ -1,5 +1,6 @@
-package com.truthbean.debbie.zaxxer;
+package com.truthbean.debbie.hikari;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ZaxxerTest {
+public class HikariTest {
 
 
     @Test
@@ -31,5 +32,11 @@ public class ZaxxerTest {
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testDataSource() {
+        DataSourceFactory factory = DataSourceFactory.factory();
+        System.out.println(factory);
     }
 }

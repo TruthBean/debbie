@@ -25,7 +25,7 @@ public class ConnectionBinder implements Closeable {
     private static final ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
 
     private boolean autoCommit = false;
-    private TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED;
+    private TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.TRANSACTION_READ_COMMITTED;
 
     public void setAutoCommit(boolean autoCommit) {
         this.autoCommit = autoCommit;
@@ -52,7 +52,7 @@ public class ConnectionBinder implements Closeable {
 
     public void bind(Connection connection) {
         try {
-            if (transactionIsolationLevel != TransactionIsolationLevel.NONE) {
+            if (transactionIsolationLevel != TransactionIsolationLevel.TRANSACTION_NONE) {
                 connection.setAutoCommit(autoCommit);
                 connection.setTransactionIsolation(transactionIsolationLevel.getLevel());
             }

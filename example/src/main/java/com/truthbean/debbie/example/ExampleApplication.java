@@ -18,7 +18,7 @@ public class ExampleApplication {
     }
 
     /*public static void main(String[] args) {
-        Map<Class<AbstractProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses();
+        Map<Class<BaseProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses();
         System.out.println(classClassMap);
     }*/
 }

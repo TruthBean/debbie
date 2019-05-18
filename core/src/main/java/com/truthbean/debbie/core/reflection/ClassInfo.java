@@ -14,19 +14,19 @@ import java.util.Objects;
  * @since 0.0.1
  * Created on 2019/3/23 13:23.
  */
-public class ClassInfo {
-    private Class<?> clazz;
+public class ClassInfo<C> {
+    private Class<C> clazz;
     private Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
-    private Constructor[] constructors;
+    private Constructor<C>[] constructors;
 
     private List<Field> fields;
 
     private List<Method> methods;
     private Map<? extends Annotation, List<Method>> methodWithAnnotation;
 
-    public ClassInfo(Class<?> clazz) {
+    public ClassInfo(Class<C> clazz) {
         this.clazz = clazz;
 
         var annotations = clazz.getAnnotations();
@@ -38,18 +38,17 @@ public class ClassInfo {
 
         fields = ReflectionHelper.getDeclaredFields(clazz);
 
-        this.constructors = clazz.getConstructors();
+        this.constructors = (Constructor<C>[]) clazz.getConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
 
         this.methodWithAnnotation = new HashMap<>();
     }
 
-    public Class<?> getClazz() {
+    public Class<C> getClazz() {
         return clazz;
     }
 
-    @SuppressWarnings("rawtypes")
-    public Constructor[] getConstructors() {
+    public Constructor<C>[] getConstructors() {
         return constructors;
     }
 

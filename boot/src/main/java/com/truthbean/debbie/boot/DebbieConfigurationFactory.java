@@ -1,6 +1,6 @@
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.core.properties.DebbieConfiguration;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
@@ -20,7 +20,7 @@ public class DebbieConfigurationFactory {
     private static Map<Class<?>, Object> configurations = new HashMap<>();
 
     private static void loadConfiguration(ClassLoader classLoader) {
-        Map<Class<AbstractProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
+        Map<Class<BaseProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
         classClassMap.forEach((key, value) -> {
             Object configuration = ReflectionHelper.invokeStaticMethod("toConfiguration", key);
             // should not be null

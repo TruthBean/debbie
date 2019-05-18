@@ -1,14 +1,9 @@
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.boot.exception.NoApplicationProviderException;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.core.spi.NoServiceProviderException;
 import com.truthbean.debbie.core.spi.SpiLoader;
-
-import java.util.Iterator;
-import java.util.ServiceLoader;
 
 /**
  * @author TruthBean
@@ -34,7 +29,7 @@ public class DebbieApplicationFactory {
         return search;*/
     }
 
-    public static <P extends AbstractProperties, C extends BeanScanConfiguration> DebbieApplication factory
+    public static <P extends BaseProperties, C extends BeanScanConfiguration> DebbieApplication factory
             (Class<P> propertiesClass, Class<C> configurationClass) {
         // load from properties
         // C configuration = P.loadProperties();

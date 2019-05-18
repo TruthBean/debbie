@@ -1,6 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
+import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.Surname;
 

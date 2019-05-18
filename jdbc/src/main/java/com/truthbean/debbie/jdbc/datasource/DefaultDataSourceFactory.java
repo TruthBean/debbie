@@ -9,15 +9,7 @@ import java.sql.SQLException;
  * @since 0.0.1
  */
 public class DefaultDataSourceFactory implements DataSourceFactory {
-    private DataSourceConfiguration configuration;
     private DataSource dataSource;
-
-    @Override
-    public DataSourceFactory factory() {
-        this.configuration = DataSourceProperties.toConfiguration();
-        this.dataSource = new DefaultDataSource(configuration);
-        return this;
-    }
 
     @Override
     public DataSourceFactory factory(DataSource dataSource) {
@@ -27,7 +19,6 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
 
     @Override
     public DataSourceFactory factory(DataSourceConfiguration configuration) {
-        this.configuration = configuration;
         this.dataSource = new DefaultDataSource(configuration);
         return this;
     }

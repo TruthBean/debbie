@@ -1,6 +1,6 @@
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.boot.AbstractServerProperties;
+import com.truthbean.debbie.boot.BaseServerProperties;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.properties.ClassesScanProperties;
 import com.truthbean.debbie.mvc.MvcConfiguration;
@@ -11,7 +11,7 @@ import com.truthbean.debbie.mvc.MvcProperties;
  * @since 0.0.1
  * Created on 2019/4/12 23:58.
  */
-public class UndertowProperties extends AbstractServerProperties {
+public class UndertowProperties extends BaseServerProperties {
     private static UndertowConfiguration configuration;
 
     public static UndertowConfiguration toConfiguration() {

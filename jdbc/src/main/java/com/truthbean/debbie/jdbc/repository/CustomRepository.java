@@ -21,11 +21,11 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
 
     public <T> List<T> select(String selectSql, Class<T> clazz, Object... args) {
         Connection connection = getConnection();
-        return super.select(connection, selectSql, clazz, args);
+        return super.query(connection, selectSql, clazz, args);
     }
 
     public <T> T selectOne(String selectSql, Class<T> clazz, Object... args) {
         Connection connection = getConnection();
-        return super.selectOne(connection, selectSql, clazz, args);
+        return super.queryOne(connection, selectSql, clazz, args);
     }
 }

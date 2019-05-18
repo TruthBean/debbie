@@ -211,4 +211,24 @@ public final class StringUtils {
         String first = string.substring(0, 1).toLowerCase();
         return first + string.substring(1);
     }
+
+    public static String snakeCaseToCamelCaseTo(String snakeCaseString) {
+        char[] chars = snakeCaseString.toCharArray();
+        char[] newChars = new char[chars.length];
+        int j = 0;
+        for (int i = 0, charsLength = chars.length; i < charsLength;) {
+            char c = chars[i++];
+            if (c == '-') {
+                c = chars[i++];
+                if (c >= 'a' && c <= 'z') {
+                    newChars[j++] = (char) (c - 32);
+                }
+            } else {
+                newChars[j++] = c;
+            }
+        }
+        char[] target = new char[j];
+        System.arraycopy(newChars, 0, target, 0, j);
+        return new String(target);
+    }
 }

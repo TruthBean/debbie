@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import java.util.Arrays;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * @since 0.0.1
  * Created on 2019/2/25 22:02.
  */
-public class MvcProperties extends AbstractProperties {
+public class MvcProperties extends BaseProperties {
     //===========================================================================
     /**
      * use ** to replace path, like **.do, /api/**, /api/**.do
@@ -49,7 +49,7 @@ public class MvcProperties extends AbstractProperties {
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder();
 
-        builder.dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/"));
+        builder.dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"));
 
         List<MediaType> defaultTypes = properties.getMediaTypeListValue(SERVER_DEFAULT_TYPES, ",");
         if (defaultTypes != null && !defaultTypes.isEmpty()) {

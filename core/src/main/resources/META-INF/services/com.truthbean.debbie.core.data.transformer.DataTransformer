@@ -4,4 +4,12 @@ com.truthbean.debbie.core.data.transformer.text.JsonNodeTransformer
 
 com.truthbean.debbie.core.data.transformer.text.UrlTransformer
 
+com.truthbean.debbie.core.data.transformer.text.BigDecimalTransformer
+com.truthbean.debbie.core.data.transformer.text.BigIntegerTransformer
+com.truthbean.debbie.core.data.transformer.text.BooleanTransformer
+com.truthbean.debbie.core.data.transformer.text.FloatTransformer
+com.truthbean.debbie.core.data.transformer.text.IntegerTransformer
+com.truthbean.debbie.core.data.transformer.text.LongTransformer
+com.truthbean.debbie.core.data.transformer.text.ShortTransformer
+
 com.truthbean.debbie.core.data.transformer.numeric.LongToIntegerTransformer

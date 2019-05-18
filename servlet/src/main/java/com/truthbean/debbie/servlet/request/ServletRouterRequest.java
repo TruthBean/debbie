@@ -114,11 +114,14 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         }
         if (MediaType.APPLICATION_FORM_URLENCODED.getValue().equals(type)) {
             try {
-                RequestBody requestBody = new RequestBody(request.getReader());
-                var queries = queries(requestBody.getContent().get(0));
-                Map<String, List> map = new HashMap<>();
-                queries.forEach(map::put);
-                return map;
+                RequestBody requestBody = new RequestBody(request.getInputStream());
+                var content = requestBody.getContent();
+                if (content != null && !content.isEmpty()) {
+                    var queries = queries(content.get(0));
+                    Map<String, List> map = new HashMap<>();
+                    queries.forEach(map::put);
+                    return map;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

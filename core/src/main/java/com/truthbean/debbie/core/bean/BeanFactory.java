@@ -1,5 +1,10 @@
 package com.truthbean.debbie.core.bean;
 
+import com.truthbean.debbie.core.data.transformer.DataTransformerFactory;
+
+import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.core.properties.BeanConfiguration;
+import com.truthbean.debbie.core.properties.PropertyInject;
 import com.truthbean.debbie.core.proxy.InterfaceDynamicProxy;
 import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
@@ -7,8 +12,10 @@ import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,9 +51,7 @@ public class BeanFactory {
     }
 
     public static <T, K extends T> T factory(String serviceName) {
-        var list = beanServiceInfoSet.stream()
-                .filter(beanServiceInfo -> serviceName.equals(beanServiceInfo.getServiceName()))
-                .toArray(DebbieBeanInfo[]::new);
+        var list = beanServiceInfoSet.stream().filter(beanServiceInfo -> serviceName.equals(beanServiceInfo.getServiceName())).toArray(DebbieBeanInfo[]::new);
 
         if (list.length == 0) {
             throw new RuntimeException(serviceName + " not found");
@@ -66,10 +71,7 @@ public class BeanFactory {
     }
 
     public static <T, K extends T> T factoryWithProxy(Class<T> type) {
-        var list = beanServiceInfoSet.stream()
-                .filter(beanServiceInfo ->
-                        type == beanServiceInfo.getBeanClass() || type == beanServiceInfo.getBeanInterface())
-                .toArray(DebbieBeanInfo[]::new);
+        var list = beanServiceInfoSet.stream().filter(beanServiceInfo -> type == beanServiceInfo.getBeanClass() || type == beanServiceInfo.getBeanInterface()).toArray(DebbieBeanInfo[]::new);
 
         if (list.length == 0) {
             throw new NoBeanException(type.getName() + " not found");
@@ -88,38 +90,102 @@ public class BeanFactory {
         return factoryWithProxy(clazz, beanInterface);
     }
 
-    public static void resolveDependentBean(Object object, ClassInfo classInfo) {
+    public static void resolveDependentBean(Object object, ClassInfo<?> classInfo) {
         List<Field> fields = classInfo.getFields();
+        String keyPrefix = null;
+
+        Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
+        if (classAnnotations.containsKey(BeanConfiguration.class)) {
+            var beanConfiguration = (BeanConfiguration) classAnnotations.get(BeanConfiguration.class);
+            keyPrefix = beanConfiguration.keyPrefix();
+        }
+
         if (fields != null && !fields.isEmpty()) {
-            fields.forEach(field -> resolveDependentBean(object, field));
+            String finalKeyPrefix = keyPrefix;
+            fields.forEach(field -> resolveFieldValue(object, field, finalKeyPrefix));
         }
     }
 
-    private static void resolveDependentBean(Object object, Field field) {
+    private static void resolveFieldValue(Object object, Field field, String keyPrefix) {
+        var propertyInject = field.getAnnotation(PropertyInject.class);
+        if (propertyInject != null && keyPrefix != null) {
+            resolvePropertiesInject(object, field, keyPrefix, propertyInject);
+            return;
+        }
         var beanInject = field.getAnnotation(BeanInject.class);
+        if (beanInject != null) {
+            resolveFieldDependentBean(object, field, beanInject);
+        }
+    }
+
+    private static void resolvePropertiesInject(Object object, Field field, String keyPrefix, PropertyInject propertyInject) {
+        String property = propertyInject.value();
+        if (keyPrefix != null && !property.isBlank()) {
+            String key = keyPrefix + property;
+            BaseProperties properties = new BaseProperties();
+            String value = properties.getValue(key);
+            if (value != null) {
+                Class<?> type = field.getType();
+                Object transform = DataTransformerFactory.transform(value, type);
+                // use setter method to inject filed
+                ReflectionHelper.invokeSetMethod(object, field, transform);
+            }
+        }
+    }
+
+    private static void resolveFieldDependentBean(Object object, Field field, BeanInject beanInject) {
+        String name = beanInject.name();
+        if (!name.isBlank()) {
+            var value = factory(name);
+            if (value != null) {
+                ReflectionHelper.setField(object, field, value);
+            } else {
+                if (beanInject.require()) {
+                    throw new NoBeanException("no bean " + name + " found .");
+                }
+            }
+        } else {
+            Class<?> type = field.getType();
+            var value = factory(type);
+            if (value != null) {
+                ReflectionHelper.setField(object, field, value);
+            } else {
+                if (beanInject.require()) {
+                    throw new NoBeanException("no bean " + name + " found .");
+                }
+            }
+        }
+    }
+
+    public static Object getParameterBean(Parameter parameter) {
+        var beanInject = parameter.getAnnotation(BeanInject.class);
         if (beanInject != null) {
             String name = beanInject.name();
             if (!name.isBlank()) {
                 var value = factory(name);
                 if (value != null) {
-                    ReflectionHelper.setField(object, field, value);
+                    return value;
                 } else {
                     if (beanInject.require()) {
                         throw new NoBeanException("no bean " + name + " found .");
                     }
                 }
             } else {
-                Class<?> type = field.getType();
+                Class<?> type = parameter.getType();
                 var value = factory(type);
                 if (value != null) {
-                    ReflectionHelper.setField(object, field, value);
+                    return value;
                 } else {
                     if (beanInject.require()) {
                         throw new NoBeanException("no bean " + name + " found .");
                     }
                 }
             }
+        } else {
+            // todo if inject is exist
+            // parameter.getAnnotation(Inject.class);
         }
+        throw new NoBeanException("no bean " + parameter.getName() + " found .");
     }
 
     public static <Bean> BeanInvoker<Bean> factoryBeanInvoker(Class<Bean> beanClass) {

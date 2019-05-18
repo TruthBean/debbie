@@ -55,6 +55,8 @@ subprojects {
     apply(plugin = "eclipse")
 
     dependencies {
+        "compileOnly"("org.slf4j:slf4j-api:1.7.26")
+
         val jupiterVersion = "5.4.0"
         "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
         "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")

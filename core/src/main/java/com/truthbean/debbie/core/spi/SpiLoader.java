@@ -1,7 +1,7 @@
 package com.truthbean.debbie.core.spi;
 
 import com.truthbean.debbie.core.io.StreamHelper;
-import com.truthbean.debbie.core.properties.AbstractProperties;
+import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +47,18 @@ public class SpiLoader {
         return result;
     }
 
+    public static <S> Set<S> loadProviders(Class<S> serviceClass, ClassLoader classLoader) {
+        Set<S> result = new HashSet<>();
+        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
+        Iterator<S> search = serviceLoader.iterator();
+        if (search.hasNext()) {
+            result.add(search.next());
+        } else {
+            throw new NoServiceProviderException(serviceClass.getName());
+        }
+        return result;
+    }
+
     public static Set<File> loadServiceClassNames() {
         Set<File> result = new HashSet<>();
 
@@ -76,7 +88,7 @@ public class SpiLoader {
         return result;
     }
 
-    public static <P extends AbstractProperties> Map<Class<P>, Class> loadPropertiesClasses(ClassLoader classLoader) {
+    public static <P extends BaseProperties> Map<Class<P>, Class> loadPropertiesClasses(ClassLoader classLoader) {
         Map<Class<P>, Class> result = new HashMap<>();
 
         var spi = META_INF + "/" + SPI + "/debbie-properties";
@@ -102,7 +114,7 @@ public class SpiLoader {
         return result;
     }
 
-    private static <P extends AbstractProperties> void resolveClass
+    private static <P extends BaseProperties> void resolveClass
             (List<String> strings, Map<Class<P>, Class> map, ClassLoader classLoader) {
         for (String string : strings) {
             String[] split = string.split(" --> ");

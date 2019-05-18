@@ -9,25 +9,33 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
  * Created on 2018-03-26 16:41
  */
 public class DefaultDataSourcePoolProperties extends DataSourceProperties implements DataSourcePoolProperties {
-    private final int initialPoolSize;
-    private final int increase;
-    private final int maxPoolSize;
+    private final boolean unpool;
 
     //===========================================================================
+    private static final String POOL_KEY_PREFIX = "debbie.datasource.pool";
     private static final String INITIAL_POOL_SIZE_KEY = "debbie.datasource.pool.init-size";
     private static final String INCREASE_KEY = "debbie.datasource.pool.increase";
     private static final String MAX_KEY = "debbie.datasource.pool.max-size";
+
+    private static final String MAX_ACTIVE_CONNECTION_KEY = "debbie.datasource.pool.max-active-connection";
     //===========================================================================
 
     private static DefaultDataSourcePoolConfiguration configuration;
 
     public DefaultDataSourcePoolProperties() {
         super();
-        initialPoolSize = getIntegerValue(INITIAL_POOL_SIZE_KEY, 10);
-        increase = getIntegerValue(INCREASE_KEY, 1);
-        maxPoolSize = getIntegerValue(MAX_KEY, 10);
-    }
+        if (getMatchedKey(POOL_KEY_PREFIX).isEmpty()) {
+            unpool = true;
+        } else {
+            unpool = false;
+            configuration = new DefaultDataSourcePoolConfiguration(super.getConfiguration());
+            configuration.setInitialPoolSize(getIntegerValue(INITIAL_POOL_SIZE_KEY, 10));
+            configuration.setIncrease(getIntegerValue(INCREASE_KEY, 1));
+            configuration.setMaxPoolSize(getIntegerValue(MAX_KEY, 10));
 
+
+        }
+    }
 
     public static DataSourceConfiguration toConfiguration() {
         if (configuration == null) {
@@ -41,27 +49,15 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties implem
         if (configuration == null) {
             configuration = new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
             DefaultDataSourcePoolProperties poolProperties = new DefaultDataSourcePoolProperties();
-            configuration.setInitialPoolSize(poolProperties.initialPoolSize);
-            configuration.setIncrease(poolProperties.increase);
-            configuration.setMaxPoolSize(poolProperties.maxPoolSize);
         }
         return configuration;
     }
 
-    public int getIncrease() {
-        return increase;
-    }
-
-    public int getInitialPoolSize() {
-        return initialPoolSize;
-    }
-
-    public int getMaxPoolSize() {
-        return maxPoolSize;
-    }
-
     @Override
     public DataSourceConfiguration loadConfiguration() {
+        if (unpool) {
+            return super.getConfiguration();
+        }
         return toConfiguration(super.getConfiguration());
     }
 }

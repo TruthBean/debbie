@@ -1,4 +1,4 @@
-package com.truthbean.debbie.jdbc.repository;
+package com.truthbean.debbie.jdbc.entity;
 
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.reflection.ClassInfo;
@@ -6,6 +6,7 @@ import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class EntityResolver {
         return table;
     }
 
-    public static List<ColumnInfo> resolveClassInfo(ClassInfo classInfo) {
+    public static List<ColumnInfo> resolveClassInfo(ClassInfo<?> classInfo) {
         List<ColumnInfo> columns = new ArrayList<>();
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {
@@ -67,7 +68,7 @@ public class EntityResolver {
         return columns;
     }
 
-    public static <E> List<ColumnInfo> resolveClassInfoAndValue(ClassInfo classInfo, E entity) {
+    public static <E> List<ColumnInfo> resolveClassInfoAndValue(ClassInfo<?> classInfo, E entity) {
         List<ColumnInfo> columns = new ArrayList<>();
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {

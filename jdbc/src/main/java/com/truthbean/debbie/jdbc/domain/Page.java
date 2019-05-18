@@ -1,6 +1,4 @@
-package com.truthbean.debbie.jdbc.repository;
-
-import com.truthbean.debbie.jdbc.domain.PageRequest;
+package com.truthbean.debbie.jdbc.domain;
 
 import java.util.List;
 

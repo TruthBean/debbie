@@ -13,7 +13,7 @@ import java.util.concurrent.*;
  * @author TruthBean
  * @since 0.0.1
  */
-public class RepositoryAction {
+public class RepositoryCallback {
 
     private static <R> Connection getConnection(ConnectionCallable<R> action) {
         var connection = action.getConnection();
@@ -237,5 +237,5 @@ public class RepositoryAction {
         }
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryAction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCallback.class);
 }

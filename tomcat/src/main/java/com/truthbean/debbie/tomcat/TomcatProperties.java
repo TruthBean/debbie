@@ -1,6 +1,6 @@
 package com.truthbean.debbie.tomcat;
 
-import com.truthbean.debbie.boot.AbstractServerProperties;
+import com.truthbean.debbie.boot.BaseServerProperties;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 
 import java.util.Objects;
@@ -10,7 +10,7 @@ import java.util.Objects;
  * @since 0.0.1
  * Created on 2019/3/10 14:36.
  */
-public class TomcatProperties extends AbstractServerProperties {
+public class TomcatProperties extends BaseServerProperties {
     //===========================================================================
     private static final String TOMCAT_WEBAPP = "debbie.server.tomcat.webapp";
     //===========================================================================

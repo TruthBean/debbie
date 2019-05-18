@@ -10,7 +10,7 @@ public enum TransactionIsolationLevel {
     /**
      * A constant indicating that transactions are not supported.
      */
-    NONE(Connection.TRANSACTION_NONE),
+    TRANSACTION_NONE(Connection.TRANSACTION_NONE),
 
     /**
      * A constant indicating that
@@ -20,7 +20,7 @@ public enum TransactionIsolationLevel {
      * committed (a "dirty read").  If any of the changes are rolled back,
      * the second transaction will have retrieved an invalid row.
      */
-    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
+    TRANSACTION_READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
 
     /**
      * A constant indicating that
@@ -28,7 +28,7 @@ public enum TransactionIsolationLevel {
      * reads can occur.  This level only prohibits a transaction
      * from reading a row with uncommitted changes in it.
      */
-    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
+    TRANSACTION_READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
 
     /**
      * A constant indicating that
@@ -40,7 +40,7 @@ public enum TransactionIsolationLevel {
      * rereads the row, getting different values the second time
      * (a "non-repeatable read").
      */
-    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
+    TRANSACTION_REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
 
     /**
      * A constant indicating that
@@ -53,7 +53,7 @@ public enum TransactionIsolationLevel {
      * rereads for the same condition, retrieving the additional
      * "phantom" row in the second read.
      */
-    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
+    TRANSACTION_SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
 
     private final int level;
 

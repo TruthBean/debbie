@@ -27,6 +27,39 @@ public class ReflectionHelper {
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
 
+    public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz, int typeLength) {
+        if (clazz == Object.class || clazz == Void.class) {
+            return null;
+        }
+        Type[] types = clazz.getTypeParameters();
+        if (types != null && types.length >= typeLength) {
+            return types;
+        }
+        Type genType = clazz.getGenericSuperclass();
+        if (genType instanceof ParameterizedType) {
+            Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+            if (params.length >= typeLength) {
+                return params;
+            }
+        }
+
+        Type[] interfaces = clazz.getGenericInterfaces();
+        if (interfaces.length > 0) {
+            for (var type : interfaces) {
+                if (type instanceof ParameterizedType) {
+                    Type[] params = ((ParameterizedType) type).getActualTypeArguments();
+                    if (params != null && params.length >= typeLength) {
+                        return params;
+                    }
+                }
+            }
+        } else {
+            return getActualTypes(clazz.getSuperclass(), typeLength);
+        }
+
+        return null;
+    }
+
     public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz) {
         if (clazz == Object.class || clazz == Void.class) {
             return null;
@@ -38,7 +71,7 @@ public class ReflectionHelper {
         Type genType = clazz.getGenericSuperclass();
         if (genType == Object.class) {
             Type[] interfaces = clazz.getGenericInterfaces();
-            for (var type: interfaces) {
+            for (var type : interfaces) {
                 if (type instanceof ParameterizedType) {
                     Type[] params = ((ParameterizedType) type).getActualTypeArguments();
                     if (params != null && params.length > 0) {
@@ -57,8 +90,7 @@ public class ReflectionHelper {
         return params;
     }
 
-    public static <T> T newInstance(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes, 
-            Object[] args) {
+    public static <T> T newInstance(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes, Object[] args) {
         var obj = getConstructor(type, parameterTypes);
         if (obj != null) {
             return newInstance(obj, args);
@@ -97,8 +129,7 @@ public class ReflectionHelper {
         return null;
     }
 
-    public static <T> Constructor<T> getConstructor(Class<T> type, 
-            @SuppressWarnings("rawtypes") Class[] parameterTypes) {
+    public static <T> Constructor<T> getConstructor(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(parameterTypes);
             if (constructor.trySetAccessible()) {
@@ -124,8 +155,7 @@ public class ReflectionHelper {
 
     public static List<Method> getDeclaredMethods(Class<?> clazz) {
         List<Method> fields = new ArrayList<>();
-        for (var superClass = clazz; superClass != null && superClass != Object.class;
-             superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             Method[] declaredMethods = superClass.getDeclaredMethods();
             if (declaredMethods.length > 0) {
                 fields.addAll(Arrays.asList(declaredMethods));
@@ -138,8 +168,11 @@ public class ReflectionHelper {
         var methodName = "set" + handleFieldName(field.getName());
         try {
             var method = target.getClass().getMethod(methodName, field.getType());
-            var factory = new DataTransformerFactory();
-            return method.invoke(target, factory.transform(arg, field.getType()));
+            var fieldType = field.getType();
+            if (TypeHelper.isRawBaseType(fieldType)) {
+                fieldType = TypeHelper.getWrapperClass(fieldType);
+            }
+            return method.invoke(target, DataTransformerFactory.transform(arg, fieldType));
         } catch (NoSuchMethodException e) {
             LOGGER.error(field.getName() + " set method not found. ", e);
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -238,9 +271,8 @@ public class ReflectionHelper {
 
     public static <T> List<Class<? extends T>> getSubClass(List<Class<?>> allClass, Class<T> parentClass) {
         List<Class<? extends T>> result = new ArrayList<>();
-        for (var clazz: allClass) {
-            boolean isTarget = (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()))
-                    && parentClass.isAssignableFrom(clazz);
+        for (var clazz : allClass) {
+            boolean isTarget = (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) && parentClass.isAssignableFrom(clazz);
             if (isTarget) {
                 result.add((Class<? extends T>) clazz);
             }
@@ -282,8 +314,7 @@ public class ReflectionHelper {
                     // 以文件的方式扫描整个包下的文件 并添加到集合中
                     findAndAddClassesInPackageByFile(classLoader, packageName, filePath, recursive, classes);
                 } else if ("jar".equals(protocol)) {
-                    var tmp = StreamHelper.getClassFromJarByPackageName(packageName,
-                            url, packageDirName, classLoader);
+                    var tmp = StreamHelper.getClassFromJarByPackageName(packageName, url, packageDirName, classLoader);
                     classes.addAll(tmp);
                 }
             }

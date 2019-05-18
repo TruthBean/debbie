@@ -12,11 +12,11 @@ import java.util.Map;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieBeanInfo extends ClassInfo {
+public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private String beanName;
     private BeanInjectType injectType;
 
-    public DebbieBeanInfo(Class<?> clazz) {
+    public DebbieBeanInfo(Class<Bean> clazz) {
         super(clazz);
         Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
 
