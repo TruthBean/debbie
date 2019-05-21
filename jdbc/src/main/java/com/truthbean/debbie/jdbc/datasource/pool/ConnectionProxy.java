@@ -9,13 +9,12 @@ import java.sql.SQLException;
 /**
  * @author Clinton Begin
  */
-class PooledConnection implements InvocationHandler {
+class ConnectionProxy implements InvocationHandler {
 
     private static final String CLOSE = "close";
     private static final Class<?>[] IFACES = new Class<?>[]{Connection.class};
 
     private final int hashCode;
-    private final PooledDataSource dataSource;
     private final Connection realConnection;
     private final Connection proxyConnection;
     private long checkoutTimestamp;
@@ -24,20 +23,22 @@ class PooledConnection implements InvocationHandler {
     private int connectionTypeCode;
     private boolean valid;
 
+    private DefaultConnectionPool defaultConnectionPool;
+
     /**
      * Constructor for SimplePooledConnection that uses the Connection and PooledDataSource passed in
      *
      * @param connection - the connection that is to be presented as a pooled connection
-     * @param dataSource - the dataSource that the connection is from
+     * @param defaultConnectionPool - the dataSource that the connection is from
      */
-    public PooledConnection(Connection connection, PooledDataSource dataSource) {
+    public ConnectionProxy(Connection connection, DefaultConnectionPool defaultConnectionPool) {
         this.hashCode = connection.hashCode();
         this.realConnection = connection;
-        this.dataSource = dataSource;
         this.createdTimestamp = System.currentTimeMillis();
         this.lastUsedTimestamp = System.currentTimeMillis();
         this.valid = true;
         this.proxyConnection = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), IFACES, this);
+        this.defaultConnectionPool = defaultConnectionPool;
     }
 
     /**
@@ -53,7 +54,7 @@ class PooledConnection implements InvocationHandler {
      * @return True if the connection is usable
      */
     public boolean isValid() {
-        return valid && realConnection != null && dataSource.pingConnection(this);
+        return valid && realConnection != null && defaultConnectionPool.pingConnection(this);
     }
 
     /**
@@ -195,8 +196,8 @@ class PooledConnection implements InvocationHandler {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PooledConnection) {
-            return realConnection.hashCode() == ((PooledConnection) obj).realConnection.hashCode();
+        if (obj instanceof ConnectionProxy) {
+            return realConnection.hashCode() == ((ConnectionProxy) obj).realConnection.hashCode();
         } else if (obj instanceof Connection) {
             return hashCode == obj.hashCode();
         } else {
@@ -216,7 +217,7 @@ class PooledConnection implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         if (CLOSE.hashCode() == methodName.hashCode() && CLOSE.equals(methodName)) {
-            dataSource.pushConnection(this);
+            defaultConnectionPool.pushConnection(this);
             return null;
         }
         try {
@@ -234,7 +235,7 @@ class PooledConnection implements InvocationHandler {
 
     private void checkConnection() throws SQLException {
         if (!valid) {
-            throw new SQLException("Error accessing PooledConnection. Connection is invalid.");
+            throw new SQLException("Error accessing ConnectionProxy. Connection is invalid.");
         }
     }
 

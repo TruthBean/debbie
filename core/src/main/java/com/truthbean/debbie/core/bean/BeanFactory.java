@@ -11,6 +11,7 @@ import com.truthbean.debbie.core.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
@@ -198,6 +199,11 @@ public class BeanFactory {
         var classInfo = beanBeanInvoker.getClassInfo();
         resolveDependentBean(bean, classInfo);
         return bean;
+    }
+
+    public static <T> Object factoryAndInvokeMethod(Class<T> type, Method routerMethod, Object[] parameters) {
+        T bean = factory(type);
+        return BeanInvoker.invokeMethod(bean, routerMethod, parameters);
     }
 
     public static <T, K extends T> T factoryWithProxy(Class<K> type, Class<T> interfaceType) {

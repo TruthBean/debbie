@@ -1,5 +1,6 @@
 package com.truthbean.debbie.hikari;
 
+import com.truthbean.debbie.core.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.zaxxer.hikari.HikariConfig;
@@ -49,6 +50,8 @@ public class HikariDataSourceFactory implements DataSourceFactory {
                 config.setTransactionIsolation(configuration.getDefaultTransactionIsolationLevel().name());
             }
             hikariDataSource = new HikariDataSource(config);
+        } else {
+            throw new ConfigurationTypeNotMatchedException();
         }
 
         return this;

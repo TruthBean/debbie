@@ -110,7 +110,8 @@ public class RouterPathSplicer {
     private static Set<String> splicePaths(Router prefixRouter, Router router) {
         if (prefixRouter != null) {
             var prefixPathRegex = resolvePath(prefixRouter);
-            return splicePaths(prefixPathRegex, router);
+            if (prefixPathRegex != null)
+                return splicePaths(prefixPathRegex, router);
         }
         return splicePaths(router);
     }

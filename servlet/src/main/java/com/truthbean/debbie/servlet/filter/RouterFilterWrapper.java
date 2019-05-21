@@ -1,5 +1,6 @@
 package com.truthbean.debbie.servlet.filter;
 
+import com.truthbean.debbie.core.bean.BeanFactory;
 import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -21,9 +22,10 @@ import java.util.Map;
 public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
 
     private RouterFilter filter;
+    private Class<? extends RouterFilter> filterType;
 
-    public RouterFilterWrapper(RouterFilter filter) {
-        this.filter = filter;
+    public RouterFilterWrapper(Class<? extends RouterFilter> filterType) {
+        this.filterType = filterType;
     }
 
     @Override
@@ -34,6 +36,13 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
     @Override
     public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+        if (filter == null) {
+            synchronized (this) {
+                if (filter == null) {
+                    filter = BeanFactory.factory(filterType);
+                }
+            }
+        }
         ServletRouterRequest routerRequest = new ServletRouterRequest(request);
         ServletRouterResponse routerResponse = new ServletRouterResponse(response);
         if (this.doFilter(routerRequest, routerResponse)) {

@@ -7,10 +7,6 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
  * @since 0.0.1
  */
 public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration {
-    private int initialPoolSize;
-    private int increase;
-    private int maxPoolSize;
-
     /**
      * The maximum number of active connections
      */
@@ -33,7 +29,7 @@ public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration 
 
     /**
      * The maximum number of tolerance for bad connection happens in one thread
-     * which are applying for new {@link PooledConnection}
+     * which are applying for new {@link ConnectionProxy}
      */
     private int maxLocalBadConnectionTolerance = 3;
 
@@ -55,30 +51,6 @@ public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration 
 
     public DefaultDataSourcePoolConfiguration(DataSourceConfiguration configuration) {
         super(configuration);
-    }
-
-    public int getInitialPoolSize() {
-        return initialPoolSize;
-    }
-
-    public void setInitialPoolSize(int initialPoolSize) {
-        this.initialPoolSize = initialPoolSize;
-    }
-
-    public int getIncrease() {
-        return increase;
-    }
-
-    public void setIncrease(int increase) {
-        this.increase = increase;
-    }
-
-    public int getMaxPoolSize() {
-        return maxPoolSize;
-    }
-
-    public void setMaxPoolSize(int maxPoolSize) {
-        this.maxPoolSize = maxPoolSize;
     }
 
     public int getMaxActiveConnection() {

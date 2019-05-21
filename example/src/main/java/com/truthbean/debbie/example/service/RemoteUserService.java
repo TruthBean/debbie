@@ -1,5 +1,6 @@
 package com.truthbean.debbie.example.service;
 
+import com.truthbean.debbie.core.bean.BeanComponent;
 import com.truthbean.debbie.core.proxy.InterfaceProxyFactory;
 import com.truthbean.debbie.example.httpclient.UserHttpClient;
 import com.truthbean.debbie.httpclient.HttpClientExecutor;
@@ -14,6 +15,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2019/05/04 21:16.
  */
+@BeanComponent
 public class RemoteUserService {
     private final Map<Class<?>, InterfaceProxyFactory<UserHttpClient>> knownMappers = new HashMap<>();
 

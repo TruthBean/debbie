@@ -1,7 +1,9 @@
 package com.truthbean.debbie.example.router;
 
+import com.truthbean.debbie.core.bean.BeanInject;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.watcher.Watcher;
+import com.truthbean.debbie.example.service.RemoteUserService;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
@@ -21,6 +23,9 @@ import java.util.UUID;
 @Watcher
 @Router("example")
 public class ExampleRouter {
+
+    @BeanInject
+    private RemoteUserService remoteUserService;
 
     @Router(path = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
     public String helloWorld() {

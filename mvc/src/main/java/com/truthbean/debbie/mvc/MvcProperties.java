@@ -21,7 +21,13 @@ public class MvcProperties extends BaseProperties {
      */
     private static final String DISPATCHER_MAPPING = "debbie.web.dispatcher-mapping";
 
-    private static final String SERVER_DEFAULT_TYPES = "debbie.web.default.types";
+    private static final String SERVER_RESPONSE_ALLOW_CLIENT = "debbie.web.default.response.allow-client";
+    private static final String SERVER_RESPONSE_DEFAULT_TYPES = "debbie.web.default.response.types";
+
+    private static final String SERVER_CONTENT_DEFAULT_TYPES = "debbie.web.default.content.types";
+    private static final String SERVER_CONTENT_ACCEPT_CLIENT = "debbie.web.default.content.accept-client";
+
+
     private static final String SERVER_CSRF = "debbie.web.csrf";
 
     private static final String SERVER_CORS = "debbie.web.cors";
@@ -47,13 +53,19 @@ public class MvcProperties extends BaseProperties {
     private static void buildConfiguration() {
         MvcProperties properties = new MvcProperties();
 
-        MvcConfiguration.Builder builder = MvcConfiguration.builder();
+        MvcConfiguration.Builder builder = MvcConfiguration.builder()
+                .dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"))
+                .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
+                .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, false));
 
-        builder.dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"));
+        List<MediaType> defaultResponseTypes = properties.getMediaTypeListValue(SERVER_RESPONSE_DEFAULT_TYPES, ",");
+        if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {
+            builder.defaultResponseTypes(defaultResponseTypes);
+        }
 
-        List<MediaType> defaultTypes = properties.getMediaTypeListValue(SERVER_DEFAULT_TYPES, ",");
-        if (defaultTypes != null && !defaultTypes.isEmpty()) {
-            builder.defaultTypes(defaultTypes);
+        List<MediaType> defaultRequestTypes = properties.getMediaTypeListValue(SERVER_CONTENT_DEFAULT_TYPES, ",");
+        if (defaultRequestTypes != null && !defaultRequestTypes.isEmpty()) {
+            builder.defaultContentTypes(defaultRequestTypes);
         }
 
         builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX));

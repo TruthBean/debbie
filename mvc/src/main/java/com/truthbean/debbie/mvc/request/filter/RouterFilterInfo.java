@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
     private int order;
     private String name;
-    private RouterFilter routerFilter;
+    private Class<? extends RouterFilter> routerFilterType;
 
     private List<String> rawUrlPattern;
     private List<Pattern> urlPattern;
@@ -22,12 +22,12 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
         rawUrlPattern = new ArrayList<>();
     }
 
-    public RouterFilter getRouterFilter() {
-        return routerFilter;
+    public Class<? extends RouterFilter> getRouterFilterType() {
+        return routerFilterType;
     }
 
-    public void setRouterFilter(RouterFilter routerFilter) {
-        this.routerFilter = routerFilter;
+    public void setRouterFilterType(Class<? extends RouterFilter> routerFilterType) {
+        this.routerFilterType = routerFilterType;
     }
 
     public List<Pattern> getUrlPattern() {
@@ -72,20 +72,20 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
         if (!(o instanceof RouterFilterInfo)) return false;
         RouterFilterInfo that = (RouterFilterInfo) o;
         return Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getRouterFilter(), that.getRouterFilter()) &&
+                Objects.equals(getRouterFilterType(), that.getRouterFilterType()) &&
                 Objects.equals(getUrlPattern(), that.getUrlPattern());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getRouterFilter(), getUrlPattern());
+        return Objects.hash(getName(), getRouterFilterType(), getUrlPattern());
     }
 
     @Override
     public String toString() {
         return "{" +
                 "\"name\":\"" + name + '\"' +
-                ",\"routerFilter\":" + routerFilter +
+                ",\"routerFilter\":" + routerFilterType +
                 ",\"rawUrlPattern\":" + rawUrlPattern +
                 ",\"urlPattern\":" + urlPattern +
                 '}';

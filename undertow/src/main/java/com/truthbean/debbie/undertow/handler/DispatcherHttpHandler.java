@@ -57,7 +57,7 @@ public class DispatcherHttpHandler implements HttpHandler {
             return;
         }
         RouterRequest httpRequest = getHttpRequestInfo(exchange);
-        RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration.getDefaultTypes());
+        RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
         LOGGER.debug(httpRequest.toString());
 
         if (!exchange.isResponseChannelAvailable()) {

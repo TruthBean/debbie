@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author TruthBean
@@ -100,6 +101,20 @@ public class BeanInvoker<Bean> {
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             LOGGER.error("invokeMethod error", e);
+        }
+        return null;
+    }
+
+    public static <Bean> Object invokeMethod(Bean bean, Method routerMethod, Object[] parameters) {
+        try {
+            if (parameters == null || parameters.length == 0) {
+                return routerMethod.invoke(bean);
+            } else {
+                return routerMethod.invoke(bean, parameters);
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            LOGGER.error("invokeMethod error", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }

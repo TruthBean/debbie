@@ -78,7 +78,7 @@ public class DispatcherServlet extends HttpServlet {
 
         var requestAdapter = new ServletRouterRequest(req);
 
-        var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration.getDefaultTypes());
+        var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
         LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
         RouterResponse response = MvcRouterHandler.handleRouter(routerInfo);
 

@@ -90,7 +90,7 @@ public class ConnectionBinder implements Closeable {
         var connection = connectionThreadLocal.get();
         try {
             if (connection != null && !connection.isReadOnly() && !connection.getAutoCommit()) {
-                LOGGER.debug("commit ...");
+                LOGGER.debug("Connection " + connection.hashCode() + " commit ...");
                 connection.commit();
             }
         } catch (SQLException e) {
@@ -102,7 +102,7 @@ public class ConnectionBinder implements Closeable {
         var connection = connectionThreadLocal.get();
         try {
             if (connection != null && !connection.isReadOnly()) {
-                LOGGER.debug("rollback ...");
+                LOGGER.debug("Connection " + connection.hashCode() + "rollback ...");
                 connection.rollback();
             }
         } catch (SQLException e) {

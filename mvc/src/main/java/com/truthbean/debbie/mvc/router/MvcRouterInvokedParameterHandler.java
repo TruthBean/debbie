@@ -1,5 +1,6 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
@@ -29,7 +30,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterInvokedParameterHandler.class);
 
-    public List handleMethodParams(RouterRequestValues parameters, List<InvokedParameter> methodParams) {
+    public List handleMethodParams(RouterRequestValues parameters, List<InvokedParameter> methodParams, MediaType requestType) {
         List<Object> result = new LinkedList<>();
         for (InvokedParameter invokedParameter : methodParams) {
             LOGGER.debug("invokedParameter " + invokedParameter.getType().getName());
@@ -41,7 +42,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                 invokedParameter.setValue(parameters.getRouterRequest());
                 continue;
             }
-            handle(parameters, invokedParameter);
+            handle(parameters, invokedParameter, requestType);
         }
 
         for (InvokedParameter invokedParameter : methodParams) {
@@ -123,7 +124,7 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         }
     }
 
-    public void doHandleParam(RouterRequestValues parameters, InvokedParameter invokedParameter) {
+    public void doHandleParam(RouterRequestValues parameters, InvokedParameter invokedParameter, MediaType requestType) {
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
@@ -150,7 +151,11 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     handleParam(params, invokedParameter);
                     break;
                 case BODY:
-                    handleBody(parameters.getBody(), requestParameter.bodyType(), invokedParameter);
+                    var type = requestParameter.bodyType();
+                    if (type == MediaType.ANY) {
+                        type = requestType;
+                    }
+                    handleBody(parameters.getBody(), type, invokedParameter);
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();
@@ -185,18 +190,12 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         }
     }
 
-    public void handle(RouterRequestValues parameters, InvokedParameter invokedParameter) {
-        doHandleParam(parameters, invokedParameter);
+    public void handle(RouterRequestValues parameters, InvokedParameter invokedParameter, MediaType requestType) {
+        doHandleParam(parameters, invokedParameter, requestType);
 
         if (invokedParameter.getValue() == null) {
             List<Field> fields = ReflectionHelper.getDeclaredFields(invokedParameter.getType());
-            Object instance = null;
-            try {
-                instance = invokedParameter.getType().getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
-                    | InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            Object instance = ReflectionHelper.newInstance(invokedParameter.getType());
             int i = 0;
             while (i < fields.size()) {
                 InvokedParameter parameter = typeOf(fields.get(i), i);
@@ -211,13 +210,13 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                         e.printStackTrace();
                     }
                 } else {
-                    doHandleFiled(parameters, instance, fields.get(i), parameter);
+                    doHandleFiled(parameters, instance, fields.get(i), parameter, requestType);
                 }
 
                 i++;
             }
             invokedParameter.setValue(instance);
-            doHandleParam(parameters, invokedParameter);
+            doHandleParam(parameters, invokedParameter, requestType);
         }
 
         /*if (TypeHelper.isBaseType(invokedParameter.getType())
@@ -228,7 +227,8 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         }*/
     }
 
-    public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field, InvokedParameter invokedParameter) {
+    public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field,
+                              InvokedParameter invokedParameter, MediaType requestType) {
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
@@ -266,8 +266,11 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     }
                     break;
                 case BODY:
-                    handleObjectFiled(parameters.getBody(), requestParameter.bodyType(), instance,
-                            field, invokedParameter);
+                    var type = requestParameter.bodyType();
+                    if (type == MediaType.ANY) {
+                        type = requestType;
+                    }
+                    handleObjectFiled(parameters.getBody(), type, instance, field, invokedParameter);
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();

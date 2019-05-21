@@ -29,7 +29,6 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         LOGGER.debug("runing before method invoke ..");
         var config = DataSourceConfigurationFactory.factory();
         DataSourceFactory factory = connectionBinder.getDataSourceFactory(config);
-        factory.factory(config);
         connectionBinder.bind(factory.getConnection());
         if (jdbcTransactional.readonly()) {
             connectionBinder.setAutoCommit(false);

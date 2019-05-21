@@ -38,5 +38,13 @@ public class HikariTest {
     public void testDataSource() {
         DataSourceFactory factory = DataSourceFactory.factory();
         System.out.println(factory);
+
+        try {
+            Connection connection = factory.getConnection();
+            Thread.sleep(1000);
+            connection.close();
+        } catch (SQLException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -9,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.*;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.jar.JarFile;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author TruthBean
@@ -24,6 +23,30 @@ import java.util.jar.JarFile;
 public class ReflectionHelper {
 
     public static <T> T newInstance(Class<T> type) {
+        if (Modifier.isAbstract(type.getModifiers())) {
+            throw new IllegalStateException(type.getName() + " cannot be abstract class");
+        }
+        if (type.isInterface()) {
+            if (type == List.class) {
+                return (T) new ArrayList();
+            }
+            if (type == Set.class) {
+                return (T) new HashSet();
+            }
+            if (type == Map.class) {
+                return (T) new HashMap();
+            }
+            if (type == Queue.class) {
+                return (T) new LinkedBlockingQueue();
+            }
+            if (type == Deque.class) {
+                return (T) new ArrayDeque();
+            }
+            throw new IllegalStateException(type.getName() + " cannot be isInterface except List, Set, Map, Queue, Deque");
+        }
+        if (TypeHelper.isBaseType(type)) {
+            throw new IllegalStateException(type.getName() + " cannot be base type");
+        }
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
 

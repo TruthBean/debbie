@@ -2,7 +2,6 @@ package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.io.MediaType;
-
 import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -19,9 +18,24 @@ public class MvcConfiguration extends BeanScanConfiguration {
     private String dispatcherMapping;
 
     /**
+     * allow client change response type by request header "Response-Type"
+     */
+    private boolean allowClientResponseType;
+
+    /**
      * default response type
      */
-    private final Set<MediaType> defaultTypes = new HashSet<>();
+    private final Set<MediaType> defaultResponseTypes = new HashSet<>();
+
+    /**
+     * accept client content type by request header "Content-Type"
+     */
+    private boolean acceptClientContentType;
+
+    /**
+     * default request type
+     */
+    private final Set<MediaType> defaultContentTypes = new HashSet<>();
 
     // cors
     private boolean enableCors = false;
@@ -44,7 +58,11 @@ public class MvcConfiguration extends BeanScanConfiguration {
     public void copyFrom(MvcConfiguration configuration) {
         this.dispatcherMapping = configuration.dispatcherMapping;
 
-        this.defaultTypes.addAll(configuration.defaultTypes);
+        this.allowClientResponseType = configuration.allowClientResponseType;
+        this.defaultResponseTypes.addAll(configuration.defaultResponseTypes);
+
+        this.acceptClientContentType = configuration.acceptClientContentType;
+        this.defaultContentTypes.addAll(configuration.defaultContentTypes);
 
         this.enableCors = configuration.enableCors;
         this.corsOrigins = configuration.corsOrigins;
@@ -132,8 +150,20 @@ public class MvcConfiguration extends BeanScanConfiguration {
         }
     }
 
-    public Set<MediaType> getDefaultTypes() {
-        return defaultTypes;
+    public boolean isAcceptClientContentType() {
+        return acceptClientContentType;
+    }
+
+    public Set<MediaType> getDefaultResponseTypes() {
+        return defaultResponseTypes;
+    }
+
+    public Set<MediaType> getDefaultContentTypes() {
+        return defaultContentTypes;
+    }
+
+    public boolean isAllowClientResponseType() {
+        return allowClientResponseType;
     }
 
     public static Builder builder() {
@@ -166,8 +196,23 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
-        public Builder defaultTypes(List<MediaType> defaultType) {
-            configuration.defaultTypes.addAll(defaultType);
+        public Builder acceptClientContentType(boolean acceptClientContentType) {
+            configuration.acceptClientContentType = acceptClientContentType;
+            return this;
+        }
+
+        public Builder defaultResponseTypes(List<MediaType> defaultType) {
+            configuration.defaultResponseTypes.addAll(defaultType);
+            return this;
+        }
+
+        public Builder allowClientResponseType(boolean allowClientResponseType) {
+            configuration.allowClientResponseType = allowClientResponseType;
+            return this;
+        }
+
+        public Builder defaultContentTypes(List<MediaType> defaultContentTypes) {
+            configuration.defaultContentTypes.addAll(defaultContentTypes);
             return this;
         }
 
@@ -180,13 +225,14 @@ public class MvcConfiguration extends BeanScanConfiguration {
         /**
          * use ** to replace path, like **.do, /api/**, /api/**.do
          * NOT: but do not support multi **, like /api/**-controller/**.do
+         *
          * @param dispatcherMapping dispatcher mapping
          * @return Builder
          */
         public Builder dispatcherMapping(String dispatcherMapping) {
             int startCount = 0;
             char[] chars = dispatcherMapping.toCharArray();
-            for (char c: chars) {
+            for (char c : chars) {
                 if (c == '*') {
                     startCount++;
                 }

@@ -20,6 +20,7 @@ public class DataTransformerFactory {
 
     @SuppressWarnings("unchecked")
     public static <O, T> T transform(final O origin, final Class<T> target) {
+        if (origin == null) return null;
         final Class<?> originType = origin.getClass();
 
         if (originType == target) {

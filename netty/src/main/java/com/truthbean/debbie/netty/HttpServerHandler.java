@@ -91,7 +91,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             assert routerRequest != null;
             routerRequest.setParameters(trailer);
 
-            RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration.getDefaultTypes());
+            RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
             MvcRouterHandler.handleRouter(routerInfo);
             RouterInvokeResult invokeResult = routerInfo.getResponse();
             MediaType responseType = invokeResult.getResponseType();

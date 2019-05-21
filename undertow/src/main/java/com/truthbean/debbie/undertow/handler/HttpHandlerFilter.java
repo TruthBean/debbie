@@ -1,5 +1,6 @@
 package com.truthbean.debbie.undertow.handler;
 
+import com.truthbean.debbie.core.bean.BeanFactory;
 import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.undertow.UndertowResponseHandler;
@@ -27,7 +28,7 @@ public class HttpHandlerFilter implements HttpHandler {
         this.filterInfo = filterInfo;
     }
 
-    private final AttachmentKey<UndertowRouterRequest> request = AttachmentKey.create(UndertowRouterRequest.class);
+    private static final AttachmentKey<UndertowRouterRequest> request = AttachmentKey.create(UndertowRouterRequest.class);
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
@@ -39,19 +40,17 @@ public class HttpHandlerFilter implements HttpHandler {
         if (routerRequest == null) {
             routerRequest = new UndertowRouterRequest(exchange);
         }
+        exchange.putAttachment(request, routerRequest);
 
         UndertowRouterResponse routerResponse = new UndertowRouterResponse();
 
         String url = exchange.getRequestURI();
         List<Pattern> urlPattern = filterInfo.getUrlPattern();
-        RouterFilter routerFilter = filterInfo.getRouterFilter();
+        Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
+        RouterFilter routerFilter = BeanFactory.factory(routerFilterType);
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
                 if (routerFilter.doFilter(routerRequest, routerResponse)) {
-                    Map<String, Object> attributes = routerRequest.getAttributes();
-                    if (attributes!=null && !attributes.isEmpty()) {
-                        exchange.putAttachment(request, routerRequest);
-                    }
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
                     }

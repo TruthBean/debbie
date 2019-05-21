@@ -1,21 +1,21 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanInvoker;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
-import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Iterator;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +28,7 @@ public class MvcRouterHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterHandler.class);
 
-    public static RouterInfo getMatchedRouter(RouterRequest routerRequest, Set<MediaType> defaultType) {
+    public static RouterInfo getMatchedRouter(RouterRequest routerRequest, MvcConfiguration configuration) {
         var url = routerRequest.getUrl();
         LOGGER.debug("router uri: {}", url);
         RouterInfo result = null;
@@ -48,39 +48,60 @@ public class MvcRouterHandler {
             }
             LOGGER.debug("match method: " + requestMethod);
 
-            var responseType = routerInfo.getResponse().getResponseType();
+            // response type
+            var response = routerInfo.getResponse();
+            var responseType = response.getResponseType();
             LOGGER.debug("responseType: " + responseType);
             var responseTypeInRequestHeader = routerRequest.getResponseType();
             LOGGER.debug("responseTypeInRequestHeader: " + responseTypeInRequestHeader);
+            Set<MediaType> defaultResponseTypes = configuration.getDefaultResponseTypes();
             var matchResponseType = MediaType.ANY.isSame(responseTypeInRequestHeader) ||
                     (!MediaType.ANY.isSame(responseType) && responseType.isSame(responseTypeInRequestHeader)) ||
-                    (MediaType.ANY.isSame(responseType) && MediaType.contains(defaultType, responseTypeInRequestHeader));
+                    (MediaType.ANY.isSame(responseType) && MediaType.contains(defaultResponseTypes, responseTypeInRequestHeader))
+                    || (configuration.isAllowClientResponseType() && !MediaType.ANY.isSame(responseTypeInRequestHeader));
             if (!matchResponseType) {
                 continue;
+            } else {
+                if (MediaType.ANY.isSame(responseType) && MediaType.ANY.isSame(responseTypeInRequestHeader)) {
+                    response.setResponseType(defaultResponseTypes.iterator().next());
+                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
+                } else {
+                    if (MediaType.ANY.isSame(responseType) &&
+                            MediaType.contains(defaultResponseTypes, responseTypeInRequestHeader)) {
+                        response.setResponseType(responseTypeInRequestHeader);
+                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
+                    } else if (configuration.isAllowClientResponseType() && !MediaType.ANY.isSame(responseTypeInRequestHeader)) {
+                        response.setResponseType(responseTypeInRequestHeader);
+                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
+                    }
+                }
             }
             LOGGER.debug("match response type: " + responseType);
 
+            // content type
             var requestType = routerInfo.getRequestType();
             LOGGER.debug("requestType: " + requestType);
             var contextType = routerRequest.getContentType();
             LOGGER.debug("contextType: " + contextType);
+            Set<MediaType> defaultContentTypes = configuration.getDefaultContentTypes();
             var matchRequestType = MediaType.ANY.isSame(contextType) ||
-                    (!MediaType.ANY.isSame(requestType)  && requestType.isSame(contextType))
-                    || (MediaType.ANY.isSame(requestType));
+                    (!MediaType.ANY.isSame(requestType) && requestType.isSame(contextType))
+                    || (
+                    (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
+                            (MediaType.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()))
+            );
             if (!matchRequestType) {
                 continue;
+            } else {
+                var flag = (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
+                        (MediaType.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()));
+                if (flag) {
+                    routerInfo.setRequestType(contextType);
+                }
             }
-            LOGGER.debug("match response type: " + requestType);
+            LOGGER.debug("match request type: " + requestType);
 
             result = routerInfo;
-            if (responseType == MediaType.ANY) {
-                MediaType next = MediaType.APPLICATION_JSON_UTF8;
-                Iterator<MediaType> iterator = defaultType.iterator();
-                if (iterator.hasNext()) {
-                    next = iterator.next();
-                }
-                routerInfo.getResponse().setResponseType(next);
-            }
             break;
         }
 

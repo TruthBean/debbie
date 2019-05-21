@@ -85,7 +85,7 @@ public class ServletContextHandler {
 
         Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
         filters.forEach(filter -> {
-            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilter());
+            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilterType());
             servletContext.addFilter(filter.getName(), filterWrapper)
                     .addMappingForUrlPatterns(dispatcherTypes, true, filter.getUrlPatterns());
         });

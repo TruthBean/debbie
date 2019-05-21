@@ -28,12 +28,11 @@ public class RouterFilterManager {
         }
     }
 
-    private static void registerFilter(ClassInfo classInfo, MvcConfiguration configuration) {
+    private static void registerFilter(ClassInfo<? extends RouterFilter> classInfo, MvcConfiguration configuration) {
         var clazz = classInfo.getClazz();
-        RouterFilter routerFilter = (RouterFilter) ReflectionHelper.newInstance(clazz);
 
         RouterFilterInfo filterInfo = new RouterFilterInfo();
-        filterInfo.setRouterFilter(routerFilter);
+        filterInfo.setRouterFilterType(clazz);
 
         var classAnnotations = classInfo.getClassAnnotations();
         Filter filter = (Filter) classAnnotations.get(Filter.class);
