@@ -1,7 +1,7 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.mvc.response.RouterInvokeResult;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import io.netty.buffer.ByteBuf;
@@ -93,9 +93,9 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
             RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
             MvcRouterHandler.handleRouter(routerInfo);
-            RouterInvokeResult invokeResult = routerInfo.getResponse();
-            MediaType responseType = invokeResult.getResponseType();
-            Object resp = invokeResult.getData();
+            RouterResponse routerResponse = routerInfo.getResponse();
+            MediaTypeInfo responseType = routerResponse.getResponseType();
+            Object resp = routerResponse.getContent();
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer("null".getBytes());
             if (resp instanceof String) {
@@ -106,7 +106,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 }
             }
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
-            response.headers().set(CONTENT_TYPE, responseType.getValue());
+            response.headers().set(CONTENT_TYPE, responseType.toString());
             response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
             if (!keepAlive) {
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);

@@ -52,7 +52,8 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
             }
             chain.doFilter(request, response);
         } else {
-            ServletResponseHandler handler = new ServletResponseHandler(request, response);
+            ServletResponseHandler handler =
+                    new ServletResponseHandler(routerRequest.getHttpServletRequest(), routerResponse.getResponse());
             handler.handle(routerResponse);
         }
     }

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -85,9 +85,9 @@ public interface RouterRequest {
 
     InputStream getInputStreamBody();
 
-    MediaType getContentType();
+    MediaTypeInfo getContentType();
 
-    MediaType getResponseType();
+    MediaTypeInfo getResponseType();
 
     String getRealPath(String path);
 

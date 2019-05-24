@@ -118,10 +118,10 @@ public class HttpClientAction extends HttpHandler {
 
         var contentType = request.getContentType();
         if (contentType == null) {
-            contentType = MediaType.ANY;
+            contentType = MediaType.ANY.info();
         }
 
-        builder.header("Content-Type", contentType.getValue());
+        builder.header("Content-Type", contentType.toString());
 
         var xWwwFormUrlencodedBody = new StringBuilder();
         var parameters = request.getParameters();
@@ -138,12 +138,12 @@ public class HttpClientAction extends HttpHandler {
             xWwwFormUrlencodedBody.deleteCharAt(xWwwFormUrlencodedBody.length() - 1);
         }
 
-        if (contentType == MediaType.APPLICATION_FORM_URLENCODED) {
+        if (contentType.toMediaType() == MediaType.APPLICATION_FORM_URLENCODED) {
             // form 表单
             var body = HttpRequest.BodyPublishers.ofString(xWwwFormUrlencodedBody.toString());
             var httpRequest = builder.method(request.getMethod().name(), body).build();
             return action(httpRequest, startTime);
-        } else if (contentType == MediaType.MULTIPART_FORM_DATA) {
+        } else if (contentType.toMediaType() == MediaType.MULTIPART_FORM_DATA) {
             // multipart
             var multipart = ofMimeMultipartData(parameters, UUID.randomUUID().toString());
             var httpRequest = builder.method(request.getMethod().name(), multipart).build();

@@ -1,7 +1,6 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.bean.BeanFactory;
-import com.truthbean.debbie.core.bean.BeanInvoker;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
@@ -32,7 +31,12 @@ public class RouterInvoker {
             throw new NullPointerException("httpRequest is null");
         }
 
-        var parameters = new RouterRequestValues(httpRequest);
+        var httpResponse = routerInfo.getResponse();
+        if (httpResponse == null) {
+            throw new NullPointerException("httpResponse is null");
+        }
+
+        var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
         var handler = new MvcRouterInvokedParameterHandler();
         var args = handler.handleMethodParams(parameters, routerInfo.getMethodParams(), routerInfo.getRequestType());
@@ -42,25 +46,28 @@ public class RouterInvoker {
         var type = routerInfo.getRouterClass();
         var method = routerInfo.getMethod();
         Object any = BeanFactory.factoryAndInvokeMethod(type, method, values);
-        if (any == null) {
+        /*if (any == null) {
             throw new NullPointerException(method.getName() + " return null");
-        }
+        }*/
 
         for (InvokedParameter methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
         }
 
-        return resolveResponse(any, httpRequest.getResponseType());
+        return resolveResponse(any, httpRequest.getResponseType().toMediaType());
     }
 
     private Object resolveResponse(Object methodResult, MediaType responseType) {
-        if (routerInfo.hasTemplate()) {
+        var response = routerInfo.getResponse();
+        if (response.hasTemplate()) {
             if (methodResult instanceof StaticResourcesView) {
                 return ((StaticResourcesView) methodResult).render();
             }
             return methodResult;
         } else {
-            var provider = ResponseHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType());
+            if (methodResult == null) return null;
+
+            var provider = ResponseHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());
             var filter = provider.transform(methodResult);
             if (filter == null) {
                 throw new RuntimeException(methodResult.toString() + " to " + responseType.getValue() + " error");

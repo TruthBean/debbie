@@ -22,19 +22,16 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public int createDatabase(Connection connection, String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().create().database(database).builder();
-        LOGGER.debug(sql);
         return super.update(connection, sql);
     }
 
     public List<String> showDatabases(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().databases().builder();
-        LOGGER.debug(sql);
         return super.query(connection, sql, String.class);
     }
 
     public int dropDatabase(Connection connection, String database) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
-        LOGGER.debug(sql);
         return super.update(connection, sql);
     }
 
@@ -46,7 +43,6 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public List<String> showTables(Connection connection) {
         String sql = DynamicSqlBuilder.sql().show().tables().builder();
-        LOGGER.debug(sql);
         return super.query(connection, sql, String.class);
     }
 
@@ -99,7 +95,6 @@ public class DdlRepositoryHandler extends RepositoryHandler {
             sqlBuilder.defaultCharset(charset);
         }
         var sql = sqlBuilder.builder();
-        LOGGER.debug(sql);
         super.update(connection, sql);
     }
 
@@ -148,7 +143,6 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public void dropTable(Connection connection, String table) throws TransactionException {
         String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
-        LOGGER.debug(sql);
         super.update(connection, sql);
     }
 

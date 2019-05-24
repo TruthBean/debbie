@@ -69,8 +69,15 @@ public class BeanInvoker<Bean> {
                 }
             }
 
+            // todo invoke init method
+
+            if (this.bean == null) {
+                throw new IllegalAccessException(beanClass.getName() + "'s constructors is not visible. ");
+            }
+
         } catch (Exception e) {
-            LOGGER.error("new instance by default constructor error", e);
+            LOGGER.error("new instance by constructor error \n");
+            throw new BeanCreatedException(e);
         }
     }
 
@@ -100,7 +107,8 @@ public class BeanInvoker<Bean> {
                 return routerMethod.invoke(bean, parameters);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            LOGGER.error("invokeMethod error", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("invokeMethod error \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -114,7 +122,7 @@ public class BeanInvoker<Bean> {
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
-            LOGGER.error("invokeMethod error", Objects.requireNonNullElse(cause, e));
+            LOGGER.error("invokeMethod error \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }

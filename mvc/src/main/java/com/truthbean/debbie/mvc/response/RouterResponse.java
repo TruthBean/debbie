@@ -1,16 +1,16 @@
 package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.HttpCookie;
+import java.util.*;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class RouterResponse {
+public class RouterResponse implements Cloneable {
     private boolean redirect;
 
     private boolean hasTemplate;
@@ -18,8 +18,12 @@ public class RouterResponse {
     private String templatePrefix;
 
     private final Map<String, String> headers = new HashMap<>();
-    private MediaType responseType;
+    private final List<HttpCookie> cookies = new ArrayList<>();
+
+    private MediaTypeInfo responseType;
+
     private Object content;
+    private AbstractResponseContentHandler<?, ?> handler;
 
     public boolean isRedirect() {
         return redirect;
@@ -33,27 +37,47 @@ public class RouterResponse {
         headers.put(name, value);
     }
 
-    public java.util.Map<String, String> getHeaders() {
+    public void addCookie(HttpCookie cookie) {
+        cookies.add(cookie);
+    }
+
+    public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
     }
 
-    public MediaType getResponseType() {
+    public List<HttpCookie> getCookies() {
+        return Collections.unmodifiableList(cookies);
+    }
+
+    public MediaTypeInfo getResponseType() {
+        if (responseType == null) {
+            var contentType = "Content-Type";
+            if (headers.containsKey(contentType)) {
+                responseType = MediaTypeInfo.parse(headers.get(contentType));
+            } else {
+                contentType = "content-type";
+                if (headers.containsKey(contentType)) {
+                    responseType = MediaTypeInfo.parse(contentType);
+                } else {
+                    contentType = "CONTENT-TYPE";
+                    if (headers.containsKey(contentType)) {
+                        responseType = MediaTypeInfo.parse(contentType);
+                    }
+                }
+            }
+        }
         return responseType;
     }
 
     public void setResponseType(MediaType responseType) {
-        this.responseType = responseType;
+        this.responseType = responseType.info();
     }
 
-    public void setContent(Object content) {
-        this.content = content;
+    public void setResponseType(MediaTypeInfo mediaTypeInfo) {
+        this.responseType = mediaTypeInfo;
     }
 
-    public Object getContent() {
-        return content;
-    }
-
-    public boolean isHasTemplate() {
+    public boolean hasTemplate() {
         return hasTemplate;
     }
 
@@ -77,13 +101,50 @@ public class RouterResponse {
         this.templatePrefix = templatePrefix;
     }
 
+    public Object getContent() {
+        return content;
+    }
+
+    public void setContent(Object content) {
+        this.content = content;
+    }
+
+    public AbstractResponseContentHandler<?, ?> getHandler() {
+        return handler;
+    }
+
+    public void setHandler(AbstractResponseContentHandler<?, ?> handler) {
+        this.handler = handler;
+    }
+
     public void copyFrom(RouterResponse response) {
         this.redirect = response.redirect;
         this.headers.putAll(response.headers);
+
         this.content = response.content;
+        this.handler = response.handler;
+
+        this.cookies.addAll(response.cookies);
 
         this.hasTemplate = response.hasTemplate;
         this.templatePrefix = response.templatePrefix;
         this.templateSuffix = response.templateSuffix;
+    }
+
+    @Override
+    public RouterResponse clone() {
+        RouterResponse response = new RouterResponse();
+        response.redirect = this.redirect;
+        response.headers.putAll(this.headers);
+
+        response.content = this.content;
+        response.handler = this.handler;
+
+        response.cookies.addAll(this.cookies);
+
+        response.hasTemplate = this.hasTemplate;
+        response.templatePrefix = this.templatePrefix;
+        response.templateSuffix = this.templateSuffix;
+        return response;
     }
 }

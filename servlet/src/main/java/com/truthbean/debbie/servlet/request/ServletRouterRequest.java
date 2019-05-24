@@ -2,6 +2,7 @@ package com.truthbean.debbie.servlet.request;
 
 import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.io.MultipartFile;
 import com.truthbean.debbie.core.net.uri.QueryStringDecoder;
 import com.truthbean.debbie.core.net.uri.UriUtils;
@@ -220,21 +221,21 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     private void setContentType() {
         var respType = request.getContentType();
         if (respType != null) {
-            setContentType(MediaType.of(respType));
+            setContentType(MediaTypeInfo.parse(respType));
         } else {
-            setContentType(MediaType.ANY);
+            setContentType(MediaType.ANY.info());
         }
     }
 
     private void setResponseType() {
         var respType = request.getHeader("Response-Type");
-        MediaType mediaType = MediaType.ANY;
+        MediaTypeInfo mediaType = MediaType.ANY.info();
         if (respType != null) {
-            mediaType = MediaType.of(respType);
+            mediaType = MediaTypeInfo.parse(respType);
         } else {
             var ext = FileNameUtils.getExtension(getUrl());
             if (ext != null && !ext.isBlank()) {
-                mediaType = MediaType.getTypeByUriExt(ext);
+                mediaType = MediaType.getTypeByUriExt(ext).info();
             }
         }
         setResponseType(mediaType);

@@ -2,8 +2,8 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.core.io.FileNameUtils;
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.net.uri.UriComposition;
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
@@ -127,17 +127,17 @@ public class NettyRouterRequest implements RouterRequest {
         }
     }
 
-    private MediaType getMediaTypeFromHeaders(HttpHeaders httpHeaders, String name) {
+    private MediaTypeInfo getMediaTypeFromHeaders(HttpHeaders httpHeaders, String name) {
         String headerValue = httpHeaders.get(name);
-        MediaType type;
+        MediaTypeInfo type;
         if (headerValue != null && !headerValue.isBlank()) {
-            type = MediaType.of(headerValue);
+            type = MediaTypeInfo.parse(headerValue);
         } else {
             String ext = FileNameUtils.getExtension(getUrl());
             if (ext == null || ext.isBlank()) {
-                type = MediaType.ANY;
+                type = MediaType.ANY.info();
             } else {
-                type = MediaType.getTypeByUriExt(ext);
+                type = MediaType.getTypeByUriExt(ext).info();
             }
         }
         return type;
@@ -234,12 +234,12 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
-    public MediaType getContentType() {
+    public MediaTypeInfo getContentType() {
         return routerRequestCache.getContentType();
     }
 
     @Override
-    public MediaType getResponseType() {
+    public MediaTypeInfo getResponseType() {
         return routerRequestCache.getResponseType();
     }
 

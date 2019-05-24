@@ -3,6 +3,8 @@ package com.truthbean.debbie.core.bean;
 import com.truthbean.debbie.core.reflection.ClassInfo;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -56,6 +58,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             }
         }
 
+        if (beanName == null || beanName.isBlank()) {
+            beanName = getServiceName();
+        }
+
         return false;
     }
 
@@ -64,12 +70,19 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     }
 
     public <T> Class<T> getBeanInterface() {
-        return (Class<T>) super.getClazz().getInterfaces()[0];
+        Class<?> clazz = super.getClazz();
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces == null || interfaces.length == 0) {
+            LOGGER.debug(clazz.getName() + " has no direct interface");
+            return null;
+        } else {
+            return (Class<T>) interfaces[0];
+        }
     }
 
     public String getServiceName() {
         String name = beanName;
-        if (name.isBlank()) {
+        if (name == null || name.isBlank()) {
             name = super.getClazz().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
         }
@@ -96,4 +109,6 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     public int hashCode() {
         return super.hashCode();
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);
 }

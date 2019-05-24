@@ -45,21 +45,58 @@ public class HttpHandlerFilter implements HttpHandler {
         UndertowRouterResponse routerResponse = new UndertowRouterResponse();
 
         String url = exchange.getRequestURI();
-        List<Pattern> urlPattern = filterInfo.getUrlPattern();
+        List<String> rawUrlPattern = filterInfo.getRawUrlPattern();
+
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
         RouterFilter routerFilter = BeanFactory.factory(routerFilterType);
-        for (Pattern pattern : urlPattern) {
-            if (pattern.matcher(url).find()) {
+
+        boolean filter = false;
+
+        for (String s : rawUrlPattern) {
+            if (s.equals(url)) {
+                filter = true;
                 if (routerFilter.doFilter(routerRequest, routerResponse)) {
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
+                        next.handleRequest(exchange);
+                    } else {
+                        next.handleRequest(exchange);
                     }
-                    next.handleRequest(exchange);
                 } else {
                     UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
                     handler.handle(routerResponse);
+                    return;
                 }
                 break;
+            }
+        }
+
+        List<Pattern> urlPattern = filterInfo.getUrlPattern();
+        for (Pattern pattern : urlPattern) {
+            if (pattern.matcher(url).find()) {
+                filter = true;
+                if (routerFilter.doFilter(routerRequest, routerResponse)) {
+                    if (next.getClass() == DispatcherHttpHandler.class) {
+                        ((DispatcherHttpHandler) next).setRequest(request);
+                        next.handleRequest(exchange);
+                    } else {
+                        next.handleRequest(exchange);
+                    }
+                } else {
+                    UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
+                    handler.handle(routerResponse);
+                    return;
+                }
+                break;
+            }
+        }
+
+        if (!filter) {
+            if (next.getClass() == DispatcherHttpHandler.class) {
+                ((DispatcherHttpHandler) next).setRequest(request);
+                next.handleRequest(exchange);
+            } else {
+                next.handleRequest(exchange);
             }
         }
     }

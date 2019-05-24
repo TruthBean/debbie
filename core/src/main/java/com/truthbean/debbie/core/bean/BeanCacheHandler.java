@@ -27,7 +27,7 @@ final class BeanCacheHandler {
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
     protected static void register(Class<?> beanClass) {
-        // LOGGER.debug("register class " + beanClass.getName());
+        LOGGER.debug("register class " + beanClass.getName());
         var beanClassInfo = new DebbieBeanInfo<>(beanClass);
 
         BEAN_CLASSES.put(beanClass, beanClassInfo);

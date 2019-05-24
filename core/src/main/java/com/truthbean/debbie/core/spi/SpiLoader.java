@@ -39,10 +39,8 @@ public class SpiLoader {
         Set<S> result = new HashSet<>();
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass);
         Iterator<S> search = serviceLoader.iterator();
-        if (search.hasNext()) {
+        while (search.hasNext()) {
             result.add(search.next());
-        } else {
-            throw new NoServiceProviderException(serviceClass.getName());
         }
         return result;
     }

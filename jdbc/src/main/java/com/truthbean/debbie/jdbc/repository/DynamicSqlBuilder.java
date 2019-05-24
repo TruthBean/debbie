@@ -27,7 +27,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder use(String database) {
-        dynamicSql.append("USE `").append(database).append("` ");
+        dynamicSql.append("USE ").append(database).append(" ");
         return this;
     }
 
@@ -42,7 +42,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder database(String database) {
-        dynamicSql.append(" DATABASE `").append(database).append("` ");
+        dynamicSql.append(" DATABASE ").append(database).append(" ");
         return this;
     }
 
@@ -61,7 +61,7 @@ public class DynamicSqlBuilder {
         if (ifExists) {
             dynamicSql.append("IF EXISTS");
         }
-        dynamicSql.append(" `").append(table).append("` ");
+        dynamicSql.append(" ").append(table).append(" ");
         return this;
     }
 
@@ -70,12 +70,12 @@ public class DynamicSqlBuilder {
         if (ifNotExists) {
             dynamicSql.append("IF NOT EXISTS");
         }
-        dynamicSql.append(" `").append(table).append("` ");
+        dynamicSql.append(" ").append(table).append(" ");
         return this;
     }
 
     public DynamicSqlBuilder table(String table) {
-        dynamicSql.append("TABLE `").append(table).append("` ");
+        dynamicSql.append("TABLE ").append(table).append(" ");
         return this;
     }
 
@@ -196,12 +196,12 @@ public class DynamicSqlBuilder {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    dynamicSql.append("`").append(iColumn).append("` = ?, ");
+                    dynamicSql.append("").append(iColumn).append(" = ?, ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                dynamicSql.append("`").append(iColumn).append("` = ? ");
+                dynamicSql.append("").append(iColumn).append(" = ? ");
             }
         }
         return this;
@@ -245,12 +245,12 @@ public class DynamicSqlBuilder {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    dynamicSql.append("`").append(iColumn).append("`, ");
+                    dynamicSql.append("").append(iColumn).append(", ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                dynamicSql.append("`").append(iColumn).append("` ");
+                dynamicSql.append("").append(iColumn).append(" ");
             }
         }
         return this;
@@ -290,7 +290,7 @@ public class DynamicSqlBuilder {
 
     public DynamicSqlBuilder from(String table) {
         if (table != null) {
-            dynamicSql.append(" FROM `").append(table).append("` ");
+            dynamicSql.append(" FROM ").append(table).append(" ");
         }
         return this;
     }
@@ -311,7 +311,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder exist(String column) {
-        dynamicSql.append(" EXIST( `").append(column).append("` ) ");
+        dynamicSql.append(" EXIST( ").append(column).append(" ) ");
         return this;
     }
 
@@ -326,7 +326,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder limit(int offset, int limit) {
-        dynamicSql.append(" LIMIT ").append(offset).append(", ").append(limit).append(" ");
+        dynamicSql.append(" LIMIT ").append(limit).append(" OFFSET ").append(offset).append(" ");
         return this;
     }
 

@@ -1,6 +1,7 @@
 package com.truthbean.debbie.core.bean;
 
 import com.truthbean.debbie.core.reflection.ClassInfo;
+import com.truthbean.debbie.core.spi.SpiLoader;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -11,6 +12,12 @@ import java.util.Set;
  * Created on 2019/3/23 11:47.
  */
 public class BeanInitialization {
+    static {
+        // TODO: how to flush
+        Set<AnnotationRegister> annotationRegisters = SpiLoader.loadProviders(AnnotationRegister.class);
+        annotationRegisters.forEach(AnnotationRegister::register);
+    }
+
     public void init(Class<?> beanClass) {
         BeanCacheHandler.register(beanClass);
     }

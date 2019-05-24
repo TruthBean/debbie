@@ -81,7 +81,8 @@ public final class UriUtils {
         }
 
         var queries = url.getQuery();
-        builder.queries(resolveParam(queries));
+        if (queries != null)
+            builder.queries(resolveParam(queries));
 
         var fragment = url.getRef();
         if (fragment != null) {

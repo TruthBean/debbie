@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc.response.provider;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.mvc.response.AbstractResponseHandler;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
 import com.truthbean.debbie.mvc.response.view.NoTemplateViewHandler;
 import org.slf4j.Logger;
@@ -20,26 +20,26 @@ public enum ResponseHandlerProviderEnum {
     /**
      * json restful
      */
-    JSON_RESTFUL(new JsonResponseHandler()),
+    JSON_RESTFUL(new JsonResponseContentHandler()),
 
     /**
      * xml restful
      */
-    XML_RESTFUL(new XmlResponseHandler()),
+    XML_RESTFUL(new XmlResponseContentHandler()),
 
     /**
      * text restful
      */
-    TEXT_RESTFUL(new TextResponseHandler()),
+    TEXT_RESTFUL(new TextResponseContentHandler()),
 
     /**
      * template view
      */
     TEMPLATE_VIEW(templateViewFilter());
 
-    private AbstractResponseHandler provider;
+    private AbstractResponseContentHandler provider;
 
-    ResponseHandlerProviderEnum(AbstractResponseHandler handlerFilter) {
+    ResponseHandlerProviderEnum(AbstractResponseContentHandler handlerFilter) {
         this.provider = handlerFilter;
     }
 
@@ -57,7 +57,7 @@ public enum ResponseHandlerProviderEnum {
         return search;
     }
 
-    public static AbstractResponseHandler getByResponseType(MediaType responseType) {
+    public static AbstractResponseContentHandler getByResponseType(MediaType responseType) {
         switch (responseType) {
             // bean to json
             case APPLICATION_JSON_UTF8:
@@ -83,7 +83,7 @@ public enum ResponseHandlerProviderEnum {
         }
     }
 
-    public AbstractResponseHandler getProvider() {
+    public AbstractResponseContentHandler getProvider() {
         return provider;
     }
 }

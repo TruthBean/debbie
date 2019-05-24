@@ -16,9 +16,4 @@ public class ExampleApplication {
         var application = DebbieApplicationFactory.factory();
         application.start(args);
     }
-
-    /*public static void main(String[] args) {
-        Map<Class<BaseProperties>, Class> classClassMap = SpiLoader.loadPropertiesClasses();
-        System.out.println(classClassMap);
-    }*/
 }

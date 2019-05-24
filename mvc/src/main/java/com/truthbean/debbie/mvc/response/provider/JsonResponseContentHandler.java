@@ -7,7 +7,7 @@ import com.truthbean.debbie.core.util.JacksonUtils;
  * @since ${version}
  * Created on 2019/3/23 14:01.
  */
-public class JsonResponseHandler<S> extends AbstractRestResponseHandler<S> {
+public class JsonResponseContentHandler<S> extends AbstractRestResponseContentHandler<S> {
     @Override
     public String transform(S original) {
         return JacksonUtils.toJson(original);

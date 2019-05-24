@@ -1,9 +1,6 @@
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.core.io.FileNameUtils;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MultipartFile;
-import com.truthbean.debbie.core.io.StreamHelper;
+import com.truthbean.debbie.core.io.*;
 import com.truthbean.debbie.core.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
@@ -76,17 +73,17 @@ public class UndertowRouterRequest implements RouterRequest {
         routerRequestCache.setHeaders(headers);
     }
 
-    private MediaType getMediaTypeFromHeaders(HeaderMap headerMap, String name) {
+    private MediaTypeInfo getMediaTypeFromHeaders(HeaderMap headerMap, String name) {
         HeaderValues headerValues = headerMap.get(name);
-        MediaType type;
+        MediaTypeInfo type;
         if (headerValues != null && headerValues.element() != null) {
-            type = MediaType.of(headerValues.element());
+            type = MediaTypeInfo.parse(headerValues.element());
         } else {
             String ext = FileNameUtils.getExtension(getUrl());
             if (ext == null || ext.isBlank()) {
-                type = MediaType.ANY;
+                type = MediaType.ANY.info();
             } else {
-                type = MediaType.getTypeByUriExt(ext);
+                type = MediaType.getTypeByUriExt(ext).info();
             }
         }
         return type;
@@ -295,12 +292,12 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public MediaType getContentType() {
+    public MediaTypeInfo getContentType() {
         return routerRequestCache.getContentType();
     }
 
     @Override
-    public MediaType getResponseType() {
+    public MediaTypeInfo getResponseType() {
         return routerRequestCache.getResponseType();
     }
 

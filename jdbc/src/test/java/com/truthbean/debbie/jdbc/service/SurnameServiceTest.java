@@ -34,6 +34,7 @@ class SurnameServiceTest {
         System.out.println(q);
     }
 
+    @Test
     void selectById() {
         System.out.println(surnameService.selectById(2L));
     }

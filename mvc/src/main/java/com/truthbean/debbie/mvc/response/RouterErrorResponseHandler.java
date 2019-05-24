@@ -25,8 +25,8 @@ public final class RouterErrorResponseHandler {
         value.put("timestamp", String.valueOf(System.currentTimeMillis()));
         data.setData(value);
 
-        RouterInvokeResult routerResponse = new RouterInvokeResult();
-        if (httpRequest.getResponseType() == MediaType.APPLICATION_XML) {
+        RouterResponse routerResponse = new RouterResponse();
+        if (httpRequest.getResponseType().toMediaType() == MediaType.APPLICATION_XML) {
             routerResponse.setResponseType(httpRequest.getResponseType());
             resourcesNotFound.setErrorInfo(JacksonUtils.toXml(data));
         } else {
@@ -49,8 +49,8 @@ public final class RouterErrorResponseHandler {
         value.put("exception", e);
         data.setData(value);
 
-        RouterInvokeResult routerResponse = new RouterInvokeResult();
-        if (httpRequest.getResponseType() == MediaType.APPLICATION_XML) {
+        RouterResponse routerResponse = new RouterResponse();
+        if (httpRequest.getResponseType().toMediaType() == MediaType.APPLICATION_XML) {
             routerResponse.setResponseType(httpRequest.getResponseType());
             resourcesNotFound.setErrorInfo(JacksonUtils.toXml(data));
         } else {

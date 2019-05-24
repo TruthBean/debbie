@@ -42,10 +42,10 @@ public class ReflectionHelper {
             if (type == Deque.class) {
                 return (T) new ArrayDeque();
             }
-            throw new IllegalStateException(type.getName() + " cannot be isInterface except List, Set, Map, Queue, Deque");
+            throw new IllegalStateException(type.getName() + " cannot be isInterface except List, Set, Map, Queue, Deque. ");
         }
         if (TypeHelper.isBaseType(type)) {
-            throw new IllegalStateException(type.getName() + " cannot be base type");
+            throw new IllegalStateException(type.getName() + " cannot be base type. ");
         }
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
@@ -130,7 +130,8 @@ public class ReflectionHelper {
             }
             return constructor.newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            LOGGER.error("new instance error", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
         } finally {
             if (!flag) {
                 constructor.setAccessible(flag);
@@ -147,7 +148,8 @@ public class ReflectionHelper {
             }
             return declaredMethod.invoke(null);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            Throwable cause = e.getCause();
+            LOGGER.error("invoke static method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -160,7 +162,8 @@ public class ReflectionHelper {
             }
             return constructor;
         } catch (NoSuchMethodException e) {
-            LOGGER.error("no such constructor", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("no such constructor. \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -187,21 +190,109 @@ public class ReflectionHelper {
         return fields;
     }
 
+    public static Set<Method> getInterfaceDefaultMethods(Class<?> clazz) {
+        Set<Method> methods = new HashSet<>();
+
+        if (clazz.isInterface()) {
+            Method[] declaredMethods = clazz.getDeclaredMethods();
+            if (declaredMethods.length > 0) {
+                for (Method declaredMethod : declaredMethods) {
+                    if (declaredMethod.isDefault()) {
+                        methods.addAll(Arrays.asList(declaredMethods));
+                    }
+                }
+            }
+        }
+
+        Class<?>[] interfaces = clazz.getInterfaces();
+        for (Class<?> anInterface : interfaces) {
+            getInterfaceDefaultMethods(anInterface, methods);
+        }
+        return methods;
+    }
+
+    public static void getInterfaceDefaultMethods(Class<?> clazz, Set<Method> result) {
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        if (declaredMethods.length > 0) {
+            for (Method declaredMethod : declaredMethods) {
+                if (declaredMethod.isDefault()) {
+                    result.addAll(Arrays.asList(declaredMethods));
+                }
+            }
+        }
+    }
+
+    public static Method getDeclaredMethod(Class<?> clazz, String methodName) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            Method[] declaredMethods = superClass.getDeclaredMethods();
+            if (declaredMethods.length > 0) {
+                for (Method declaredMethod : declaredMethods) {
+                    if (methodName.equals(declaredMethod.getName())) {
+                        return declaredMethod;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public static Object invokeSetMethod(Object target, Field field, Object arg) {
-        var methodName = "set" + handleFieldName(field.getName());
+        Class<?> clazz = target.getClass();
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            try {
+                return invokeSetMethod(superClass, target, field.getName(), field.getType(), arg);
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
+        return null;
+    }
+
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Class<?> fieldType, Object arg)
+            throws NoSuchMethodException {
+        var methodName = "set" + handleFieldName(fieldName);
+
         try {
-            var method = target.getClass().getMethod(methodName, field.getType());
-            var fieldType = field.getType();
+            var method = targetClass.getMethod(methodName, fieldType);
             if (TypeHelper.isRawBaseType(fieldType)) {
                 fieldType = TypeHelper.getWrapperClass(fieldType);
             }
             return method.invoke(target, DataTransformerFactory.transform(arg, fieldType));
         } catch (NoSuchMethodException e) {
-            LOGGER.error(field.getName() + " set method not found. ", e);
+            Throwable cause = e.getCause();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.error(fieldName + " set method not found. \n", Objects.requireNonNullElse(cause, e));
+            } else {
+                LOGGER.error(fieldName + " set method not found. \n", e.getMessage());
+            }
+
+            methodName = "is" + handleFieldName(fieldName);
+            LOGGER.warn("try to invoke " + methodName + " method");
+            try {
+                var method = targetClass.getMethod(methodName, fieldType);
+                if (TypeHelper.isRawBaseType(fieldType)) {
+                    fieldType = TypeHelper.getWrapperClass(fieldType);
+                }
+                return method.invoke(target, DataTransformerFactory.transform(arg, fieldType));
+            } catch (NoSuchMethodException ex) {
+                cause = ex.getCause();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error(methodName + " method not found \n", Objects.requireNonNullElse(cause, ex));
+                } else {
+                    LOGGER.error(methodName + " method not found \n" + ex.getMessage());
+                }
+                throw ex;
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                cause = ex.getCause();
+                LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, ex));
+            }
+
         } catch (IllegalAccessException | InvocationTargetException e) {
-            LOGGER.error("", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("", Objects.requireNonNullElse(cause, e));
         } catch (IllegalArgumentException e) {
-            LOGGER.error("argument type is wrong. ", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("argument type is wrong. \n", Objects.requireNonNullElse(cause, e));
+            throw e;
         }
         return null;
     }
@@ -225,49 +316,127 @@ public class ReflectionHelper {
                 return (T) method.invoke(target, parameters);
             }
         } catch (IllegalAccessException | InvocationTargetException | ClassCastException e) {
-            LOGGER.error("invokeMethod error", e);
+            Throwable cause = e.getCause();
+            LOGGER.error("invokeMethod error. \n", Objects.requireNonNullElse(cause, e));
+        }
+        return null;
+    }
+
+    public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?>... parameterTypes) {
+        Class<?> clazz = target.getClass();
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            try {
+                return invokeSetMethod(superClass, target, fieldName, arg, parameterTypes);
+            } catch (NoSuchMethodException ignored) {
+            }
         }
         return null;
     }
 
     /**
      * invoke set method
-     *
+     * @param targetClass target class
      * @param target         target object
      * @param fieldName      field name
      * @param arg            arg
      * @param parameterTypes arg type
+     * @throws NoSuchMethodException if this field has no getter method
      * @return invoke method result
      */
-    public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?>... parameterTypes) {
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg,
+                                         Class<?>... parameterTypes) throws NoSuchMethodException {
+
         var methodName = "set" + handleFieldName(fieldName);
         try {
-            var method = target.getClass().getMethod(methodName, parameterTypes);
+            var method = targetClass.getMethod(methodName, parameterTypes);
             return method.invoke(target, arg);
         } catch (NoSuchMethodException e) {
-            LOGGER.error(fieldName + " set method not found", e);
+            Throwable cause = e.getCause();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.error(fieldName + " set method not found \n", Objects.requireNonNullElse(cause, e));
+            } else {
+                LOGGER.error(fieldName + " set method not found \n" + e.getMessage());
+            }
+            methodName = fieldName;
+            LOGGER.warn("try to invoke " + methodName + " method");
+            try {
+                var method = targetClass.getMethod(methodName, parameterTypes);
+                return method.invoke(target, arg);
+            } catch (NoSuchMethodException ex) {
+                cause = ex.getCause();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error(methodName + " method not found \n", Objects.requireNonNullElse(cause, ex));
+                } else {
+                    LOGGER.error(methodName + " method not found \n" + ex.getMessage());
+                }
+                throw ex;
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                cause = ex.getCause();
+                LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, ex));
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            LOGGER.error("", e);
+            Throwable cause = e.getCause();
+            LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, e));
+        }
+        return null;
+    }
+
+    public static Object invokeGetMethod(Object target, String fieldName) {
+        Class<?> clazz = target.getClass();
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            try {
+                return invokeGetMethod(superClass, target, fieldName);
+            } catch (NoSuchMethodException ignored) {
+            }
         }
         return null;
     }
 
     /**
      * invoke get method
-     *
+     * @param targetClass target class
      * @param target    target object
      * @param fieldName field name
+     * @throws NoSuchMethodException if this field has no getter method
      * @return invoke method result
      */
-    public static Object invokeGetMethod(Object target, String fieldName) {
+    public static Object invokeGetMethod(Class<?> targetClass, Object target, String fieldName) throws NoSuchMethodException {
+
         String methodName = "get" + handleFieldName(fieldName);
         try {
-            Method method = target.getClass().getMethod(methodName);
+            Method method = targetClass.getDeclaredMethod(methodName);
             return method.invoke(target);
         } catch (NoSuchMethodException e) {
-            LOGGER.warn(fieldName + " set method not found", e);
+            Throwable cause = e.getCause();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.error(fieldName + " `get` method not found\n ", Objects.requireNonNullElse(cause, e));
+            } else {
+                LOGGER.error(fieldName + " `get` method not found\n " + e.getMessage());
+            }
+            methodName = "is" + handleFieldName(fieldName);
+            LOGGER.warn("try to invoke " + methodName + " method ");
+            try {
+                Method method = targetClass.getDeclaredMethod(methodName);
+                return method.invoke(target);
+            } catch (NoSuchMethodException ex) {
+                cause = ex.getCause();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error(fieldName + " `is` method not found \n", Objects.requireNonNullElse(cause, ex));
+                } else {
+                    LOGGER.error(fieldName + " `is` method not found \n" + ex.getMessage());
+                }
+                throw ex;
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                cause = ex.getCause();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error(fieldName + " `is` method not found \n", Objects.requireNonNullElse(cause, ex));
+                } else {
+                    LOGGER.error(methodName + " invoke error \n" + ex.getMessage());
+                }
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            LOGGER.warn(fieldName + " invoke error", e);
+            Throwable cause = e.getCause();
+            LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }

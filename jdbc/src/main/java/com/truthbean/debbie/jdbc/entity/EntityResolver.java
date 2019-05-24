@@ -2,6 +2,7 @@ package com.truthbean.debbie.jdbc.entity;
 
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.reflection.ClassInfo;
+import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
@@ -63,7 +64,9 @@ public class EntityResolver {
         List<ColumnInfo> columns = new ArrayList<>();
         List<Field> fields = classInfo.getFields();
         if (!fields.isEmpty()) {
-            fields.forEach(field -> columns.add(JdbcColumnResolver.resolveField(field)));
+            fields.stream()
+                    .filter(field -> field.getAnnotation(JdbcTransient.class) == null)
+                    .forEach(field -> columns.add(JdbcColumnResolver.resolveField(field)));
         }
         return columns;
     }
@@ -72,7 +75,9 @@ public class EntityResolver {
         List<ColumnInfo> columns = new ArrayList<>();
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {
-            fields.forEach(field -> columns.add(JdbcColumnResolver.resolveFieldAndValue(field, entity)));
+            fields.stream()
+                    .filter(field -> field.getAnnotation(JdbcTransient.class) == null)
+                    .forEach(field -> columns.add(JdbcColumnResolver.resolveFieldAndValue(field, entity)));
         }
         return columns;
     }

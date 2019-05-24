@@ -21,7 +21,7 @@ public @interface Filter {
 
     String[] value() default {};
 
-    String[] urlRegex() default {};
+    String[] urlPatterns() default {};
 
     int order() default 0;
 }

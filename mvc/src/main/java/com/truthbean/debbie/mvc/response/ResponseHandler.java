@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 
 import java.nio.ByteBuffer;
 
@@ -13,7 +13,7 @@ public interface ResponseHandler {
     default void handle(RouterResponse response) {
 
         Object responseData = response.getContent();
-        MediaType responseType = response.getResponseType();
+        MediaTypeInfo responseType = response.getResponseType();
 
         if (responseData instanceof ByteBuffer) {
             response.setContent(response);
@@ -21,7 +21,7 @@ public interface ResponseHandler {
         if (responseData instanceof byte[]) {
             response.setContent(response);
         } else {
-            response.addHeader("Content-Type", responseType.getValue());
+            response.addHeader("Content-Type", responseType.toString());
             if (responseData != null) {
                 response.setContent(responseData.toString());
             } else {

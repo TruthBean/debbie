@@ -60,6 +60,13 @@ public class ClassInfo<C> {
         return classAnnotations;
     }
 
+    public Annotation getClassAnnotation(Class<? extends Annotation> annotationClass) {
+        if (classAnnotations != null && !classAnnotations.isEmpty()) {
+            return classAnnotations.get(annotationClass);
+        }
+        return null;
+    }
+
     public Map<? extends Annotation, List<Method>> getMethodWithAnnotation() {
         return methodWithAnnotation;
     }

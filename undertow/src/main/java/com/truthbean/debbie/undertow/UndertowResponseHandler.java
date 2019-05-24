@@ -1,13 +1,15 @@
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
+import java.net.HttpCookie;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,11 +27,16 @@ public class UndertowResponseHandler implements ResponseHandler {
     @Override
     public void handle(RouterResponse response) {
         Object responseData = response.getContent();
-        MediaType responseType = response.getResponseType();
+        MediaTypeInfo responseType = response.getResponseType();
 
         Map<String, String> headers = response.getHeaders();
         if (!headers.isEmpty()) {
             headers.forEach((key, value) -> exchange.getResponseHeaders().put(new HttpString(key), value));
+        }
+
+        List<HttpCookie> cookies = response.getCookies();
+        if (!cookies.isEmpty()) {
+            cookies.forEach(cookie -> exchange.setResponseCookie(new UndertowRouterCookie(cookie).getCookie()));
         }
 
         var sender = exchange.getResponseSender();
@@ -41,7 +48,7 @@ public class UndertowResponseHandler implements ResponseHandler {
         } else {
             // 404
             // Response Headers
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, responseType.getValue());
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, responseType.toString());
             // Response Sender
             if (responseData != null) {
                 sender.send(responseData.toString());

@@ -67,7 +67,7 @@ public class DispatcherHttpHandler implements HttpHandler {
         MvcRouterHandler.handleRouter(routerInfo);
 
         var response = routerInfo.getResponse();
-        Object responseData = response.getData();
+        Object responseData = response.getContent();
 
         var sender = exchange.getResponseSender();
         if (responseData instanceof ByteBuffer) {
@@ -78,7 +78,7 @@ public class DispatcherHttpHandler implements HttpHandler {
         } else {
             // 404
             // Response Headers
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, response.getResponseType().getValue());
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, response.getResponseType().toString());
             // Response Sender
             if (responseData != null) {
                 sender.send(responseData.toString());

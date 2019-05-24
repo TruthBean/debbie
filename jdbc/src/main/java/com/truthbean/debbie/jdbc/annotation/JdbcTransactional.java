@@ -14,13 +14,13 @@ import java.lang.annotation.*;
  * @author TruthBean
  * @since 0.0.1
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @MethodProxy(proxyHandler = TransactionalMethodProxyHandler.class)
 public @interface JdbcTransactional {
 
-    boolean readonly() default false;
+    boolean readonly() default true;
 
     boolean forceCommit() default false;
 

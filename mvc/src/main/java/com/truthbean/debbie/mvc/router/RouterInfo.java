@@ -2,13 +2,12 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
 import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.response.RouterInvokeResult;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 
 import java.lang.reflect.Field;
@@ -16,7 +15,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * @author TruthBean
@@ -37,38 +35,10 @@ public class RouterInfo implements Cloneable {
 
     private List<HttpMethod> requestMethod;
 
-    private RouterInvokeResult<?> response;
-
     private MediaType requestType;
     private RouterRequest request;
 
-    private boolean hasTemplate;
-    private String templateSuffix;
-    private String templatePrefix;
-
-    public boolean hasTemplate() {
-        return hasTemplate;
-    }
-
-    public void setHasTemplate(boolean hasTemplate) {
-        this.hasTemplate = hasTemplate;
-    }
-
-    public String getTemplateSuffix() {
-        return templateSuffix;
-    }
-
-    public void setTemplateSuffix(String templateSuffix) {
-        this.templateSuffix = templateSuffix;
-    }
-
-    public String getTemplatePrefix() {
-        return templatePrefix;
-    }
-
-    public void setTemplatePrefix(String templatePrefix) {
-        this.templatePrefix = templatePrefix;
-    }
+    private RouterResponse response;
 
     public String getErrorInfo() {
         return errorInfo;
@@ -118,11 +88,11 @@ public class RouterInfo implements Cloneable {
         this.requestMethod = requestMethod;
     }
 
-    public RouterInvokeResult getResponse() {
+    public RouterResponse getResponse() {
         return response;
     }
 
-    public void setResponse(RouterInvokeResult response) {
+    public void setResponse(RouterResponse response) {
         this.response = response;
     }
 
@@ -146,7 +116,7 @@ public class RouterInfo implements Cloneable {
     }
 
     /*public RouterInfo(Method method, List<InvokedParameter> methodParams, Class<?> clazz, Pattern pathRegex,
-                      HttpMethod requestMethod, MediaType responseType, AbstractResponseHandler abstractHandlerFilter) {
+                      HttpMethod requestMethod, MediaType responseType, AbstractResponseContentHandler abstractHandlerFilter) {
         this.method = method;
         this.methodParams = methodParams;
         this.clazz = clazz;
@@ -211,19 +181,17 @@ public class RouterInfo implements Cloneable {
                 Objects.equals(paths, that.paths) &&
                 requestMethod == that.requestMethod &&
 
-                Objects.equals(response, that.response) &&
                 Objects.equals(request, that.request) &&
+                Objects.equals(response, that.response) &&
 
                 Objects.equals(baseTypeMethodParams, that.baseTypeMethodParams) &&
-                Objects.equals(notBaseTypeMethodParams, that.notBaseTypeMethodParams) &&
-                Objects.equals(templatePrefix, that.templatePrefix) &&
-                Objects.equals(templateSuffix, that.templateSuffix);
+                Objects.equals(notBaseTypeMethodParams, that.notBaseTypeMethodParams);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(method, methodParams, routerClass, paths, requestMethod, response,
-                request, baseTypeMethodParams, notBaseTypeMethodParams, templatePrefix, templateSuffix);
+                request, baseTypeMethodParams, notBaseTypeMethodParams);
     }
 
     @Override
@@ -238,8 +206,6 @@ public class RouterInfo implements Cloneable {
                 ",\"request\":" + request +
                 ",\"baseTypeMethodParams\":" + baseTypeMethodParams +
                 ",\"notBaseTypeMethodParams\":" + notBaseTypeMethodParams +
-                ",\"templatePrefix\":" + templatePrefix +
-                ",\"templateSuffix\":" + templateSuffix +
                 '}';
     }
 
@@ -259,13 +225,11 @@ public class RouterInfo implements Cloneable {
         clone.paths = paths;
         clone.requestMethod = requestMethod;
         if (response != null) {
-            clone.response = response;
+            clone.response = response.clone();
         }
         if (request != null) {
             clone.request = request.copy();
         }
-        clone.templatePrefix = templatePrefix;
-        clone.templateSuffix = templateSuffix;
         return clone;
     }
 }

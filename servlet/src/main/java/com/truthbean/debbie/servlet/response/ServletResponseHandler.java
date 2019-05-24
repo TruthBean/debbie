@@ -5,6 +5,7 @@ import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
+import com.truthbean.debbie.servlet.ServletRouterCookie;
 import com.truthbean.debbie.servlet.response.view.JspView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,10 @@ public class ServletResponseHandler implements ResponseHandler {
         if (!headers.isEmpty()) {
             headers.forEach((key, value) -> response.setHeader(key, value));
         }
+        var cookies = routerResponse.getCookies();
+        if (!cookies.isEmpty()) {
+            cookies.forEach(cookie -> response.addCookie(new ServletRouterCookie(cookie).getCookie()));
+        }
         if (any == null) {
             LOGGER.debug("response is null");
         } else if (AbstractTemplateView.isTemplateView(any)) {
@@ -62,7 +67,7 @@ public class ServletResponseHandler implements ResponseHandler {
         } else {
             try {
                 response.reset();
-                response.setContentType(routerResponse.getResponseType().getValue());
+                response.setContentType(routerResponse.getResponseType().toString());
                 response.getWriter().println(any);
             } catch (IOException e) {
                 e.printStackTrace();

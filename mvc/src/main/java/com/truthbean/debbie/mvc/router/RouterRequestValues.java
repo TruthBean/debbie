@@ -3,6 +3,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 
 import java.io.InputStream;
 import java.net.HttpCookie;
@@ -27,10 +28,11 @@ public class RouterRequestValues {
 
     private RouterSession routerSession;
     private RouterRequest routerRequest;
+    private RouterResponse routerResponse;
 
     private final Map<String, List> mixValues = new HashMap<>();
 
-    public RouterRequestValues(RouterRequest routerRequest) {
+    public RouterRequestValues(RouterRequest routerRequest, RouterResponse routerResponse) {
 
         headers = routerRequest.getHeader().getHeaders();
 
@@ -48,6 +50,7 @@ public class RouterRequestValues {
         this.matrixAttributes = routerRequest.getMatrix();
 
         this.routerRequest = routerRequest;
+        this.routerResponse = routerResponse;
     }
 
     public Map<String, List> getQueries() {
@@ -72,6 +75,10 @@ public class RouterRequestValues {
 
     public RouterRequest getRouterRequest() {
         return routerRequest;
+    }
+
+    public RouterResponse getRouterResponse() {
+        return routerResponse;
     }
 
     public Map<String, List> getParams() {

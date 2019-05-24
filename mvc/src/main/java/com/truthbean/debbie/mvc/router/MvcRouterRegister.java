@@ -10,7 +10,7 @@ import com.truthbean.debbie.core.watcher.WatcherType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
-import com.truthbean.debbie.mvc.response.RouterInvokeResult;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
@@ -59,20 +59,22 @@ public class MvcRouterRegister {
 
                 routerInfo.setRequestMethod(Arrays.asList(router.method()));
 
-                routerInfo.setHasTemplate(router.hasTemplate());
+                RouterResponse response = new RouterResponse();
+
+                response.setHasTemplate(router.hasTemplate());
                 if (router.templatePrefix().isBlank()) {
-                    routerInfo.setTemplatePrefix(webConfiguration.getTemplatePrefix());
+                    response.setTemplatePrefix(webConfiguration.getTemplatePrefix());
                 } else {
-                    routerInfo.setTemplatePrefix(router.templatePrefix());
+                    response.setTemplatePrefix(router.templatePrefix());
                 }
                 if (router.templatePrefix().isBlank()) {
-                    routerInfo.setTemplateSuffix(webConfiguration.getTemplateSuffix());
+                    response.setTemplateSuffix(webConfiguration.getTemplateSuffix());
                 } else {
-                    routerInfo.setTemplateSuffix(router.templateSuffix());
+                    response.setTemplateSuffix(router.templateSuffix());
                 }
+                routerInfo.setResponse(response);
 
                 // response type
-                var response = new RouterInvokeResult();
                 var defaultResponseTypes = webConfiguration.getDefaultResponseTypes();
                 var responseType = router.responseType();
                 if (router.hasTemplate()) {
@@ -86,7 +88,7 @@ public class MvcRouterRegister {
                     } else if (!defaultResponseTypes.isEmpty()) {
                         // todo 需要优化
                         response.setResponseType(defaultResponseTypes.iterator().next());
-                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
+                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
                     } else {
                         if (!webConfiguration.isAllowClientResponseType()) {
                             throw new RuntimeException("responseType cannot be MediaType.ANY. Or config default response type. Or allow client response type.");
@@ -101,7 +103,7 @@ public class MvcRouterRegister {
                 var requestType = router.requestType();
                 if (requestType != MediaType.ANY) {
                     routerInfo.setRequestType(requestType);
-                } else{
+                } else {
                     if (methodParams != null && !methodParams.isEmpty()) {
                         for (InvokedParameter methodParam : methodParams) {
                             Annotation annotation = methodParam.getAnnotation();
@@ -109,7 +111,7 @@ public class MvcRouterRegister {
                                 RequestParameter requestParameter = (RequestParameter) annotation;
                                 if (requestParameter.paramType() == RequestParameterType.BODY) {
                                     if (!defaultContentTypes.isEmpty()) {
-                                        routerInfo.setRequestType(defaultResponseTypes.iterator().next());
+                                        routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
                                     } else {
                                         if (!webConfiguration.isAcceptClientContentType()) {
                                             throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
@@ -120,6 +122,9 @@ public class MvcRouterRegister {
                                 }
                             }
                         }
+                    }
+                    if (routerInfo.getRequestType() == null) {
+                        routerInfo.setRequestType(MediaType.ANY);
                     }
                 }
 

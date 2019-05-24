@@ -11,9 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 public class ServletRouterResponse extends RouterResponse {
     private HttpServletResponse response;
 
-    public ServletRouterResponse() {
-    }
-
     public ServletRouterResponse(HttpServletResponse response) {
         this.response = response;
     }

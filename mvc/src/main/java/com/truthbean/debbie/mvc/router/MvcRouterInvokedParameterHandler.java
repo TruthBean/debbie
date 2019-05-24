@@ -8,6 +8,7 @@ import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.AbstractView;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
@@ -40,6 +41,15 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
             }
             if (invokedParameter.getType() == RouterRequest.class) {
                 invokedParameter.setValue(parameters.getRouterRequest());
+                continue;
+            }
+            if (invokedParameter.getType() == RouterResponse.class) {
+                RouterRequest routerRequest = parameters.getRouterRequest();
+                RouterResponse routerResponse = parameters.getRouterResponse();
+                if (routerResponse.getResponseType() == null) {
+                    routerResponse.setResponseType(routerRequest.getResponseType());
+                }
+                invokedParameter.setValue(routerResponse);
                 continue;
             }
             handle(parameters, invokedParameter, requestType);
@@ -124,7 +134,16 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
         }
     }
 
-    public void doHandleParam(RouterRequestValues parameters, InvokedParameter invokedParameter, MediaType requestType) {
+    /**
+     *
+     * @param parameters router request values
+     * @param invokedParameter method parameter
+     * @param requestType router request type
+     * @return if is special return true
+     */
+    public boolean doHandleParam(RouterRequestValues parameters, InvokedParameter invokedParameter, MediaType requestType) {
+        boolean result = false;
+
         Map<String, List> mixValues = parameters.getMixValues();
 
         Annotation annotation = invokedParameter.getAnnotation();
@@ -168,13 +187,19 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                 case SESSION:
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
                     handleObject(sessionAttributes, invokedParameter);
+                    result = true;
                     break;
                 case INNER:
                     Map<String, Object> requestAttributes = parameters.getInnerAttributes();
                     handleObject(requestAttributes, invokedParameter);
+                    result = true;
                     break;
                 default:
                     break;
+            }
+
+            if (requestParameter.require() && invokedParameter.getValue() == null) {
+                throw new IllegalArgumentException(requestParameter.name() + " has no value! ");
             }
 
             if (!requestParameter.require() && invokedParameter.getValue() == null) {
@@ -188,10 +213,11 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                 LOGGER.debug("args is empty");
             }
         }
+        return result;
     }
 
     public void handle(RouterRequestValues parameters, InvokedParameter invokedParameter, MediaType requestType) {
-        doHandleParam(parameters, invokedParameter, requestType);
+        if (doHandleParam(parameters, invokedParameter, requestType)) return;
 
         if (invokedParameter.getValue() == null) {
             List<Field> fields = ReflectionHelper.getDeclaredFields(invokedParameter.getType());

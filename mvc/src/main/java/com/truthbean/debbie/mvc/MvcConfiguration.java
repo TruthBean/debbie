@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -25,7 +25,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * default response type
      */
-    private final Set<MediaType> defaultResponseTypes = new HashSet<>();
+    private final Set<MediaTypeInfo> defaultResponseTypes = new HashSet<>();
 
     /**
      * accept client content type by request header "Content-Type"
@@ -35,7 +35,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * default request type
      */
-    private final Set<MediaType> defaultContentTypes = new HashSet<>();
+    private final Set<MediaTypeInfo> defaultContentTypes = new HashSet<>();
 
     // cors
     private boolean enableCors = false;
@@ -154,11 +154,11 @@ public class MvcConfiguration extends BeanScanConfiguration {
         return acceptClientContentType;
     }
 
-    public Set<MediaType> getDefaultResponseTypes() {
+    public Set<MediaTypeInfo> getDefaultResponseTypes() {
         return defaultResponseTypes;
     }
 
-    public Set<MediaType> getDefaultContentTypes() {
+    public Set<MediaTypeInfo> getDefaultContentTypes() {
         return defaultContentTypes;
     }
 
@@ -201,7 +201,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
-        public Builder defaultResponseTypes(List<MediaType> defaultType) {
+        public Builder defaultResponseTypes(List<MediaTypeInfo> defaultType) {
             configuration.defaultResponseTypes.addAll(defaultType);
             return this;
         }
@@ -211,7 +211,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
-        public Builder defaultContentTypes(List<MediaType> defaultContentTypes) {
+        public Builder defaultContentTypes(List<MediaTypeInfo> defaultContentTypes) {
             configuration.defaultContentTypes.addAll(defaultContentTypes);
             return this;
         }

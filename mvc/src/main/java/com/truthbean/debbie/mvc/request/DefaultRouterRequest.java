@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -40,9 +40,9 @@ public class DefaultRouterRequest implements RouterRequest {
     private String textBody;
     private File fileBody;
 
-    private MediaType contentType;
+    private MediaTypeInfo contentType;
 
-    private MediaType responseType;
+    private MediaTypeInfo responseType;
 
     private final Map<String, Object> requestAttribute = new HashMap<>();
 
@@ -229,20 +229,20 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     @Override
-    public MediaType getContentType() {
+    public MediaTypeInfo getContentType() {
         return contentType;
     }
 
-    public void setContentType(MediaType contentType) {
+    public void setContentType(MediaTypeInfo contentType) {
         this.contentType = contentType;
     }
 
     @Override
-    public MediaType getResponseType() {
+    public MediaTypeInfo getResponseType() {
         return responseType;
     }
 
-    public void setResponseType(MediaType responseType) {
+    public void setResponseType(MediaTypeInfo responseType) {
         this.responseType = responseType;
     }
 

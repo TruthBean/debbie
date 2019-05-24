@@ -10,8 +10,10 @@ import java.net.HttpCookie;
  */
 public class ServletRouterCookie {
     private HttpCookie httpCookie;
+    private Cookie cookie;
 
     public ServletRouterCookie(Cookie cookie) {
+        this.cookie = cookie;
         httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
         httpCookie.setValue(cookie.getValue());
         httpCookie.setPath(cookie.getPath());
@@ -24,7 +26,27 @@ public class ServletRouterCookie {
         httpCookie.setComment(cookie.getComment());
     }
 
+    public ServletRouterCookie(HttpCookie httpCookie) {
+        this.httpCookie = httpCookie;
+        this.cookie = new Cookie(httpCookie.getName(), httpCookie.getValue());
+        cookie.setValue(httpCookie.getValue());
+        cookie.setPath(httpCookie.getPath());
+        var domain = httpCookie.getDomain();
+        if (domain != null) {
+            cookie.setDomain(httpCookie.getDomain());
+        }
+        cookie.setMaxAge(Math.toIntExact(httpCookie.getMaxAge()));
+        cookie.setSecure(httpCookie.getSecure());
+        cookie.setVersion(httpCookie.getVersion());
+        cookie.setHttpOnly(httpCookie.isHttpOnly());
+        cookie.setComment(httpCookie.getComment());
+    }
+
     public HttpCookie getHttpCookie() {
         return httpCookie;
+    }
+
+    public Cookie getCookie() {
+        return cookie;
     }
 }

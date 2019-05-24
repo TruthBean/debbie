@@ -45,16 +45,21 @@ public class RouterFilterManager {
 
         filterInfo.setOrder(filter.order());
 
-        var urlRegex = filter.urlRegex();
-        if (urlRegex.length == 0) {
-            urlRegex = filter.value();
+        var urlPatterns = filter.urlPatterns();
+        if (urlPatterns.length == 0) {
+            urlPatterns = filter.value();
         }
-        if (urlRegex.length == 0) {
+        if (urlPatterns.length == 0) {
             throw new RouterFilterMappingFormatException("Filter (" + clazz.getName() + ") urlRegex cannot be empty. ");
         }
-        for (String regex: urlRegex) {
-            filterInfo.addUrlPattern(Pattern.compile(regex));
-            filterInfo.addRawUrlPattern(regex);
+        for (String pattern: urlPatterns) {
+            if (pattern.contains("*")) {
+                pattern = pattern.replaceAll("//*", "\\w");
+                filterInfo.addUrlPattern(Pattern.compile(pattern));
+                filterInfo.addRawUrlPattern(pattern);
+            } else {
+                filterInfo.addRawUrlPattern(pattern);
+            }
         }
         LOGGER.debug("register filter: " + filterInfo);
         FILTERS.add(filterInfo);

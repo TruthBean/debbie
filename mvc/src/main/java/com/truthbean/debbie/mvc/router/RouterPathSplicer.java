@@ -22,7 +22,7 @@ public class RouterPathSplicer {
             var prefixPathRegex = router.value();
 
             if (isEmptyPaths(prefixPathRegex)) {
-                prefixPathRegex = router.path();
+                prefixPathRegex = router.urlPatterns();
             }
             if (!isEmptyPaths(prefixPathRegex)) {
                 var prefixPath = trimPaths(prefixPathRegex);
@@ -179,7 +179,7 @@ public class RouterPathSplicer {
     public static Set<String> splicePaths(List<String> prefixPaths, Router router) {
         var pathRegex = router.value();
         if (isEmptyPaths(pathRegex)) {
-            pathRegex = router.path();
+            pathRegex = router.urlPatterns();
         }
 
         Set<String> newPaths = new HashSet<>();
@@ -203,7 +203,7 @@ public class RouterPathSplicer {
     public static Set<String> splicePaths(Router router) {
         var pathRegex = router.value();
         if (isEmptyPaths(pathRegex)) {
-            pathRegex = router.path();
+            pathRegex = router.urlPatterns();
         }
 
         Set<String> newPaths = new HashSet<>();

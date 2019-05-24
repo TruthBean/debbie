@@ -1,14 +1,9 @@
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
-import com.truthbean.debbie.mvc.response.view.AbstractView;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
-import com.truthbean.debbie.servlet.response.view.JspView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

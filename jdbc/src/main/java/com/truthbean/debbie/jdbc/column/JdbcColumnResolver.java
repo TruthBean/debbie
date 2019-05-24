@@ -1,6 +1,7 @@
 package com.truthbean.debbie.jdbc.column;
 
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
+import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.repository.DynamicSqlBuilder;

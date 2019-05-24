@@ -134,26 +134,39 @@ public class BeanFactory {
         }
     }
 
+    private static void resolveFieldDependentBeanByName(String name, Object object, Field field, BeanInject beanInject) {
+        var value = factory(name);
+        if (value != null) {
+            ReflectionHelper.setField(object, field, value);
+        } else {
+            if (beanInject.require()) {
+                throw new NoBeanException("no bean " + name + " found .");
+            }
+        }
+    }
+
+    private static void resolveFieldDependentBeanByType(Object object, Field field, BeanInject beanInject) {
+        Class<?> type = field.getType();
+        var value = factory(type);
+        if (value != null) {
+            ReflectionHelper.setField(object, field, value);
+        } else {
+            if (beanInject.require()) {
+                throw new NoBeanException("no bean " + type + " found .");
+            }
+        }
+    }
+
     private static void resolveFieldDependentBean(Object object, Field field, BeanInject beanInject) {
         String name = beanInject.name();
         if (!name.isBlank()) {
-            var value = factory(name);
-            if (value != null) {
-                ReflectionHelper.setField(object, field, value);
-            } else {
-                if (beanInject.require()) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
-            }
+            resolveFieldDependentBeanByName(name, object, field, beanInject);
         } else {
-            Class<?> type = field.getType();
-            var value = factory(type);
-            if (value != null) {
-                ReflectionHelper.setField(object, field, value);
+            name = field.getName();
+            if (!name.isBlank()) {
+                resolveFieldDependentBeanByName(name, object, field, beanInject);
             } else {
-                if (beanInject.require()) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
+                resolveFieldDependentBeanByType(object, field, beanInject);
             }
         }
     }

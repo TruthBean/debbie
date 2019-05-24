@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response.view;
 
-import com.truthbean.debbie.mvc.response.AbstractResponseHandler;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 
 /**
  * @author TruthBean
@@ -8,7 +8,7 @@ import com.truthbean.debbie.mvc.response.AbstractResponseHandler;
  * Created on 2018-04-08 11:04.
  */
 
-public abstract class AbstractTemplateViewHandler <S, T> extends AbstractResponseHandler<S, T> {
+public abstract class AbstractTemplateViewHandler <S, T> extends AbstractResponseContentHandler<S, T> {
 
     @Override
     public final S reverse(T o) {

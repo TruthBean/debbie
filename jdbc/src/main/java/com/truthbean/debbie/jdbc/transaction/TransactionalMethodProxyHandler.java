@@ -2,12 +2,11 @@ package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.core.proxy.MethodProxyHandler;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
-import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
-import com.truthbean.debbie.jdbc.datasource.connection.ConnectionBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * @author TruthBean
@@ -15,9 +14,11 @@ import org.slf4j.LoggerFactory;
  */
 public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcTransactional> {
 
-    private ConnectionBinder connectionBinder = new ConnectionBinder();
+    private final TransactionInfo transactionInfo = new TransactionInfo();
 
     private JdbcTransactional jdbcTransactional;
+
+    private JdbcTransactional classJdbcTransactional;
 
     @Override
     public void setMethodAnnotation(JdbcTransactional methodAnnotation) {
@@ -25,43 +26,61 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
+    public void setClassAnnotation(JdbcTransactional classAnnotation) {
+        this.classJdbcTransactional = classAnnotation;
+    }
+
+    @Override
+    public void setMethod(Method method) {
+        transactionInfo.setMethod(method);
+    }
+
+    @Override
     public void before() {
-        LOGGER.debug("runing before method invoke ..");
-        var config = DataSourceConfigurationFactory.factory();
-        DataSourceFactory factory = connectionBinder.getDataSourceFactory(config);
-        connectionBinder.bind(factory.getConnection());
-        if (jdbcTransactional.readonly()) {
-            connectionBinder.setAutoCommit(false);
+        LOGGER.debug("runing before method (" + transactionInfo.getMethod() + ") invoke ..");
+        DataSourceFactory factory = DataSourceFactory.factory();
+        transactionInfo.setConnection(factory.getConnection());
+        if (jdbcTransactional == null && classJdbcTransactional == null) {
+            throw new MethodNoJdbcTransactionalException();
+        } else if (jdbcTransactional == null && !classJdbcTransactional.readonly()) {
+            transactionInfo.setAutoCommit(false);
+        } else if (jdbcTransactional != null && !jdbcTransactional.readonly()) {
+            transactionInfo.setAutoCommit(false);
+        } else {
+            transactionInfo.setAutoCommit(true);
         }
+        TransactionManager.offer(transactionInfo);
     }
 
     @Override
     public void after() {
-        LOGGER.debug("runing after method invoke ..");
-        connectionBinder.commit();
+        LOGGER.debug("runing after method (" + transactionInfo.getMethod() + ") invoke ..");
+        transactionInfo.commit();
     }
 
     @Override
-    public void whenExceptionCached(Throwable e) {
-        LOGGER.debug("runing when method invoke throw exception and cached ..");
+    public void whenExceptionCatched(Throwable e) throws Throwable {
+        LOGGER.debug("runing when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
         if (jdbcTransactional.forceCommit()) {
             LOGGER.debug("force commit ..");
-            connectionBinder.commit();
+            transactionInfo.commit();
         } else {
             if (jdbcTransactional.rollbackFor().isInstance(e)) {
-                connectionBinder.rollback();
+                transactionInfo.rollback();
                 LOGGER.debug("rollback ..");
             } else {
                 LOGGER.debug("not rollback for this exception(" + e.getClass().getName() + "), it committed");
-                connectionBinder.commit();
+                transactionInfo.commit();
             }
         }
+        throw e;
     }
 
     @Override
     public void finallyRun() {
-        LOGGER.debug("runing when method invoke throw exception and run to finally ..");
-        connectionBinder.close();
+        LOGGER.debug("runing when method (" + transactionInfo.getMethod() + ") invoke throw exception and run to finally ..");
+        transactionInfo.close();
+        TransactionManager.remove();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalMethodProxyHandler.class);

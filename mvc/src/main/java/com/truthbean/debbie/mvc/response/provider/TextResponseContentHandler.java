@@ -5,7 +5,7 @@ package com.truthbean.debbie.mvc.response.provider;
  * @since 0.0.1
  * Created on 2019-02-23 17:42
  */
-public class TextResponseHandler<S> extends AbstractRestResponseHandler<S> {
+public class TextResponseContentHandler<S> extends AbstractRestResponseContentHandler<S> {
     @Override
     public String transform(S s) {
         if (s != null) {

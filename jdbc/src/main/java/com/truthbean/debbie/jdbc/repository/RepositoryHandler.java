@@ -4,6 +4,7 @@ import com.truthbean.debbie.core.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.core.reflection.ClassNotMatchedException;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
+import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.FStartColumnNameTransformer;
@@ -19,6 +20,7 @@ import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,6 +34,9 @@ public class RepositoryHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryHandler.class);
 
     public int[] batch(Connection connection, String sql, Object[][] args) throws TransactionException {
+        LOGGER.debug(" >>>>>>>>>>>> " + sql);
+        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+
         PreparedStatement preparedStatement = null;
         int[] rows;
         try {
@@ -62,6 +67,10 @@ public class RepositoryHandler {
 
     public <K> K insert(Connection connection, String sql, boolean generatedKeys, Class<K> keyClass, Object... args)
             throws TransactionException {
+
+        LOGGER.debug(" >>>>>>>>>>>> " + sql);
+        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+
         K id = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -96,6 +105,9 @@ public class RepositoryHandler {
     }
 
     public int update(Connection connection, String sql, Object... args) throws TransactionException {
+        LOGGER.debug(" >>>>>>>>>>>> " + sql);
+        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+
         PreparedStatement preparedStatement = null;
         int rows = 0;
         try {
@@ -115,6 +127,9 @@ public class RepositoryHandler {
     }
 
     public ResultSet executeQuery(Connection connection, String sql, Object... args) {
+        LOGGER.debug(" >>>>>>>>>>>> " + sql);
+        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             if (args != null) {
@@ -188,6 +203,9 @@ public class RepositoryHandler {
         T instance = ReflectionHelper.newInstance(clazz);
         SqlColumn column;
         for (var field : declaredFields) {
+            if (field.getAnnotation(JdbcTransient.class) != null)
+                continue;
+
             column = field.getAnnotation(SqlColumn.class);
             var columnName = "";
             if (column != null) {

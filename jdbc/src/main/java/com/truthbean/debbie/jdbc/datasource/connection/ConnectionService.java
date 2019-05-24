@@ -1,5 +1,7 @@
 package com.truthbean.debbie.jdbc.datasource.connection;
 
+import com.truthbean.debbie.jdbc.transaction.TransactionManager;
+
 import java.sql.Connection;
 
 /**
@@ -9,6 +11,6 @@ import java.sql.Connection;
 public interface ConnectionService {
 
     default Connection getConnection() {
-        return ConnectionBinder.get();
+        return TransactionManager.peek().getConnection();
     }
 }

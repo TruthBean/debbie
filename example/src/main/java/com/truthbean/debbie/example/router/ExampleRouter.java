@@ -27,12 +27,12 @@ public class ExampleRouter {
     @BeanInject
     private RemoteUserService remoteUserService;
 
-    @Router(path = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
+    @Router(urlPatterns = "/index", method = HttpMethod.GET, responseType = MediaType.TEXT_PLAIN_UTF8)
     public String helloWorld() {
         return "{\"message\":\"hello world\", \"method\":\"GET\"}";
     }
 
-    @Router(path = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
+    @Router(urlPatterns = "/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloXml(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
                                         @RequestParameter(name = "value", paramType = RequestParameterType.QUERY) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
@@ -40,7 +40,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/json", method = {HttpMethod.POST, HttpMethod.GET}, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(urlPatterns = "/json", method = {HttpMethod.POST, HttpMethod.GET}, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloJson(@RequestParameter(name = "key", paramType = RequestParameterType.PARAM) String key,
                                          @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
@@ -48,7 +48,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/matrix", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(urlPatterns = "/matrix", method = HttpMethod.POST, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloMatrix(@RequestParameter(name = "key", paramType = RequestParameterType.MATRIX) String key,
                                            @RequestParameter(name = "value", paramType = RequestParameterType.MATRIX) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();
@@ -56,7 +56,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(urlPatterns = "/body/xml", method = HttpMethod.GET, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloBodyXml(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
                                             @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
                                                     bodyType = MediaType.APPLICATION_XML) Map<Object, Object> value) {
@@ -65,7 +65,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
+    @Router(urlPatterns = "/body/json", method = HttpMethod.POST, responseType = MediaType.APPLICATION_XML_UTF8)
     public Map<String, Object> helloBodyJson(@RequestParameter(name = "key", paramType = RequestParameterType.QUERY) String key,
                                              @RequestParameter(name = "value", paramType = RequestParameterType.BODY,
                                                      bodyType = MediaType.APPLICATION_JSON) Map<Object, Object> value) {
@@ -74,7 +74,7 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(path = "/index.png", hasTemplate = true, responseType = MediaType.IMAGE_PNG)
+    @Router(urlPatterns = "/index.png", hasTemplate = true, responseType = MediaType.IMAGE_PNG)
     public StaticResourcesView resourceJpg() {
         var view = new StaticResourcesView();
         view.setTemplate("index");
@@ -83,17 +83,17 @@ public class ExampleRouter {
         return view;
     }
 
-    @Router(path = "/index.html", hasTemplate = true, responseType = MediaType.TEXT_HTML_UTF8)
+    @Router(urlPatterns = "/index.html", hasTemplate = true, responseType = MediaType.TEXT_HTML_UTF8)
     public StaticResourcesView resource() {
         return new StaticResourcesView();
     }
 
-    @Router(path = "/test.html", responseType = MediaType.TEXT_HTML_UTF8)
+    @Router(urlPatterns = "/test.html", responseType = MediaType.TEXT_HTML_UTF8)
     public String reponseHtml() {
         return "<html><head><title>666</title></head><body><p>this is a demo</p></body></html>";
     }
 
-    @Router(path = "/alias", hasTemplate = true)
+    @Router(urlPatterns = "/alias", hasTemplate = true)
     public StaticResourcesView resourceAlias() {
         var view = new StaticResourcesView();
         view.setTemplate("index");
@@ -102,17 +102,23 @@ public class ExampleRouter {
         return view;
     }
 
-    @Router(path = "/{id}/{id}")
+    @Router(urlPatterns = "/{id}/{id}")
     public String testPathAttribute(
             @RequestParameter(name = "id", paramType = RequestParameterType.PATH, require = false, defaultValue = "0")
                     List<Integer> id) {
         return "<html><head><title>" + id + "</title></head><body><p>this is a path attribute test</p></body></html>";
     }
 
-    @Router(path = "/inner")
+    @Router(urlPatterns = "/inner")
     public String testPathAttribute(
             @RequestParameter(name = "token", paramType = RequestParameterType.INNER, require = false, defaultValue = "")
                     UUID id) {
         return "<html><head><title>" + id.toString() + "</title></head><body><p>this is a path attribute test</p></body></html>";
+    }
+
+    @Router(value = "/filter", hasTemplate = true)
+    public String testFilter() {
+        System.out.println("wow..");
+        return null;
     }
 }

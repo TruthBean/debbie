@@ -61,8 +61,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 var request = new HttpClientRequest();
                 request.setMethod(httpMethod);
                 request.setUrl(url);
-                request.setContentType(router.requestType());
-                request.setResponseType(router.responseType());
+                request.setContentType(router.requestType().info());
+                request.setResponseType(router.responseType().info());
 
                 var parameters = method.getParameters();
                 if (parameters != null) {

@@ -1,12 +1,10 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.net.uri.UriUtils;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParameter;
-import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -15,7 +13,7 @@ import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,12 +31,10 @@ public class MvcRouterHandler {
         LOGGER.debug("router uri: {}", url);
         RouterInfo result = null;
         var set = MvcRouterRegister.getRouterInfoSet();
-        for (var routerInfo : set) {
+        var routerInfos = matchRouterPath(url, set, routerRequest);
+
+        for (var routerInfo : routerInfos) {
             var paths = routerInfo.getPaths();
-            var matchUrl = matchRouterPath(url, paths, routerRequest, false);
-            if (!matchUrl) {
-                continue;
-            }
             LOGGER.debug("match uri " + paths);
 
             var requestMethod = routerInfo.getRequestMethod();
@@ -54,26 +50,25 @@ public class MvcRouterHandler {
             LOGGER.debug("responseType: " + responseType);
             var responseTypeInRequestHeader = routerRequest.getResponseType();
             LOGGER.debug("responseTypeInRequestHeader: " + responseTypeInRequestHeader);
-            Set<MediaType> defaultResponseTypes = configuration.getDefaultResponseTypes();
-            var matchResponseType = MediaType.ANY.isSame(responseTypeInRequestHeader) ||
-                    (!MediaType.ANY.isSame(responseType) && responseType.isSame(responseTypeInRequestHeader)) ||
-                    (MediaType.ANY.isSame(responseType) && MediaType.contains(defaultResponseTypes, responseTypeInRequestHeader))
-                    || (configuration.isAllowClientResponseType() && !MediaType.ANY.isSame(responseTypeInRequestHeader));
+            Set<MediaTypeInfo> defaultResponseTypes = configuration.getDefaultResponseTypes();
+            var matchResponseType = responseTypeInRequestHeader.isAny() ||
+                    (!responseType.isAny() && responseType.isSameMediaType(responseTypeInRequestHeader)) ||
+                    (responseType.isAny() && MediaTypeInfo.contains(defaultResponseTypes, responseTypeInRequestHeader))
+                    || (configuration.isAllowClientResponseType() && !responseTypeInRequestHeader.isAny());
             if (!matchResponseType) {
                 continue;
+            }
+            if (responseType.isAny() && responseTypeInRequestHeader.isAny()) {
+                response.setResponseType(defaultResponseTypes.iterator().next());
+                response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
             } else {
-                if (MediaType.ANY.isSame(responseType) && MediaType.ANY.isSame(responseTypeInRequestHeader)) {
-                    response.setResponseType(defaultResponseTypes.iterator().next());
-                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
-                } else {
-                    if (MediaType.ANY.isSame(responseType) &&
-                            MediaType.contains(defaultResponseTypes, responseTypeInRequestHeader)) {
-                        response.setResponseType(responseTypeInRequestHeader);
-                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
-                    } else if (configuration.isAllowClientResponseType() && !MediaType.ANY.isSame(responseTypeInRequestHeader)) {
-                        response.setResponseType(responseTypeInRequestHeader);
-                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType()));
-                    }
+                if (responseType.isAny() &&
+                        MediaTypeInfo.contains(defaultResponseTypes, responseTypeInRequestHeader)) {
+                    response.setResponseType(responseTypeInRequestHeader);
+                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+                } else if (configuration.isAllowClientResponseType() && !responseTypeInRequestHeader.isAny()) {
+                    response.setResponseType(responseTypeInRequestHeader);
+                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
                 }
             }
             LOGGER.debug("match response type: " + responseType);
@@ -83,26 +78,25 @@ public class MvcRouterHandler {
             LOGGER.debug("requestType: " + requestType);
             var contextType = routerRequest.getContentType();
             LOGGER.debug("contextType: " + contextType);
-            Set<MediaType> defaultContentTypes = configuration.getDefaultContentTypes();
-            var matchRequestType = MediaType.ANY.isSame(contextType) ||
+            Set<MediaTypeInfo> defaultContentTypes = configuration.getDefaultContentTypes();
+            var matchRequestType = contextType.isAny() ||
                     (!MediaType.ANY.isSame(requestType) && requestType.isSame(contextType))
+                    || (!MediaType.ANY.isSame(requestType) && !contextType.isAny() && requestType.isSame(contextType.toMediaType()))
                     || (
-                    (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
-                            (MediaType.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()))
+                    (MediaType.ANY.isSame(requestType) && !contextType.isAny() &&
+                            (MediaTypeInfo.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()))
             );
             if (!matchRequestType) {
                 continue;
-            } else {
-                var flag = (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
-                        (MediaType.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()));
-                if (flag) {
-                    routerInfo.setRequestType(contextType);
-                }
             }
-            LOGGER.debug("match request type: " + requestType);
+            var flag = (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
+                    (MediaTypeInfo.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()));
+            if (flag) {
+                routerInfo.setRequestType(contextType.toMediaType());
+            }
+            LOGGER.debug("match request type: " + requestType.info());
 
             result = routerInfo;
-            break;
         }
 
         if (result == null) {
@@ -113,6 +107,49 @@ public class MvcRouterHandler {
             LOGGER.debug(result.toString());
             return result;
         }
+    }
+
+    public static Set<RouterInfo> matchRouterPath(String url, Set<RouterInfo> routerInfos, RouterRequest routerRequest) {
+        Set<RouterInfo> result = new HashSet<>();
+        //TODO: 优先匹配静态资源...
+
+        for (RouterInfo routerInfo : routerInfos) {
+            List<RouterPathFragments> paths = routerInfo.getPaths();
+            // if has no matched, then match no variable path
+            for (var pattern : paths) {
+                if (!pattern.hasVariable()) {
+                    if (pattern.getRawPath().equalsIgnoreCase(url)) {
+                        result.add(routerInfo);
+                    }
+                }
+            }
+        }
+
+
+        for (RouterInfo routerInfo : routerInfos) {
+            List<RouterPathFragments> paths = routerInfo.getPaths();
+            // if has no matched, then match variable path
+            for (var pattern : paths) {
+                if (pattern.hasVariable()) {
+                    if (pattern.getPattern().matcher(url).find()) {
+                        var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
+                        routerRequest.getPathAttributes().putAll(pathAttributes);
+                        result.add(routerInfo);
+                    }
+                }
+            }
+        }
+
+        // if has no matched, then remove matrix
+        url = UriUtils.getPathsWithoutMatrix(url);
+        for (RouterInfo routerInfo : routerInfos) {
+            List<RouterPathFragments> paths = routerInfo.getPaths();
+            var matched = matchRouterPath(url, paths, routerRequest, true);
+            if (matched) {
+                result.add(routerInfo);
+            }
+        }
+        return result;
     }
 
     public static boolean matchRouterPath(String url, List<RouterPathFragments> paths, RouterRequest routerRequest,
@@ -155,11 +192,7 @@ public class MvcRouterHandler {
     }
 
     public static RouterResponse handleRouter(RouterInfo routerInfo) {
-        RouterResponse routerResponse = new RouterResponse();
-
-        routerResponse.setHasTemplate(routerInfo.hasTemplate());
-        routerResponse.setTemplateSuffix(routerInfo.getTemplateSuffix());
-        routerResponse.setTemplatePrefix(routerInfo.getTemplatePrefix());
+        RouterResponse routerResponse = routerInfo.getResponse();
 
         routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
 
@@ -167,7 +200,6 @@ public class MvcRouterHandler {
         if (routerInfo.getErrorInfo() != null) {
             responseValue = routerInfo.getErrorInfo();
             routerResponse.setContent(responseValue);
-            routerInfo.getResponse().setData(responseValue);
             return routerResponse;
         }
         try {
@@ -179,7 +211,6 @@ public class MvcRouterHandler {
             responseValue = exception.getErrorInfo();
         }
 
-        routerInfo.getResponse().setData(responseValue);
         routerResponse.setContent(responseValue);
         return routerResponse;
     }

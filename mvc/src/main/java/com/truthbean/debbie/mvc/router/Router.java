@@ -38,10 +38,10 @@ public @interface Router {
     String[] value() default "";
 
     /**
-     * router path regex
-     * @return path regex
+     * router path patterns
+     * @return path patterns
      */
-    String[] path() default "";
+    String[] urlPatterns() default "";
 
     HttpMethod[] method() default HttpMethod.ALL;
 

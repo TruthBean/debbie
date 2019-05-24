@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 
@@ -58,12 +58,12 @@ public class MvcProperties extends BaseProperties {
                 .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
                 .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, false));
 
-        List<MediaType> defaultResponseTypes = properties.getMediaTypeListValue(SERVER_RESPONSE_DEFAULT_TYPES, ",");
+        List<MediaTypeInfo> defaultResponseTypes = properties.getMediaTypeListValue(SERVER_RESPONSE_DEFAULT_TYPES, ",");
         if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {
             builder.defaultResponseTypes(defaultResponseTypes);
         }
 
-        List<MediaType> defaultRequestTypes = properties.getMediaTypeListValue(SERVER_CONTENT_DEFAULT_TYPES, ",");
+        List<MediaTypeInfo> defaultRequestTypes = properties.getMediaTypeListValue(SERVER_CONTENT_DEFAULT_TYPES, ",");
         if (defaultRequestTypes != null && !defaultRequestTypes.isEmpty()) {
             builder.defaultContentTypes(defaultRequestTypes);
         }
@@ -86,11 +86,11 @@ public class MvcProperties extends BaseProperties {
         configurationCache = builder.build();
     }
 
-    public List<MediaType> getMediaTypeListValue(String key, String split) {
+    public List<MediaTypeInfo> getMediaTypeListValue(String key, String split) {
         String[] value = getStringArrayValue(key, split);
-        List<MediaType> result = null;
+        List<MediaTypeInfo> result = null;
         if (value != null) {
-            result = Arrays.stream(value).map(MediaType::of).collect(Collectors.toList());
+            result = Arrays.stream(value).map(MediaTypeInfo::parse).collect(Collectors.toList());
         }
         return result;
     }

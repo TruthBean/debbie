@@ -7,7 +7,7 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 
 import java.util.UUID;
 
-@Filter(name = "exampleFilter2222", value = "/*", order = 1)
+@Filter(name = "exampleFilter2222", value = "/*", order = 2)
 public class ExampleFilter implements RouterFilter {
 
     @Override
