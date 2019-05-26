@@ -1,9 +1,9 @@
 // apply(plugin = "war")
 
 dependencies {
-    compile(project(":debbie-undertow"))
+    // compile(project(":debbie-undertow"))
     // compile(project(":debbie-tomcat"))
-    // compile(project(":debbie-netty"))
+    compile(project(":debbie-netty"))
 
     compile(project(":debbie-httpclient"))
 

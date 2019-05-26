@@ -174,7 +174,12 @@ public class MvcRouterInvokedParameterHandler extends AbstractInvokedParameterHa
                     if (type == MediaType.ANY) {
                         type = requestType;
                     }
-                    handleBody(parameters.getBody(), type, invokedParameter);
+                    String textBody = parameters.getTextBody();
+                    if (textBody == null) {
+                        handleBody(parameters.getBody(), type, invokedParameter);
+                    } else {
+                        handleBody(textBody, type, invokedParameter);
+                    }
                     break;
                 case HEAD:
                     Map<String, List> headers = parameters.getHeaders();

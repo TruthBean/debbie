@@ -10,17 +10,21 @@ import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.multipart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpCookie;
 import java.net.MalformedURLException;
@@ -41,11 +45,21 @@ public class NettyRouterRequest implements RouterRequest {
 
     private final DefaultRouterRequest routerRequestCache;
 
-    public NettyRouterRequest(io.netty.handler.codec.http.HttpRequest httpRequest, String host, int port) {
-        this(UUID.randomUUID().toString(), httpRequest, host, port);
+    private SessionManager sessionManager;
+
+    HttpPostRequestDecoder decoder;
+    private final HttpDataFactory nettyHttpDataFactory;
+
+    public NettyRouterRequest(SessionManager sessionManager, io.netty.handler.codec.http.HttpRequest httpRequest, String host, int port) {
+        this(sessionManager, UUID.randomUUID().toString(), httpRequest, host, port);
     }
 
-    public NettyRouterRequest(String id, io.netty.handler.codec.http.HttpRequest httpRequest, String host, int port) {
+    public NettyRouterRequest(SessionManager sessionManager, String id, io.netty.handler.codec.http.HttpRequest httpRequest, String host, int port) {
+        this.nettyHttpDataFactory = new DefaultHttpDataFactory();
+        decoder = new HttpPostRequestDecoder(nettyHttpDataFactory, httpRequest);
+
+        this.sessionManager = sessionManager;
+
         this.httpRequest = httpRequest;
         this.routerRequestCache = new DefaultRouterRequest();
         this.id = id;
@@ -104,6 +118,94 @@ public class NettyRouterRequest implements RouterRequest {
     public void setInputStreamBody(ByteBuf content) {
         ByteBufInputStream byteBufInputStream = new ByteBufInputStream(content);
         this.routerRequestCache.setInputStreamBody(byteBufInputStream);
+    }
+
+    public void handleHttpData(HttpContent httpContent) {
+        decoder.offer(httpContent);
+        while (decoder.hasNext()) {
+            InterfaceHttpData data = decoder.next();
+            if (data != null) {
+                try {
+                    handleAttribute(data);
+                } finally {
+                    data.release();
+                }
+            }
+        }
+    }
+
+    public void resetHttpRequest() {
+        try {
+            decoder.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        decoder = null;
+
+        httpRequest = null;
+    }
+
+    public void setTextBody(HttpContent httpContent) {
+        this.routerRequestCache.setTextBody(httpContent.toString());
+    }
+
+    /**
+     * HttpDataType有三种类型
+     * Attribute, FileUpload, InternalAttribute
+     */
+    private void handleAttribute(InterfaceHttpData data) {
+        var httpDataType = data.getHttpDataType();
+        LOGGER.debug("HttpDataType " + httpDataType);
+        switch (httpDataType) {
+            case Attribute:
+                setParameter(data);
+                break;
+            case FileUpload:
+                setFileParameter(data);
+                break;
+            case InternalAttribute:
+            default:
+                break;
+        }
+    }
+
+    private void setFileParameter(InterfaceHttpData data) {
+        FileUpload fileUpload = (FileUpload) data;
+        if (fileUpload.isCompleted()) {
+            // tells if the file is in Memory
+            if (fileUpload.isInMemory()) {
+                try {
+                    routerRequestCache.addParameter(fileUpload.getName(), fileUpload.getFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // or on File
+            // fileUpload.renameTo(dest); // enable to move into another
+            // File dest
+            // decoder.removeFileUploadFromClean(fileUpload); //remove
+            // the File of to delete file
+        } else {
+            LOGGER.error("File to be continued but should not!");
+        }
+    }
+
+    private void setParameter(InterfaceHttpData data) {
+        Attribute attribute = (Attribute) data;
+        String value;
+        try {
+            value = attribute.getValue();
+            routerRequestCache.addParameter(attribute.getName(), value);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            LOGGER.error("BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " Error while reading value: " + e1.getMessage());
+            return;
+        }
+        if (value.length() > 100) {
+            LOGGER.error("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " data too long");
+        } else {
+            LOGGER.debug("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.toString() + "\r\n");
+        }
     }
 
     private void setCookies(HttpHeaders httpHeaders) {
@@ -202,13 +304,15 @@ public class NettyRouterRequest implements RouterRequest {
     public RouterSession getSession() {
         var session = routerRequestCache.getSession();
         if (session == null) {
-            // todo
-            /*try {
-                session = new UndertowRouterSession(exchange);
+            try {
+                HttpCookie jSessionId = routerRequestCache.getCookie("JSESSIONID");
+                if (jSessionId != null) {
+                    session = sessionManager.getSession(jSessionId.getValue());
+                    routerRequestCache.setSession(session);
+                }
             } catch (Throwable throwable) {
                 LOGGER.warn("this request has no session");
             }
-            routerRequestCache.setSession(session);*/
         }
         return session;
     }
@@ -265,7 +369,7 @@ public class NettyRouterRequest implements RouterRequest {
 
     @Override
     public RouterRequest copy() {
-        return new NettyRouterRequest(id, httpRequest, host, port);
+        return new NettyRouterRequest(sessionManager, id, httpRequest, host, port);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyRouterRequest.class);

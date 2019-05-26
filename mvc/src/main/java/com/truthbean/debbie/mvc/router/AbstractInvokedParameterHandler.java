@@ -122,6 +122,25 @@ public abstract class AbstractInvokedParameterHandler {
         invokedParameter.setValue(value);
     }
 
+    public void handleBody(String body, MediaType type, InvokedParameter invokedParameter) {
+        Object value;
+        switch (type) {
+            case APPLICATION_XML:
+            case APPLICATION_XML_UTF8:
+                value = JacksonUtils.xmlToBean(body, invokedParameter.getType());
+                break;
+            case APPLICATION_JSON:
+            case APPLICATION_JSON_UTF8:
+                value = JacksonUtils.jsonToBean(body, invokedParameter.getType());
+                break;
+            // TODO MORE CASE
+            default:
+                value = body;
+                break;
+        }
+        invokedParameter.setValue(value);
+    }
+
     public void handleParamWithStringValue(Map<String, List<String>> map, InvokedParameter invokedParameter) {
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&

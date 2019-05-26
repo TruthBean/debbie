@@ -33,7 +33,24 @@ public class MvcRouterHandler {
         var set = MvcRouterRegister.getRouterInfoSet();
         var routerInfos = matchRouterPath(url, set, routerRequest);
 
+        Set<RouterInfo> rawPathEqualed = new HashSet<>();
         for (var routerInfo : routerInfos) {
+            var paths = routerInfo.getPaths();
+            for (var path : paths) {
+                if (path.getRawPath().equals(UriUtils.getPathsWithoutMatrix(url))) {
+                    rawPathEqualed.add(routerInfo);
+                }
+            }
+        }
+
+        Set<RouterInfo> targetRouterInfoSet;
+        if (rawPathEqualed.isEmpty()) {
+            targetRouterInfoSet = routerInfos;
+        } else {
+            targetRouterInfoSet = rawPathEqualed;
+        }
+
+        for (var routerInfo : targetRouterInfoSet) {
             var paths = routerInfo.getPaths();
             LOGGER.debug("match uri " + paths);
 
@@ -97,6 +114,7 @@ public class MvcRouterHandler {
             LOGGER.debug("match request type: " + requestType.info());
 
             result = routerInfo;
+            break;
         }
 
         if (result == null) {

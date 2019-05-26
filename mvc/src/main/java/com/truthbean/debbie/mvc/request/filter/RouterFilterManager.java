@@ -54,8 +54,8 @@ public class RouterFilterManager {
         }
         for (String pattern: urlPatterns) {
             if (pattern.contains("*")) {
-                pattern = pattern.replaceAll("//*", "\\w");
-                filterInfo.addUrlPattern(Pattern.compile(pattern));
+                String newPattern = pattern.replaceAll("//*", "\\w");
+                filterInfo.addUrlPattern(Pattern.compile(newPattern));
                 filterInfo.addRawUrlPattern(pattern);
             } else {
                 filterInfo.addRawUrlPattern(pattern);

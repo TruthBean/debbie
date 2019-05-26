@@ -1,5 +1,6 @@
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -10,14 +11,16 @@ import io.netty.handler.codec.http.HttpServerCodec;
  * Created on 2018-03-08 15:41
  */
 public class HttpChannelInitializer extends ChannelInitializer<SocketChannel> {
-    private NettyConfiguration configuration;
-    public HttpChannelInitializer(NettyConfiguration configuration) {
-        this.configuration = configuration;
+
+    private final HttpServerHandler httpServerHandler;
+
+    public HttpChannelInitializer(NettyConfiguration configuration, SessionManager sessionManager) {
+        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager);
     }
 
     @Override
     protected void initChannel(SocketChannel ch) {
         ch.pipeline().addLast(new HttpServerCodec())
-                .addLast(new HttpServerHandler(this.configuration));
+                .addLast(httpServerHandler);
     }
 }

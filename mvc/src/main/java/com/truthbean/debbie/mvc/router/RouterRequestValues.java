@@ -7,6 +7,7 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 
 import java.io.InputStream;
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -25,6 +26,7 @@ public class RouterRequestValues {
     private Map<String, Object> sessionAttributes;
     private Map<String, Object> innerAttributes;
     private InputStream body;
+    private String textBody;
 
     private RouterSession routerSession;
     private RouterRequest routerRequest;
@@ -129,6 +131,13 @@ public class RouterRequestValues {
             body = routerRequest.getInputStreamBody();
         }
         return body;
+    }
+
+    public String getTextBody() {
+        if (textBody == null) {
+            textBody = routerRequest.getTextBody();
+        }
+        return textBody;
     }
 
     public Map<String, List> getPathAttributes() {

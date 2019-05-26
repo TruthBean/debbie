@@ -6,6 +6,7 @@ import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -31,10 +32,11 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
         new BeanInitialization().init(configuration.getTargetClasses());
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
+        final SessionManager sessionManager = new SessionManager();
         return new DebbieApplication() {
             @Override
             public void start(String... args) {
-                run(configuration);
+                run(configuration, sessionManager);
                 LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 
@@ -45,10 +47,12 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
         };
     }
 
-    private void run(NettyConfiguration configuration) {
-        // (1)
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+    // (1)
+    private EventLoopGroup bossGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+    private void run(NettyConfiguration configuration, SessionManager sessionManager) {
+
         try {
             // (2)
             ServerBootstrap b = new ServerBootstrap();
@@ -56,29 +60,31 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
                     // (3)
                     .channel(NioServerSocketChannel.class)
                     // (4))
-                    .childHandler(new HttpChannelInitializer(configuration))
+                    .childHandler(new HttpChannelInitializer(configuration, sessionManager))
                     // (5)
-                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .option(ChannelOption.SO_BACKLOG, 1024)
                     // (6)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // (7) Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(configuration.getPort()).sync();
+            LOGGER.debug("netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+            LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
 
             // Wait until the server socket is closed.
             // In this example, this does not happen, but you can do that to gracefully
             // shut down your server.
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("netty server start error. ", e);
         } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
+            stop();
         }
     }
 
     private void stop() {
-        // todo
+        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyApplicationFactory.class);

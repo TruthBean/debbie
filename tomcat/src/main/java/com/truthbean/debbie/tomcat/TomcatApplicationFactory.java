@@ -101,7 +101,7 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
                     server.init();
                     server.getConnector();
                     server.start();
-                    LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                    LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat start error", e);
                 }

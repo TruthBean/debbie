@@ -20,6 +20,20 @@ public enum MediaType {
     APPLICATION_JAVASCRIPT("application/javascript"),
     APPLICATION_JAVASCRIPT_UTF8("application/javascript;Charset=UTF-8"),
 
+    IMAGE_BMP("image/bmp"),
+
+    IMAGE_SVG_XML("image/svg+xml"),
+
+    IMAGE_TIFF("image/tiff"),
+
+    IMAGE_VND_WAP_WBMP("image/vnd.wap.wbmp"),
+
+    IMAGE_WEBP("image/webp"),
+
+    IMAGE_X_ICON("image/x-icon"),
+
+    IMAGE_X_JNG("image/x-jng"),
+
     IMAGE_PNG("image/png"),
     IMAGE_GIF("image/gif"),
     IMAGE_JPEG("image/jpeg"),
@@ -57,11 +71,52 @@ public enum MediaType {
 
     APPLICATION_X_MSDOWNLOAD("application/x-msdownload"),
 
+    APPLICATION_X_WEB_APP_MANIFEST_JSON("application/x-web-app-manifest+json"),
+
+    APPLICATION_MSWORD("application/msword"),
+
     APPLICATION_ZIP("application/zip"),
 
     APPLICATION_X_RAR_COMPRESSED("application/x-rar-compressed"),
 
-    APPLICATION_VND_MS_EXCEL("application/vnd.ms-excel");
+    APPLICATION_VND_MS_EXCEL("application/vnd.ms-excel"),
+    APPLICATION_VND_MS_POWERPOINT("application/vnd.ms-powerpoint"),
+
+    APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_WORDPROCESSINGML_DOCUMENT("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+    APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_SPREADSHEETML_SHEET("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_PRESENTATIONML_PRESENTATION("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+
+    AUDIO_MIDI("audio/midi"),
+
+    AUDIO_MP4("audio/mp4"),
+
+    AUDIO_MPEG("audio/mpeg"),
+
+    AUDIO_OGG("audio/ogg"),
+
+    AUDIO_X_REALAUDIO("audio/x-realaudio"),
+
+    AUDIO_X_WAV("audio/x-wav"),
+
+    VIDEO_3GPP("video/3gpp"),
+
+    VIDEO_MP4("video/mp4"),
+
+    VIDEO_MPEG("video/mpeg"),
+
+    VIDEO_OGG("video/ogg"),
+
+    VIDEO_QUICKTIME("video/quicktime"),
+
+    VIDEO_WEBM("video/webm"),
+
+    VIDEO_X_FLV("video/x-flv"),
+
+    VIDEO_X_MNG("video/x-mng"),
+
+    FONT_OPENTYPE("font/opentype"),
+
+    ;
 
     // ===============================================================================================================
 
@@ -181,6 +236,11 @@ public enum MediaType {
 
             case FileExtConstant.TEXT:
                 return MediaType.TEXT_PLAIN;
+
+            case FileExtConstant.KAR:
+            case FileExtConstant.MID:
+            case FileExtConstant.MIDI:
+                return MediaType.AUDIO_MIDI;
 
             case FileExtConstant.NONE:
             default:

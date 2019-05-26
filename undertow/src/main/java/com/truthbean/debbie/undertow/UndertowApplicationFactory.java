@@ -54,7 +54,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             @Override
             public void start(String... args) {
                 server.start();
-                LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 
             @Override

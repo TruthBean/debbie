@@ -196,6 +196,20 @@ public class DefaultRouterRequest implements RouterRequest {
         this.parameters.put(name, value);
     }
 
+    public void addParameter(String name, Object value) {
+        if (this.parameters == null) {
+            this.parameters = new HashMap<>();
+        }
+        List list;
+        if (this.parameters.containsKey(name)) {
+            list = this.parameters.get(name);
+        } else {
+            list = new ArrayList();
+        }
+        list.add(value);
+        this.parameters.put(name, list);
+    }
+
     @Override
     public Map<String, List<String>> getQueries() {
         return queries;
@@ -217,6 +231,20 @@ public class DefaultRouterRequest implements RouterRequest {
             this.queries = new HashMap<>();
         }
         this.queries.put(name, value);
+    }
+
+    public void addQuery(String name, String value) {
+        if (this.queries == null) {
+            this.queries = new HashMap<>();
+        }
+        List<String> list;
+        if (this.queries.containsKey(name)) {
+            list = this.queries.get(name);
+        } else {
+            list = new ArrayList<>();
+        }
+        list.add(value);
+        this.queries.put(name, list);
     }
 
     @Override

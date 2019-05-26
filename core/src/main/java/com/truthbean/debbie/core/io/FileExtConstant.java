@@ -64,4 +64,24 @@ public final class FileExtConstant {
      * none
      */
     public static final String NONE = "";
+
+    /**
+     * kar
+     * audio/midi
+     */
+    public static final String KAR = "kar";
+
+    /**
+     * mid
+     * audio/midi
+     */
+    public static final String MID = "mid";
+
+
+    /**
+     * midi
+     * audio/midi
+     */
+    public static final String MIDI = "midi";
+
 }

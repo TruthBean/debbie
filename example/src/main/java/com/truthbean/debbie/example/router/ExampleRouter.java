@@ -40,7 +40,8 @@ public class ExampleRouter {
         return result;
     }
 
-    @Router(urlPatterns = "/json", method = {HttpMethod.POST, HttpMethod.GET}, responseType = MediaType.APPLICATION_JSON_UTF8)
+    @Router(urlPatterns = "/json", method = {HttpMethod.POST, HttpMethod.GET},
+            requestType = MediaType.MULTIPART_FORM_DATA, responseType = MediaType.APPLICATION_JSON_UTF8)
     public Map<String, Object> helloJson(@RequestParameter(name = "key", paramType = RequestParameterType.PARAM) String key,
                                          @RequestParameter(name = "value", paramType = RequestParameterType.PARAM) List<Integer> value) {
         Map<String, Object> result = new HashMap<>();

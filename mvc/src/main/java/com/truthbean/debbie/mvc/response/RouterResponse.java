@@ -147,4 +147,13 @@ public class RouterResponse implements Cloneable {
         response.templateSuffix = this.templateSuffix;
         return response;
     }
+
+    @Override
+    public String toString() {
+        return "{" + "\"redirect\":" + redirect + "," + "\"hasTemplate\":" + hasTemplate + ","
+                + "\"templateSuffix\":\"" + templateSuffix + "\"" + ","
+                + "\"templatePrefix\":\"" + templatePrefix + "\"" + "," + "\"headers\":" + headers + ","
+                + "\"cookies\":" + cookies + "," + "\"responseType\":" + responseType + ","
+                + "\"content\":" + content + "," + "\"handler\":" + handler + "}";
+    }
 }
