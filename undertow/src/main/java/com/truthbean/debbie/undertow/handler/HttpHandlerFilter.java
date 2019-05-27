@@ -59,6 +59,7 @@ public class HttpHandlerFilter implements HttpHandler {
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
                         next.handleRequest(exchange);
+                        return;
                     } else {
                         next.handleRequest(exchange);
                     }
@@ -79,6 +80,7 @@ public class HttpHandlerFilter implements HttpHandler {
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
                         next.handleRequest(exchange);
+                        return;
                     } else {
                         next.handleRequest(exchange);
                     }

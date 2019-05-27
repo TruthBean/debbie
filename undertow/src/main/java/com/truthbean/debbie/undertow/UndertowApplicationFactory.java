@@ -11,6 +11,10 @@ import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
 import com.truthbean.debbie.undertow.handler.HttpHandlerFilter;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.session.InMemorySessionManager;
+import io.undertow.server.session.SessionAttachmentHandler;
+import io.undertow.server.session.SessionCookieConfig;
+import io.undertow.server.session.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +40,14 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
 
+        SessionManager sessionManager = new InMemorySessionManager(configuration.getName());
+        SessionCookieConfig sessionConfig = new SessionCookieConfig();
+        /*
+         * Use the sessionAttachmentHandler to add the sessionManager and
+         * sessionCofing to the exchange of every request
+         */
+        SessionAttachmentHandler sessionAttachmentHandler = new SessionAttachmentHandler(sessionManager, sessionConfig);
+
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         HttpHandler next = new DispatcherHttpHandler(configuration);
@@ -43,12 +55,15 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             next = new HttpHandlerFilter(next, filter);
         }
 
+        // set as next handler your root handler
+        sessionAttachmentHandler.setNext(next);
+
         // Undertow builder
         server = Undertow.builder()
                 // Listener binding
                 .addHttpListener(configuration.getPort(), configuration.getHost())
                 // Default Handler
-                .setHandler(next).build();
+                .setHandler(sessionAttachmentHandler).build();
 
         return new DebbieApplication() {
             @Override

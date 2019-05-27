@@ -2,6 +2,7 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterHandler;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
@@ -126,6 +127,12 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             }
         }
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+
+        RouterSession session = routerRequest.getSession();
+        if (session != null) {
+            response.headers().add(COOKIE, session.getId());
+        }
+
         response.headers().set(CONTENT_TYPE, responseType.toString());
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
         if (!keepAlive) {

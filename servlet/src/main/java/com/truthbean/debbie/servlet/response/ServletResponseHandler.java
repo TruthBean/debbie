@@ -56,7 +56,7 @@ public class ServletResponseHandler implements ResponseHandler {
             }
             jspView.transfer();
         } else if (any instanceof byte[]) {
-            response.reset();
+            // response.reset();
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM.getValue());
             response.setContentLength(((byte[]) any).length);
             try (var outputStream = response.getOutputStream()) {
@@ -66,7 +66,7 @@ public class ServletResponseHandler implements ResponseHandler {
             }
         } else {
             try {
-                response.reset();
+                // response.reset();
                 response.setContentType(routerResponse.getResponseType().toString());
                 response.getWriter().println(any);
             } catch (IOException e) {

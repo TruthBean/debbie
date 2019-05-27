@@ -310,6 +310,9 @@ public class NettyRouterRequest implements RouterRequest {
                     session = sessionManager.getSession(jSessionId.getValue());
                     routerRequestCache.setSession(session);
                 }
+                if (session == null) {
+                    session = sessionManager.createSession();
+                }
             } catch (Throwable throwable) {
                 LOGGER.warn("this request has no session");
             }

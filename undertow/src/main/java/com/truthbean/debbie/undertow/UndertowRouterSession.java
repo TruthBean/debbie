@@ -19,7 +19,7 @@ public class UndertowRouterSession implements RouterSession {
     private HttpServerExchange exchange;
 
     public UndertowRouterSession(HttpServerExchange exchange) {
-        this.session = Sessions.getSession(exchange);
+        this.session = Sessions.getOrCreateSession(exchange);
         this.exchange = exchange;
     }
 

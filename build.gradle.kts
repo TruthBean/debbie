@@ -6,7 +6,7 @@ buildscript {
     }
 }
 
-group = "com.truthbean"
+group = "com.truthbean.debbie"
 
 allprojects {
     repositories {
@@ -129,7 +129,7 @@ subprojects {
             publications {
                 create<MavenPublication>("uploadToMavenRepository") {
                     artifactId = project.name
-                    group = "com.truthbean"
+                    group = "com.truthbean.debbie"
                     version = projectVersion
                     from(components["java"])
                     artifact(tasks["sourcesJar"])
@@ -145,7 +145,7 @@ subprojects {
                     pom {
                         artifactId = project.name
                         name.set(project.name)
-                        group = "com.truthbean"
+                        group = "com.truthbean.debbie"
                         version = projectVersion
                         description.set("a java microservice project")
                         url.set("http://debbie.truthbean.com/")
@@ -185,10 +185,10 @@ subprojects {
                     url = uri(mavenRepositoryUrl)
                     credentials {
                         val sonatypeUsername: String? by project
-                        username = if (sonatypeUsername == null) "" else sonatypeUsername
+                        username = if (sonatypeUsername == null || sonatypeUsername == "null") "anonymous" else sonatypeUsername
 
                         val sonatypePassword: String? by project
-                        password = if (sonatypePassword == null) "" else sonatypePassword
+                        password = if (sonatypePassword == null || sonatypeUsername == "null") "anonymous" else sonatypePassword
                     }
                 }
             }

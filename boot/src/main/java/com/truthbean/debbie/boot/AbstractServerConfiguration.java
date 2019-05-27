@@ -2,17 +2,30 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.mvc.MvcConfiguration;
 
+import java.util.UUID;
+
 /**
  * @author TruthBean
  * @since 0.0.1
  */
 public abstract class AbstractServerConfiguration extends MvcConfiguration {
 
+    private String name;
+
     private int port = 8080;
     private String host = "localhost";
     private boolean web = false;
 
     protected AbstractServerConfiguration() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    protected AbstractServerConfiguration name(String name) {
+        this.name = name;
+        return this;
     }
 
     public int getPort() {
