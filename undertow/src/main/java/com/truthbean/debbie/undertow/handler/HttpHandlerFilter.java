@@ -55,10 +55,11 @@ public class HttpHandlerFilter implements HttpHandler {
         for (String s : rawUrlPattern) {
             if (s.equals(url)) {
                 filter = true;
-                if (routerFilter.doFilter(routerRequest, routerResponse)) {
+                if (routerFilter.preRouter(routerRequest, routerResponse)) {
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
                         next.handleRequest(exchange);
+                        routerFilter.postRouter(routerRequest, routerResponse);
                         return;
                     } else {
                         next.handleRequest(exchange);
@@ -66,6 +67,7 @@ public class HttpHandlerFilter implements HttpHandler {
                 } else {
                     UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
                     handler.handle(routerResponse);
+                    routerFilter.postRouter(routerRequest, routerResponse);
                     return;
                 }
                 break;
@@ -76,10 +78,11 @@ public class HttpHandlerFilter implements HttpHandler {
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
                 filter = true;
-                if (routerFilter.doFilter(routerRequest, routerResponse)) {
+                if (routerFilter.preRouter(routerRequest, routerResponse)) {
                     if (next.getClass() == DispatcherHttpHandler.class) {
                         ((DispatcherHttpHandler) next).setRequest(request);
                         next.handleRequest(exchange);
+                        routerFilter.postRouter(routerRequest, routerResponse);
                         return;
                     } else {
                         next.handleRequest(exchange);
@@ -87,6 +90,7 @@ public class HttpHandlerFilter implements HttpHandler {
                 } else {
                     UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
                     handler.handle(routerResponse);
+                    routerFilter.postRouter(routerRequest, routerResponse);
                     return;
                 }
                 break;

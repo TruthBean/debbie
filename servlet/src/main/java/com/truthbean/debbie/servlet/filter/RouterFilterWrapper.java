@@ -1,8 +1,8 @@
 package com.truthbean.debbie.servlet.filter;
 
 import com.truthbean.debbie.core.bean.BeanFactory;
-import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
@@ -29,13 +29,17 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
     }
 
     @Override
-    public boolean doFilter(RouterRequest request, RouterResponse response) {
-        return this.filter.doFilter(request, response);
+    public boolean preRouter(RouterRequest request, RouterResponse response) {
+        return this.filter.preRouter(request, response);
     }
 
     @Override
-    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public void postRouter(RouterRequest request, RouterResponse response) {
+        this.filter.postRouter(request, response);
+    }
+
+    @Override
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (filter == null) {
             synchronized (this) {
                 if (filter == null) {
@@ -45,15 +49,15 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
         }
         ServletRouterRequest routerRequest = new ServletRouterRequest(request);
         ServletRouterResponse routerResponse = new ServletRouterResponse(response);
-        if (this.doFilter(routerRequest, routerResponse)) {
+        if (this.preRouter(routerRequest, routerResponse)) {
             Map<String, Object> attributes = routerRequest.getAttributes();
-            if (attributes!=null && !attributes.isEmpty()) {
+            if (attributes != null && !attributes.isEmpty()) {
                 attributes.forEach(request::setAttribute);
             }
             chain.doFilter(request, response);
         } else {
-            ServletResponseHandler handler =
-                    new ServletResponseHandler(routerRequest.getHttpServletRequest(), routerResponse.getResponse());
+            this.postRouter(routerRequest, routerResponse);
+            var handler = new ServletResponseHandler(routerRequest.getHttpServletRequest(), routerResponse.getResponse());
             handler.handle(routerResponse);
         }
     }

@@ -196,7 +196,7 @@ subprojects {
 
         // 进行数字签名
         signing {
-            isRequired = isReleaseBuild && gradle.taskGraph.hasTask("uploadToMavenRepository")
+            isRequired = isReleaseBuild
             sign(publishing.publications["uploadToMavenRepository"])
         }
 

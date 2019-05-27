@@ -14,7 +14,7 @@ public class ExampleFilter2 implements RouterFilter {
     private RemoteUserService remoteUserService;
 
     @Override
-    public boolean doFilter(RouterRequest request, RouterResponse response) {
+    public boolean preRouter(RouterRequest request, RouterResponse response) {
         System.out.println("doFilter2.....");
         // remoteUserService.login();
         response.setResponseType(MediaType.APPLICATION_JSON_UTF8);

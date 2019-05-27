@@ -105,7 +105,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
             var filter = new RouterFilterHandler(filterInfo);
-            var result = filter.doFilter(request, response);
+            var result = filter.preRouter(request, response);
             if (result != null && !result) {
                 doResponse(response, ctx);
                 return false;
@@ -114,7 +114,18 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         return true;
     }
 
+    private void beforeResponse(RouterRequest request, RouterResponse response) {
+        // reverse order to fix the chain order
+        List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
+        for (RouterFilterInfo filterInfo : filters) {
+            var filter = new RouterFilterHandler(filterInfo);
+            filter.postRouter(request, response);
+        }
+    }
+
     private void doResponse(RouterResponse routerResponse, ChannelHandlerContext ctx) {
+        beforeResponse(routerRequest, routerResponse);
+
         MediaTypeInfo responseType = routerResponse.getResponseType();
         Object resp = routerResponse.getContent();
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 public class ExampleFilter implements RouterFilter {
 
     @Override
-    public boolean doFilter(RouterRequest request, RouterResponse response) {
+    public boolean preRouter(RouterRequest request, RouterResponse response) {
         System.out.println("doFilter.....");
         request.addAttribute("token", UUID.randomUUID());
         return true;

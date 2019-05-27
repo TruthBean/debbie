@@ -9,7 +9,10 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
  */
 public interface RouterFilter {
 
-    default boolean doFilter(RouterRequest request, RouterResponse response) {
+    default boolean preRouter(RouterRequest request, RouterResponse response) {
         return true;
+    }
+
+    default void postRouter(RouterRequest request, RouterResponse response) {
     }
 }

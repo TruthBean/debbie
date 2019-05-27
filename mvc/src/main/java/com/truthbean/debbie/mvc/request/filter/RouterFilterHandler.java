@@ -15,32 +15,37 @@ import java.util.regex.Pattern;
 public class RouterFilterHandler {
     private RouterFilterInfo filterInfo;
 
+    private RouterFilter routerFilter;
 
     public RouterFilterHandler(RouterFilterInfo routerFilterInfo) {
         this.filterInfo = routerFilterInfo;
-    }
-
-    public Boolean doFilter(RouterRequest routerRequest, RouterResponse routerResponse) {
-        String url = routerRequest.getUrl();
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
-        RouterFilter routerFilter = BeanFactory.factory(routerFilterType);
+        routerFilter = BeanFactory.factory(routerFilterType);
+    }
+
+    public Boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
+        String url = routerRequest.getUrl();
 
         List<String> rawUrlPattern = filterInfo.getRawUrlPattern();
         for (String s : rawUrlPattern) {
             if (s.equals(url)) {
-                return routerFilter.doFilter(routerRequest, routerResponse);
+                return routerFilter.preRouter(routerRequest, routerResponse);
             }
         }
 
         List<Pattern> urlPattern = filterInfo.getUrlPattern();
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
-                return routerFilter.doFilter(routerRequest, routerResponse);
+                return routerFilter.preRouter(routerRequest, routerResponse);
             }
         }
 
         return null;
+    }
+
+    public void postRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
+        routerFilter.postRouter(routerRequest, routerResponse);
     }
 
 }

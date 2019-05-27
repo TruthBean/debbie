@@ -79,7 +79,7 @@ public class ServletContextHandler {
 
         // csrf filter
         if (servletConfiguration.isEnableCrsf()) {
-            servletContext.addFilter("csrfFilter", new CsrfFilter())
+            servletContext.addFilter("csrfFilter", new CsrfFilter(servletConfiguration))
                     .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
         }
 

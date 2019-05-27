@@ -1,5 +1,6 @@
 package com.truthbean.debbie.servlet.filter.csrf;
 
+import com.truthbean.debbie.servlet.ServletConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,12 @@ import java.io.IOException;
  * @since 2019-03-30 14:15
  */
 public class CsrfFilter extends HttpFilter {
+
+    private ServletConfiguration configuration;
+
+    public CsrfFilter(ServletConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
