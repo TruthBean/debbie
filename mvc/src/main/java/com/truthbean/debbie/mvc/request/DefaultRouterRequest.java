@@ -320,6 +320,12 @@ public class DefaultRouterRequest implements RouterRequest {
             clone.pathAttributes = new HashMap<>(pathAttributes);
         }
 
+        if (matrix == null) {
+            clone.matrix = new HashMap<>();
+        } else {
+            clone.matrix = new HashMap<>(matrix);
+        }
+
         clone.header = header.copy();
 
         if (cookies == null) {

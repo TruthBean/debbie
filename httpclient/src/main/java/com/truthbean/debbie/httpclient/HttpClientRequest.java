@@ -1,6 +1,6 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 
 import java.util.UUID;
@@ -10,17 +10,17 @@ import java.util.UUID;
  * @since 0.0.1
  */
 public class HttpClientRequest extends DefaultRouterRequest {
-    private InvokedParameter invokedParameter;
+    private ExecutableArgument invokedParameter;
 
     public HttpClientRequest() {
         super.setId(UUID.randomUUID().toString());
     }
 
-    public InvokedParameter getInvokedParameter() {
+    public ExecutableArgument getInvokedParameter() {
         return invokedParameter;
     }
 
-    public void setInvokedParameter(InvokedParameter invokedParameter) {
+    public void setInvokedParameter(ExecutableArgument invokedParameter) {
         this.invokedParameter = invokedParameter;
     }
 }

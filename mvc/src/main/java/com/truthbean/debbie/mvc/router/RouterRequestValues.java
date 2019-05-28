@@ -36,29 +36,17 @@ public class RouterRequestValues {
 
     public RouterRequestValues(RouterRequest routerRequest, RouterResponse routerResponse) {
 
-        headers = routerRequest.getHeader().getHeaders();
-
-        cookieAttributes = new HashMap<>();
-        setCookieAttributes(routerRequest.getCookies());
-
-        routerSession = routerRequest.getSession();
-        if (routerSession != null) {
-            sessionAttributes = routerRequest.getSession().getAttributes();
-        }
-        innerAttributes = routerRequest.getAttributes();
-
-        setMixValues();
-
-        this.matrixAttributes = routerRequest.getMatrix();
-
         this.routerRequest = routerRequest;
+        routerSession = routerRequest.getSession();
         this.routerResponse = routerResponse;
     }
 
     public Map<String, List> getQueries() {
         if (queries == null) {
             queries = new HashMap<>();
-            queries.putAll(routerRequest.getQueries());
+            var requestQueries = routerRequest.getQueries();
+            if (requestQueries != null)
+                queries.putAll(requestQueries);
         }
         return Collections.unmodifiableMap(queries);
     }
@@ -93,6 +81,9 @@ public class RouterRequestValues {
     public Map<String, List> getHeaders() {
         if (headers == null) {
             headers = new HashMap<>();
+            var requestHeaders = routerRequest.getHeader().getHeaders();;
+            if (requestHeaders != null)
+                headers.putAll(requestHeaders);
         }
         return Collections.unmodifiableMap(headers);
     }
@@ -100,6 +91,7 @@ public class RouterRequestValues {
     public Map<String, List> getCookieAttributes() {
         if (cookieAttributes == null) {
             cookieAttributes = new HashMap<>();
+            setCookieAttributes(routerRequest.getCookies());
         }
         return Collections.unmodifiableMap(cookieAttributes);
     }
@@ -119,10 +111,20 @@ public class RouterRequestValues {
     }
 
     public Map<String, Object> getSessionAttributes() {
+        if (sessionAttributes == null && routerSession != null) {
+            sessionAttributes = new HashMap<>();
+            var attributes = routerRequest.getSession().getAttributes();
+            if (attributes != null)
+                sessionAttributes.putAll(attributes);
+        }
+        if (sessionAttributes == null) {
+            return new HashMap<>(0);
+        }
         return Collections.unmodifiableMap(sessionAttributes);
     }
 
     public Map<String, Object> getInnerAttributes() {
+        innerAttributes = routerRequest.getAttributes();
         return Collections.unmodifiableMap(innerAttributes);
     }
 
@@ -149,29 +151,44 @@ public class RouterRequestValues {
     }
 
     private void setMixValues() {
+        var queries = getQueries();
         if (queries != null && !queries.isEmpty()) {
             mixValues.putAll(queries);
         }
+
+        var params = getParams();
         if (params != null && !params.isEmpty()) {
             mixValues.putAll(params);
         }
+
+        var headers = getHeaders();
         if (headers != null && !headers.isEmpty()) {
             mixValues.putAll(headers);
         }
+
+        var cookieAttributes = getCookieAttributes();
         if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
             mixValues.putAll(cookieAttributes);
         }
+
+        var sessionAttributes = getSessionAttributes();
         if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
             for (Map.Entry<String, Object> entry : sessionAttributes.entrySet()) {
                 mixValues.put(entry.getKey(), Collections.singletonList(entry.getValue()));
             }
         }
+
+        var pathAttributes = getPathAttributes();
         if (pathAttributes != null && !pathAttributes.isEmpty()) {
             mixValues.putAll(pathAttributes);
         }
+
+        var matrixAttributes = getMatrixAttributes();
         if (matrixAttributes != null && !matrixAttributes.isEmpty()) {
             mixValues.putAll(matrixAttributes);
         }
+
+        var innerAttributes = getInnerAttributes();
         if (innerAttributes != null && !innerAttributes.isEmpty()) {
             for (Map.Entry<String, Object> entry : innerAttributes.entrySet()) {
                 mixValues.put(entry.getKey(), Collections.singletonList(entry.getValue()));
@@ -180,6 +197,9 @@ public class RouterRequestValues {
     }
 
     public Map<String, List> getMixValues() {
+        if (mixValues.isEmpty()) {
+            setMixValues();
+        }
         return Collections.unmodifiableMap(mixValues);
     }
 }

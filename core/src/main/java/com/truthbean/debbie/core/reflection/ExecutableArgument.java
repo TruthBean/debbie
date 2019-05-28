@@ -1,25 +1,45 @@
 package com.truthbean.debbie.core.reflection;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * @see java.lang.reflect.Executable
+ *
  * @author TruthBean
- * @since 0.0.1
+ * @since 0.0.2
  * Created on 2018-03-09 13:51
  */
-public class InvokedParameter implements Comparable<InvokedParameter>, Cloneable {
+public class ExecutableArgument implements Comparable<ExecutableArgument>, Cloneable {
     private Class<?> type;
     private Object value;
     private int index;
     private String name;
-    private Annotation annotation;
+    private Map<Class<? extends Annotation>, Annotation> annotations;
 
-    public Annotation getAnnotation() {
-        return annotation;
+    public ExecutableArgument() {
+        this.annotations = new HashMap<>();
+    }
+
+    public Map<Class<? extends Annotation>, Annotation> getAnnotations() {
+        return annotations;
+    }
+
+    public Annotation getAnnotation(Class<? extends Annotation> clazz) {
+        return annotations.get(clazz);
+    }
+
+    public void setAnnotations(Annotation[] annotations) {
+        if (annotations != null && annotations.length > 0) {
+            for (Annotation annotation : annotations) {
+                this.annotations.put(annotation.annotationType(), annotation);
+            }
+        }
     }
 
     public void setAnnotation(Annotation annotation) {
-        this.annotation = annotation;
+        this.annotations.put(annotation.annotationType(), annotation);
     }
 
     public Class<?> getType() {
@@ -59,11 +79,11 @@ public class InvokedParameter implements Comparable<InvokedParameter>, Cloneable
         if (this == o) {
             return true;
         }
-        if (!(o instanceof InvokedParameter)) {
+        if (!(o instanceof ExecutableArgument)) {
             return false;
         }
 
-        InvokedParameter that = (InvokedParameter) o;
+        ExecutableArgument that = (ExecutableArgument) o;
 
         if (getType() != null ? !getType().equals(that.getType()) : that.getType() != null) {
             return false;
@@ -71,7 +91,8 @@ public class InvokedParameter implements Comparable<InvokedParameter>, Cloneable
         if (getValue() != null ? !getValue().equals(that.getValue()) : that.getValue() != null) {
             return false;
         }
-        return (getName() != null ? getName().equals(that.getName()) : that.getName() == null) && (getAnnotation() != null ? getAnnotation().equals(that.getAnnotation()) : that.getAnnotation() == null);
+        return (getName() != null ? getName().equals(that.getName()) : that.getName() == null)
+                && (annotations != null ? annotations.equals(that.annotations) : that.annotations == null);
     }
 
     @Override
@@ -80,29 +101,29 @@ public class InvokedParameter implements Comparable<InvokedParameter>, Cloneable
         result = 31 * result + (getValue() != null ? getValue().hashCode() : 0);
         //result = 31 * result + getIndex();
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-        result = 31 * result + (getAnnotation() != null ? getAnnotation().hashCode() : 0);
+        result = 31 * result + (annotations != null ? annotations.hashCode() : 0);
         return result;
     }
 
     @Override
-    public int compareTo(InvokedParameter o) {
+    public int compareTo(ExecutableArgument o) {
         return this.index - o.index;
     }
 
     @Override
-    public InvokedParameter clone() {
-        InvokedParameter parameter;
+    public ExecutableArgument clone() {
+        ExecutableArgument parameter;
         try {
-            parameter = (InvokedParameter) super.clone();
+            parameter = (ExecutableArgument) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
-            parameter = new InvokedParameter();
+            parameter = new ExecutableArgument();
         }
         parameter.type = type;
         parameter.value = value;
         parameter.index = index;
         parameter.name = name;
-        parameter.annotation = annotation;
+        parameter.annotations = new HashMap<>(annotations);
         return parameter;
     }
 

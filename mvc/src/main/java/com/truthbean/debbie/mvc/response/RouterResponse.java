@@ -137,6 +137,8 @@ public class RouterResponse implements Cloneable {
         response.redirect = this.redirect;
         response.headers.putAll(this.headers);
 
+        response.responseType = responseType;
+
         response.content = this.content;
         response.handler = this.handler;
 

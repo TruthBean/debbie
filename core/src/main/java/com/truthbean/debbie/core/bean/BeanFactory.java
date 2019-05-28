@@ -61,8 +61,22 @@ public class BeanFactory {
             throw new OneMoreBeanRegisteredException(serviceName + " must be only one");
         }
         var t = list[0];
-        Class<K> clazz = t.getBeanClass();
-        Class<T> beanInterface = t.getBeanInterface();
+        if (t.getInjectType() == BeanInjectType.SINGLETON) {
+            if (t.getBean() != null) {
+                return (T) t.getBean();
+            } else {
+                T bean = factory(t);
+                t.setBean(bean);
+                return bean;
+            }
+        }
+
+        return factory(t);
+    }
+
+    private static <T, K extends T> T factory(DebbieBeanInfo beanInfo) {
+        Class<K> clazz = beanInfo.getBeanClass();
+        Class<T> beanInterface = beanInfo.getBeanInterface();
 
         if (beanInterface == null) {
             return factoryWithProxy(clazz);

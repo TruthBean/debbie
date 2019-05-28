@@ -137,7 +137,7 @@ public class MvcRouterHandler {
             for (var pattern : paths) {
                 if (!pattern.hasVariable()) {
                     if (pattern.getRawPath().equalsIgnoreCase(url)) {
-                        result.add(routerInfo);
+                        result.add(routerInfo.clone());
                     }
                 }
             }
@@ -152,7 +152,7 @@ public class MvcRouterHandler {
                     if (pattern.getPattern().matcher(url).find()) {
                         var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
                         routerRequest.getPathAttributes().putAll(pathAttributes);
-                        result.add(routerInfo);
+                        result.add(routerInfo.clone());
                     }
                 }
             }
@@ -164,7 +164,7 @@ public class MvcRouterHandler {
             List<RouterPathFragments> paths = routerInfo.getPaths();
             var matched = matchRouterPath(url, paths, routerRequest, true);
             if (matched) {
-                result.add(routerInfo);
+                result.add(routerInfo.clone());
             }
         }
         return result;

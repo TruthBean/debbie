@@ -73,6 +73,49 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 @PropertyInject 标识的 field，通过setter方法来 注入的
 
+## maven
+
+### server
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-undertow</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
+
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-netty</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
+
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-tomcat</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
+
+### jdbc
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-jdbc</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-hikari</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
+
 ## 目标
 --------
 ~~1.先实现一个mvc内核~~

@@ -4,7 +4,10 @@ import com.truthbean.debbie.core.util.Constants;
 import com.truthbean.debbie.core.util.NumericUtils;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author TruthBean
@@ -107,6 +110,20 @@ public final class TypeHelper {
 
     public static boolean isArrayType(Class<?> clazz) {
         return clazz == Set.class || clazz == Map.class || clazz == List.class;
+    }
+
+    public static boolean isAbstractOrInterface(Class<?> type) {
+        return Modifier.isAbstract(type.getModifiers()) || type.isInterface();
+    }
+
+    public static boolean hasDefaultConstructor(Class<?> type) {
+        Constructor<?>[] constructors = type.getConstructors();
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.getParameterCount() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isOrValueOf(Class<?> clazz, String target) {

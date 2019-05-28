@@ -18,6 +18,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private String beanName;
     private BeanInjectType injectType;
 
+    private Bean bean;
+
     public DebbieBeanInfo(Class<Bean> clazz) {
         super(clazz);
         Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
@@ -95,6 +97,14 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
 
     public void setBeanName(String beanName) {
         this.beanName = beanName;
+    }
+
+    public void setBean(Bean bean) {
+        this.bean = bean;
+    }
+
+    public Bean getBean() {
+        return bean;
     }
 
     @Override

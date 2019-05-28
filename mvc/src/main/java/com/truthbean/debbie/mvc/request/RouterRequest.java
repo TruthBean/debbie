@@ -1,6 +1,5 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
 

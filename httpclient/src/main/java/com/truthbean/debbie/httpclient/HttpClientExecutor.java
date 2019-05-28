@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.core.proxy.AbstractMethodExecutor;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;
@@ -68,7 +68,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 if (parameters != null) {
                     for (int i = 0; i < parameters.length; i++) {
                         var parameter = parameters[i];
-                        var invokedParameter = new InvokedParameter();
+                        var invokedParameter = new ExecutableArgument();
 
                         RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
                         if (requestParameter != null) {
@@ -106,8 +106,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                     continue;
                 }
 
-                Annotation annotation = parameter.getAnnotation();
-                if (annotation instanceof RequestParameter) {
+                Annotation annotation = parameter.getAnnotation(RequestParameter.class);
+                if (annotation != null) {
                     RequestParameter requestParameter = (RequestParameter) annotation;
                     var type = requestParameter.paramType();
                     var header = request.getHeader();

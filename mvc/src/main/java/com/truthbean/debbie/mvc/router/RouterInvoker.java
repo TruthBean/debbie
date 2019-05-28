@@ -2,7 +2,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.bean.BeanFactory;
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class RouterInvoker {
 
         var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
-        var handler = new MvcRouterInvokedParameterHandler();
+        var handler = new RouterMethodArgumentHandler();
         var args = handler.handleMethodParams(parameters, routerInfo.getMethodParams(), routerInfo.getRequestType());
 
         var values = args.toArray();
@@ -50,7 +50,7 @@ public class RouterInvoker {
             throw new NullPointerException(method.getName() + " return null");
         }*/
 
-        for (InvokedParameter methodParam : routerInfo.getMethodParams()) {
+        for (ExecutableArgument methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
         }
 

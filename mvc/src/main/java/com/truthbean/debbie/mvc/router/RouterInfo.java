@@ -2,7 +2,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MultipartFile;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -27,7 +27,7 @@ public class RouterInfo implements Cloneable {
 
     private Method method;
 
-    private List<InvokedParameter> methodParams;
+    private List<ExecutableArgument> methodParams;
 
     private Class<?> routerClass;
 
@@ -56,11 +56,11 @@ public class RouterInfo implements Cloneable {
         this.method = method;
     }
 
-    public List<InvokedParameter> getMethodParams() {
+    public List<ExecutableArgument> getMethodParams() {
         return methodParams;
     }
 
-    public void setMethodParams(List<InvokedParameter> methodParams) {
+    public void setMethodParams(List<ExecutableArgument> methodParams) {
         this.methodParams = methodParams;
     }
 
@@ -115,23 +115,12 @@ public class RouterInfo implements Cloneable {
     public RouterInfo() {
     }
 
-    /*public RouterInfo(Method method, List<InvokedParameter> methodParams, Class<?> clazz, Pattern pathRegex,
-                      HttpMethod requestMethod, MediaType responseType, AbstractResponseContentHandler abstractHandlerFilter) {
-        this.method = method;
-        this.methodParams = methodParams;
-        this.clazz = clazz;
-        this.pathRegex = pathRegex;
-        this.requestMethod = requestMethod;
-        this.responseType = responseType;
-        this.responseHandler = abstractHandlerFilter;
-    }*/
-
-    private final List<InvokedParameter> baseTypeMethodParams = new ArrayList<>();
-    private final List<InvokedParameter> notBaseTypeMethodParams = new ArrayList<>();
+    private final List<ExecutableArgument> baseTypeMethodParams = new ArrayList<>();
+    private final List<ExecutableArgument> notBaseTypeMethodParams = new ArrayList<>();
 
     public void setBaseTypeMethodParams() {
-        MvcRouterInvokedParameterHandler handler = new MvcRouterInvokedParameterHandler();
-        for (InvokedParameter param : methodParams) {
+        RouterMethodArgumentHandler handler = new RouterMethodArgumentHandler();
+        for (ExecutableArgument param : methodParams) {
             if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
                 baseTypeMethodParams.add(param);
             } else {
@@ -144,7 +133,7 @@ public class RouterInfo implements Cloneable {
         }
     }
 
-    public List<InvokedParameter> getBaseTypeMethodParams() {
+    public List<ExecutableArgument> getBaseTypeMethodParams() {
         if (baseTypeMethodParams.isEmpty()) {
             setBaseTypeMethodParams();
         }
@@ -152,14 +141,14 @@ public class RouterInfo implements Cloneable {
     }
 
     public void setNotBaseTypeMethodParams() {
-        for (InvokedParameter param : methodParams) {
+        for (ExecutableArgument param : methodParams) {
             if (!TypeHelper.isBaseType(param.getType()) && param.getType() != MultipartFile.class) {
                 baseTypeMethodParams.add(param);
             }
         }
     }
 
-    public List<InvokedParameter> getNotBaseTypeMethodParams() {
+    public List<ExecutableArgument> getNotBaseTypeMethodParams() {
         if (notBaseTypeMethodParams.isEmpty()) {
             setNotBaseTypeMethodParams();
         }
@@ -222,11 +211,18 @@ public class RouterInfo implements Cloneable {
             clone.methodParams = new ArrayList<>(methodParams);
         }
         clone.routerClass = routerClass;
-        clone.paths = paths;
-        clone.requestMethod = requestMethod;
+
+        if (paths != null)
+            clone.paths = new ArrayList<>(paths);
+
+        if (requestMethod != null)
+            clone.requestMethod = new ArrayList<>(requestMethod);
+
         if (response != null) {
             clone.response = response.clone();
         }
+
+        clone.requestType = requestType;
         if (request != null) {
             clone.request = request.copy();
         }

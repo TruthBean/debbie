@@ -115,9 +115,9 @@ public class HikariConfiguration extends DataSourceConfiguration {
     private TransactionIsolationLevel transactionIsolation;
 
     /**
-     *  Lowest acceptable validation timeout is 250 ms. Default: 5000
+     *  Lowest acceptable validate timeout is 250 ms. Default: 5000
      */
-    @PropertyInject(value = "validation-timeout")
+    @PropertyInject(value = "validate-timeout")
     private long validationTimeout = 5000;
 
     /**

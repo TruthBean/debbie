@@ -4,7 +4,7 @@ import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.bean.DebbieBeanInfo;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.reflection.ClassInfo;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
+import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.core.watcher.Watcher;
 import com.truthbean.debbie.core.watcher.WatcherType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
@@ -44,7 +44,7 @@ public class MvcRouterRegister {
         var methods = classInfo.getMethods();
         for (var method : methods) {
             Router router = method.getAnnotation(Router.class);
-            List<InvokedParameter> methodParams = MvcRouterInvokedParameterHandler.typeOf(method.getParameters());
+            List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method.getParameters());
             if (router != null) {
                 var routerInfo = new RouterInfo();
                 routerInfo.setRouterClass(classInfo.getClazz());
@@ -105,21 +105,28 @@ public class MvcRouterRegister {
                     routerInfo.setRequestType(requestType);
                 } else {
                     if (methodParams != null && !methodParams.isEmpty()) {
-                        for (InvokedParameter methodParam : methodParams) {
-                            Annotation annotation = methodParam.getAnnotation();
-                            if (annotation != null && annotation.annotationType() == RequestParameter.class) {
-                                RequestParameter requestParameter = (RequestParameter) annotation;
-                                if (requestParameter.paramType() == RequestParameterType.BODY) {
-                                    if (!defaultContentTypes.isEmpty()) {
-                                        routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
-                                    } else {
-                                        if (!webConfiguration.isAcceptClientContentType()) {
-                                            throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
-                                        } else {
-                                            routerInfo.setRequestType(MediaType.ANY);
+                        for (ExecutableArgument methodParam : methodParams) {
+                            Map<Class<? extends Annotation>, Annotation> annotations = methodParam.getAnnotations();
+                            if (annotations != null && !annotations.isEmpty()) {
+                                annotations.forEach((key, value) -> {
+                                    if (key == RequestParameter.class) {
+                                        RequestParameter requestParameter = (RequestParameter) value;
+                                        if (requestParameter.paramType() == RequestParameterType.BODY) {
+                                            if (!defaultContentTypes.isEmpty()) {
+                                                routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
+                                            } else {
+                                                if (!webConfiguration.isAcceptClientContentType()) {
+                                                    throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
+                                                } else {
+                                                    routerInfo.setRequestType(MediaType.ANY);
+                                                }
+                                            }
                                         }
+                                    } else {
+                                        // TODO
                                     }
-                                }
+                                });
+
                             }
                         }
                     }

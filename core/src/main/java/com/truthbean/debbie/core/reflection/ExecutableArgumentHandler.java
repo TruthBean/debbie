@@ -1,9 +1,6 @@
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.core.reflection;
 
 import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.reflection.InvokedParameter;
-import com.truthbean.debbie.core.reflection.ReflectionHelper;
-import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.core.util.JacksonUtils;
 
 import java.io.InputStream;
@@ -13,14 +10,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @see java.lang.reflect.Executable
+ * @see ExecutableArgument
+ *
  * @author TruthBean
- * @since 0.0.1
+ * @since 0.0.2
  * Created on 2018-03-10 13:32
  */
-public abstract class AbstractInvokedParameterHandler {
+public class ExecutableArgumentHandler {
 
-    public InvokedParameter typeOf(Field field, int index) {
-        InvokedParameter invokedParameter = new InvokedParameter();
+    public ExecutableArgument typeOf(Field field, int index) {
+        ExecutableArgument invokedParameter = new ExecutableArgument();
         invokedParameter.setType(field.getType());
         invokedParameter.setName(field.getName());
         invokedParameter.setIndex(index);
@@ -28,7 +28,7 @@ public abstract class AbstractInvokedParameterHandler {
     }
 
     public void handleFiled(Map<String, List> map,
-                            Object newInstance, Field field, InvokedParameter invokedParameter) {
+                            Object newInstance, Field field, ExecutableArgument invokedParameter) {
 
         if (map == null || map.isEmpty()) {
             return;
@@ -48,13 +48,13 @@ public abstract class AbstractInvokedParameterHandler {
     }
 
     public void handleObjectFiled(InputStream inputStream, MediaType type,
-                                  Object newInstance, Field field, InvokedParameter invokedParameter) {
+                                  Object newInstance, Field field, ExecutableArgument invokedParameter) {
 
         if (inputStream == null) {
             return;
         }
         if (newInstance == null) {
-            handleBody(inputStream, type, invokedParameter);
+            handleStream(inputStream, type, invokedParameter);
         } else {
             /*if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
                 handleParam(map, invokedParameter);
@@ -68,7 +68,7 @@ public abstract class AbstractInvokedParameterHandler {
 
     }
 
-    public void handleParam(Map<String, List> map, InvokedParameter invokedParameter) {
+    public void handleParam(Map<String, List> map, ExecutableArgument invokedParameter) {
         if (map != null && !map.isEmpty()) {
             for (Map.Entry<String, List> entry : map.entrySet()) {
                 boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
@@ -89,7 +89,7 @@ public abstract class AbstractInvokedParameterHandler {
         }
     }
 
-    public void handleObject(Map<String, Object> map, InvokedParameter invokedParameter) {
+    public void handleObject(Map<String, Object> map, ExecutableArgument invokedParameter) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
                     TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
@@ -103,7 +103,7 @@ public abstract class AbstractInvokedParameterHandler {
         }
     }
 
-    public void handleBody(InputStream stream, MediaType type, InvokedParameter invokedParameter) {
+    public void handleStream(InputStream stream, MediaType type, ExecutableArgument invokedParameter) {
         Object value;
         switch (type) {
             case APPLICATION_XML:
@@ -122,7 +122,7 @@ public abstract class AbstractInvokedParameterHandler {
         invokedParameter.setValue(value);
     }
 
-    public void handleBody(String body, MediaType type, InvokedParameter invokedParameter) {
+    public void handleStream(String body, MediaType type, ExecutableArgument invokedParameter) {
         Object value;
         switch (type) {
             case APPLICATION_XML:
@@ -141,7 +141,7 @@ public abstract class AbstractInvokedParameterHandler {
         invokedParameter.setValue(value);
     }
 
-    public void handleParamWithStringValue(Map<String, List<String>> map, InvokedParameter invokedParameter) {
+    public void handleParamWithStringValue(Map<String, List<String>> map, ExecutableArgument invokedParameter) {
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
                     TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
@@ -160,7 +160,7 @@ public abstract class AbstractInvokedParameterHandler {
         }
     }
 
-    public void handleParam(String name, String rawValue, InvokedParameter invokedParameter) {
+    public void handleParam(String name, String rawValue, ExecutableArgument invokedParameter) {
         Object value;
         if (TypeHelper.isArrayType(invokedParameter.getType())) {
             value = TypeHelper.valueOf(invokedParameter.getType(), rawValue);
@@ -171,8 +171,8 @@ public abstract class AbstractInvokedParameterHandler {
         invokedParameter.setValue(value);
     }
 
-    public static InvokedParameter typeOf(Parameter parameter) {
-        InvokedParameter invokedParameter = new InvokedParameter();
+    public static ExecutableArgument typeOf(Parameter parameter) {
+        ExecutableArgument invokedParameter = new ExecutableArgument();
         invokedParameter.setType(parameter.getType());
         String name = parameter.getName();
         if (name.startsWith("arg")) {
