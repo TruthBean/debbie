@@ -2,7 +2,9 @@ dependencies {
     compile(project(":debbie-mvc"))
     compile(project(":debbie-boot"))
 
-    compile("io.undertow:undertow-core:2.0.20.Final")
+    val undertowVersion: String by project
+    compile("io.undertow:undertow-core:$undertowVersion")
 
-    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
+    val log4j2Version: String by project
+    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
 }

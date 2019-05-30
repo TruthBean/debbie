@@ -6,7 +6,7 @@ val modules =
                 "servlet", "httpclient", "hikari",
                 "boot",
                 "tomcat", "undertow", "netty",
-                "example"
+                "example", "dependencies"
         )
 
 modules.forEach { dir ->

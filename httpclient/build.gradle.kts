@@ -1,5 +1,6 @@
 dependencies {
     compile(project(":debbie-mvc"))
 
-    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
+    val log4j2Version: String by project
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
 }

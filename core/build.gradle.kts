@@ -1,7 +1,11 @@
 dependencies {
-    compile("org.ow2.asm:asm:7.1")
-    compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
+    val asmVersion: String by project
+    compile("org.ow2.asm:asm:$asmVersion")
 
-    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
-    testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
+    val jacksonVersion: String by project
+    compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+
+    val log4j2Version: String by project
+    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 }

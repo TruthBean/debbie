@@ -9,8 +9,12 @@ dependencies {
 
     compile(project(":debbie-jdbc"))
 
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
+    val jacksonVersion: String by project
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
-    compile("org.apache.commons:commons-lang3:3.9")
+    val log4j2Version: String by project
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+
+    val lang3Version: String by project
+    compile("org.apache.commons:commons-lang3:$lang3Version")
 }

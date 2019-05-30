@@ -1,3 +1,5 @@
+import org.gradle.wrapper.Install
+
 buildscript {
     repositories {
         mavenLocal()
@@ -55,12 +57,15 @@ subprojects {
     apply(plugin = "eclipse")
 
     dependencies {
-        "compileOnly"("org.slf4j:slf4j-api:1.7.26")
+        if (project.name != "debbie-dependencies") {
+            val slf4jVersion: String by project
+            "compileOnly"("org.slf4j:slf4j-api:$slf4jVersion")
 
-        val jupiterVersion = "5.4.0"
-        "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-        "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
-        "testImplementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+            val jupiterVersion: String by project
+            "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+            "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
+            "testImplementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+        }
     }
 
     afterEvaluate {
@@ -147,6 +152,11 @@ subprojects {
                         name.set(project.name)
                         group = "com.truthbean.debbie"
                         version = projectVersion
+
+                        /*if (project.name == "debbie-dependencies") {
+                            packaging = "pom"
+                        }*/
+
                         description.set("a java microservice project")
                         url.set("http://debbie.truthbean.com/")
                         licenses {

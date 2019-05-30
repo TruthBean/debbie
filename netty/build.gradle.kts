@@ -2,5 +2,6 @@ dependencies {
     compile(project(":debbie-mvc"))
     compile(project(":debbie-boot"))
 
-    compile("io.netty:netty-all:4.1.36.Final")
+    val nettyVersion: String by project
+    compile("io.netty:netty-all:$nettyVersion")
 }

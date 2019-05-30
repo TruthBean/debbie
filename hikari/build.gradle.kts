@@ -1,10 +1,18 @@
 dependencies {
     compile(project(":debbie-jdbc"))
 
-    compile("com.zaxxer:HikariCP:3.3.1")
+    val hikariVersion: String by project
+    compile("com.zaxxer:HikariCP:$hikariVersion")
 
-    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
-    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
-    testImplementation("mysql:mysql-connector-java:8.0.16")
-    testCompile("org.mariadb.jdbc:mariadb-java-client:2.4.1")
+    val jacksonVersion: String by project
+    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+
+    val log4j2Version: String by project
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    
+    val mysqlVersion: String by project
+    testImplementation("mysql:mysql-connector-java:$mysqlVersion")
+    
+    val mariadbVersion: String by project
+    testCompile("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
 }
