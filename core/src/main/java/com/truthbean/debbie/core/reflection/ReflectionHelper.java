@@ -22,6 +22,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class ReflectionHelper {
 
+    public static <T> Constructor<T> getConstructorIfAvailable(Class<T> clazz, Class<?>... paramTypes) {
+        try {
+            return clazz.getConstructor(paramTypes);
+        } catch (NoSuchMethodException var3) {
+            return null;
+        }
+    }
+
     public static <T> T newInstance(Class<T> type) {
         if (Modifier.isAbstract(type.getModifiers())) {
             throw new IllegalStateException(type.getName() + " cannot be abstract class");

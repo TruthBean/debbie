@@ -3,6 +3,7 @@ package com.truthbean.debbie.hikari;
 import com.truthbean.debbie.core.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -60,15 +61,5 @@ public class HikariDataSourceFactory implements DataSourceFactory {
     @Override
     public DataSource getDataSource() {
         return hikariDataSource;
-    }
-
-    @Override
-    public Connection getConnection() {
-        try {
-            return hikariDataSource.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

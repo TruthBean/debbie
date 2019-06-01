@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.core.data.transformer.DataTransformerFactory;
-import com.truthbean.debbie.core.reflection.ClassNotMatchedException;
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
 import com.truthbean.debbie.core.reflection.TypeHelper;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
@@ -10,7 +9,6 @@ import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.FStartColumnNameTransformer;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
-import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import org.slf4j.Logger;

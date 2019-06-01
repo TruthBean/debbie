@@ -1,7 +1,6 @@
 package com.truthbean.debbie.core.util;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -71,6 +70,10 @@ public final class StringUtils {
         return cs == null || cs.length() == 0;
     }
 
+    public static boolean hasLength(String str) {
+        return str != null && !str.isEmpty();
+    }
+
     public static boolean isBlank(CharSequence cs) {
         int strLen;
         if (cs != null && (strLen = cs.length()) != 0) {
@@ -90,28 +93,81 @@ public final class StringUtils {
         return str == null ? null : str.trim();
     }
 
+    public static String trim(String target, String prefix, String prefixOverrides, String suffix, String suffixOverrides) {
+        if (target == null) return null;
+        StringBuilder stringBuilder = new StringBuilder();
+        if (prefixOverrides != null && !prefixOverrides.isBlank()) {
+            int prefixOverridesLength = prefixOverrides.length();
+            if (target.startsWith(prefixOverrides)) {
+                target = target.substring(prefixOverridesLength);
+            }
+        }
+        if (suffixOverrides != null && !suffixOverrides.isBlank()) {
+            int suffixOverridesLength = target.lastIndexOf(suffixOverrides);
+            if (target.endsWith(suffixOverrides)) {
+                target = target.substring(0, suffixOverridesLength);
+            }
+        }
+
+        if (prefix != null) {
+            stringBuilder.append(prefix);
+        }
+        stringBuilder.append(target);
+        if (suffix != null) {
+            stringBuilder.append(suffix);
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
+
+        if (str == null) {
+            return new String[0];
+        }
+
+        StringTokenizer st = new StringTokenizer(str, delimiters);
+        List<String> tokens = new ArrayList<>();
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (trimTokens) {
+                token = token.trim();
+            }
+            if (!ignoreEmptyTokens || token.length() > 0) {
+                tokens.add(token);
+            }
+        }
+        return toStringArray(tokens);
+    }
+
+    public static String[] toStringArray(Collection<String> collection) {
+        return (collection != null ? collection.toArray(new String[0]) : new String[0]);
+    }
+
     // ===============================================================================================================
 
     public static <T> String joining(List<T> list) {
         return joining(list, ",");
     }
 
-    public static <T> String joining(List<T> list, String split) {
+    public static <T> String joining(Collection<T> list, String split) {
         StringBuilder builder = new StringBuilder();
         joining(builder, list, split);
         return builder.toString();
     }
 
-    public static <T> void joining(StringBuilder builder, List<T> list, String split) {
+    public static <T> void joining(StringBuilder builder, Collection<T> list, String split) {
         if (list != null && !list.isEmpty()) {
             int size = list.size();
+            Iterator<T> iterator = list.iterator();
             for (int i = 0; i < size - 1; i++) {
-                if (list.get(i) != null) {
-                    builder.append(list.get(i).toString()).append(split);
+                T e = iterator.next();
+                if (e != null) {
+                    builder.append(e).append(split);
                 }
             }
-            if (list.get(size - 1) != null) {
-                builder.append(list.get(size - 1).toString());
+            T e = iterator.next();
+            if (e != null) {
+                builder.append(e);
             }
         }
     }

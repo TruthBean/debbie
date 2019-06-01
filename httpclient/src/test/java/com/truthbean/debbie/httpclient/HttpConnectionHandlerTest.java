@@ -13,7 +13,7 @@ public class HttpConnectionHandlerTest {
     @BeforeEach
     public void before() {
         var properties = new HttpClientProperties();
-        httpClientHandler = new HttpConnectionHandler(properties.toConfiguration());
+        httpClientHandler = new HttpConnectionHandler(properties.loadConfiguration());
     }
 
     @Test

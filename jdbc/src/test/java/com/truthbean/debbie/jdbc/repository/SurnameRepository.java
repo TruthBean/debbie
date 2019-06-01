@@ -20,9 +20,10 @@ public class SurnameRepository {
             DmlRepositoryHandler.of(Surname.class, Long.class);
 
     public boolean save(Surname surname) {
-        Connection connection = factory.getConnection();
-        Long id = RepositoryCallback.actionTransactional(connection, () -> {
-            Long insert = repositoryHandler.insert(connection, surname);
+        var transaction = factory.getTransaction();
+        Long id = RepositoryCallback.actionTransactional(transaction, () -> {
+            var connection = transaction.getConnection();
+            Long insert = repositoryHandler.insert(connection, surname, false);
             surname.setId(insert);
             return insert;
         });
@@ -34,9 +35,10 @@ public class SurnameRepository {
     }
 
     public List<Surname> saveAndDelete(Surname surname, Long deleteId) {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.actionTransactional(connection, () -> {
-            Long insert = repositoryHandler.insert(connection, surname);
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.actionTransactional(transaction, () -> {
+            var connection = transaction.getConnection();
+            Long insert = repositoryHandler.insert(connection, surname, false);
             surname.setId(insert);
             System.out.println(1/0);
             repositoryHandler.deleteById(connection, deleteId);
@@ -45,33 +47,51 @@ public class SurnameRepository {
     }
 
     public Optional<Surname> findById(Long id) {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.actionOptional(connection, () -> repositoryHandler.selectById(connection, id));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.actionOptional(transaction, () -> {
+            var connection = transaction.getConnection();
+            return repositoryHandler.selectById(connection, id);
+        });
     }
 
     public boolean update(Surname surname) {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.actionTransactional(connection, () -> repositoryHandler.update(connection, surname));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.actionTransactional(transaction, () -> {
+            var connection = transaction.getConnection();
+            return repositoryHandler.update(connection, surname, false);
+        });
     }
 
     public boolean delete(Long id) {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.actionTransactional(connection, () -> repositoryHandler.deleteById(connection, id));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.actionTransactional(transaction, () -> {
+            var connection = transaction.getConnection();
+            return repositoryHandler.deleteById(connection, id);
+        });
     }
 
     public Future<List<Surname>> findAll() {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.asyncAction(connection, () -> repositoryHandler.selectAll(connection));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.asyncAction(transaction, () -> {
+            var connection = transaction.getConnection();
+            return repositoryHandler.selectAll(connection);
+        });
     }
 
     public Long count() {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.action(connection, () -> repositoryHandler.count(connection));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.action(transaction, () -> {
+            var connection = transaction.getConnection();
+            return repositoryHandler.count(connection);
+        });
     }
 
     public Page<Surname> findPaged(PageRequest pageRequest) {
-        Connection connection = factory.getConnection();
-        return RepositoryCallback.action(connection, () -> repositoryHandler.selectPaged(connection, pageRequest));
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.action(transaction, () -> {
+            Connection connection = transaction.getConnection();
+            return repositoryHandler.selectPaged(connection, pageRequest);
+        });
     }
 
 }

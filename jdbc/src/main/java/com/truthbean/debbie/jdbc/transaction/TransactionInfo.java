@@ -67,6 +67,15 @@ public class TransactionInfo implements Closeable {
         return this.connection;
     }
 
+    public Connection setTransactionIsolation(int transactionIsolationLevel) {
+        try {
+            this.connection.setTransactionIsolation(transactionIsolationLevel);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return this.connection;
+    }
+
     public void commit() {
         if (connection == null) {
             LOGGER.error("method (" + method + ") not bind connection is null. ");
@@ -110,6 +119,7 @@ public class TransactionInfo implements Closeable {
         try {
             if (!connection.isClosed()) {
                 connection.close();
+                connection = null;
             }
         } catch (SQLException e) {
             e.printStackTrace();

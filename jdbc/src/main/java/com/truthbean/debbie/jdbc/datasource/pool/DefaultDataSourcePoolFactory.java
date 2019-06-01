@@ -3,6 +3,7 @@ package com.truthbean.debbie.jdbc.datasource.pool;
 import com.truthbean.debbie.core.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -37,15 +38,5 @@ public class DefaultDataSourcePoolFactory implements DataSourceFactory {
     @Override
     public DataSource getDataSource() {
         return pooledDataSource;
-    }
-
-    @Override
-    public Connection getConnection() {
-        try {
-            return pooledDataSource.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

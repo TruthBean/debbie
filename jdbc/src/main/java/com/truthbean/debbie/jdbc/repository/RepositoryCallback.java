@@ -1,11 +1,11 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.jdbc.datasource.connection.ConnectionCallable;
+import com.truthbean.debbie.jdbc.datasource.connection.TransactionCallable;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -15,44 +15,46 @@ import java.util.concurrent.*;
  */
 public class RepositoryCallback {
 
-    private static <R> Connection getConnection(ConnectionCallable<R> action) {
-        var connection = action.getConnection();
-        if (connection == null) {
+    private static <R> TransactionInfo getTransaction(TransactionCallable<R> action) {
+        var transactionInfo = action.getTransaction();
+        if (transactionInfo == null) {
             throw new RuntimeException("ConnectionBinder did not bind connection yet !");
         }
-        return connection;
+        return transactionInfo;
     }
 
-    public static <R> R actionTransactional(ConnectionCallable<R> action) {
-        var connection = getConnection(action);
+    public static <R> R actionTransactional(TransactionCallable<R> action) {
+        var transaction = getTransaction(action);
         R result = null;
         try {
-            connection.setAutoCommit(false);
-            result = action.call(connection);
-            commit(connection);
+            transaction.setAutoCommit(false);
+            result = action.call(transaction);
+            transaction.commit();
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-            rollback(connection);
+            transaction.rollback();
         } finally {
-            close(connection);
+            transaction.close();
+            TransactionManager.remove();
         }
         return result;
     }
 
-    public static <R> Future<R> asyncActionTransactional(ConnectionCallable<R> action) {
+    public static <R> Future<R> asyncActionTransactional(TransactionCallable<R> action) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<R> callable = () -> {
-            var connection = getConnection(action);
+            var transaction = getTransaction(action);
             R result = null;
             try {
-                connection.setAutoCommit(false);
-                result = action.call(connection);
-                commit(connection);
+                transaction.setAutoCommit(false);
+                result = action.call(transaction);
+                transaction.commit();
             } catch (Exception e) {
                 LOGGER.error("action error ", e);
-                rollback(connection);
+                transaction.rollback();
             } finally {
-                close(connection);
+                transaction.close();
+                TransactionManager.remove();
             }
             return result;
         };
@@ -70,82 +72,75 @@ public class RepositoryCallback {
         return result;
     }
 
-    public static <R> R action(ConnectionCallable<R> action) {
+    public static <R> R action(TransactionCallable<R> action) {
         R result = null;
-        var connection = getConnection(action);
-        try {
-            connection.setAutoCommit(true);
-            result = action.call(connection);
+        try (var transaction = getTransaction(action)) {
+            transaction.setAutoCommit(true);
+            result = action.call(transaction);
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-        } finally {
-            close(connection);
         }
         return result;
     }
 
-    public static <R> Optional<R> actionOptional(ConnectionCallable<R> action) {
+    public static <R> Optional<R> actionOptional(TransactionCallable<R> action) {
         Optional<R> result = Optional.empty();
-        var connection = getConnection(action);
-        try {
-            connection.setAutoCommit(true);
-            var a = action.call(connection);
+        try (var transaction = getTransaction(action)) {
+            transaction.setAutoCommit(true);
+            var a = action.call(transaction);
             if (a != null) {
                 result = Optional.of(a);
             }
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-        } finally {
-            close(connection);
         }
         return result;
     }
 
-    public static <R> CompletableFuture<R> asyncAction(ConnectionCallable<R> action) {
+    public static <R> CompletableFuture<R> asyncAction(TransactionCallable<R> action) {
         return CompletableFuture.supplyAsync(() -> {
-            var connection = getConnection(action);
             R result = null;
-            try {
-                connection.setAutoCommit(true);
-                result = action.call(connection);
+            try (var transaction = getTransaction(action)) {
+                transaction.setAutoCommit(true);
+                result = action.call(transaction);
             } catch (Exception e) {
                 LOGGER.error("action error ", e);
-            } finally {
-                close(connection);
             }
             return result;
         });
     }
 
-    public static <R> R actionTransactional(Connection connection, Callable<R> action) {
+    public static <R> R actionTransactional(TransactionInfo transaction, Callable<R> action) {
 
         R result = null;
         try {
-            connection.setAutoCommit(false);
+            transaction.setAutoCommit(false);
             result = action.call();
-            commit(connection);
+            transaction.commit();
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-            rollback(connection);
+            transaction.rollback();
         } finally {
-            close(connection);
+            transaction.close();
+            TransactionManager.remove();
         }
         return result;
     }
 
-    public static <R> Future<R> asyncActionTransactional(Connection connection, Callable<R> action) {
+    public static <R> Future<R> asyncActionTransactional(TransactionInfo transaction, Callable<R> action) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<R> callable = () -> {
             R result = null;
             try {
-                connection.setAutoCommit(false);
+                transaction.setAutoCommit(false);
                 result = action.call();
-                commit(connection);
+                transaction.commit();
             } catch (Exception e) {
                 LOGGER.error("action error ", e);
-                rollback(connection);
+                transaction.rollback();
             } finally {
-                close(connection);
+                transaction.close();
+                TransactionManager.remove();
             }
             return result;
         };
@@ -163,78 +158,42 @@ public class RepositoryCallback {
         return result;
     }
 
-    public static <R> R action(Connection connection, Callable<R> action) {
+    public static <R> R action(TransactionInfo transaction, Callable<R> action) {
         R result = null;
-        try {
-            connection.setAutoCommit(true);
+        try (transaction) {
+            transaction.setAutoCommit(true);
             result = action.call();
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-        } finally {
-            close(connection);
         }
         return result;
     }
 
-    public static <R> Optional<R> actionOptional(Connection connection, Callable<R> action) {
+    public static <R> Optional<R> actionOptional(TransactionInfo transaction, Callable<R> action) {
         Optional<R> result = Optional.empty();
-        try {
-            connection.setAutoCommit(true);
+        try (transaction) {
+            transaction.setAutoCommit(true);
             var a = action.call();
             if (a != null) {
                 result = Optional.of(a);
             }
         } catch (Exception e) {
             LOGGER.error("action error ", e);
-        } finally {
-            close(connection);
         }
         return result;
     }
 
-    public static <R> CompletableFuture<R> asyncAction(Connection connection, Callable<R> action) {
+    public static <R> CompletableFuture<R> asyncAction(TransactionInfo transaction, Callable<R> action) {
         return CompletableFuture.supplyAsync(() -> {
             R result = null;
-            try {
-                connection.setAutoCommit(true);
+            try (transaction) {
+                transaction.setAutoCommit(true);
                 result = action.call();
             } catch (Exception e) {
                 LOGGER.error("action error ", e);
-            } finally {
-                close(connection);
             }
             return result;
         });
-    }
-
-    private static void commit(Connection connection) {
-        try {
-            if (!connection.isReadOnly()) {
-                connection.commit();
-            }
-        } catch (SQLException e) {
-            LOGGER.error("connection commit error. ", e);
-        }
-    }
-
-    private static void rollback(Connection connection) {
-        try {
-            if (!connection.isReadOnly()) {
-                connection.rollback();
-            }
-        } catch (SQLException e) {
-            LOGGER.error("connection rollback error. ", e);
-        }
-    }
-
-    private static void close(Connection connection) {
-        try {
-            if (!connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCallback.class);

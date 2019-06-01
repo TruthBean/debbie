@@ -1,9 +1,11 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.core.reflection.ReflectionHelper;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author TruthBean
@@ -13,6 +15,7 @@ public interface DataSourceFactory {
 
     /**
      * create DataSourceFactory by application.properties
+     *
      * @return DataSourceFactory
      */
     static DataSourceFactory factory() {
@@ -27,6 +30,7 @@ public interface DataSourceFactory {
 
     /**
      * create DataSourceFactory by DataSource
+     *
      * @param dataSource dataSource
      * @return DataSourceFactory
      */
@@ -34,6 +38,7 @@ public interface DataSourceFactory {
 
     /**
      * create DataSourceFactory by DataSourceConfiguration
+     *
      * @param configuration configuration
      * @return DataSourceFactory
      */
@@ -41,10 +46,29 @@ public interface DataSourceFactory {
 
     /**
      * get DataSource
+     *
      * @return DataSource
      */
     DataSource getDataSource();
 
-    Connection getConnection();
+    default TransactionInfo getTransaction() {
+        try {
+            TransactionInfo transactionInfo = new TransactionInfo();
+            transactionInfo.setConnection(getDataSource().getConnection());
+            return transactionInfo;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    default Connection getConnection() {
+        try {
+            return getDataSource().getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

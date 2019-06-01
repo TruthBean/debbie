@@ -1,5 +1,6 @@
 package com.truthbean.debbie.core.bean;
 
+import com.truthbean.debbie.core.data.transformer.DataTransformer;
 import com.truthbean.debbie.core.data.transformer.DataTransformerFactory;
 
 import com.truthbean.debbie.core.properties.BaseProperties;
@@ -140,8 +141,18 @@ public class BeanFactory {
             BaseProperties properties = new BaseProperties();
             String value = properties.getValue(key);
             if (value != null) {
-                Class<?> type = field.getType();
-                Object transform = DataTransformerFactory.transform(value, type);
+                Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
+                Object transform = null;
+                try {
+                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
+                    transform = dataTransformer.reverse(value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (transform == null) {
+                    Class<?> type = field.getType();
+                    transform = DataTransformerFactory.transform(value, type);
+                }
                 // use setter method to inject filed
                 ReflectionHelper.invokeSetMethod(object, field, transform);
             }

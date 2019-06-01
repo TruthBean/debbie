@@ -17,7 +17,7 @@ public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
     }
 
     public boolean save(Surname surname) {
-        Long id = super.insert(surname);
+        Long id = super.insert(surname, false);
         boolean result = id > 0L;
         if (result) {
             surname.setId(id);
@@ -26,7 +26,7 @@ public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
     }
 
     public List<Surname> saveAndDelete(Surname surname, Long deleteId) {
-        Long insert = super.insert(surname);
+        Long insert = super.insert(surname, false);
         surname.setId(insert);
         System.out.println(1/0);
         super.deleteById(deleteId);
@@ -41,7 +41,7 @@ public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
     }
 
     public boolean update(Surname surname) {
-        return super.update(surname);
+        return super.update(surname, false);
     }
 
     public boolean delete(Long id) {

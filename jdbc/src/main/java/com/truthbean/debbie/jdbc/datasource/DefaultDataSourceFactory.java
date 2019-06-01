@@ -1,8 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author TruthBean
@@ -26,16 +24,5 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     @Override
     public DataSource getDataSource() {
         return dataSource;
-    }
-
-    @Override
-    public Connection getConnection() {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return connection;
     }
 }

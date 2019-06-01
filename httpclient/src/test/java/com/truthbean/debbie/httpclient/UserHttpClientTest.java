@@ -16,7 +16,7 @@ public class UserHttpClientTest {
 
     @BeforeEach
     public void before() {
-        var configuration = new HttpClientProperties().toConfiguration();
+        var configuration = HttpClientProperties.toConfiguration();
         var type = UserHttpClient.class;
         InterfaceProxyFactory<UserHttpClient> interfaceProxyFactory = knownMappers.get(type);
         if (interfaceProxyFactory == null) {

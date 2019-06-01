@@ -40,4 +40,8 @@ public class HttpClientProperties extends BaseProperties {
     public static HttpClientConfiguration toConfiguration() {
         return configuration;
     }
+
+    public HttpClientConfiguration loadConfiguration() {
+        return configuration;
+    }
 }

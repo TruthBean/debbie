@@ -1,6 +1,9 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.core.util.StringUtils;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -229,6 +232,11 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder distinct() {
+        dynamicSql.append(" DISTINCT ");
+        return this;
+    }
+
     public DynamicSqlBuilder count() {
         dynamicSql.append(" COUNT(*) ");
         return this;
@@ -245,12 +253,29 @@ public class DynamicSqlBuilder {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    dynamicSql.append("").append(iColumn).append(", ");
+                    dynamicSql.append(" ").append(iColumn).append(", ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                dynamicSql.append("").append(iColumn).append(" ");
+                dynamicSql.append(" ").append(iColumn).append(" ");
+            }
+        }
+        return this;
+    }
+
+    public DynamicSqlBuilder columns(String... columns) {
+        int size;
+        if (columns != null && (size = columns.length) > 0) {
+            for (int i = 0; i < size - 1; i++) {
+                var iColumn = columns[i];
+                if (iColumn != null) {
+                    dynamicSql.append(" ").append(iColumn).append(", ");
+                }
+            }
+            var iColumn = columns[size - 1];
+            if (iColumn != null) {
+                dynamicSql.append(" ").append(iColumn).append(" ");
             }
         }
         return this;
@@ -288,6 +313,23 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public DynamicSqlBuilder value(Object... values) {
+        int size;
+        if (values != null && (size = values.length) > 0) {
+            for (int i = 0; i < size - 1; i++) {
+                var iValue = values[i];
+                if (iValue != null) {
+                    dynamicSql.append(iValue).append(", ");
+                }
+            }
+            var iValue = values[size - 1];
+            if (iValue != null) {
+                dynamicSql.append(iValue).append(" ");
+            }
+        }
+        return this;
+    }
+
     public DynamicSqlBuilder from(String table) {
         if (table != null) {
             dynamicSql.append(" FROM ").append(table).append(" ");
@@ -315,13 +357,22 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder eq(String condition1, Object condition2) {
-        dynamicSql.append(condition1).append(" = ").append(condition2);
+    public DynamicSqlBuilder eq(String column, Object value) {
+        dynamicSql.append(column).append(" = ").append(value);
         return this;
     }
 
-    public DynamicSqlBuilder extra(String extra) {
+    public DynamicSqlBuilder extra(Object extra) {
         dynamicSql.append(extra);
+        return this;
+    }
+
+    public DynamicSqlBuilder foreach(String open, String close, Collection collection, String separator) {
+        if (collection != null && !collection.isEmpty()) {
+            dynamicSql.append(open);
+            dynamicSql.append(StringUtils.joining(collection, separator));
+            dynamicSql.append(close);
+        }
         return this;
     }
 
@@ -332,6 +383,11 @@ public class DynamicSqlBuilder {
 
     public DynamicSqlBuilder limit(int limit) {
         dynamicSql.append(" LIMIT ").append(limit).append(" ");
+        return this;
+    }
+
+    public DynamicSqlBuilder orderBy(String column) {
+        dynamicSql.append(" ORDER BY ").append(column);
         return this;
     }
 

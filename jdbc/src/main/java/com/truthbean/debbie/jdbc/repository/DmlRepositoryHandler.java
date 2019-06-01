@@ -77,29 +77,34 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, id) > 0L;
     }
 
-    private ConditionAndValue resolveCondition(EntityInfo<E> entityInfo) {
+    private ConditionAndValue resolveCondition(EntityInfo<E> entityInfo, boolean withNull) {
         List<ColumnInfo> columns = entityInfo.getColumnInfoList();
 
-        var sqlBuilder = DynamicSqlBuilder.sql().eq("1", "1");
+        var sqlBuilder = DynamicSqlBuilder.sql();
         List<Object> columnValues = new LinkedList<>();
 
-        columns.stream()
-                .filter(column -> column.getValue() != null)
-                .forEach(column -> {
-                    columnValues.add(column.getValue());
-                    sqlBuilder.and(column.getColumnName() + " = ?");
-                });
+        columns.forEach(column -> {
+            var value = column.getValue();
+            var bool = withNull || value != null;
+            if (bool) {
+                columnValues.add(value);
+                sqlBuilder.and(column.getColumnName() + " = ?");
+            }
+        });
 
         var conditionAndValue = new ConditionAndValue();
         conditionAndValue.conditionSql = sqlBuilder.builder();
+        if (conditionAndValue.conditionSql.startsWith("and")) {
+            conditionAndValue.conditionSql = conditionAndValue.conditionSql.substring(3);
+        }
         conditionAndValue.conditionValues = columnValues;
         return conditionAndValue;
     }
 
-    public int delete(Connection connection, E condition) throws TransactionException {
+    public int delete(Connection connection, E condition, boolean withNull) throws TransactionException {
         var entityInfo = entityResolver.resolveEntity(condition);
         var table = entityInfo.getTable();
-        var conditionAndValue = resolveCondition(entityInfo);
+        var conditionAndValue = resolveCondition(entityInfo, withNull);
 
         var sqlBuilder = DynamicSqlBuilder.sql().delete().from(table).where().extra(conditionAndValue.conditionSql);
 
@@ -110,7 +115,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public ID insert(Connection connection, E entity) throws TransactionException {
+    public ID insert(Connection connection, E entity, boolean withNull) throws TransactionException {
         var entityInfo = entityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -118,13 +123,15 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         List<String> columnNames = new LinkedList<>();
         List<Object> columnValues = new LinkedList<>();
         List<Object> signs = new LinkedList<>();
-        columns.stream()
-                .filter(column -> column.getValue() != null)
-                .forEach(column -> {
-                    columnValues.add(column.getValue());
-                    columnNames.add(column.getColumnName());
-                    signs.add("?");
-                });
+        columns.forEach(column -> {
+            var value = column.getValue();
+            var bool = withNull || value != null;
+            if (bool) {
+                columnValues.add(value);
+                columnNames.add(column.getColumnName());
+                signs.add("?");
+            }
+        });
 
         var sql = DynamicSqlBuilder.sql().insert().extra(table).leftParenthesis()
                 .columns(columnNames).rightParenthesis().values(signs).builder();
@@ -133,7 +140,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
     }
 
-    public boolean update(Connection connection, E entity) throws TransactionException {
+    public boolean update(Connection connection, E entity, boolean withNull) throws TransactionException {
         var entityInfo = entityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -143,8 +150,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         List<Object> columnValues = new LinkedList<>();
         for (ColumnInfo column : columns) {
             var value = column.getValue();
-            if (!column.isPrimaryKey() && value != null) {
-                columnValues.add(column.getValue());
+            var bool = withNull || value != null;
+            if (!column.isPrimaryKey() && bool) {
+                columnValues.add(value);
                 columnNames.add(column.getColumnName());
             }
         }
@@ -156,7 +164,31 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, columnValues.toArray()) == 1;
     }
 
-    public E selectOne(Connection connection, E condition) {
+    public int update(Connection connection, E entity, boolean withNull, String whereSql) {
+        var entityInfo = entityResolver.resolveEntity(entity);
+        var table = entityInfo.getTable();
+        var columns = entityInfo.getColumnInfoList();
+
+        List<String> columnNames = new LinkedList<>();
+        for (ColumnInfo column : columns) {
+            var value = column.getValue();
+            var bool = withNull || value != null;
+            if (!column.isPrimaryKey() && bool) {
+                columnNames.add(column.getColumnName());
+            }
+        }
+
+        var sql = DynamicSqlBuilder.sql().update(table).set(columnNames);
+        if (whereSql.startsWith("where")) {
+            sql.extra(whereSql);
+        } else {
+            sql.where().extra(whereSql);
+        }
+
+        return super.update(connection, sql.builder());
+    }
+
+    public E selectOne(Connection connection, E condition, boolean withNull) {
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
 
@@ -169,13 +201,13 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var conditionInfo = entityResolver.resolveEntity(condition);
-        var conditionAndValues = resolveCondition(conditionInfo);
+        var conditionAndValues = resolveCondition(conditionInfo, withNull);
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().extra(conditionAndValues.conditionSql).builder();
         return super.queryOne(connection, sql, entityClass, conditionAndValues.conditionValues.toArray());
     }
 
-    private SqlAndArgs<E> preSelect(E condition) {
+    private SqlAndArgs<E> preSelect(E condition, boolean withNull) {
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
 
@@ -192,7 +224,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         if (condition != null) {
             var conditionInfo = entityResolver.resolveEntity(condition);
-            var conditionAndValues = resolveCondition(conditionInfo);
+            var conditionAndValues = resolveCondition(conditionInfo, withNull);
             sqlBuilder.where().extra(conditionAndValues.conditionSql);
             args = conditionAndValues.conditionValues.toArray();
         }
@@ -205,25 +237,25 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
-    public List<E> selectList(Connection connection, E condition) {
-        SqlAndArgs<E> sqlAndArgs = preSelect(condition);
+    public List<E> selectList(Connection connection, E condition, boolean withNull) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(condition, withNull);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Page<E> selectPaged(Connection connection, E condition, PageRequest pageable) {
-        SqlAndArgs<E> sqlAndArgs = preSelect(condition);
+    public Page<E> selectPaged(Connection connection, E condition, boolean withNull, PageRequest pageable) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(condition, withNull);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
 
-        var count = count(connection, condition);
+        var count = count(connection, condition, withNull);
         List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
     public Page<E> selectPaged(Connection connection, PageRequest pageable) {
-        SqlAndArgs<E> sqlAndArgs = preSelect(null);
+        SqlAndArgs<E> sqlAndArgs = preSelect(null, false);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
 
@@ -233,13 +265,13 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     public List<E> selectAll(Connection connection) {
-        SqlAndArgs<E> sqlAndArgs = preSelect(null);
+        SqlAndArgs<E> sqlAndArgs = preSelect(null, false);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Long count(Connection connection, E condition) {
+    public Long count(Connection connection, E condition, boolean withNull) {
         var entityInfo = getEntityInfo();
 
         var table = entityInfo.getTable();
@@ -249,7 +281,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         if (condition != null) {
             var conditionInfo = entityResolver.resolveEntity(condition);
-            var conditionAndValues = resolveCondition(conditionInfo);
+            var conditionAndValues = resolveCondition(conditionInfo, withNull);
             sqlBuilder.where().extra(conditionAndValues.conditionSql);
             args = conditionAndValues.conditionValues.toArray();
         }

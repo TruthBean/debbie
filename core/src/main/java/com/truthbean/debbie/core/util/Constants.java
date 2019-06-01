@@ -59,4 +59,6 @@ public interface Constants {
 
     @SuppressWarnings("rawtypes")
     Class[] EMPTY_CLASS_ARRAY = {};
+
+    String CONFIG_LOCATION_DELIMITERS = ",; \t\n";
 }
