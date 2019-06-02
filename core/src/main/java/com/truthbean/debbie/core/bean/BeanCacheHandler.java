@@ -26,9 +26,9 @@ final class BeanCacheHandler {
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
-    protected static void register(Class<?> beanClass) {
+    protected static <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
+        Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.debug("register class " + beanClass.getName());
-        var beanClassInfo = new DebbieBeanInfo<>(beanClass);
 
         BEAN_CLASSES.put(beanClass, beanClassInfo);
         CLASS_INFO_SET.add(beanClassInfo);
@@ -61,7 +61,11 @@ final class BeanCacheHandler {
                 BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
             });
         }
+    }
 
+    protected static void register(Class<?> beanClass) {
+        var beanClassInfo = new DebbieBeanInfo<>(beanClass);
+        register(beanClassInfo);
     }
 
     protected static void register(Class<? extends Annotation> classAnnotation, String packageName) {
@@ -160,6 +164,10 @@ final class BeanCacheHandler {
         });
 
         return classInfoSet;
+    }
+
+    protected static Set<Class<? extends Annotation>> getBeanAnnotations() {
+        return Collections.unmodifiableSet(CLASS_ANNOTATION);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanCacheHandler.class);

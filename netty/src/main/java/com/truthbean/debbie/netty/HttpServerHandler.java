@@ -1,5 +1,6 @@
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
@@ -40,9 +41,12 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private SessionManager sessionManager;
 
-    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager) {
+    private BeanFactoryHandler beanFactoryHandler;
+
+    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, BeanFactoryHandler beanFactoryHandler) {
         this.configuration = configuration;
         this.sessionManager = sessionManager;
+        this.beanFactoryHandler = beanFactoryHandler;
     }
 
     @Override
@@ -94,7 +98,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
         RouterResponse routerResponse = routerInfo.getResponse();
         if (handleFilter(routerRequest, routerResponse, ctx)) {
-            MvcRouterHandler.handleRouter(routerInfo);
+            MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
             routerResponse = routerInfo.getResponse();
             doResponse(routerResponse, ctx);
         }
@@ -104,7 +108,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
-            var filter = new RouterFilterHandler(filterInfo);
+            var filter = new RouterFilterHandler(filterInfo, beanFactoryHandler);
             var result = filter.preRouter(request, response);
             if (result != null && !result) {
                 doResponse(response, ctx);
@@ -118,7 +122,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
-            var filter = new RouterFilterHandler(filterInfo);
+            var filter = new RouterFilterHandler(filterInfo, beanFactoryHandler);
             filter.postRouter(request, response);
         }
     }

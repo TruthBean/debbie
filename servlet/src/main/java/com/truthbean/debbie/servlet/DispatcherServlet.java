@@ -1,5 +1,6 @@
 package com.truthbean.debbie.servlet;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
@@ -21,10 +22,12 @@ import java.io.IOException;
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = -8253171030384092538L;
-    private ServletConfiguration configuration;
+    private final ServletConfiguration configuration;
+    private final BeanFactoryHandler handler;
 
-    public DispatcherServlet(ServletConfiguration configuration) {
+    public DispatcherServlet(ServletConfiguration configuration, BeanFactoryHandler handler) {
         this.configuration = configuration;
+        this.handler = handler;
     }
 
     @Override
@@ -75,7 +78,7 @@ public class DispatcherServlet extends HttpServlet {
 
         var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
         LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
-        RouterResponse response = MvcRouterHandler.handleRouter(routerInfo);
+        RouterResponse response = MvcRouterHandler.handleRouter(routerInfo, handler);
 
         // handle response
         ServletResponseHandler handler = new ServletResponseHandler(req, resp);

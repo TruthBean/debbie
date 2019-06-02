@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.BeanFactory;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 
@@ -17,11 +17,12 @@ public class RouterFilterHandler {
 
     private RouterFilter routerFilter;
 
-    public RouterFilterHandler(RouterFilterInfo routerFilterInfo) {
+
+    public RouterFilterHandler(RouterFilterInfo routerFilterInfo, BeanFactoryHandler handler) {
         this.filterInfo = routerFilterInfo;
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
-        routerFilter = BeanFactory.factory(routerFilterType);
+        routerFilter = handler.factory(routerFilterType);
     }
 
     public Boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {

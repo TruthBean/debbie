@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanFactory;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
@@ -21,7 +21,7 @@ public class RouterInvoker {
         this.routerInfo = routerInfo;
     }
 
-    public Object action() {
+    public Object action(BeanFactoryHandler beanFactoryHandler) {
         if (routerInfo == null) {
             return null;
         }
@@ -45,7 +45,7 @@ public class RouterInvoker {
 
         var type = routerInfo.getRouterClass();
         var method = routerInfo.getMethod();
-        Object any = BeanFactory.factoryAndInvokeMethod(type, method, values);
+        Object any = beanFactoryHandler.factoryAndInvokeMethod(type, method, values);
         /*if (any == null) {
             throw new NullPointerException(method.getName() + " return null");
         }*/

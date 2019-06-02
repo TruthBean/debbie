@@ -1,5 +1,6 @@
 package com.truthbean.debbie.servlet;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
@@ -21,13 +22,22 @@ import java.util.Set;
  */
 public class ServletContextHandler {
 
-    private ServletContextHandler(Set<Class<?>> beans) {
-        new BeanInitialization().init(beans);
+    private BeanFactoryHandler beanFactoryHandler;
+
+    public ServletContextHandler(ServletContext servletContext, final Set<Class<?>> classes) {
+        setServletConfiguration();
+
+        servletConfiguration.addScanClasses(classes);
+        Set<Class<?>> beanClasses = servletConfiguration.getTargetClasses();
+        new BeanInitialization().init(beanClasses);
+        this.beanFactoryHandler = new BeanFactoryHandler();
+
+        handleServletContext(servletContext);
     }
 
-    private static ServletConfiguration servletConfiguration;
+    private ServletConfiguration servletConfiguration;
 
-    private static void setServletConfiguration() {
+    private void setServletConfiguration() {
         if (ServletProperties.isPropertiesEmpty()) {
             // TODO 提供properties无法加载的方案
 
@@ -36,23 +46,13 @@ public class ServletContextHandler {
         }
     }
 
-    private static Set<Class<?>> handleServletContextAndScanClasses
-            (ServletContext servletContext, Set<Class<?>> classes) {
-
-        DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration);
+    private void handleServletContext(ServletContext servletContext) {
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration, beanFactoryHandler);
 
         // servlet <url-pattern> should start with / or * and cannot contain **
         var dispatcherMapping = servletConfiguration.getDispatcherMapping().replace("**", "*");
         servletContext.addServlet("dispatcherHandler", dispatcherServlet)
                 .addMapping(dispatcherMapping);
-
-        servletConfiguration.addScanClasses(classes);
-        return servletConfiguration.getTargetClasses();
-    }
-
-    public static ServletContextHandler loadPropertiesAndHandle(ServletContext servletContext, Set<Class<?>> classes) {
-        setServletConfiguration();
-        return new ServletContextHandler(handleServletContextAndScanClasses(servletContext, classes));
     }
 
     public void registerRouter() {
@@ -85,7 +85,7 @@ public class ServletContextHandler {
 
         Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
         filters.forEach(filter -> {
-            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilterType());
+            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilterType(), beanFactoryHandler);
             servletContext.addFilter(filter.getName(), filterWrapper)
                     .addMappingForUrlPatterns(dispatcherTypes, true, filter.getUrlPatterns());
         });

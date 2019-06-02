@@ -25,16 +25,16 @@ public class BeanInvoker<Bean> {
     private Bean bean;
     private ClassInfo classInfo;
 
-    public BeanInvoker(Class<Bean> beanClass) {
+    public BeanInvoker(Class<Bean> beanClass, BeanFactoryHandler beanFactoryHandler) {
         this.beanClass = beanClass;
         var methods = BeanCacheHandler.getBeanMethods(beanClass);
         this.classInfo = BeanCacheHandler.getRegisterBean(beanClass);
         methods.forEach(method -> BEAN_METHODS.put(method.getName(), method));
-        createBean();
+        createBean(beanFactoryHandler);
     }
 
     // TODO cache
-    private void createBean() {
+    private void createBean(BeanFactoryHandler beanFactoryHandler) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = classInfo.getConstructors();
@@ -59,7 +59,7 @@ public class BeanInvoker<Bean> {
                             Parameter parameter = parameters[i];
                             BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                             if (annotation != null) {
-                                params[i] = BeanFactory.getParameterBean(parameter);
+                                params[i] = beanFactoryHandler.getParameterBean(parameter);
                             } else {
                                 break;
                             }

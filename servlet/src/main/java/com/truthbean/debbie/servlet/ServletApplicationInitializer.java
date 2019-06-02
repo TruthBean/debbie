@@ -20,7 +20,7 @@ public class ServletApplicationInitializer implements ServletContainerInitialize
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext ctx) throws ServletException {
         LOGGER.info("ServletContainerInitializer onStartup ...");
-        var handler = ServletContextHandler.loadPropertiesAndHandle(ctx, classes);
+        var handler = new ServletContextHandler(ctx, classes);
         handler.registerRouter();
         handler.registerFilter(ctx);
     }

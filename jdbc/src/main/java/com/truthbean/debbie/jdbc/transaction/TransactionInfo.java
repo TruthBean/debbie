@@ -100,7 +100,7 @@ public class TransactionInfo implements Closeable {
 
         try {
             if (!connection.isReadOnly()) {
-                LOGGER.debug("Connection " + connection.hashCode() + "rollback ...");
+                LOGGER.debug("Connection " + connection.hashCode() + " rollback ...");
                 connection.rollback();
             }
         } catch (SQLException e) {

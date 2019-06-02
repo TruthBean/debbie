@@ -2,6 +2,7 @@ package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
@@ -35,8 +36,8 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
 
     @Override
     public DebbieApplication factory(UndertowConfiguration configuration) {
-        BeanInitialization beanInitialization = new BeanInitialization();
-        beanInitialization.init(configuration.getTargetClasses());
+        BeanFactoryHandler handler = new BeanFactoryHandler();
+
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
 
@@ -50,9 +51,9 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
 
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
-        HttpHandler next = new DispatcherHttpHandler(configuration);
+        HttpHandler next = new DispatcherHttpHandler(configuration, handler);
         for (RouterFilterInfo filter : filters) {
-            next = new HttpHandlerFilter(next, filter);
+            next = new HttpHandlerFilter(next, filter, handler);
         }
 
         // set as next handler your root handler

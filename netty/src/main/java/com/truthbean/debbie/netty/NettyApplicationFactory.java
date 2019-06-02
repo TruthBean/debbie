@@ -2,6 +2,7 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
@@ -29,14 +30,15 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
 
     @Override
     public DebbieApplication factory(NettyConfiguration configuration) {
-        new BeanInitialization().init(configuration.getTargetClasses());
+        BeanFactoryHandler handler = new BeanFactoryHandler();
+
         MvcRouterRegister.registerRouter(configuration);
         RouterFilterManager.registerFilter(configuration);
         final SessionManager sessionManager = new SessionManager();
         return new DebbieApplication() {
             @Override
             public void start(String... args) {
-                run(configuration, sessionManager);
+                run(configuration, sessionManager, handler);
                 LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 
@@ -51,7 +53,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-    private void run(NettyConfiguration configuration, SessionManager sessionManager) {
+    private void run(NettyConfiguration configuration, SessionManager sessionManager, BeanFactoryHandler beanFactoryHandler) {
 
         try {
             // (2)
@@ -60,7 +62,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory<NettyCon
                     // (3)
                     .channel(NioServerSocketChannel.class)
                     // (4))
-                    .childHandler(new HttpChannelInitializer(configuration, sessionManager))
+                    .childHandler(new HttpChannelInitializer(configuration, sessionManager, beanFactoryHandler))
                     // (5)
                     .option(ChannelOption.SO_BACKLOG, 1024)
                     // (6)

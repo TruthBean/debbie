@@ -1,5 +1,6 @@
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -14,8 +15,9 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final HttpServerHandler httpServerHandler;
 
-    public HttpChannelInitializer(NettyConfiguration configuration, SessionManager sessionManager) {
-        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager);
+    public HttpChannelInitializer(NettyConfiguration configuration, SessionManager sessionManager,
+                                  BeanFactoryHandler beanFactoryHandler) {
+        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager, beanFactoryHandler);
     }
 
     @Override

@@ -22,6 +22,10 @@ public class BeanInitialization {
         BeanCacheHandler.register(beanClass);
     }
 
+    public void init(DebbieBeanInfo<?> beanInfo) {
+        BeanCacheHandler.register(beanInfo);
+    }
+
     public void init(Set<Class<?>> beanClasses) {
         if (beanClasses != null && !beanClasses.isEmpty()) {
             beanClasses.forEach(this::init);
@@ -50,6 +54,10 @@ public class BeanInitialization {
 
     public Set<DebbieBeanInfo> getBeanByAbstractSuper(Class<?> abstractType) {
         return BeanCacheHandler.getBeansByInterface(abstractType);
+    }
+
+    public Set<Class<? extends Annotation>> getBeanAnnotations() {
+        return BeanCacheHandler.getBeanAnnotations();
     }
 
     public ClassInfo getRegisterBean(Class<?> bean) {

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.io.MediaType;
 import com.truthbean.debbie.core.io.MediaTypeInfo;
 import com.truthbean.debbie.core.net.uri.UriUtils;
@@ -209,7 +210,7 @@ public class MvcRouterHandler {
         return matchUrl;
     }
 
-    public static RouterResponse handleRouter(RouterInfo routerInfo) {
+    public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryHandler handler) {
         RouterResponse routerResponse = routerInfo.getResponse();
 
         routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
@@ -222,7 +223,7 @@ public class MvcRouterHandler {
         }
         try {
             RouterInvoker invoker = new RouterInvoker(routerInfo);
-            responseValue = invoker.action();
+            responseValue = invoker.action(handler);
         } catch (Exception e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);

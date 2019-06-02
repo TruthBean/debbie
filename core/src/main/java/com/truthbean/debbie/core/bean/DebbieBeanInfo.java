@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author TruthBean
@@ -18,6 +19,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private String beanName;
     private BeanInjectType injectType;
 
+    private BeanFactory<Bean> beanFactory;
     private Bean bean;
 
     public DebbieBeanInfo(Class<Bean> clazz) {
@@ -27,8 +29,17 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
             Class<? extends Annotation> key = entry.getKey();
             Annotation value = entry.getValue();
-            if (resolveBeanComponent(key, value)) break;
+            if (resolveBeanComponent(key, value))
+                break;
         }
+    }
+
+    public void setBeanFactory(BeanFactory<Bean> beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public BeanFactory<Bean> getBeanFactory() {
+        return beanFactory;
     }
 
     private boolean resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
@@ -109,15 +120,19 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DebbieBeanInfo)) return false;
-        DebbieBeanInfo that = (DebbieBeanInfo) o;
-        return super.equals(that);
+        if (this == o)
+            return true;
+        if (!(o instanceof DebbieBeanInfo))
+            return false;
+        if (!super.equals(o))
+            return false;
+        DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
+        return Objects.equals(getBeanFactory(), beanInfo.getBeanFactory());
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hash(super.hashCode(), getBeanFactory());
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);

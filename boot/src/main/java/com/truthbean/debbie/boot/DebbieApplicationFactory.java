@@ -1,5 +1,6 @@
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.properties.BaseProperties;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
@@ -44,6 +45,8 @@ public class DebbieApplicationFactory {
 
     public static DebbieApplication factory() {
         var configuration = DebbieConfigurationFactory.factoryServer();
+        BeanInitialization beanInitialization = new BeanInitialization();
+        beanInitialization.init(configuration.getTargetClasses());
         return application.factory(configuration);
     }
 }

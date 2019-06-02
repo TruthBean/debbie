@@ -1,13 +1,12 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.core.bean.BeanFactory;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.bean.BeanInitialization;
 import com.truthbean.debbie.core.util.StringUtils;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.pool.DataSourcePoolProperties;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -31,7 +30,9 @@ public class HikariProperties extends DataSourceProperties implements DataSource
     public HikariProperties() {
         BeanInitialization initialization = new BeanInitialization();
         initialization.init(HikariConfiguration.class);
-        configuration = BeanFactory.factory(HikariConfiguration.class);
+        var handler = new BeanFactoryHandler();
+        handler.refreshBeans();
+        configuration = handler.factory(HikariConfiguration.class);
 
         Map<String, String> matchedKey = getMatchedKey(HIKARI_X_KEY_PREFIX);
         matchedKey.forEach((key, value) -> {

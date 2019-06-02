@@ -1,6 +1,6 @@
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.core.bean.BeanFactory;
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.undertow.UndertowResponseHandler;
@@ -11,7 +11,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
 
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -23,9 +22,12 @@ public class HttpHandlerFilter implements HttpHandler {
     private final HttpHandler next;
     private final RouterFilterInfo filterInfo;
 
-    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo) {
+    private BeanFactoryHandler beanFactoryHandler;
+
+    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo, BeanFactoryHandler beanFactoryHandler) {
         this.next = next;
         this.filterInfo = filterInfo;
+        this.beanFactoryHandler = beanFactoryHandler;
     }
 
     private static final AttachmentKey<UndertowRouterRequest> request = AttachmentKey.create(UndertowRouterRequest.class);
@@ -48,7 +50,7 @@ public class HttpHandlerFilter implements HttpHandler {
         List<String> rawUrlPattern = filterInfo.getRawUrlPattern();
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
-        RouterFilter routerFilter = BeanFactory.factory(routerFilterType);
+        RouterFilter routerFilter = beanFactoryHandler.factory(routerFilterType);
 
         boolean filter = false;
 
