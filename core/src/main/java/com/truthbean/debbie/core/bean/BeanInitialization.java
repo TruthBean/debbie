@@ -60,7 +60,7 @@ public class BeanInitialization {
         return BeanCacheHandler.getBeanAnnotations();
     }
 
-    public ClassInfo getRegisterBean(Class<?> bean) {
+    public <Bean> DebbieBeanInfo<Bean> getRegisteredBean(Class<Bean> bean) {
         return BeanCacheHandler.getRegisterBean(bean);
     }
 

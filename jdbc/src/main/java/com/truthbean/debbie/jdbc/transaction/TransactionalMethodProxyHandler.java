@@ -1,5 +1,7 @@
 package com.truthbean.debbie.jdbc.transaction;
 
+import com.truthbean.debbie.core.bean.BeanInitialization;
+import com.truthbean.debbie.core.bean.DebbieBeanInfo;
 import com.truthbean.debbie.core.proxy.MethodProxyHandler;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
@@ -20,6 +22,18 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     private JdbcTransactional classJdbcTransactional;
 
+    private int order;
+
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    @Override
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public void setMethodAnnotation(JdbcTransactional methodAnnotation) {
         this.jdbcTransactional = methodAnnotation;
@@ -37,8 +51,9 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void before() {
-        LOGGER.debug("runing before method (" + transactionInfo.getMethod() + ") invoke ..");
-        DataSourceFactory factory = DataSourceFactory.factory();
+        LOGGER.debug("running before method (" + transactionInfo.getMethod() + ") invoke ..");
+        DebbieBeanInfo<DataSourceFactory> registeredBean = new BeanInitialization().getRegisteredBean(DataSourceFactory.class);
+        DataSourceFactory factory = registeredBean.getBean();
         transactionInfo.setConnection(factory.getConnection());
         if (jdbcTransactional == null && classJdbcTransactional == null) {
             throw new MethodNoJdbcTransactionalException();
@@ -54,13 +69,13 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void after() {
-        LOGGER.debug("runing after method (" + transactionInfo.getMethod() + ") invoke ..");
+        LOGGER.debug("running after method (" + transactionInfo.getMethod() + ") invoke ..");
         transactionInfo.commit();
     }
 
     @Override
     public void whenExceptionCatched(Throwable e) throws Throwable {
-        LOGGER.debug("runing when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
+        LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
         if (jdbcTransactional.forceCommit()) {
             LOGGER.debug("force commit ..");
             transactionInfo.commit();
@@ -78,7 +93,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void finallyRun() {
-        LOGGER.debug("runing when method (" + transactionInfo.getMethod() + ") invoke throw exception and run to finally ..");
+        LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoke throw exception and run to finally ..");
         transactionInfo.close();
         TransactionManager.remove();
     }

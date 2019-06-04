@@ -18,7 +18,7 @@ import java.util.List;
 public class EntityResolver {
     private BeanInitialization initialization = new BeanInitialization();
     public <E> EntityInfo<E> resolveEntity(E entity) {
-        var classInfo = initialization.getRegisterBean(entity.getClass());
+        var classInfo = initialization.getRegisteredBean(entity.getClass());
         var table = getTableName(classInfo);
         var columns = resolveClassInfoAndValue(classInfo, entity);
         var entityInfo = new EntityInfo<E>();
@@ -34,7 +34,7 @@ public class EntityResolver {
     }
 
     public <E> EntityInfo<E> resolveEntityClass(Class<E> entityClass) {
-        var classInfo = initialization.getRegisterBean(entityClass);
+        var classInfo = initialization.getRegisteredBean(entityClass);
         var table = getTableName(classInfo);
         var columns = resolveClassInfo(classInfo);
         var entityInfo = new EntityInfo<E>();

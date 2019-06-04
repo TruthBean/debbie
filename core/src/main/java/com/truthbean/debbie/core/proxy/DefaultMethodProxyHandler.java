@@ -3,12 +3,30 @@ package com.truthbean.debbie.core.proxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy> {
+import java.lang.reflect.Method;
+
+public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy> {
 
     private String methodName;
 
-    DefaultMethodProxyHandler(String methodName) {
-        this.methodName = methodName;
+    private int order;
+
+    public DefaultMethodProxyHandler() {
+    }
+
+    @Override
+    public void setMethod(Method method) {
+        methodName = method.getName();
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    @Override
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     @Override

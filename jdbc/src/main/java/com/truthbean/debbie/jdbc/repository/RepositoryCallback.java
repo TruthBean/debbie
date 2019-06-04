@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.jdbc.datasource.connection.TransactionCallable;
+import com.truthbean.debbie.jdbc.transaction.TransactionCallable;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import org.slf4j.Logger;

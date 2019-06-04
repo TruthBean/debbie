@@ -1,0 +1,1 @@
+com.truthbean.debbie.jdbc.annotation.JdbcTransactional --> com.truthbean.debbie.jdbc.transaction.TransactionalMethodProxyHandler

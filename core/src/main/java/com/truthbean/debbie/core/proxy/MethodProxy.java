@@ -7,5 +7,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface MethodProxy {
 
-    Class<? extends MethodProxyHandler> proxyHandler();
+    int order();
+
+    Class<? extends MethodProxyHandler> proxyHandler() default DefaultMethodProxyHandler.class;
 }

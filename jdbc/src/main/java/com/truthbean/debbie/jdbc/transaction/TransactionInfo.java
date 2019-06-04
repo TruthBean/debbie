@@ -7,6 +7,8 @@ import java.io.Closeable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -20,6 +22,8 @@ public class TransactionInfo implements Closeable {
     private Method method;
 
     private Connection connection;
+
+    private final Map<String, Object> resources = new LinkedHashMap<>();
 
     public TransactionInfo() {
         this.id = UUID.randomUUID().toString();
@@ -47,6 +51,18 @@ public class TransactionInfo implements Closeable {
 
     public void setConnection(Connection connection) {
         this.connection = connection;
+    }
+
+    public void bindResource(String key, Object value) {
+        resources.put(key, value);
+    }
+
+    public void clearResource() {
+        resources.clear();
+    }
+
+    public Object getResource(String key) {
+        return resources.get(key);
     }
 
     public Connection setAutoCommit(boolean autoCommit) {
@@ -110,6 +126,7 @@ public class TransactionInfo implements Closeable {
 
     @Override
     public void close() {
+        resources.clear();
         if (connection == null) {
             LOGGER.error("method (" + method + ") not bind connection is null. ");
             return;
@@ -122,7 +139,7 @@ public class TransactionInfo implements Closeable {
                 connection = null;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("close connection " + connection.hashCode() + " error \n", e);
         }
     }
 

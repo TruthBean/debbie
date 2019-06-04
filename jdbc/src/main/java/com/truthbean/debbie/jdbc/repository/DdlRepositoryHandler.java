@@ -48,7 +48,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public <E> void createTable(Connection connection, Class<E> entity) throws TransactionException {
         BeanInitialization beanInitialization = new BeanInitialization();
-        var classInfo = beanInitialization.getRegisterBean(entity);
+        var classInfo = beanInitialization.getRegisteredBean(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();

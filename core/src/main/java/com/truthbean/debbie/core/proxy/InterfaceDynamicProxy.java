@@ -1,5 +1,6 @@
 package com.truthbean.debbie.core.proxy;
 
+import com.truthbean.debbie.core.bean.BeanFactoryHandler;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +16,11 @@ import java.lang.reflect.Proxy;
 public class InterfaceDynamicProxy {
     private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceDynamicProxy.class);
 
-    public static <T, K extends T> T doJdkProxy(Class<T> targetInterface, K target) {
+    public static <T, K extends T> T doJdkProxy(BeanFactoryHandler handler, Class<T> targetInterface, K target) {
         var targetClass = target.getClass();
         var classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         var interfaces = new Class[]{targetInterface};
-        InvocationHandler invocationHandler = new ProxyInvocationHandler<>(target);
+        InvocationHandler invocationHandler = new ProxyInvocationHandler<>(target, handler);
 
         var proxyInstance = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
         var proxyClass = proxyInstance.getClass();

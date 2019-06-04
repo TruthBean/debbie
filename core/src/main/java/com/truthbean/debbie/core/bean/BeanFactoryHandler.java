@@ -59,6 +59,10 @@ public class BeanFactoryHandler {
         });
     }
 
+    public void destory(DebbieBeanInfo beanInfo) {
+        beanServiceInfoSet.remove(beanInfo);
+    }
+
     public <T> T factory(String serviceName) {
         var list = beanServiceInfoSet.stream().filter(beanServiceInfo -> serviceName.equals(beanServiceInfo.getServiceName())).toArray(DebbieBeanInfo[]::new);
 
@@ -260,7 +264,7 @@ public class BeanFactoryHandler {
         K target = beanBeanInvoker.getBean();
         var classInfo = beanBeanInvoker.getClassInfo();
         resolveDependentBean(target, classInfo);
-        return InterfaceDynamicProxy.doJdkProxy(interfaceType, target);
+        return InterfaceDynamicProxy.doJdkProxy(this, interfaceType, target);
     }
 
 }

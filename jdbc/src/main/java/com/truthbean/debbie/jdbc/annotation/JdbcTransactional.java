@@ -17,7 +17,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@MethodProxy(proxyHandler = TransactionalMethodProxyHandler.class)
+@MethodProxy(order = 10)
 public @interface JdbcTransactional {
 
     boolean readonly() default true;

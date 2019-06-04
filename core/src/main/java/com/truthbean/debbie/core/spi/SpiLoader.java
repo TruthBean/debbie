@@ -2,12 +2,14 @@ package com.truthbean.debbie.core.spi;
 
 import com.truthbean.debbie.core.io.StreamHelper;
 import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.core.proxy.MethodProxyHandler;
 import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.*;
 
@@ -99,10 +101,10 @@ public class SpiLoader {
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());
                     List<String> strings = StreamHelper.readFile(file);
-                    resolveClass(strings, result, classLoader);
+                    resolvePropertiesClass(strings, result, classLoader);
                 } else if ("jar".equals(protocol)) {
-                    List<String> strings = StreamHelper.readFileInJar(spi, url, classLoader);
-                    resolveClass(strings, result, classLoader);
+                    List<String> strings = StreamHelper.readFileInJar(url);
+                    resolvePropertiesClass(strings, result, classLoader);
                 }
             }
         } catch (IOException e) {
@@ -112,7 +114,7 @@ public class SpiLoader {
         return result;
     }
 
-    private static <P extends BaseProperties> void resolveClass
+    private static <P extends BaseProperties> void resolvePropertiesClass
             (List<String> strings, Map<Class<P>, Class> map, ClassLoader classLoader) {
         for (String string : strings) {
             String[] split = string.split(" --> ");
@@ -133,6 +135,63 @@ public class SpiLoader {
             }
             if (propertiesClass != null && configClass != null) {
                 map.put(propertiesClass, configClass);
+            }
+        }
+    }
+
+    public static <A extends Annotation> Map<Class<A>, List<Class<? extends MethodProxyHandler>>> loadProxyHandler(ClassLoader classLoader) {
+        Map<Class<A>, List<Class<? extends MethodProxyHandler>>> result = new HashMap<>();
+
+        var spi = META_INF + "/" + SPI + "/debbie-proxy-handler";
+        try {
+            Enumeration<URL> resources = classLoader.getResources(spi);
+            while (resources.hasMoreElements()) {
+                var url = resources.nextElement();
+                LOGGER.debug(url.toString());
+                var protocol = url.getProtocol();
+                if ("file".equals(protocol)) {
+                    var file = new File(url.getFile());
+                    List<String> strings = StreamHelper.readFile(file);
+                    resolveProxyHandlerClass(strings, result, classLoader);
+                } else if ("jar".equals(protocol)) {
+                    List<String> strings = StreamHelper.readFileInJar(url);
+                    resolveProxyHandlerClass(strings, result, classLoader);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    private static <A extends Annotation> void resolveProxyHandlerClass
+            (List<String> strings, Map<Class<A>, List<Class<? extends MethodProxyHandler>>> map, ClassLoader classLoader) {
+        for (String string : strings) {
+            String[] split = string.split(" --> ");
+            Class<A> annotationType = null;
+            try {
+                annotationType = (Class<A>) classLoader.loadClass(split[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Class<? extends MethodProxyHandler> handlerClass = null;
+            if (annotationType != null) {
+                try {
+                    handlerClass = (Class<? extends MethodProxyHandler>) classLoader.loadClass(split[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (handlerClass != null) {
+                    var classes = map.get(annotationType);
+                    if (classes == null) {
+                        classes = new ArrayList<>();
+                    }
+                    classes.add(handlerClass);
+                    map.put(annotationType, classes);
+                }
+
             }
         }
     }

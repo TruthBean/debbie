@@ -50,14 +50,17 @@ public final class StreamHelper {
         return result;
     }
 
-    public static List<String> readFileInJar(String filePartPath, URL url, ClassLoader classLoader) {
+    public static List<String> readFileInJar(URL url) {
         List<String> result = new ArrayList<>();
         try {
-            List<JarEntry> filesInJar = getFilesInJar(url);
-            for (JarEntry innerPath : filesInJar) {
-                readFileInJar(innerPath.getName(), filePartPath, classLoader, result);
+            InputStream inputStream = url.openConnection().getInputStream();
+            BufferedReader bufferedReader = toBufferedReader(inputStream);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (!line.isBlank()) {
+                    result.add(line.trim());
+                }
             }
-
         } catch (IOException e) {
             LOGGER.error("", e);
         }
