@@ -40,9 +40,8 @@ public class SpiLoader {
     public static <S> Set<S> loadProviders(Class<S> serviceClass) {
         Set<S> result = new HashSet<>();
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass);
-        Iterator<S> search = serviceLoader.iterator();
-        while (search.hasNext()) {
-            result.add(search.next());
+        for (S s : serviceLoader) {
+            result.add(s);
         }
         return result;
     }
@@ -50,10 +49,10 @@ public class SpiLoader {
     public static <S> Set<S> loadProviders(Class<S> serviceClass, ClassLoader classLoader) {
         Set<S> result = new HashSet<>();
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
-        Iterator<S> search = serviceLoader.iterator();
-        if (search.hasNext()) {
-            result.add(search.next());
-        } else {
+        for (S s : serviceLoader) {
+            result.add(s);
+        }
+        if (result.isEmpty()) {
             throw new NoServiceProviderException(serviceClass.getName());
         }
         return result;

@@ -100,7 +100,7 @@ public class TransactionInfo implements Closeable {
 
         try {
             if (!connection.isReadOnly() && !connection.getAutoCommit()) {
-                LOGGER.debug("Connection " + connection.hashCode() + " commit ...");
+                LOGGER.debug("Connection(" + connection + ") " + connection.hashCode() + " commit ...");
                 connection.commit();
             }
         } catch (SQLException e) {
@@ -116,7 +116,7 @@ public class TransactionInfo implements Closeable {
 
         try {
             if (!connection.isReadOnly()) {
-                LOGGER.debug("Connection " + connection.hashCode() + " rollback ...");
+                LOGGER.debug("Connection(" + connection + ") " + connection.hashCode() + " rollback ...");
                 connection.rollback();
             }
         } catch (SQLException e) {
@@ -132,21 +132,23 @@ public class TransactionInfo implements Closeable {
             return;
         }
 
-        LOGGER.debug("close connection " + connection.hashCode() + " and remove it. ");
+        LOGGER.debug("close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
         try {
             if (!connection.isClosed()) {
                 connection.close();
                 connection = null;
             }
         } catch (SQLException e) {
-            LOGGER.error("close connection " + connection.hashCode() + " error \n", e);
+            LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
         }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TransactionInfo)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof TransactionInfo))
+            return false;
         TransactionInfo that = (TransactionInfo) o;
         return Objects.equals(getId(), that.getId());
     }

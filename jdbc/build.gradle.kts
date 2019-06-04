@@ -10,6 +10,8 @@ dependencies {
     val mysqlVersion: String by project
     // testImplementation("mysql:mysql-connector-java:$mysqlVersion")
 
+    testCompile(project(":debbie-hikari"))
+    
     val mariadbVersion: String by project
     testCompile("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
 }
