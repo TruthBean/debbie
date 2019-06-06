@@ -1,5 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
@@ -14,8 +16,11 @@ import java.util.concurrent.Future;
  * @author TruthBean
  * @since 0.0.1
  */
+@BeanComponent
 public class SurnameRepository {
-    private DataSourceFactory factory = DataSourceFactory.factory();
+
+    @BeanInject
+    private DataSourceFactory factory;
     private DmlRepositoryHandler<Surname, Long> repositoryHandler =
             DmlRepositoryHandler.of(Surname.class, Long.class);
 

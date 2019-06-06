@@ -1,7 +1,7 @@
 package com.truthbean.debbie.jdbc.annotation;
 
-import com.truthbean.debbie.core.bean.BeanInjectType;
-import com.truthbean.debbie.core.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.BeanComponent;
 
 import java.lang.annotation.*;
 
@@ -17,5 +17,5 @@ public @interface SqlRepository {
 
     String value() default "";
 
-    BeanInjectType type() default BeanInjectType.NO_LIMIT;
+    BeanType type() default BeanType.NO_LIMIT;
 }

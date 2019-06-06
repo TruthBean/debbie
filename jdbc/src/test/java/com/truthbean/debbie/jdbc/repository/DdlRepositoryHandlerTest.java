@@ -1,6 +1,8 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;
@@ -12,14 +14,16 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 
 public class DdlRepositoryHandlerTest {
-
-    private BeanInitialization beanInitialization = new BeanInitialization();
-
     private static DdlRepositoryHandler ddlRepositoryHandler;
     private static DataSourceFactory factory;
 
     @BeforeAll
     public static void before() {
+        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory();
+        applicationFactory.config();
+        applicationFactory.callStarter();
+
+        BeanFactoryHandler beanFactoryHandler = applicationFactory.getBeanFactoryHandler();
         var config = DataSourceProperties.toConfiguration();
         factory = new DefaultDataSourceFactory();
         factory.factory(config);
@@ -79,7 +83,8 @@ public class DdlRepositoryHandlerTest {
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getConnection();
             ddlRepositoryHandler.userDatabase(connection, "test");
-            beanInitialization.init(Surname.class);
+            // beanInitialization.init(Surname.class);
+            // beanFactoryHandler.refreshBeans();
             ddlRepositoryHandler.createTable(connection, Surname.class);
             return ddlRepositoryHandler.showTables(connection);
         });

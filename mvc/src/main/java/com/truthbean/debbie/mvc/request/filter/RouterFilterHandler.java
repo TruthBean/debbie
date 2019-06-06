@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 

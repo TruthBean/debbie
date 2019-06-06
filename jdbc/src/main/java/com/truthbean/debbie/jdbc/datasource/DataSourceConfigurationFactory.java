@@ -1,8 +1,8 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.core.spi.SpiLoader;
-import com.truthbean.debbie.jdbc.datasource.pool.DataSourcePoolProperties;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +15,17 @@ import java.util.Set;
  */
 public class DataSourceConfigurationFactory {
 
-    public static <Configuration extends DataSourceConfiguration> Configuration factory() {
-        var classLoader = ClassLoaderUtils.getClassLoader(DataSourceConfigurationFactory.class);
-        Set<DataSourcePoolProperties> poolPropertiesSet = SpiLoader.loadProviders(DataSourcePoolProperties.class, classLoader);
-        for (DataSourcePoolProperties properties : poolPropertiesSet) {
-            LOGGER.debug("DataSourcePoolProperties : " + properties.getClass());
-            if (properties.getClass() != DefaultDataSourcePoolProperties.class) {
-                return (Configuration) properties.loadConfiguration();
+    public static <Configuration extends DataSourceConfiguration>
+    Configuration factory(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        Set<DataSourceConfiguration> configurations = configurationFactory.getConfigurations(DataSourceConfiguration.class, beanFactoryHandler);
+        for (DataSourceConfiguration configuration : configurations) {
+            var configurationClass = configuration.getClass();
+            LOGGER.debug("DataSourcePoolProperties : " + configurationClass);
+            if (configurationClass != DefaultDataSourcePoolConfiguration.class && configurationClass != DataSourceConfiguration.class) {
+                return (Configuration) configuration;
             }
         }
-        return (Configuration) new DefaultDataSourcePoolProperties().loadConfiguration();
+        return (Configuration) new DefaultDataSourcePoolProperties().toConfiguration(beanFactoryHandler);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceConfigurationFactory.class);

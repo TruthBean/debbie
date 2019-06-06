@@ -1,7 +1,7 @@
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -22,15 +22,18 @@ import java.util.Set;
  */
 public class ServletContextHandler {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanInitialization beanInitialization;
 
-    public ServletContextHandler(ServletContext servletContext, final Set<Class<?>> classes) {
+    public ServletContextHandler(ServletContext servletContext, final Set<Class<?>> classes, BeanFactoryHandler handler) {
         setServletConfiguration();
 
         servletConfiguration.addScanClasses(classes);
         Set<Class<?>> beanClasses = servletConfiguration.getTargetClasses();
-        new BeanInitialization().init(beanClasses);
-        this.beanFactoryHandler = new BeanFactoryHandler();
+        beanInitialization = handler.getBeanInitialization();
+        beanInitialization.init(beanClasses);
+        handler.refreshBeans();
+        this.beanFactoryHandler = handler;
 
         handleServletContext(servletContext);
     }
@@ -56,11 +59,11 @@ public class ServletContextHandler {
     }
 
     public void registerRouter() {
-        MvcRouterRegister.registerRouter(servletConfiguration);
+        MvcRouterRegister.registerRouter(servletConfiguration, beanInitialization);
     }
 
     public void registerFilter(ServletContext servletContext) {
-        RouterFilterManager.registerFilter(servletConfiguration);
+        RouterFilterManager.registerFilter(servletConfiguration, beanInitialization);
 
         // CharacterEncoding
         EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(

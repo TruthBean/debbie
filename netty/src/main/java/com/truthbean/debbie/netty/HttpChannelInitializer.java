@@ -1,6 +1,6 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;

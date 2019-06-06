@@ -1,8 +1,8 @@
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.core.bean.BeanScanConfiguration;
-import com.truthbean.debbie.core.io.MediaTypeInfo;
-import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 

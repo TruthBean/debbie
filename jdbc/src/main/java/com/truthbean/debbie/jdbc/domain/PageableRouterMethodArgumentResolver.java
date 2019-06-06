@@ -1,9 +1,9 @@
 package com.truthbean.debbie.jdbc.domain;
 
-import com.truthbean.debbie.core.data.validate.DataValidateFactory;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
-import com.truthbean.debbie.core.reflection.ExecutableArgumentResolver;
-import com.truthbean.debbie.core.reflection.TypeHelper;
+import com.truthbean.debbie.data.validate.DataValidateFactory;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
+import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.util.List;
 import java.util.Map;

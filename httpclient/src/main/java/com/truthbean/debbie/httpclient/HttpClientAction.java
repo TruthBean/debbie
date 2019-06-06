@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.net.uri.QueryStringEncoder;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.net.uri.QueryStringEncoder;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

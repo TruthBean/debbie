@@ -2,8 +2,6 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.mvc.MvcConfiguration;
 
-import java.util.UUID;
-
 /**
  * @author TruthBean
  * @since 0.0.1

@@ -1,8 +1,10 @@
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.core.io.MediaTypeInfo;
-import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.stream.Collectors;
  * @since 0.0.1
  * Created on 2019/2/25 22:02.
  */
-public class MvcProperties extends BaseProperties {
+public class MvcProperties extends BaseProperties implements DebbieProperties {
     //===========================================================================
     /**
      * use ** to replace path, like **.do, /api/**, /api/**.do
@@ -102,5 +104,10 @@ public class MvcProperties extends BaseProperties {
             result = Arrays.stream(value).map(HttpMethod::valueOf).collect(Collectors.toList());
         }
         return result;
+    }
+
+    @Override
+    public MvcConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+        return toConfiguration();
     }
 }

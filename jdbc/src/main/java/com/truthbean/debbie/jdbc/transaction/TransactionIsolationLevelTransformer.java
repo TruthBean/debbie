@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.transaction;
 
-import com.truthbean.debbie.core.data.transformer.DataTransformer;
+import com.truthbean.debbie.data.transformer.DataTransformer;
 
 /**
  * @author TruthBean

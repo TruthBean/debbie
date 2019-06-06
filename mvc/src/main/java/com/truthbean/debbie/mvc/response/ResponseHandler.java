@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MediaTypeInfo;
 
 import java.nio.ByteBuffer;
 

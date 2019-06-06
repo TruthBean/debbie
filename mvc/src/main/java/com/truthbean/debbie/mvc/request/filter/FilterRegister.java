@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.AnnotationRegister;
+import com.truthbean.debbie.bean.AnnotationRegister;
 
 /**
  * @author TruthBean

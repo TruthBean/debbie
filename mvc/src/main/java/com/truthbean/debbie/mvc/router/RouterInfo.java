@@ -1,10 +1,10 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MultipartFile;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
-import com.truthbean.debbie.core.reflection.ReflectionHelper;
-import com.truthbean.debbie.core.reflection.TypeHelper;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MultipartFile;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;

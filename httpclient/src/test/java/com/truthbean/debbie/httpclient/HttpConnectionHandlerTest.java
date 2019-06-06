@@ -1,6 +1,6 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.io.MediaType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response.provider;
 
-import com.truthbean.debbie.core.util.JacksonUtils;
+import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean

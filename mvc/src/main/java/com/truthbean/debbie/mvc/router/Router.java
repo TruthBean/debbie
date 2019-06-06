@@ -1,8 +1,8 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanComponent;
-import com.truthbean.debbie.core.bean.BeanInjectType;
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 
@@ -27,9 +27,9 @@ public @interface Router {
 
     /**
      * router always be singleton
-     * @return BeanInjectType
+     * @return BeanType
      */
-    BeanInjectType type() default BeanInjectType.SINGLETON;
+    BeanType type() default BeanType.SINGLETON;
 
     /**
      * same as path

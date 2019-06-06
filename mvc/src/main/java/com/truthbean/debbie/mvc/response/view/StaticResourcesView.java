@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response.view;
 
-import com.truthbean.debbie.core.io.ResourcesHandler;
+import com.truthbean.debbie.io.ResourcesHandler;
 
 /**
  * @author TruthBean

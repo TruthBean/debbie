@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.StreamHelper;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

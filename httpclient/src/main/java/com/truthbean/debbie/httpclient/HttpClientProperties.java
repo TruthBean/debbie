@@ -1,12 +1,14 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientProperties extends BaseProperties {
+public class HttpClientProperties extends BaseProperties implements DebbieProperties {
     private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
 
     //===========================================================================
@@ -42,6 +44,11 @@ public class HttpClientProperties extends BaseProperties {
     }
 
     public HttpClientConfiguration loadConfiguration() {
+        return configuration;
+    }
+
+    @Override
+    public HttpClientConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
         return configuration;
     }
 }

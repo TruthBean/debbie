@@ -1,6 +1,6 @@
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import io.undertow.server.HttpServerExchange;

@@ -1,14 +1,16 @@
 package com.truthbean.debbie.jdbc.datasource.pool;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-26 16:41
  */
-public class DefaultDataSourcePoolProperties extends DataSourceProperties implements DataSourcePoolProperties {
+public class DefaultDataSourcePoolProperties extends DataSourceProperties implements DebbieProperties {
     private final boolean unpool;
 
     //===========================================================================
@@ -49,27 +51,18 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties implem
         }
     }
 
-    public static DataSourceConfiguration toConfiguration() {
-        if (configuration == null) {
-            DefaultDataSourcePoolProperties self = new DefaultDataSourcePoolProperties();
-            configuration = toConfiguration(self.getConfiguration());
+    @Override
+    public DataSourceConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+        if (unpool) {
+            return super.getConfiguration();
         }
-        return configuration;
+        return toConfiguration(super.getConfiguration());
     }
 
     public static DefaultDataSourcePoolConfiguration toConfiguration(DataSourceConfiguration dataSourceConfiguration) {
         if (configuration == null) {
             configuration = new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
-            DefaultDataSourcePoolProperties poolProperties = new DefaultDataSourcePoolProperties();
         }
         return configuration;
-    }
-
-    @Override
-    public DataSourceConfiguration loadConfiguration() {
-        if (unpool) {
-            return super.getConfiguration();
-        }
-        return toConfiguration(super.getConfiguration());
     }
 }

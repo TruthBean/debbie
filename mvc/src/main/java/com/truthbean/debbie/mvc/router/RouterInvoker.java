@@ -1,8 +1,8 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import org.slf4j.Logger;

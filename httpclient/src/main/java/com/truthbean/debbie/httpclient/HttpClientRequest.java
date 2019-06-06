@@ -1,6 +1,6 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 
 import java.util.UUID;

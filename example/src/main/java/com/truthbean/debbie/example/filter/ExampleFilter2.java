@@ -1,7 +1,7 @@
 package com.truthbean.debbie.example.filter;
 
-import com.truthbean.debbie.core.bean.BeanInject;
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.example.service.RemoteUserService;
 import com.truthbean.debbie.mvc.request.filter.Filter;
 import com.truthbean.debbie.mvc.request.filter.RouterFilter;

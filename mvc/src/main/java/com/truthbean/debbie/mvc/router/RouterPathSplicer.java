@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+import com.truthbean.debbie.net.uri.UriPathFragment;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 
 import java.util.*;

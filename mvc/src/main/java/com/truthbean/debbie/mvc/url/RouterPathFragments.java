@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.url;
 
-import com.truthbean.debbie.core.net.uri.UriPathFragment;
+import com.truthbean.debbie.net.uri.UriPathFragment;
 
 import java.util.List;
 import java.util.regex.Pattern;

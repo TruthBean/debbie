@@ -1,7 +1,7 @@
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.core.io.*;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+import com.truthbean.debbie.io.*;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;

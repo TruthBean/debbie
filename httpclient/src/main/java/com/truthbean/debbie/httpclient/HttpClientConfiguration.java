@@ -1,6 +1,6 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 
 /**
  * @author TruthBean

@@ -1,7 +1,8 @@
 package com.truthbean.debbie.tomcat;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.BaseServerProperties;
-import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 
 import java.util.Objects;
 
@@ -15,10 +16,10 @@ public class TomcatProperties extends BaseServerProperties {
     private static final String TOMCAT_WEBAPP = "debbie.server.tomcat.webapp";
     //===========================================================================
 
+    private TomcatConfiguration configuration;
 
-    private static TomcatConfiguration configuration;
-
-    public static TomcatConfiguration toConfiguration() {
+    @Override
+    public TomcatConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
         if (configuration != null) {
             return configuration;
         }

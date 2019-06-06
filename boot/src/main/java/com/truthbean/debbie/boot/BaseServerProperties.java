@@ -1,6 +1,7 @@
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.UUID;
 
@@ -8,7 +9,7 @@ import java.util.UUID;
  * @author TruthBean
  * @since 0.0.1
  */
-public abstract class BaseServerProperties extends BaseProperties {
+public abstract class BaseServerProperties extends BaseProperties implements DebbieProperties {
     //===========================================================================
     private static final String APPLICATION_NAME = "debbie.application.name";
 

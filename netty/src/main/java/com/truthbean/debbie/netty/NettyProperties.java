@@ -1,8 +1,9 @@
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.BaseServerProperties;
-import com.truthbean.debbie.core.bean.BeanScanConfiguration;
-import com.truthbean.debbie.core.properties.ClassesScanProperties;
+import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
 
@@ -13,9 +14,10 @@ import com.truthbean.debbie.mvc.MvcProperties;
  */
 public class NettyProperties extends BaseServerProperties {
 
-    private static NettyConfiguration configuration;
+    private NettyConfiguration configuration;
 
-    public static NettyConfiguration toConfiguration() {
+    @Override
+    public NettyConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
         if (configuration != null) {
             return configuration;
         }

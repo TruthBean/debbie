@@ -1,6 +1,6 @@
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;

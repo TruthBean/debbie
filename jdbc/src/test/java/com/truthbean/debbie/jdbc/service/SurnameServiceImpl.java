@@ -1,8 +1,8 @@
 package com.truthbean.debbie.jdbc.service;
 
-import com.truthbean.debbie.core.bean.BeanComponent;
-import com.truthbean.debbie.core.bean.BeanInject;
-import com.truthbean.debbie.core.proxy.MethodProxy;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.proxy.MethodProxy;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.repository.SurnameJdbcRepository;

@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.BeanComponent;
-import com.truthbean.debbie.core.bean.BeanInjectType;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
 import java.lang.annotation.*;
 
@@ -17,7 +17,7 @@ public @interface Filter {
 
     String name() default "";
 
-    BeanInjectType type() default BeanInjectType.SINGLETON;
+    BeanType type() default BeanType.SINGLETON;
 
     String[] value() default {};
 

@@ -1,9 +1,9 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.core.data.transformer.text.BooleanTransformer;
-import com.truthbean.debbie.core.data.transformer.text.LongTransformer;
-import com.truthbean.debbie.core.properties.BeanConfiguration;
-import com.truthbean.debbie.core.properties.PropertyInject;
+import com.truthbean.debbie.data.transformer.text.BooleanTransformer;
+import com.truthbean.debbie.data.transformer.text.LongTransformer;
+import com.truthbean.debbie.properties.PropertiesConfiguration;
+import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadFactory;
  * @since 0.0.1
  * Created on 2019/05/17 22:28.
  */
-@BeanConfiguration(keyPrefix = "debbie.datasource.hikari.")
+@PropertiesConfiguration(keyPrefix = "debbie.datasource.hikari.")
 public class HikariConfiguration extends DataSourceConfiguration {
 
     private final HikariConfig hikariConfig;

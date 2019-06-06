@@ -1,5 +1,7 @@
 package com.truthbean.debbie.httpclient.annotation;
 
+import com.truthbean.debbie.bean.BeanComponent;
+
 import java.lang.annotation.*;
 
 /**
@@ -10,6 +12,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@BeanComponent
 public @interface HttpClientRouter {
     String[] baseUrl() default {""};
 }

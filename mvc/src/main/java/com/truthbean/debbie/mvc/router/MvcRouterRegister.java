@@ -1,12 +1,12 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.bean.DebbieBeanInfo;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.reflection.ClassInfo;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
-import com.truthbean.debbie.core.watcher.Watcher;
-import com.truthbean.debbie.core.watcher.WatcherType;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.reflection.ClassInfo;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.watcher.Watcher;
+import com.truthbean.debbie.watcher.WatcherType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
@@ -26,8 +26,7 @@ import java.util.*;
 public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
-    public static void registerRouter(MvcConfiguration webConfiguration) {
-        BeanInitialization beanInitialization = new BeanInitialization();
+    public static void registerRouter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
         Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
         for (var classInfo : classInfoSet) {
             var classAnnotations = classInfo.getClassAnnotations();

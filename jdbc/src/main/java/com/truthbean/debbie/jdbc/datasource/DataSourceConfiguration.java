@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 
 import java.util.HashMap;

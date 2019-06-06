@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanComponent;
 
 import java.util.UUID;
 

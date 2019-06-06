@@ -1,1 +1,1 @@
-com.truthbean.debbie.core.properties.ClassesScanProperties --> com.truthbean.debbie.core.bean.BeanScanConfiguration
+com.truthbean.debbie.properties.ClassesScanProperties --> com.truthbean.debbie.bean.BeanScanConfiguration

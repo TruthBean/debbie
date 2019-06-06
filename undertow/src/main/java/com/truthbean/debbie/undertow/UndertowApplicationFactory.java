@@ -2,9 +2,10 @@ package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.net.NetWorkUtils;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -25,7 +26,7 @@ import java.util.List;
  * @author TruthBean
  * @since 0.0.1
  */
-public final class UndertowApplicationFactory extends AbstractApplicationFactory<UndertowConfiguration> {
+public final class UndertowApplicationFactory extends AbstractApplicationFactory {
 
     private Undertow server;
 
@@ -35,11 +36,11 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
     }
 
     @Override
-    public DebbieApplication factory(UndertowConfiguration configuration) {
-        BeanFactoryHandler handler = new BeanFactoryHandler();
-
-        MvcRouterRegister.registerRouter(configuration);
-        RouterFilterManager.registerFilter(configuration);
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+        UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, beanFactoryHandler);
+        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        MvcRouterRegister.registerRouter(configuration, beanInitialization);
+        RouterFilterManager.registerFilter(configuration, beanInitialization);
 
         SessionManager sessionManager = new InMemorySessionManager(configuration.getName());
         SessionCookieConfig sessionConfig = new SessionCookieConfig();
@@ -51,9 +52,9 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
 
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
-        HttpHandler next = new DispatcherHttpHandler(configuration, handler);
+        HttpHandler next = new DispatcherHttpHandler(configuration, beanFactoryHandler);
         for (RouterFilterInfo filter : filters) {
-            next = new HttpHandlerFilter(next, filter, handler);
+            next = new HttpHandlerFilter(next, filter, beanFactoryHandler);
         }
 
         // set as next handler your root handler

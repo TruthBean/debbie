@@ -1,13 +1,10 @@
 package com.truthbean.debbie.jdbc.datasource.pool;
 
-import com.truthbean.debbie.core.properties.ConfigurationTypeNotMatchedException;
+import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
-import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author TruthBean

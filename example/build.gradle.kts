@@ -7,7 +7,7 @@ dependencies {
 
     compile(project(":debbie-httpclient"))
 
-    compile(project(":debbie-jdbc"))
+    compile(project(":debbie-hikari"))
 
     val jacksonVersion: String by project
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
@@ -17,4 +17,7 @@ dependencies {
 
     val lang3Version: String by project
     compile("org.apache.commons:commons-lang3:$lang3Version")
+
+    val mysqlVersion: String by project
+    implementation("mysql:mysql-connector-java:$mysqlVersion")
 }

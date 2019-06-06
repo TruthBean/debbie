@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

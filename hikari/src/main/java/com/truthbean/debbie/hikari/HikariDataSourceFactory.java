@@ -1,15 +1,12 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.core.properties.ConfigurationTypeNotMatchedException;
+import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
-import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author TruthBean

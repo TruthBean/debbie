@@ -1,6 +1,8 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.reflection.ReflectionHelper;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 
 import javax.sql.DataSource;
@@ -18,8 +20,8 @@ public interface DataSourceFactory {
      *
      * @return DataSourceFactory
      */
-    static DataSourceFactory factory() {
-        var config = DataSourceConfigurationFactory.factory();
+    static DataSourceFactory factory(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        var config = DataSourceConfigurationFactory.factory(configurationFactory, beanFactoryHandler);
         return loadFactory(config);
     }
 

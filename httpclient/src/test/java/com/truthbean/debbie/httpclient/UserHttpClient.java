@@ -1,8 +1,8 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.watcher.Watcher;
-import com.truthbean.debbie.core.watcher.WatcherType;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.watcher.Watcher;
+import com.truthbean.debbie.watcher.WatcherType;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;

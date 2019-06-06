@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.annotation;
 
-import com.truthbean.debbie.core.bean.AnnotationRegister;
+import com.truthbean.debbie.bean.AnnotationRegister;
 
 /**
  * @author TruthBean

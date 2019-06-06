@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.core.bean.BeanInject;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;

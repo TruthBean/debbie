@@ -2,8 +2,9 @@ package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.core.bean.BeanScanConfiguration;
-import com.truthbean.debbie.core.net.NetWorkUtils;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.net.NetWorkUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.core.StandardContext;
@@ -25,7 +26,7 @@ import java.nio.file.Paths;
  * @since 0.0.1
  * Created on 2019/3/10 13:44.
  */
-public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatConfiguration> {
+public class TomcatApplicationFactory extends AbstractApplicationFactory {
 
     @Override
     public boolean isWeb() {
@@ -88,7 +89,8 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory<TomcatC
     }
 
     @Override
-    public DebbieApplication factory(TomcatConfiguration configuration) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+        TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, beanFactoryHandler);
         config(configuration);
         return tomcatApplication(configuration);
     }

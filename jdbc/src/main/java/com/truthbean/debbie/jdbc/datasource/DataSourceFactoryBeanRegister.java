@@ -1,17 +1,32 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
-public class DataSourceFactoryBeanRegister {
+/**
+ * @author TruthBean
+ * @since 0.0.2
+ */
+public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
-    public static void register(BeanFactoryHandler beanFactoryHandler, BeanInitialization initialization) {
-        DebbieBeanInfo beanInfo = new DebbieBeanInfo<>(DataSourceFactory.class);
-        DataSourceFactory factory = DataSourceFactory.factory();
-        beanInfo.setBean(factory);
-        initialization.init(beanInfo);
+    private BeanFactoryHandler beanFactoryHandler;
+    private BeanInitialization initialization;
+    private DebbieConfigurationFactory configurationFactory;
 
-        beanFactoryHandler.refreshBeans();
+    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        super(beanFactoryHandler);
+        this.beanFactoryHandler = beanFactoryHandler;
+        this.initialization = beanFactoryHandler.getBeanInitialization();
+        this.configurationFactory = configurationFactory;
+    }
+
+    public void registerDataSourceFactory() {
+        DataSourceFactory dataSourceFactory = initialization.getRegisterBean(DataSourceFactory.class);
+        if (dataSourceFactory == null) {
+            dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler);
+            registerSingletonBean(dataSourceFactory, DataSourceFactory.class, "dataSourceFactory");
+        }
     }
 }

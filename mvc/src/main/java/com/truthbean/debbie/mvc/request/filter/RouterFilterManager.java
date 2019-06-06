@@ -1,9 +1,8 @@
 package com.truthbean.debbie.mvc.request.filter;
 
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.bean.DebbieBeanInfo;
-import com.truthbean.debbie.core.reflection.ClassInfo;
-import com.truthbean.debbie.core.reflection.ReflectionHelper;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
 import org.slf4j.Logger;
@@ -20,8 +19,7 @@ import java.util.stream.Collectors;
 public class RouterFilterManager {
     private static final Set<RouterFilterInfo> FILTERS = new TreeSet<>();
 
-    public static void registerFilter(MvcConfiguration webConfiguration) {
-        BeanInitialization beanInitialization = new BeanInitialization();
+    public static void registerFilter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
         Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Filter.class);
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);

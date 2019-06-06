@@ -1,9 +1,9 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MediaTypeInfo;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;

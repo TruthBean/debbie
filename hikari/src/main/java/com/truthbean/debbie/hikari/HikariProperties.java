@@ -1,11 +1,10 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
-import com.truthbean.debbie.jdbc.datasource.pool.DataSourcePoolProperties;
 
 import java.util.Map;
 
@@ -14,8 +13,8 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2019/05/17 22:46.
  */
-public class HikariProperties extends DataSourceProperties implements DataSourcePoolProperties {
-    private final HikariConfiguration configuration;
+public class HikariProperties extends DataSourceProperties implements DebbieProperties {
+    private HikariConfiguration configuration;
 
     //=================================================================================================================
     /**
@@ -28,11 +27,16 @@ public class HikariProperties extends DataSourceProperties implements DataSource
     //=================================================================================================================
 
     public HikariProperties() {
-        BeanInitialization initialization = new BeanInitialization();
-        initialization.init(HikariConfiguration.class);
-        var handler = new BeanFactoryHandler();
-        handler.refreshBeans();
-        configuration = handler.factory(HikariConfiguration.class);
+    }
+
+    @Override
+    public DataSourceConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+        if (configuration != null) {
+            return configuration;
+        }
+        beanFactoryHandler.getBeanInitialization().init(HikariConfiguration.class);
+        beanFactoryHandler.refreshBeans();
+        configuration = beanFactoryHandler.factory(HikariConfiguration.class);
 
         Map<String, String> matchedKey = getMatchedKey(HIKARI_X_KEY_PREFIX);
         matchedKey.forEach((key, value) -> {
@@ -40,11 +44,6 @@ public class HikariProperties extends DataSourceProperties implements DataSource
             k = StringUtils.snakeCaseToCamelCaseTo(k);
             configuration.getHikariConfig().addDataSourceProperty(k, value);
         });
-    }
-
-    @Override
-    public DataSourceConfiguration loadConfiguration() {
         return configuration;
     }
-
 }

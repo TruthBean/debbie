@@ -74,18 +74,28 @@ public class RepositoryCallback {
 
     public static <R> R action(TransactionCallable<R> action) {
         R result = null;
-        try (var transaction = getTransaction(action)) {
+
+        TransactionInfo transaction = null;
+        try {
+            transaction = getTransaction(action);
             transaction.setAutoCommit(true);
             result = action.call(transaction);
         } catch (Exception e) {
             LOGGER.error("action error ", e);
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+                TransactionManager.remove();
+            }
         }
         return result;
     }
 
     public static <R> Optional<R> actionOptional(TransactionCallable<R> action) {
         Optional<R> result = Optional.empty();
-        try (var transaction = getTransaction(action)) {
+        TransactionInfo transaction = null;
+        try {
+            transaction = getTransaction(action);
             transaction.setAutoCommit(true);
             var a = action.call(transaction);
             if (a != null) {
@@ -93,6 +103,11 @@ public class RepositoryCallback {
             }
         } catch (Exception e) {
             LOGGER.error("action error ", e);
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+                TransactionManager.remove();
+            }
         }
         return result;
     }
@@ -100,11 +115,18 @@ public class RepositoryCallback {
     public static <R> CompletableFuture<R> asyncAction(TransactionCallable<R> action) {
         return CompletableFuture.supplyAsync(() -> {
             R result = null;
-            try (var transaction = getTransaction(action)) {
+            TransactionInfo transaction = null;
+            try {
+                transaction = getTransaction(action);
                 transaction.setAutoCommit(true);
                 result = action.call(transaction);
             } catch (Exception e) {
                 LOGGER.error("action error ", e);
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                    TransactionManager.remove();
+                }
             }
             return result;
         });
@@ -122,7 +144,6 @@ public class RepositoryCallback {
             transaction.rollback();
         } finally {
             transaction.close();
-            TransactionManager.remove();
         }
         return result;
     }
@@ -140,7 +161,6 @@ public class RepositoryCallback {
                 transaction.rollback();
             } finally {
                 transaction.close();
-                TransactionManager.remove();
             }
             return result;
         };

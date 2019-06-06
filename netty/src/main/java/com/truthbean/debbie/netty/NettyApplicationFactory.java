@@ -2,9 +2,10 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.net.NetWorkUtils;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.net.NetWorkUtils;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.netty.session.SessionManager;
@@ -22,23 +23,23 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  * Created on 2018-03-08 14:59
  */
-public class NettyApplicationFactory extends AbstractApplicationFactory<NettyConfiguration> {
+public class NettyApplicationFactory extends AbstractApplicationFactory {
     @Override
     public boolean isWeb() {
         return true;
     }
 
     @Override
-    public DebbieApplication factory(NettyConfiguration configuration) {
-        BeanFactoryHandler handler = new BeanFactoryHandler();
-
-        MvcRouterRegister.registerRouter(configuration);
-        RouterFilterManager.registerFilter(configuration);
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+        NettyConfiguration configuration = factory.factory(NettyConfiguration.class, beanFactoryHandler);
+        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        MvcRouterRegister.registerRouter(configuration, beanInitialization);
+        RouterFilterManager.registerFilter(configuration, beanInitialization);
         final SessionManager sessionManager = new SessionManager();
         return new DebbieApplication() {
             @Override
             public void start(String... args) {
-                run(configuration, sessionManager, handler);
+                run(configuration, sessionManager, beanFactoryHandler);
                 LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
             }
 

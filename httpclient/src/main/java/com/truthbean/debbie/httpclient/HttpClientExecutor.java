@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.core.proxy.AbstractMethodExecutor;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
+import com.truthbean.debbie.proxy.AbstractMethodExecutor;
+import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;

@@ -1,13 +1,12 @@
 package com.truthbean.debbie.jdbc.annotation;
 
-import com.truthbean.debbie.core.proxy.MethodProxy;
-import com.truthbean.debbie.jdbc.transaction.TransactionalMethodProxyHandler;
+import com.truthbean.debbie.proxy.MethodProxy;
 
 import java.lang.annotation.*;
 
 /**
  * jdbc connection transactional
- *
+ * <p>
  * 1. If forceCommit is true, whether or not it throws exception, connection will commit
  * 2. As forceCommit is false, if rollbackFor is instanceOf the exception it will rollback
  *

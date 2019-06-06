@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.io.MediaType;
 
 import java.lang.annotation.*;
 

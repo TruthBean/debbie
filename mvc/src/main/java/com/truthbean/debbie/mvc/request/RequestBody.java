@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.io.StreamHelper;
+import com.truthbean.debbie.io.StreamHelper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

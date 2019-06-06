@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response.provider;
 
-import com.truthbean.debbie.core.io.MediaType;
+import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
 import com.truthbean.debbie.mvc.response.view.NoTemplateViewHandler;

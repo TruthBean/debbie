@@ -1,7 +1,10 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.core.properties.BaseProperties;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +14,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends BaseProperties {
+public class DataSourceProperties extends BaseProperties implements DebbieProperties {
     private final DataSourceConfiguration configuration;
 
     //=================================================================================================================
@@ -77,4 +80,8 @@ public class DataSourceProperties extends BaseProperties {
         return INSTANCE.configuration;
     }
 
+    @Override
+    public DataSourceConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+        return configuration;
+    }
 }

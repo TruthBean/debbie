@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.column.type;
 
-import com.truthbean.debbie.core.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 
 import java.io.InputStream;
 import java.io.Reader;

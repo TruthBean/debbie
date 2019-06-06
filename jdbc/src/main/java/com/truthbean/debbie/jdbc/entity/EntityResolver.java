@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.entity;
 
-import com.truthbean.debbie.core.bean.BeanInitialization;
-import com.truthbean.debbie.core.reflection.ClassInfo;
+import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
@@ -16,9 +15,9 @@ import java.util.List;
  * @since 0.0.1
  */
 public class EntityResolver {
-    private BeanInitialization initialization = new BeanInitialization();
     public <E> EntityInfo<E> resolveEntity(E entity) {
-        var classInfo = initialization.getRegisteredBean(entity.getClass());
+        Class<E> entityClass = (Class<E>) entity.getClass();
+        ClassInfo<E> classInfo = new ClassInfo<>(entityClass);
         var table = getTableName(classInfo);
         var columns = resolveClassInfoAndValue(classInfo, entity);
         var entityInfo = new EntityInfo<E>();
@@ -34,7 +33,7 @@ public class EntityResolver {
     }
 
     public <E> EntityInfo<E> resolveEntityClass(Class<E> entityClass) {
-        var classInfo = initialization.getRegisteredBean(entityClass);
+        var classInfo = new ClassInfo<>(entityClass);
         var table = getTableName(classInfo);
         var columns = resolveClassInfo(classInfo);
         var entityInfo = new EntityInfo<E>();

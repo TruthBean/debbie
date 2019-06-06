@@ -1,7 +1,7 @@
 package com.truthbean.debbie.servlet.response;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.util.StringUtils;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;

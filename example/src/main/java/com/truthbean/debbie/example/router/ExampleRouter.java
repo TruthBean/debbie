@@ -1,8 +1,8 @@
 package com.truthbean.debbie.example.router;
 
-import com.truthbean.debbie.core.bean.BeanInject;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.watcher.Watcher;
+import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.debbie.example.service.RemoteUserService;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;
@@ -121,5 +121,10 @@ public class ExampleRouter {
     public String testFilter() {
         System.out.println("wow..");
         return null;
+    }
+
+    @Router("/login")
+    public List<String> login() {
+        return remoteUserService.login();
     }
 }

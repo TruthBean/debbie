@@ -1,8 +1,8 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.core.bean.BeanFactoryHandler;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterHandler;

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.core.data.transformer.DataTransformer;
+import com.truthbean.debbie.data.transformer.DataTransformer;
 
 /**
  * @author truthbean

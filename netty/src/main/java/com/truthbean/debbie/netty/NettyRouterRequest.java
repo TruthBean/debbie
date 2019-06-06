@@ -1,10 +1,10 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.core.io.FileNameUtils;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MediaTypeInfo;
-import com.truthbean.debbie.core.net.uri.UriComposition;
-import com.truthbean.debbie.core.net.uri.UriUtils;
+import com.truthbean.debbie.io.FileNameUtils;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.net.uri.UriComposition;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;

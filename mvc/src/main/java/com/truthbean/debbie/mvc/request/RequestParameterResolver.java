@@ -1,9 +1,9 @@
 package com.truthbean.debbie.mvc.request;
 
-import com.truthbean.debbie.core.data.validate.DataValidateFactory;
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.reflection.ExecutableArgument;
-import com.truthbean.debbie.core.reflection.ExecutableArgumentResolver;
+import com.truthbean.debbie.data.validate.DataValidateFactory;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.mvc.router.RouterMethodArgumentHandler;
 import com.truthbean.debbie.mvc.router.RouterRequestValues;
 import org.slf4j.Logger;

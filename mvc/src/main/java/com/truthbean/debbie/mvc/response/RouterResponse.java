@@ -1,7 +1,7 @@
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.core.io.MediaType;
-import com.truthbean.debbie.core.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 
 import java.net.HttpCookie;
 import java.util.*;
