@@ -10,6 +10,7 @@ import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
+import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.buffer.ByteBuf;
@@ -95,12 +96,34 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
     }
 
     private void handleRouter(ChannelHandlerContext ctx) {
-        RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
-        RouterResponse routerResponse = routerInfo.getResponse();
-        if (handleFilter(routerRequest, routerResponse, ctx)) {
-            MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
-            routerResponse = routerInfo.getResponse();
-            doResponse(routerResponse, ctx);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration);
+        if (bytes != null) {
+            RouterResponse routerResponse = new RouterResponse();
+            if (handleFilter(routerRequest, routerResponse, ctx)) {
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+
+                RouterSession session = routerRequest.getSession();
+                if (session != null) {
+                    response.headers().add(COOKIE, session.getId());
+                }
+
+                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+                if (!keepAlive) {
+                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                } else {
+                    response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+                    ctx.writeAndFlush(response);
+                }
+            }
+        } else {
+            RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
+            RouterResponse routerResponse = routerInfo.getResponse();
+            if (handleFilter(routerRequest, routerResponse, ctx)) {
+                MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
+                routerResponse = routerInfo.getResponse();
+                doResponse(routerResponse, ctx);
+            }
         }
     }
 

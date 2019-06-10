@@ -1,6 +1,6 @@
 dependencies {
     compile(project(":debbie-mvc"))
-    compile(project(":debbie-boot"))
+    compile(project(":debbie-server"))
 
     val undertowVersion: String by project
     compile("io.undertow:undertow-core:$undertowVersion")

@@ -148,7 +148,7 @@ public class BeanFactoryHandler {
 
     private void resolveFieldValue(Object object, Field field, String keyPrefix) {
         var propertyInject = field.getAnnotation(PropertyInject.class);
-        if (propertyInject != null && keyPrefix != null) {
+        if (propertyInject != null) {
             resolvePropertiesInject(object, field, keyPrefix, propertyInject);
             return;
         }
@@ -160,8 +160,13 @@ public class BeanFactoryHandler {
 
     private void resolvePropertiesInject(Object object, Field field, String keyPrefix, PropertyInject propertyInject) {
         String property = propertyInject.value();
-        if (keyPrefix != null && !property.isBlank()) {
-            String key = keyPrefix + property;
+        if (!property.isBlank()) {
+            String key;
+            if (keyPrefix != null) {
+                key = keyPrefix + property;
+            } else {
+                key = property;
+            }
             BaseProperties properties = new BaseProperties();
             String value = properties.getValue(key);
             if (value != null) {
@@ -179,6 +184,8 @@ public class BeanFactoryHandler {
                 }
                 // use setter method to inject filed
                 ReflectionHelper.invokeSetMethod(object, field, transform);
+                // if setter method not found, inject directly
+                ReflectionHelper.setField(object, field, transform);
             }
         }
     }

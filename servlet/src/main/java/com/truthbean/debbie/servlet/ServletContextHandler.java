@@ -50,6 +50,14 @@ public class ServletContextHandler {
     }
 
     private void handleServletContext(ServletContext servletContext) {
+        // staticResourcesServlet
+        StaticResourcesServlet staticResourcesServlet = new StaticResourcesServlet(servletConfiguration, beanFactoryHandler);
+        // servlet <url-pattern> should start with / or * and cannot contain **
+        var staticResourcesMapping = servletConfiguration.getStaticResourcesMapping().replace("**", "*");
+        servletContext.addServlet("staticResourcesServlet", staticResourcesServlet)
+                .addMapping(staticResourcesMapping);
+
+        // dispatcherServlet
         DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration, beanFactoryHandler);
 
         // servlet <url-pattern> should start with / or * and cannot contain **

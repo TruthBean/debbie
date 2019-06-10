@@ -1,6 +1,6 @@
 dependencies {
     compile(project(":debbie-servlet"))
-    compile(project(":debbie-boot"))
+    compile(project(":debbie-server"))
 
     val tomcatVersion: String by project
     compile("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")

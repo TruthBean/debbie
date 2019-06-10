@@ -3,6 +3,7 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -11,6 +12,7 @@ import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,17 @@ import java.util.Set;
 public class MvcRouterHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterHandler.class);
+
+    public static byte[] handleStaticResources(RouterRequest routerRequest, MvcConfiguration configuration) {
+        var url = routerRequest.getUrl();
+        LOGGER.debug("router uri: {}", url);
+        String staticResourcesMapping = configuration.getStaticResourcesMapping();
+        staticResourcesMapping = staticResourcesMapping.replace("**", "");
+        if (url.startsWith(staticResourcesMapping)) {
+            return ResourcesHandler.handleStaticBytesResource(url);
+        }
+        return null;
+    }
 
     public static RouterInfo getMatchedRouter(RouterRequest routerRequest, MvcConfiguration configuration) {
         var url = routerRequest.getUrl();
@@ -130,7 +143,6 @@ public class MvcRouterHandler {
 
     public static Set<RouterInfo> matchRouterPath(String url, Set<RouterInfo> routerInfos, RouterRequest routerRequest) {
         Set<RouterInfo> result = new HashSet<>();
-        //TODO: 优先匹配静态资源...
 
         for (RouterInfo routerInfo : routerInfos) {
             List<RouterPathFragments> paths = routerInfo.getPaths();
@@ -174,38 +186,35 @@ public class MvcRouterHandler {
     public static boolean matchRouterPath(String url, List<RouterPathFragments> paths, RouterRequest routerRequest,
                                           boolean withoutMatrix) {
         var matchUrl = false;
-        //TODO: 优先匹配静态资源...
 
+        // if has no matched, then match no variable path
+        for (var pattern : paths) {
+            if (!pattern.hasVariable()) {
+                if (pattern.getRawPath().equalsIgnoreCase(url)) {
+                    matchUrl = true;
+                    break;
+                }
+            }
+        }
+
+        // if has no matched, then match variable path
         if (!matchUrl) {
-            // if has no matched, then match no variable path
             for (var pattern : paths) {
-                if (!pattern.hasVariable()) {
-                    if (pattern.getRawPath().equalsIgnoreCase(url)) {
+                if (pattern.hasVariable()) {
+                    if (pattern.getPattern().matcher(url).find()) {
                         matchUrl = true;
+                        var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
+                        routerRequest.getPathAttributes().putAll(pathAttributes);
                         break;
                     }
                 }
             }
+        }
 
-            // if has no matched, then match variable path
-            if (!matchUrl) {
-                for (var pattern : paths) {
-                    if (pattern.hasVariable()) {
-                        if (pattern.getPattern().matcher(url).find()) {
-                            matchUrl = true;
-                            var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
-                            routerRequest.getPathAttributes().putAll(pathAttributes);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // if has no matched, then remove matrix
-            if (!matchUrl && !withoutMatrix) {
-                url = UriUtils.getPathsWithoutMatrix(url);
-                matchUrl = matchRouterPath(url, paths, routerRequest, true);
-            }
+        // if has no matched, then remove matrix
+        if (!matchUrl && !withoutMatrix) {
+            url = UriUtils.getPathsWithoutMatrix(url);
+            matchUrl = matchRouterPath(url, paths, routerRequest, true);
         }
         return matchUrl;
     }

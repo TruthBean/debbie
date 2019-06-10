@@ -2,9 +2,9 @@ package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.*;
 
@@ -15,6 +15,14 @@ import java.util.*;
  */
 public class MvcConfiguration extends BeanScanConfiguration {
 
+    /**
+     * static resources mapping
+     */
+    private String staticResourcesMapping = "/static/**";
+
+    /**
+     * dynamic router dispatcher mapping
+     */
     private String dispatcherMapping;
 
     /**
@@ -56,6 +64,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public void copyFrom(MvcConfiguration configuration) {
+        this.staticResourcesMapping = configuration.staticResourcesMapping;
         this.dispatcherMapping = configuration.dispatcherMapping;
 
         this.allowClientResponseType = configuration.allowClientResponseType;
@@ -71,6 +80,14 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
         this.templatePrefix = configuration.templatePrefix;
         this.templateSuffix = configuration.templateSuffix;
+    }
+
+    public String getStaticResourcesMapping() {
+        return staticResourcesMapping;
+    }
+
+    public void setStaticResourcesMapping(String staticResourcesMapping) {
+        this.staticResourcesMapping = staticResourcesMapping;
     }
 
     public String getDispatcherMapping() {
@@ -243,6 +260,32 @@ public class MvcConfiguration extends BeanScanConfiguration {
             } else {
                 throw new DispatcherMappingFormatException(
                         "##debbie.web.dispatcher-mapping## only support **, like **.do, /api/**, /api/**.do, not support * or multi **");
+            }
+            return this;
+        }
+
+        /**
+         * static resources mapping, only support /XX/**, like /static/**, or /resources/**
+         *
+         * @param staticResourcesMapping static resources mapping
+         * @return Builder
+         */
+        public Builder staticResourcesMapping(String staticResourcesMapping) {
+            if (staticResourcesMapping.startsWith("/") && staticResourcesMapping.endsWith("**")) {
+                int startCount = 0;
+                char[] chars = staticResourcesMapping.toCharArray();
+                for (char c : chars) {
+                    if (c == '*') {
+                        startCount++;
+                    }
+                }
+
+                if (startCount == 2) {
+                    configuration.staticResourcesMapping = staticResourcesMapping;
+                }
+            } else {
+                throw new DispatcherMappingFormatException(
+                        "##debbie.web.static-resources-mapping## only support /XX/**, like /static/**, or /resources/**");
             }
             return this;
         }

@@ -2,6 +2,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.proxy.InterfaceDynamicProxy;
 import org.junit.jupiter.api.Test;
 
@@ -14,11 +15,13 @@ public class RouterInvokerTest {
 
     @Test
     public void testRouterInvoke() {
-        BeanFactoryHandler handler = BeanFactoryHandler.getInstance();
-        BeanInitialization initialization = handler.getBeanInitialization();
+        DebbieApplicationFactory factory = new DebbieApplicationFactory();
+        factory.config();
+        factory.callStarter();
+        BeanInitialization initialization = factory.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
-        handler.refreshBeans();
-        var router = handler.factoryBeanInvoker(RouterInvokerTest.class);
+        factory.refreshBeans();
+        var router = factory.factoryBeanInvoker(RouterInvokerTest.class);
         var params = new Object[]{"哈哈"};
         var result = router.invokeMethod(Router.class, "router", params);
         System.out.println(result);

@@ -50,20 +50,35 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
             case MIX:
                 Map<String, List> mixValues = parameters.getMixValues();
                 handler.handleParam(mixValues, parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case QUERY:
                 handler.handleParam(parameters.getQueries(), parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case PATH:
                 handler.handleParam(parameters.getPathAttributes(), parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case MATRIX:
                 Map<String, List> matrix = parameters.getMatrixAttributes();
                 handler.handleParam(matrix, parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case PARAM:
                 Map<String, List> params = parameters.getParams();
                 handler.handleParam(params, parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case BODY:
                 var type = requestParameter.bodyType();
@@ -80,10 +95,16 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
             case HEAD:
                 Map<String, List> headers = parameters.getHeaders();
                 handler.handleParam(headers, parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case COOKIE:
                 Map<String, List> cookieAttributes = parameters.getCookieAttributes();
                 handler.handleParam(cookieAttributes, parameter);
+                if (parameter.getValue() == null) {
+                    handler.handleFields(parameters, parameter, requestType);
+                }
                 break;
             case SESSION:
                 Map<String, Object> sessionAttributes = parameters.getSessionAttributes();

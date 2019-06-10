@@ -60,33 +60,39 @@ public class DispatcherHttpHandler implements HttpHandler {
             return;
         }
         RouterRequest httpRequest = getHttpRequestInfo(exchange);
-        RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
-        LOGGER.debug(httpRequest.toString());
-
-        if (!exchange.isResponseChannelAvailable()) {
-            return;
-        }
-
-        MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
-
-        var response = routerInfo.getResponse();
-        Object responseData = response.getContent();
-
-        var sender = exchange.getResponseSender();
-        if (responseData instanceof ByteBuffer) {
-            sender.send((ByteBuffer) responseData);
-        }
-        if (responseData instanceof byte[]) {
-            sender.send(ByteBuffer.wrap((byte[]) responseData));
+        byte[] bytes = MvcRouterHandler.handleStaticResources(httpRequest, configuration);
+        if (bytes != null) {
+            var sender = exchange.getResponseSender();
+            sender.send(ByteBuffer.wrap(bytes));
         } else {
-            // 404
-            // Response Headers
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, response.getResponseType().toString());
-            // Response Sender
-            if (responseData != null) {
-                sender.send(responseData.toString());
+            RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
+            LOGGER.debug(httpRequest.toString());
+
+            if (!exchange.isResponseChannelAvailable()) {
+                return;
+            }
+
+            MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
+
+            var response = routerInfo.getResponse();
+            Object responseData = response.getContent();
+
+            var sender = exchange.getResponseSender();
+            if (responseData instanceof ByteBuffer) {
+                sender.send((ByteBuffer) responseData);
+            }
+            if (responseData instanceof byte[]) {
+                sender.send(ByteBuffer.wrap((byte[]) responseData));
             } else {
-                sender.send("");
+                // 404
+                // Response Headers
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, response.getResponseType().toString());
+                // Response Sender
+                if (responseData != null) {
+                    sender.send(responseData.toString());
+                } else {
+                    sender.send("");
+                }
             }
         }
     }

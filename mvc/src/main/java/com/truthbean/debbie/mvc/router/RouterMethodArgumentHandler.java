@@ -74,6 +74,17 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         if (TypeHelper.isBaseType(invokedParameter.getType())
                 || invokedParameter.getType() == MultipartFile.class) {
 
+            /*Map<String, List> mixValues = parameters.getMixValues();
+
+            Annotation annotation = invokedParameter.getAnnotation(RequestParameter.class);
+            if (annotation != null) {
+                RequestParameter requestParameter = (RequestParameter) annotation;
+
+                switch (requestParameter.paramType()) {
+
+                }
+            }*/
+
             // query
             handleParam(parameters.getQueries(), invokedParameter);
             // param
@@ -174,30 +185,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         if (doHandleParam(parameters, invokedParameter, requestType)) return;
 
         if (invokedParameter.getValue() == null) {
-            List<Field> fields = ReflectionHelper.getDeclaredFields(invokedParameter.getType());
-            Object instance = ReflectionHelper.newInstance(invokedParameter.getType());
-            int i = 0;
-            while (i < fields.size()) {
-                ExecutableArgument parameter = typeOf(fields.get(i), i);
-                var type = parameter.getType();
-                if (!TypeHelper.isBaseType(type) && type != MultipartFile.class &&
-                        !TypeHelper.isAbstractOrInterface(type) && TypeHelper.hasDefaultConstructor(type)) {
-                    try {
-                        Object newInstance = ReflectionHelper.newInstance(type);
-                        handleInstance(parameters, newInstance, parameter);
-                        assert instance != null;
-                        ReflectionHelper.invokeSetMethod(instance, fields.get(i), newInstance);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    doHandleFiled(parameters, instance, fields.get(i), parameter, requestType);
-                }
-
-                i++;
-            }
-            invokedParameter.setValue(instance);
-            doHandleParam(parameters, invokedParameter, requestType);
+            handleFields(parameters, invokedParameter, requestType);
         }
 
         /*if (TypeHelper.isBaseType(invokedParameter.getType())
@@ -206,6 +194,35 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             LOGGER.debug("type is base type");
             doHandleParam(parameters, invokedParameter);
         }*/
+    }
+
+    public void handleFields(RouterRequestValues parameters, ExecutableArgument invokedParameter, MediaType requestType) {
+        Class<?> parameterType = invokedParameter.getType();
+        List<Field> fields = ReflectionHelper.getDeclaredFields(parameterType);
+        Object instance = ReflectionHelper.newInstance(parameterType);
+        int i = 0;
+        while (i < fields.size()) {
+            ExecutableArgument parameter = typeOf(fields.get(i), i);
+            var type = parameter.getType();
+            if (!TypeHelper.isBaseType(type) && type != MultipartFile.class &&
+                    !TypeHelper.isAbstractOrInterface(type) && TypeHelper.hasDefaultConstructor(type)
+                    && !type.getName().equals(parameterType.getName())) {
+                try {
+                    Object newInstance = ReflectionHelper.newInstance(type);
+                    handleInstance(parameters, newInstance, parameter);
+                    assert instance != null;
+                    ReflectionHelper.invokeSetMethod(instance, fields.get(i), newInstance);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                doHandleFiled(parameters, instance, fields.get(i), parameter, requestType);
+            }
+
+            i++;
+        }
+        invokedParameter.setValue(instance);
+        doHandleParam(parameters, invokedParameter, requestType);
     }
 
     public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field,

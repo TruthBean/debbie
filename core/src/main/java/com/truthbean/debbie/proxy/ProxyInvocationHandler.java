@@ -159,6 +159,10 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
                 }
             }
 
+            if (invokeException != null) {
+                throw invokeException;
+            }
+
             if (!catchedExceptions.isEmpty()) {
                 throw catchedExceptions.values().iterator().next();
             }

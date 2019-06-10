@@ -18,6 +18,10 @@ import java.util.stream.Collectors;
 public class MvcProperties extends BaseProperties implements DebbieProperties {
     //===========================================================================
     /**
+     * static resources mapping, only support /XX/**, like /static/**, or /resources/**
+     */
+    public static final String STATIC_RESOURCES_MAPPING = "debbie.web.static-resources-mapping";
+    /**
      * use ** to replace path, like **.do, /api/**, /api/**.do
      * NOT: but do not support multi **, like /api/**-controller/**.do
      */
@@ -56,6 +60,7 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
         MvcProperties properties = new MvcProperties();
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder()
+                .staticResourcesMapping(properties.getStringValue(STATIC_RESOURCES_MAPPING, "/static/**"))
                 .dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"))
                 .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
                 .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, false));

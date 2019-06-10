@@ -76,13 +76,23 @@ public class DispatcherServlet extends HttpServlet {
 
         var requestAdapter = new ServletRouterRequest(req);
 
-        var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
-        LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
-        RouterResponse response = MvcRouterHandler.handleRouter(routerInfo, handler);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration);
+        if (bytes != null) {
+            resp.setContentLength(bytes.length);
+            try (var outputStream = resp.getOutputStream()) {
+                outputStream.write(bytes);
+            } catch (IOException e) {
+                LOGGER.error(" ", e);
+            }
+        } else {
+            var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
+            LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
+            RouterResponse response = MvcRouterHandler.handleRouter(routerInfo, handler);
 
-        // handle response
-        ServletResponseHandler handler = new ServletResponseHandler(req, resp);
-        handler.handle(response);
+            // handle response
+            ServletResponseHandler handler = new ServletResponseHandler(req, resp);
+            handler.handle(response);
+        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherServlet.class);

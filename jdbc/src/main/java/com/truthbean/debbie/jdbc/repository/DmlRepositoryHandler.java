@@ -64,9 +64,21 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return entityClass;
     }
 
-    private static class ConditionAndValue {
+    protected static class ConditionAndValue {
         private String conditionSql;
         private List<Object> conditionValues;
+
+        public String getConditionSql() {
+            return conditionSql;
+        }
+
+        public List<Object> getConditionValues() {
+            return conditionValues;
+        }
+
+        public boolean isEmpty() {
+            return conditionSql.isBlank() || conditionValues.isEmpty();
+        }
     }
 
     public boolean deleteById(Connection connection, ID id) throws TransactionException {
@@ -77,7 +89,15 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, id) > 0L;
     }
 
-    private ConditionAndValue resolveCondition(EntityInfo<E> entityInfo, boolean withNull) {
+    protected <T> ConditionAndValue resolveCondition(T condition, boolean withNull) {
+        if (condition != null) {
+            var conditionInfo = entityResolver.resolveEntity(condition);
+            return resolveCondition(conditionInfo, withNull);
+        }
+        return new ConditionAndValue();
+    }
+
+    private <T> ConditionAndValue resolveCondition(EntityInfo<T> entityInfo, boolean withNull) {
         List<ColumnInfo> columns = entityInfo.getColumnInfoList();
 
         var sqlBuilder = DynamicSqlBuilder.sql();
@@ -94,8 +114,13 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var conditionAndValue = new ConditionAndValue();
         conditionAndValue.conditionSql = sqlBuilder.builder();
-        if (conditionAndValue.conditionSql.startsWith("and")) {
-            conditionAndValue.conditionSql = conditionAndValue.conditionSql.substring(3);
+        var trim = conditionAndValue.conditionSql.trim();
+        if (trim.startsWith("and") || trim.startsWith("AND")) {
+            var indexOf = conditionAndValue.conditionSql.indexOf("and");
+            if (indexOf == -1) {
+                indexOf = conditionAndValue.conditionSql.indexOf("AND");
+            }
+            conditionAndValue.conditionSql = " " + conditionAndValue.conditionSql.substring(indexOf + 3);
         }
         conditionAndValue.conditionValues = columnValues;
         return conditionAndValue;
@@ -106,12 +131,17 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo, withNull);
 
-        var sqlBuilder = DynamicSqlBuilder.sql().delete().from(table).where().extra(conditionAndValue.conditionSql);
+        var sqlBuilder = DynamicSqlBuilder.sql().delete().from(table);
+        if (!conditionAndValue.isEmpty()) {
+            sqlBuilder.where().extra(conditionAndValue.conditionSql);
 
-        List<Object> columnValues = conditionAndValue.conditionValues;
-
-        var sql = sqlBuilder.builder();
-        return super.update(connection, sql, columnValues.toArray());
+            List<Object> columnValues = conditionAndValue.conditionValues;
+            var sql = sqlBuilder.builder();
+            return super.update(connection, sql, columnValues.toArray());
+        } else {
+            var sql = sqlBuilder.builder();
+            return super.update(connection, sql);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -179,7 +209,8 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var sql = DynamicSqlBuilder.sql().update(table).set(columnNames);
-        if (whereSql.startsWith("where")) {
+        var trimWhereSql = whereSql.trim();
+        if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
             sql.extra(whereSql);
         } else {
             sql.where().extra(whereSql);
@@ -200,11 +231,32 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var conditionInfo = entityResolver.resolveEntity(condition);
-        var conditionAndValues = resolveCondition(conditionInfo, withNull);
-        var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
-                .where().extra(conditionAndValues.conditionSql).builder();
-        return super.queryOne(connection, sql, entityClass, conditionAndValues.conditionValues.toArray());
+        var sql = DynamicSqlBuilder.sql().select(columnNames).from(table);
+
+        var conditionAndValues = resolveCondition(condition, withNull);
+        if (!conditionAndValues.isEmpty()) {
+            sql.where().extra(conditionAndValues.conditionSql);
+            return super.queryOne(connection, sql.builder(), entityClass, conditionAndValues.conditionValues.toArray());
+        } else {
+            return super.queryOne(connection, sql.builder(), entityClass);
+        }
+    }
+
+    protected <T> DynamicSqlBuilder select(T entity) {
+        if (entity != null) {
+            var entityInfo = entityResolver.resolveEntity(entity);
+
+            var table = entityInfo.getTable();
+            var columns = entityInfo.getColumnInfoList();
+
+            List<String> columnNames = new LinkedList<>();
+            for (ColumnInfo column : columns) {
+                columnNames.add(column.getColumnName());
+            }
+
+            return DynamicSqlBuilder.sql().select(columnNames).from(table);
+        }
+        return null;
     }
 
     private SqlAndArgs<E> preSelect(E condition, boolean withNull) {
@@ -223,10 +275,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         Object[] args = null;
 
         if (condition != null) {
-            var conditionInfo = entityResolver.resolveEntity(condition);
-            var conditionAndValues = resolveCondition(conditionInfo, withNull);
-            sqlBuilder.where().extra(conditionAndValues.conditionSql);
-            args = conditionAndValues.conditionValues.toArray();
+            var conditionAndValues = resolveCondition(condition, withNull);
+            if (!conditionAndValues.isEmpty()) {
+                sqlBuilder.where().extra(conditionAndValues.conditionSql);
+                args = conditionAndValues.conditionValues.toArray();
+            }
         }
 
         var sqlAndArgs = new SqlAndArgs<E>();
@@ -280,10 +333,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         Object[] args = null;
 
         if (condition != null) {
-            var conditionInfo = entityResolver.resolveEntity(condition);
-            var conditionAndValues = resolveCondition(conditionInfo, withNull);
-            sqlBuilder.where().extra(conditionAndValues.conditionSql);
-            args = conditionAndValues.conditionValues.toArray();
+            var conditionAndValues = resolveCondition(condition, withNull);
+            if (!conditionAndValues.isEmpty()) {
+                sqlBuilder.where().extra(conditionAndValues.conditionSql);
+                args = conditionAndValues.conditionValues.toArray();
+            }
         }
 
         var sql = sqlBuilder.builder();

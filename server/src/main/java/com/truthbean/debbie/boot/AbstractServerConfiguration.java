@@ -12,7 +12,7 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
 
     private int port = 8080;
     private String host = "localhost";
-    private boolean web = false;
+    private boolean web = true;
 
     protected AbstractServerConfiguration() {
     }
