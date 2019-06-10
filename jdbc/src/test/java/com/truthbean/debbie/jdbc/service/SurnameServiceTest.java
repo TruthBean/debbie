@@ -1,7 +1,7 @@
 package com.truthbean.debbie.jdbc.service;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.server.DebbieApplicationFactory;
+import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

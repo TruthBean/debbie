@@ -19,7 +19,7 @@ public class UserService {
     }
 
     public void login() {
-        var body = "{\"username\": \"server\",\"password\": \"oceanai\"}";
+        var body = "{\"username\": \"admin\",\"password\": \"admin\"}";
         List<String> response = userHttpClient.login(body);
         System.out.println(response);
     }

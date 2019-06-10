@@ -18,7 +18,7 @@ public class UserHttpClientTest {
 
     @Test
     public void testLogin() {
-        var body = "{\"username\": \"server\",\"password\": \"oceanai\"}";
+        var body = "{\"username\": \"admin\",\"password\": \"admin\"}";
         List<String> response = userHttpClient.login(body);
         System.out.println(response);
     }

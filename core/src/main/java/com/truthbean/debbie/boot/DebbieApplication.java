@@ -1,4 +1,4 @@
-package com.truthbean.debbie.server;
+package com.truthbean.debbie.boot;
 
 /**
  * @author TruthBean

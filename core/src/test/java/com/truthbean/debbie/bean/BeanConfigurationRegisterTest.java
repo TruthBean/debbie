@@ -1,6 +1,6 @@
 package com.truthbean.debbie.bean;
 
-import com.truthbean.debbie.server.DebbieApplicationFactory;
+import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
