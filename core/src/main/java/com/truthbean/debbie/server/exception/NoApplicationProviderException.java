@@ -1,4 +1,4 @@
-package com.truthbean.debbie.boot.exception;
+package com.truthbean.debbie.server.exception;
 
 /**
  * @author TruthBean

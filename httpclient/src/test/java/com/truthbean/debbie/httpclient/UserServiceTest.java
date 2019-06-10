@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.server.DebbieApplicationFactory;
 import org.junit.jupiter.api.Test;
 
 class UserServiceTest {

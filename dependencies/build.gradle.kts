@@ -69,7 +69,7 @@ dependencyManagement {
         dependency("com.truthbean.debbie:debbie-servlet:$projectVersion")
         dependency("com.truthbean.debbie:debbie-httpclient:$projectVersion")
         dependency("com.truthbean.debbie:debbie-hikari:$projectVersion")
-        dependency("com.truthbean.debbie:debbie-boot:$projectVersion")
+        dependency("com.truthbean.debbie:debbie-server:$projectVersion")
         dependency("com.truthbean.debbie:debbie-tomcat:$projectVersion")
         dependency("com.truthbean.debbie:debbie-undertow:$projectVersion")
         dependency("com.truthbean.debbie:debbie-netty:$projectVersion")

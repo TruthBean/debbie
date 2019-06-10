@@ -1,4 +1,4 @@
-package com.truthbean.debbie.boot;
+package com.truthbean.debbie.server;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;

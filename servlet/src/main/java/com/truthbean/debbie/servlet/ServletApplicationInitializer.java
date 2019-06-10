@@ -1,10 +1,7 @@
 package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.boot.AbstractApplicationFactory;
-import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.server.DebbieApplicationFactory;
 import com.truthbean.debbie.watcher.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

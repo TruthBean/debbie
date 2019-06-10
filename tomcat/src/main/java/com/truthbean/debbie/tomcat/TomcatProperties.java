@@ -1,7 +1,7 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.boot.BaseServerProperties;
+import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 
 import java.util.Objects;

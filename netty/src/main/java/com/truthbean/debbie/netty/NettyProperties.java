@@ -1,7 +1,7 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.boot.BaseServerProperties;
+import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.mvc.MvcConfiguration;

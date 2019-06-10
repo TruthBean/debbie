@@ -14,5 +14,5 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry exported="true" kind="src" path="/debbie-mvc"/>
 	<classpathentry exported="true" kind="src" path="/debbie-core"/>
-	<classpathentry kind="output" path="/debbie-boot/bin/default"/>
+	<classpathentry kind="output" path="/debbie-server/bin/default"/>
 </classpath>

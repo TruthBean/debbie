@@ -1,7 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.server.DebbieModuleStarter;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
 /**

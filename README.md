@@ -40,14 +40,14 @@ for microservice
     com.truthbean.debbie:debbie-jdbc:current
     com.zaxxer:HikariCP:3.3.1
     
-#### boot:
+#### server:
     org.slf4j:slf4j-api:1.7.26
     com.truthbean.debbie:debbie-mvc:current
     
 #### tomcat:
     org.slf4j:slf4j-api:1.7.26
     com.truthbean.debbie:debbie-servlet:current
-    com.truthbean.debbie:debbie-boot:current
+    com.truthbean.debbie:debbie-server:current
     
     org.apache.tomcat.embed:tomcat-embed-core:9.0.19
     org.apache.tomcat.embed:tomcat-embed-jasper:9.0.19
@@ -55,13 +55,13 @@ for microservice
     
 #### undertow:
     org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-boot:current
+    com.truthbean.debbie:debbie-server:current
     
     io.undertow:undertow-core:2.0.20.Final
     
 #### netty:
     org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-boot:current
+    com.truthbean.debbie:debbie-server:current
     
     io.netty:netty-all:4.1.36.Final
 

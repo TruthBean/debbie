@@ -1,6 +1,6 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.server.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

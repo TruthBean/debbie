@@ -1,6 +1,6 @@
 package com.truthbean.debbie.tomcat;
 
-import com.truthbean.debbie.boot.AbstractServerConfiguration;
+import com.truthbean.debbie.server.AbstractServerConfiguration;
 
 /**
  * @author TruthBean

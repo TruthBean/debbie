@@ -33,6 +33,6 @@
 	<classpathentry exported="true" kind="src" path="/debbie-core"/>
 	<classpathentry exported="true" kind="src" path="/debbie-tomcat"/>
 	<classpathentry exported="true" kind="src" path="/debbie-servlet"/>
-	<classpathentry exported="true" kind="src" path="/debbie-boot"/>
+	<classpathentry exported="true" kind="src" path="/debbie-server"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
