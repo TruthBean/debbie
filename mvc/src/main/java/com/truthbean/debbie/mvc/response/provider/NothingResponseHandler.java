@@ -1,15 +1,15 @@
-package com.truthbean.debbie.mvc.response.view;
+package com.truthbean.debbie.mvc.response.provider;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 
 /**
  * @author TruthBean
- * @since 0.0.1
+ * @since 0.0.2
  */
-public class NoTemplateViewHandler extends AbstractTemplateViewHandler {
+public class NothingResponseHandler extends AbstractRestResponseHandler<Void> {
     @Override
-    public Object transform(Object o) {
+    public String transform(Void aVoid) {
         return null;
     }
 

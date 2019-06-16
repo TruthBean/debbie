@@ -13,6 +13,7 @@ import com.truthbean.debbie.servlet.filter.csrf.CsrfFilter;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,14 +26,10 @@ public class ServletContextHandler {
     private final BeanFactoryHandler beanFactoryHandler;
     private final BeanInitialization beanInitialization;
 
-    public ServletContextHandler(ServletContext servletContext, final Set<Class<?>> classes, BeanFactoryHandler handler) {
+    public ServletContextHandler(ServletContext servletContext, BeanFactoryHandler handler) {
         setServletConfiguration();
 
-        servletConfiguration.addScanClasses(classes);
-        Set<Class<?>> beanClasses = servletConfiguration.getTargetClasses();
         beanInitialization = handler.getBeanInitialization();
-        beanInitialization.init(beanClasses);
-        handler.refreshBeans();
         this.beanFactoryHandler = handler;
 
         handleServletContext(servletContext);
@@ -53,9 +50,14 @@ public class ServletContextHandler {
         // staticResourcesServlet
         StaticResourcesServlet staticResourcesServlet = new StaticResourcesServlet(servletConfiguration, beanFactoryHandler);
         // servlet <url-pattern> should start with / or * and cannot contain **
-        var staticResourcesMapping = servletConfiguration.getStaticResourcesMapping().replace("**", "*");
+        Map<String, String> staticResourcesMapping = servletConfiguration.getStaticResourcesMapping();
+        String[] staticResourcesMappings = new String[staticResourcesMapping.size()];
+        String[] keySet = staticResourcesMapping.keySet().toArray(new String[0]);
+        for (int i = 0, length = keySet.length; i < length; i++) {
+            staticResourcesMappings[i] = keySet[i].replace("**", "*");
+        }
         servletContext.addServlet("staticResourcesServlet", staticResourcesServlet)
-                .addMapping(staticResourcesMapping);
+                .addMapping(staticResourcesMappings);
 
         // dispatcherServlet
         DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration, beanFactoryHandler);
@@ -67,7 +69,7 @@ public class ServletContextHandler {
     }
 
     public void registerRouter() {
-        MvcRouterRegister.registerRouter(servletConfiguration, beanInitialization);
+        MvcRouterRegister.registerRouter(servletConfiguration, beanFactoryHandler);
     }
 
     public void registerFilter(ServletContext servletContext) {

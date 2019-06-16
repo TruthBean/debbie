@@ -198,8 +198,8 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
 
     public void handleFields(RouterRequestValues parameters, ExecutableArgument invokedParameter, MediaType requestType) {
         Class<?> parameterType = invokedParameter.getType();
-        List<Field> fields = ReflectionHelper.getDeclaredFields(parameterType);
         Object instance = ReflectionHelper.newInstance(parameterType);
+        List<Field> fields = ReflectionHelper.getDeclaredFields(parameterType);
         int i = 0;
         while (i < fields.size()) {
             ExecutableArgument parameter = typeOf(fields.get(i), i);

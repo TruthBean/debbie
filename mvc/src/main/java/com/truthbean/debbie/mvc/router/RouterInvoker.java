@@ -2,8 +2,13 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
+import com.truthbean.debbie.mvc.response.RouterResponse;
+import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
+import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
+import com.truthbean.debbie.mvc.response.view.NoViewRender;
 import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
+import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +26,9 @@ public class RouterInvoker {
         this.routerInfo = routerInfo;
     }
 
-    public Object action(BeanFactoryHandler beanFactoryHandler) {
+    public void action(RouterResponse routerResponse, BeanFactoryHandler beanFactoryHandler) {
         if (routerInfo == null) {
-            return null;
+            return;
         }
 
         var httpRequest = routerInfo.getRequest();
@@ -46,34 +51,47 @@ public class RouterInvoker {
         var type = routerInfo.getRouterClass();
         var method = routerInfo.getMethod();
         Object any = beanFactoryHandler.factoryAndInvokeMethod(type, method, values);
-        /*if (any == null) {
-            throw new NullPointerException(method.getName() + " return null");
-        }*/
 
         for (ExecutableArgument methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
         }
 
-        return resolveResponse(any, httpRequest.getResponseType().toMediaType());
+        resolveResponse(any, httpRequest.getResponseType().toMediaType(), routerResponse);
     }
 
-    private Object resolveResponse(Object methodResult, MediaType responseType) {
+    private void resolveResponse(Object methodResult, MediaType responseType, RouterResponse routerResponse) {
         var response = routerInfo.getResponse();
+        AbstractResponseContentHandler handler = response.getHandler();
+        if (handler != null && handler.getClass() != NothingResponseHandler.class) {
+            handler.handleResponse(routerResponse, methodResult);
+            return;
+        }
         if (response.hasTemplate()) {
             if (methodResult instanceof StaticResourcesView) {
-                return ((StaticResourcesView) methodResult).render();
+                var content = ((StaticResourcesView) methodResult).render();
+                routerResponse.setContent(content);
+            } else if (methodResult instanceof AbstractTemplateView) {
+                try {
+                    Object result = ((AbstractTemplateView) methodResult).render();
+                    if (!(result instanceof NoViewRender)) {
+                        routerResponse.setContent(result);
+                        return;
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("render error. ", e);
+                }
             }
-            return methodResult;
+            routerResponse.setContent(methodResult);
         } else {
-            if (methodResult == null) return null;
+            if (methodResult == null) return;
 
-            var provider = ResponseHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());
+            var provider = ResponseContentHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());
             var filter = provider.transform(methodResult);
             if (filter == null) {
                 throw new RuntimeException(methodResult.toString() + " to " + responseType.getValue() + " error");
             }
             LOGGER.debug(filter.toString());
-            return filter;
+            routerResponse.setContent(filter);
         }
     }
 

@@ -255,6 +255,21 @@ public class ReflectionHelper {
         return null;
     }
 
+    public static void invokeFieldBySetMethod(Object target, Field field, Object arg) {
+        Class<?> clazz = target.getClass();
+        boolean invoked = false;
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            try {
+                invokeSetMethod(superClass, target, field.getName(), field.getType(), arg);
+                invoked = true;
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
+        if (!invoked) {
+            setField(target, field, arg);
+        }
+    }
+
     public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Class<?> fieldType, Object arg)
             throws NoSuchMethodException {
         var methodName = "set" + handleFieldName(fieldName);

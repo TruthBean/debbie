@@ -1,5 +1,7 @@
 package com.truthbean.debbie.servlet.response.view;
 
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
 
 /**
@@ -12,5 +14,10 @@ public class JspHandler extends AbstractTemplateViewHandler {
     @Override
     public Object transform(Object o) {
         return null;
+    }
+
+    @Override
+    public MediaTypeInfo getResponseType() {
+        return MediaType.TEXT_HTML_UTF8.info();
     }
 }

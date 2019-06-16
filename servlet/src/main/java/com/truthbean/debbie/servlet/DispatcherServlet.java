@@ -76,7 +76,7 @@ public class DispatcherServlet extends HttpServlet {
 
         var requestAdapter = new ServletRouterRequest(req);
 
-        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration.getStaticResourcesMapping());
         if (bytes != null) {
             resp.setContentLength(bytes.length);
             try (var outputStream = resp.getOutputStream()) {

@@ -57,6 +57,7 @@ public final class ResourcesHandler {
 
     public static byte[] handleStaticBytesResource(String resource) {
         InputStream inputStream = handle(resource);
+        if (inputStream == null) return null;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
             copy(inputStream, output);

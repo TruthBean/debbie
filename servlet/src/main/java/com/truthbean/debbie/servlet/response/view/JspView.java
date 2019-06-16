@@ -1,6 +1,7 @@
 package com.truthbean.debbie.servlet.response.view;
 
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
+import com.truthbean.debbie.mvc.response.view.NoViewRender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,8 +75,8 @@ public class JspView extends AbstractTemplateView {
     }
 
     @Override
-    public Object render() {
-        throw new UnsupportedOperationException("should not implement");
+    public NoViewRender render() {
+        return new NoViewRender();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JspView.class);

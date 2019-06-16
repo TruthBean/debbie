@@ -4,6 +4,7 @@ import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.util.StringUtils;
 
 import java.util.*;
@@ -18,7 +19,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * static resources mapping
      */
-    private String staticResourcesMapping = "/static/**";
+    private Map<String, String> staticResourcesMappingLocation = new HashMap<>();
 
     /**
      * dynamic router dispatcher mapping
@@ -56,6 +57,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
     private String templateSuffix;
     private String templatePrefix;
 
+    private Class<? extends AbstractResponseContentHandler> responseContentHandler;
+
     public MvcConfiguration() {
     }
 
@@ -64,7 +67,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public void copyFrom(MvcConfiguration configuration) {
-        this.staticResourcesMapping = configuration.staticResourcesMapping;
+        this.staticResourcesMappingLocation.putAll(configuration.staticResourcesMappingLocation);
         this.dispatcherMapping = configuration.dispatcherMapping;
 
         this.allowClientResponseType = configuration.allowClientResponseType;
@@ -80,14 +83,15 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
         this.templatePrefix = configuration.templatePrefix;
         this.templateSuffix = configuration.templateSuffix;
+        this.responseContentHandler = configuration.responseContentHandler;
     }
 
-    public String getStaticResourcesMapping() {
-        return staticResourcesMapping;
+    public Map<String, String> getStaticResourcesMapping() {
+        return staticResourcesMappingLocation;
     }
 
-    public void setStaticResourcesMapping(String staticResourcesMapping) {
-        this.staticResourcesMapping = staticResourcesMapping;
+    public void setStaticResourcesMapping(Map<String, String> staticResourcesMappingLocation) {
+        this.staticResourcesMappingLocation.putAll(staticResourcesMappingLocation);
     }
 
     public String getDispatcherMapping() {
@@ -148,6 +152,14 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
     public void setTemplatePrefix(String templatePrefix) {
         this.templatePrefix = templatePrefix;
+    }
+
+    public Class<? extends AbstractResponseContentHandler> getResponseContentHandler() {
+        return responseContentHandler;
+    }
+
+    public void setResponseContentHandler(Class<? extends AbstractResponseContentHandler> responseContentHandler) {
+        this.responseContentHandler = responseContentHandler;
     }
 
     public boolean noTemplate() {
@@ -233,9 +245,10 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
-        public Builder template(String suffix, String prefix) {
+        public Builder template(String suffix, String prefix, Class<? extends AbstractResponseContentHandler> responseContentHandler) {
             configuration.templateSuffix = suffix;
             configuration.templatePrefix = prefix;
+            configuration.responseContentHandler = responseContentHandler;
             return this;
         }
 
@@ -267,25 +280,29 @@ public class MvcConfiguration extends BeanScanConfiguration {
         /**
          * static resources mapping, only support /XX/**, like /static/**, or /resources/**
          *
-         * @param staticResourcesMapping static resources mapping
+         * @param staticResourcesMappingLocation static resources mapping and location
          * @return Builder
          */
-        public Builder staticResourcesMapping(String staticResourcesMapping) {
-            if (staticResourcesMapping.startsWith("/") && staticResourcesMapping.endsWith("**")) {
-                int startCount = 0;
-                char[] chars = staticResourcesMapping.toCharArray();
-                for (char c : chars) {
-                    if (c == '*') {
-                        startCount++;
-                    }
-                }
+        public Builder staticResourcesMapping(Map<String, String> staticResourcesMappingLocation) {
+            if (staticResourcesMappingLocation != null && !staticResourcesMappingLocation.isEmpty()) {
+                staticResourcesMappingLocation.forEach((mapping, location) -> {
+                    if (mapping.startsWith("/") && mapping.endsWith("**")) {
+                        int starCount = 0;
+                        char[] chars = mapping.toCharArray();
+                        for (char c : chars) {
+                            if (c == '*') {
+                                starCount++;
+                            }
+                        }
 
-                if (startCount == 2) {
-                    configuration.staticResourcesMapping = staticResourcesMapping;
-                }
-            } else {
-                throw new DispatcherMappingFormatException(
-                        "##debbie.web.static-resources-mapping## only support /XX/**, like /static/**, or /resources/**");
+                        if (starCount == 2) {
+                            configuration.staticResourcesMappingLocation.put(mapping, location);
+                        }
+                    } else {
+                        throw new DispatcherMappingFormatException(
+                                "##debbie.web.static-resources-mapping-location## only support /XX/**=XX, like /static/**=static, or /resources/**=META-INF/resources;/webjar/**=/META-INF/resources/webjars");
+                    }
+                });
             }
             return this;
         }

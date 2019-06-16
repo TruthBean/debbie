@@ -4,20 +4,21 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
+import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
+import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,13 +30,20 @@ public class MvcRouterHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterHandler.class);
 
-    public static byte[] handleStaticResources(RouterRequest routerRequest, MvcConfiguration configuration) {
-        var url = routerRequest.getUrl();
+    public static byte[] handleStaticResources(RouterRequest routerRequest, Map<String, String> mappingAndLocation) {
+        final var url = routerRequest.getUrl();
         LOGGER.debug("router uri: {}", url);
-        String staticResourcesMapping = configuration.getStaticResourcesMapping();
-        staticResourcesMapping = staticResourcesMapping.replace("**", "");
-        if (url.startsWith(staticResourcesMapping)) {
-            return ResourcesHandler.handleStaticBytesResource(url);
+        for (Map.Entry<String, String> entry : mappingAndLocation.entrySet()) {
+            var mapping = entry.getKey();
+            var location = entry.getValue();
+            mapping = mapping.replace("**", "");
+            if (url.startsWith(mapping)) {
+                String resource = location + url.substring(mapping.length());
+                var result = ResourcesHandler.handleStaticBytesResource(resource);
+                if (result != null) {
+                    return result;
+                }
+            }
         }
         return null;
     }
@@ -89,17 +97,19 @@ public class MvcRouterHandler {
             if (!matchResponseType) {
                 continue;
             }
-            if (responseType.isAny() && responseTypeInRequestHeader.isAny()) {
-                response.setResponseType(defaultResponseTypes.iterator().next());
-                response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
-            } else {
-                if (responseType.isAny() &&
-                        MediaTypeInfo.contains(defaultResponseTypes, responseTypeInRequestHeader)) {
-                    response.setResponseType(responseTypeInRequestHeader);
-                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
-                } else if (configuration.isAllowClientResponseType() && !responseTypeInRequestHeader.isAny()) {
-                    response.setResponseType(responseTypeInRequestHeader);
-                    response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+            if (response.getHandler() == null || response.getHandler().getClass() == NothingResponseHandler.class) {
+                if (responseType.isAny() && responseTypeInRequestHeader.isAny()) {
+                    response.setResponseType(defaultResponseTypes.iterator().next());
+                    response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+                } else {
+                    if (responseType.isAny() &&
+                            MediaTypeInfo.contains(defaultResponseTypes, responseTypeInRequestHeader)) {
+                        response.setResponseType(responseTypeInRequestHeader);
+                        response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+                    } else if (configuration.isAllowClientResponseType() && !responseTypeInRequestHeader.isAny()) {
+                        response.setResponseType(responseTypeInRequestHeader);
+                        response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+                    }
                 }
             }
             LOGGER.debug("match response type: " + responseType);
@@ -232,7 +242,8 @@ public class MvcRouterHandler {
         }
         try {
             RouterInvoker invoker = new RouterInvoker(routerInfo);
-            responseValue = invoker.action(handler);
+            invoker.action(routerResponse, handler);
+            return routerResponse;
         } catch (Exception e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);

@@ -60,7 +60,7 @@ public class DispatcherHttpHandler implements HttpHandler {
             return;
         }
         RouterRequest httpRequest = getHttpRequestInfo(exchange);
-        byte[] bytes = MvcRouterHandler.handleStaticResources(httpRequest, configuration);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(httpRequest, configuration.getStaticResourcesMapping());
         if (bytes != null) {
             var sender = exchange.getResponseSender();
             sender.send(ByteBuffer.wrap(bytes));

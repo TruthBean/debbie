@@ -96,7 +96,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
     }
 
     private void handleRouter(ChannelHandlerContext ctx) {
-        byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
         if (bytes != null) {
             RouterResponse routerResponse = new RouterResponse();
             if (handleFilter(routerRequest, routerResponse, ctx)) {

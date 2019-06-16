@@ -8,6 +8,7 @@ dependencyManagement {
         dependency("org.ow2.asm:asm:$asmVersion")
         val jacksonVersion: String by project
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+        dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
         val slf4jVersion: String by project
         dependency("org.slf4j:slf4j-api:$slf4jVersion")
 
@@ -73,6 +74,25 @@ dependencyManagement {
         dependency("com.truthbean.debbie:debbie-tomcat:$projectVersion")
         dependency("com.truthbean.debbie:debbie-undertow:$projectVersion")
         dependency("com.truthbean.debbie:debbie-netty:$projectVersion")
+
+        // extra
+
+        // mybatis
+        val mybatisVersion: String by project
+        dependency("org.mybatis:mybatis:$mybatisVersion")
+
         dependency("com.truthbean.debbie:debbie-mybatis:$projectVersion")
+
+        // swagger
+        val swaggerUiVersion: String by project
+        dependency("org.webjars:swagger-ui:$swaggerUiVersion")
+
+        val swaggerVersion: String by project
+        dependency("io.swagger.core.v3:swagger-integration:$swaggerVersion")
+        dependency("io.swagger.core.v3:swagger-core:$swaggerVersion")
+        dependency("io.swagger.core.v3:swagger-models:$swaggerVersion")
+        dependency("io.swagger.core.v3:swagger-annotations:$swaggerVersion")
+
+        dependency("com.truthbean.debbie:debbie-swagger:$projectVersion")
     }
 }

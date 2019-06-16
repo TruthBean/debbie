@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,14 @@ public final class JacksonUtils {
             XML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
         }
 
+        static final YAMLMapper YAML_MAPPER = new YAMLMapper();
+
+        static {
+            YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            YAML_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+            YAML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
+        }
+
     }
 
     /**
@@ -57,6 +66,7 @@ public final class JacksonUtils {
      */
     private static final ObjectMapper OBJECT_MAPPER = Instance.OBJECT_MAPPER;
     private static final XmlMapper XML_MAPPER = Instance.XML_MAPPER;
+    private static final YAMLMapper YAML_MAPPER = Instance.YAML_MAPPER;
 
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
@@ -127,33 +137,6 @@ public final class JacksonUtils {
             LOGGER.error("", e);
         }
         return null;
-    }
-
-    public static <T> T xmlToBean(String xmlStr, Class<T> clazz) {
-        var mapper = XML_MAPPER.copy();
-        try {
-            return mapper.readValue(xmlStr, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
-    }
-
-    /**
-     * @param xmlInputStream xml stream
-     * @param clazz class of bean
-     * @param <T> class
-     * @return obj
-     */
-    public static <T> T xmlStreamToBean(InputStream xmlInputStream, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlInputStream, clazz);
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
     }
 
     /**
@@ -305,5 +288,109 @@ public final class JacksonUtils {
             e.printStackTrace();
         }
         return node;
+    }
+
+    public static <T> T xmlToBean(String xmlStr, Class<T> clazz) {
+        var mapper = XML_MAPPER.copy();
+        try {
+            return mapper.readValue(xmlStr, clazz);
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    /**
+     * @param xmlInputStream xml stream
+     * @param clazz class of bean
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T xmlStreamToBean(InputStream xmlInputStream, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlInputStream, clazz);
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    /**
+     * yaml to json
+     * @param yaml yaml string
+     * @return json string
+     */
+    public static String yamlToJson(String yaml) {
+        var yamlMapper = YAML_MAPPER.copy();
+        var json = "{}";
+        try {
+            var node = yamlMapper.readTree(yaml.getBytes());
+            json = toJson(node);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    /**
+     * obj to yaml
+     * @param <T> T
+     * @param object obj
+     * @return yaml string
+     */
+    public static <T> String toYaml(T object) {
+        var yamlMapper = YAML_MAPPER.copy();
+        var yaml = "";
+        try {
+            yaml = yamlMapper.writeValueAsString(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return yaml;
+    }
+
+    /**
+     * yaml to json
+     * @param yaml yaml string
+     * @return json string
+     */
+    public static JsonNode yamlToJsonNode(String yaml) {
+        var yamlMapper = YAML_MAPPER.copy();
+        JsonNode node = NullNode.getInstance();
+        try {
+            node = yamlMapper.readTree(yaml.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return node;
+    }
+
+    public static <T> T yamlToBean(String yaml, Class<T> clazz) {
+        var mapper = YAML_MAPPER.copy();
+        try {
+            return mapper.readValue(yaml, clazz);
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    /**
+     * @param yamlInputStream yaml stream
+     * @param clazz class of bean
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T yamlStreamToBean(InputStream yamlInputStream, Class<T> clazz) {
+        var yamlMapper = YAML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = yamlMapper.readValue(yamlInputStream, clazz);
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
     }
 }

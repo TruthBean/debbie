@@ -33,7 +33,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory {
     public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
         NettyConfiguration configuration = factory.factory(NettyConfiguration.class, beanFactoryHandler);
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        MvcRouterRegister.registerRouter(configuration, beanInitialization);
+        MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
         final SessionManager sessionManager = new SessionManager();
         return new DebbieApplication() {
@@ -41,6 +41,7 @@ public class NettyApplicationFactory extends AbstractApplicationFactory {
             public void start(String... args) {
                 run(configuration, sessionManager, beanFactoryHandler);
                 LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
             }
 
             @Override

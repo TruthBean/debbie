@@ -41,10 +41,14 @@ public class DebbieConfigurationFactory {
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
-            if (configurationClass.isAssignableFrom(value.getClass())) {
+            if (configurationClass == value.getClass()) {
                 LOGGER.debug("configuration class: " + key.getName());
                 return (C) value;
             }
+            /*if (configurationClass.isAssignableFrom(value.getClass())) {
+                LOGGER.debug("configuration class: " + key.getName());
+                return (C) value;
+            }*/
         }
         return null;
     }
@@ -58,7 +62,11 @@ public class DebbieConfigurationFactory {
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             DebbieConfiguration value = classObjectEntry.getValue();
-            if (configurationClass.isAssignableFrom(value.getClass())) {
+            /*if (configurationClass.isAssignableFrom(value.getClass())) {
+                LOGGER.debug("configuration class: " + key.getName());
+                result.add((C) value);
+            }*/
+            if (configurationClass == value.getClass()) {
                 LOGGER.debug("configuration class: " + key.getName());
                 result.add((C) value);
             }
@@ -78,7 +86,11 @@ public class DebbieConfigurationFactory {
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
-            if (configurationClass.isAssignableFrom(key)) {
+            /*if (configurationClass.isAssignableFrom(key)) {
+                LOGGER.debug("configuration class: " + key.getName());
+                return (C) value;
+            }*/
+            if (configurationClass == value.getClass()) {
                 LOGGER.debug("configuration class: " + key.getName());
                 return (C) value;
             }

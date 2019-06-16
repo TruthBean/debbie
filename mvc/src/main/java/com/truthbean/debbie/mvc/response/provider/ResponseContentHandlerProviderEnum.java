@@ -15,22 +15,22 @@ import java.util.ServiceLoader;
  * @since 0.0.1
  * Created on 2018-03-03 09:59
  */
-public enum ResponseHandlerProviderEnum {
+public enum ResponseContentHandlerProviderEnum {
 
     /**
      * json restful
      */
-    JSON_RESTFUL(new JsonResponseContentHandler()),
+    JSON_RESTFUL(new JsonResponseHandler()),
 
     /**
      * xml restful
      */
-    XML_RESTFUL(new XmlResponseContentHandler()),
+    XML_RESTFUL(new XmlResponseHandler()),
 
     /**
      * text restful
      */
-    TEXT_RESTFUL(new TextResponseContentHandler()),
+    TEXT_RESTFUL(new TextResponseHandler()),
 
     /**
      * template view
@@ -39,7 +39,7 @@ public enum ResponseHandlerProviderEnum {
 
     private AbstractResponseContentHandler provider;
 
-    ResponseHandlerProviderEnum(AbstractResponseContentHandler handlerFilter) {
+    ResponseContentHandlerProviderEnum(AbstractResponseContentHandler handlerFilter) {
         this.provider = handlerFilter;
     }
 
@@ -50,7 +50,7 @@ public enum ResponseHandlerProviderEnum {
         if (handlerIterator.hasNext()) {
             search = handlerIterator.next();
         } else {
-            final Logger logger = LoggerFactory.getLogger(ResponseHandlerProviderEnum.class);
+            final Logger logger = LoggerFactory.getLogger(ResponseContentHandlerProviderEnum.class);
             logger.warn("no template handler provider");
             search = new NoTemplateViewHandler();
         }

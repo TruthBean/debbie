@@ -6,6 +6,7 @@ import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.mvc.router.RouterMethodArgumentHandler;
 import com.truthbean.debbie.mvc.router.RouterRequestValues;
+import com.truthbean.debbie.reflection.TypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,18 +52,27 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 Map<String, List> mixValues = parameters.getMixValues();
                 handler.handleParam(mixValues, parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
             case QUERY:
                 handler.handleParam(parameters.getQueries(), parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
             case PATH:
                 handler.handleParam(parameters.getPathAttributes(), parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
@@ -70,6 +80,9 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 Map<String, List> matrix = parameters.getMatrixAttributes();
                 handler.handleParam(matrix, parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
@@ -77,6 +90,9 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 Map<String, List> params = parameters.getParams();
                 handler.handleParam(params, parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
@@ -96,6 +112,9 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 Map<String, List> headers = parameters.getHeaders();
                 handler.handleParam(headers, parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;
@@ -103,6 +122,9 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 Map<String, List> cookieAttributes = parameters.getCookieAttributes();
                 handler.handleParam(cookieAttributes, parameter);
                 if (parameter.getValue() == null) {
+                    if (TypeHelper.isBaseType(parameter.getType())) {
+                        break;
+                    }
                     handler.handleFields(parameters, parameter, requestType);
                 }
                 break;

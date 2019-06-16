@@ -4,7 +4,8 @@ import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
+import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 
 import java.lang.annotation.*;
 
@@ -66,5 +67,5 @@ public @interface Router {
      * @return mediaType
      */
     MediaType responseType() default MediaType.ANY;
-    ResponseHandlerProviderEnum handlerFilter() default ResponseHandlerProviderEnum.JSON_RESTFUL;
+    Class<? extends AbstractResponseContentHandler> handlerClass() default NothingResponseHandler.class;
 }

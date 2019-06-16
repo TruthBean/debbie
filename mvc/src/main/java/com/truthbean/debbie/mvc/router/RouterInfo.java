@@ -9,6 +9,7 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
+import com.truthbean.debbie.util.JacksonUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -227,5 +228,115 @@ public class RouterInfo implements Cloneable {
             clone.request = request.copy();
         }
         return clone;
+    }
+
+    public static class RouterJsonInfo {
+        private String errorInfo;
+
+        private String method;
+
+        private List<String> methodParams;
+
+        private String routerClass;
+
+        private List<String> paths;
+
+        private List<String> requestMethod;
+
+        private String requestType;
+        private RouterRequest request;
+
+        private RouterResponse.RouterJsonResponse response;
+
+        public String getErrorInfo() {
+            return errorInfo;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public List<String> getMethodParams() {
+            return methodParams;
+        }
+
+        public String getRouterClass() {
+            return routerClass;
+        }
+
+        public List<String> getPaths() {
+            return paths;
+        }
+
+        public List<String> getRequestMethod() {
+            return requestMethod;
+        }
+
+        public String getRequestType() {
+            return requestType;
+        }
+
+        public RouterRequest getRequest() {
+            return request;
+        }
+
+        public RouterResponse.RouterJsonResponse getResponse() {
+            return response;
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "\"errorInfo\":\"" + errorInfo + '\"' +
+                    ",\"method\":" + method +
+                    ",\"methodParams\":" + methodParams +
+                    ",\"routerClass\":" + routerClass +
+                    ",\"paths\":" + paths +
+                    ",\"requestMethod\":" + requestMethod +
+                    ",\"requestType\":" + requestType +
+                    ",\"request\":" + request +
+                    ",\"response\":" + response +
+                    '}';
+        }
+    }
+
+    public RouterJsonInfo toJsonInfo() {
+        var jsonInfo = new RouterJsonInfo();
+        jsonInfo.errorInfo = errorInfo;
+        jsonInfo.method = method.toString();
+
+        if (methodParams != null) {
+            jsonInfo.methodParams = new ArrayList<>();
+            for (ExecutableArgument methodParam : methodParams) {
+                jsonInfo.methodParams.add(methodParam.getType().getName());
+            }
+        }
+
+        jsonInfo.routerClass = routerClass.getName();
+
+        if (paths != null) {
+            jsonInfo.paths = new ArrayList<>();
+            for (RouterPathFragments path : paths) {
+                jsonInfo.paths.add(path.getRawPath());
+            }
+        }
+
+        if (requestMethod != null) {
+            jsonInfo.requestMethod = new ArrayList<>();
+            for (HttpMethod httpMethod : requestMethod) {
+                jsonInfo.requestMethod.add(httpMethod.name());
+            }
+        }
+
+        if (response != null) {
+            jsonInfo.response = response.toJsonInfo();
+        }
+
+        jsonInfo.requestType = requestType.getValue();
+        if (request != null) {
+            jsonInfo.request = request.copy();
+        }
+
+        return jsonInfo;
     }
 }

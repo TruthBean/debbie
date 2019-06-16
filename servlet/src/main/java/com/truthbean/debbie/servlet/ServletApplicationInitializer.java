@@ -23,15 +23,19 @@ public class ServletApplicationInitializer extends DebbieApplicationFactory impl
     private BeanFactoryHandler beanFactoryHandler;
 
     public ServletApplicationInitializer() {
-        beanFactoryHandler = getBeanFactoryHandler();
-        super.config();
-        super.callStarter();
+        if (debbieApplication == null) {
+            beanFactoryHandler = getBeanFactoryHandler();
+            super.config();
+            super.callStarter();
+        } else {
+            beanFactoryHandler = debbieApplicationFactory;
+        }
     }
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext ctx) throws ServletException {
         LOGGER.info("ServletContainerInitializer onStartup ...");
-        var handler = new ServletContextHandler(ctx, classes, beanFactoryHandler);
+        var handler = new ServletContextHandler(ctx, beanFactoryHandler);
         handler.registerRouter();
         handler.registerFilter(ctx);
     }

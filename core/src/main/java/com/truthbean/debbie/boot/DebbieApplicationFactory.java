@@ -39,6 +39,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     }
 
     public void config() {
+        LOGGER.debug("init configuration");
         // beanInitialization
         var beanInitialization = super.getBeanInitialization();
         BeanScanConfiguration configuration = ClassesScanProperties.toConfiguration();
@@ -62,6 +63,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     }
 
     public DebbieApplication factoryApplication() {
+        LOGGER.debug("create debbieApplication ...");
         return application.factory(configurationFactory, this);
     }
 
@@ -73,11 +75,16 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         return this;
     }
 
+    protected static DebbieApplication debbieApplication;
+    protected static DebbieApplicationFactory debbieApplicationFactory;
+
     public static DebbieApplication factory() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory();
-        factory.config();
-        factory.callStarter();
-        return factory.factoryApplication();
+        if (debbieApplication != null) return debbieApplication;
+        debbieApplicationFactory = new DebbieApplicationFactory();
+        debbieApplicationFactory.config();
+        debbieApplicationFactory.callStarter();
+        debbieApplication = debbieApplicationFactory.factoryApplication();
+        return debbieApplication;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieApplicationFactory.class);

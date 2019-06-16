@@ -3,6 +3,7 @@ package com.truthbean.debbie.tomcat;
 import com.truthbean.debbie.boot.AbstractApplicationFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.io.PathUtils;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.net.NetWorkUtils;
 import org.apache.catalina.LifecycleException;
@@ -16,10 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author TruthBean
@@ -43,10 +42,25 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
         String webappDir = configuration.getWebappDir();
         var webappPath = new File(webappDir);
         if (!webappPath.exists()) {
-            try {
-                webappDir = Files.createTempDirectory("default-doc-base").toFile().getAbsolutePath();
-            } catch (IOException e) {
-                LOGGER.error("create default-doc-base in temp directory error", e);
+            final String userDir = PathUtils.getUserDir();
+            if (userDir == null) {
+                try {
+                    webappDir = Files.createTempDirectory("default-doc-base").toFile().getAbsolutePath();
+                } catch (IOException e) {
+                    LOGGER.error("create default-doc-base in temp directory error", e);
+                }
+            } else {
+                webappDir = userDir + webappDir;
+                webappPath = new File(webappDir);
+                if (webappPath.exists()) {
+                    webappDir = webappPath.getAbsolutePath();
+                } else {
+                    try {
+                        webappDir = Files.createTempDirectory("default-doc-base").toFile().getAbsolutePath();
+                    } catch (IOException e) {
+                        LOGGER.error("create default-doc-base in temp directory error", e);
+                    }
+                }
             }
         } else {
             webappDir = webappPath.getAbsolutePath();
@@ -71,16 +85,23 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
         ctx.setParentClassLoader(getClass().getClassLoader());
 
         try {
-            Path path = Paths.get(getClass().getResource("/").toURI());
-            LOGGER.debug("configuring app with basedir: " + path.toString());
+            String path;
+            var resource = getClass().getResource("/");
+            LOGGER.debug("resource: " + resource);
+            if (resource == null) {
+                path = new File("").getAbsolutePath();
+            } else {
+                path = Path.of(resource.toURI()).toString();
+            }
+            LOGGER.debug("configuring app with basedir: " + path);
 
             // Declare an alternative location for your "WEB-INF/classes" dir
             // Servlet 3.0 annotation will work
             WebResourceRoot resources = new StandardRoot(ctx);
-            resources.addPreResources(new DirResourceSet(resources, "/WEB-INF/classes", path.toString(), "/"));
+            resources.addPreResources(new DirResourceSet(resources, "/WEB-INF/classes", path, "/"));
             ctx.setResources(resources);
-        } catch (URISyntaxException e) {
-            LOGGER.error("get resources and set base dir of tomcat error", e);
+        } catch (Exception e) {
+            LOGGER.error("get resources and set base dir of tomcat error\n", e);
         }
 
         server.setBaseDir(webappDir);
@@ -104,6 +125,7 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
                     server.getConnector();
                     server.start();
                     LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                    Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat start error", e);
                 }

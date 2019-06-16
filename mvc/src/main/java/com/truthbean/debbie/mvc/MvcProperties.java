@@ -2,6 +2,8 @@ package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
+import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.properties.DebbieProperties;
@@ -18,9 +20,9 @@ import java.util.stream.Collectors;
 public class MvcProperties extends BaseProperties implements DebbieProperties {
     //===========================================================================
     /**
-     * static resources mapping, only support /XX/**, like /static/**, or /resources/**
+     * static resources mapping and location, only support /XX/**=XX, like /static/**=static, or /resources/**=META-INF/resources;/webjar/**=/META-INF/resources/webjars
      */
-    public static final String STATIC_RESOURCES_MAPPING = "debbie.web.static-resources-mapping";
+    private static final String STATIC_RESOURCES_MAPPING_LOCATION = "debbie.web.static-resources-mapping-location";
     /**
      * use ** to replace path, like **.do, /api/**, /api/**.do
      * NOT: but do not support multi **, like /api/**-controller/**.do
@@ -44,6 +46,8 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
     private static final String WEB_VIEW_TEMPLATE_SUFFIX = "debbie.web.view.template.suffix";
     private static final String WEB_VIEW_TEMPLATE_PREFIX = "debbie.web.view.template.prefix";
 
+    public static final String DEFAULT_RESPONSE_HANDLER = "debbie.web.response.default.handler";
+
     //===========================================================================
 
     private static MvcConfiguration configurationCache;
@@ -60,7 +64,7 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
         MvcProperties properties = new MvcProperties();
 
         MvcConfiguration.Builder builder = MvcConfiguration.builder()
-                .staticResourcesMapping(properties.getStringValue(STATIC_RESOURCES_MAPPING, "/static/**"))
+                .staticResourcesMapping(properties.getMapValue(STATIC_RESOURCES_MAPPING_LOCATION, "=", ";"))
                 .dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"))
                 .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
                 .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, false));
@@ -75,7 +79,9 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
             builder.defaultContentTypes(defaultRequestTypes);
         }
 
-        builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX));
+        var nothingResponseHandler = "com.truthbean.debbie.mvc.response.provider.NothingResponseHandler";
+        var responseContentHandler = (Class<? extends AbstractResponseContentHandler>) properties.getClassValue(DEFAULT_RESPONSE_HANDLER, nothingResponseHandler);
+        builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX), responseContentHandler);
 
         boolean csrf = properties.getBooleanValue(SERVER_CSRF, false);
         if (csrf) {

@@ -3,7 +3,10 @@ package com.truthbean.debbie.tomcat;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -30,7 +33,14 @@ public class TomcatProperties extends BaseServerProperties {
         properties.loadAndSet(properties, configuration);
 
         ClassLoader classLoader = ClassLoaderUtils.getDefaultClassLoader();
-        String userDir = Objects.requireNonNull(classLoader.getResource("")).getPath();
+        String userDir;
+        URL userDirUrl = classLoader.getResource("");
+        if (userDirUrl != null) {
+            userDir = userDirUrl.getPath();
+        } else {
+            userDir = System.getProperty("user.dir");
+        }
+        LOGGER.debug("user.dir: " + userDir);
         var webappPath = classLoader.getResource("webapp");
         if (webappPath == null) {
             userDir = userDir + "/../webapp";
@@ -41,4 +51,6 @@ public class TomcatProperties extends BaseServerProperties {
 
         return configuration;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TomcatProperties.class);
 }

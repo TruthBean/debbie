@@ -1,8 +1,10 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.response.ResponseContentHandlerFactory;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.watcher.Watcher;
@@ -11,7 +13,7 @@ import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.mvc.response.provider.ResponseHandlerProviderEnum;
+import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,19 +28,21 @@ import java.util.*;
 public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
-    public static void registerRouter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
+    public static void registerRouter(MvcConfiguration webConfiguration, BeanFactoryHandler beanFactoryHandler) {
+        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
-        for (var classInfo : classInfoSet) {
-            var classAnnotations = classInfo.getClassAnnotations();
+        for (DebbieBeanInfo classInfo : classInfoSet) {
+            Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
             Watcher watcher = (Watcher) classAnnotations.get(Watcher.class);
             if (watcher == null || watcher.type() == WatcherType.HTTP) {
-                registerRouter(classAnnotations, classInfo, webConfiguration);
+                registerRouter(classAnnotations, classInfo, webConfiguration, beanFactoryHandler);
             }
         }
     }
 
     private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
-                                       ClassInfo<?> classInfo, MvcConfiguration webConfiguration) {
+                                       ClassInfo<?> classInfo, MvcConfiguration webConfiguration,
+                                       BeanFactoryHandler beanFactoryHandler) {
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         for (var method : methods) {
@@ -59,6 +63,7 @@ public class MvcRouterRegister {
                 routerInfo.setRequestMethod(Arrays.asList(router.method()));
 
                 RouterResponse response = new RouterResponse();
+                response.setRestResponseClass(method.getReturnType());
 
                 response.setHasTemplate(router.hasTemplate());
                 if (router.templatePrefix().isBlank()) {
@@ -77,22 +82,24 @@ public class MvcRouterRegister {
                 var defaultResponseTypes = webConfiguration.getDefaultResponseTypes();
                 var responseType = router.responseType();
                 if (router.hasTemplate()) {
-                    response.setHandler(ResponseHandlerProviderEnum.TEMPLATE_VIEW.getProvider());
                     response.setResponseType(responseType);
+                    var handlerFactory = new ResponseContentHandlerFactory(beanFactoryHandler);
+                    response.setHandler(handlerFactory.factory(router.handlerClass()));
                 } else {
-                    response.setHandler(router.handlerFilter().getProvider());
                     if (responseType != MediaType.ANY) {
                         response.setResponseType(responseType);
-                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(responseType));
+                        response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(responseType));
                     } else if (!defaultResponseTypes.isEmpty()) {
                         // todo 需要优化
                         response.setResponseType(defaultResponseTypes.iterator().next());
-                        response.setHandler(ResponseHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
+                        response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
                     } else {
                         if (!webConfiguration.isAllowClientResponseType()) {
                             throw new RuntimeException("responseType cannot be MediaType.ANY. Or config default response type. Or allow client response type.");
                         } else {
                             response.setResponseType(MediaType.ANY);
+                            var handlerFactory = new ResponseContentHandlerFactory(beanFactoryHandler);
+                            response.setHandler(handlerFactory.factory(router.handlerClass()));
                         }
                     }
                 }

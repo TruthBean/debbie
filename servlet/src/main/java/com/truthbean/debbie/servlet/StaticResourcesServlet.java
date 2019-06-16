@@ -25,7 +25,7 @@ public class StaticResourcesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var requestAdapter = new ServletRouterRequest(req);
-        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration);
+        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration.getStaticResourcesMapping());
         if (bytes != null) {
             resp.setContentLength(bytes.length);
             try (var outputStream = resp.getOutputStream()) {

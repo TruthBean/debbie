@@ -5,9 +5,9 @@ import com.truthbean.debbie.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -37,17 +37,58 @@ public class BaseProperties {
      */
     private static void readPropertiesFile() {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
-        var url = classLoader.getResource(Constants.APPLICATION_PROPERTIES);
-        if (url == null) {
-            LOGGER.warn(Constants.APPLICATION_PROPERTIES + " not found，You SHOULD not use with properties function.");
+        var applicationUrl = System.getProperty("debbie.application.properties", Constants.APPLICATION_PROPERTIES);
+        if (applicationUrl == null) {
+            LOGGER.error("debbie.application.properties value cannot be null.");
         } else {
-            InputStream inputStream;
-            try {
-                inputStream = url.openStream();
-                var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                PROPERTIES.load(reader);
-            } catch (IOException e) {
-                LOGGER.error("load properties error", e);
+            LOGGER.debug("application.properties: " + applicationUrl);
+            var url = classLoader.getResource(applicationUrl);
+            if (url == null) {
+                if (applicationUrl.equals(Constants.APPLICATION_PROPERTIES))
+                    LOGGER.warn(Constants.APPLICATION_PROPERTIES + " not found in classpath.");
+                else {
+                    LOGGER.warn(applicationUrl + " not found in classpath.");
+                }
+                try {
+                    // read via file
+                    File file = new File(applicationUrl);
+                    if (file.exists()) {
+                        LOGGER.debug("application.properties url: " + file.getAbsolutePath());
+                        InputStream inputStream;
+                        try {
+                            inputStream = new FileInputStream(file);
+                            var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                            PROPERTIES.load(reader);
+                        } catch (IOException e) {
+                            LOGGER.error("load properties error", e);
+                        }
+                    } else {
+                        // read via network
+                        url = new URL(applicationUrl);
+                        LOGGER.debug("application.properties url: " + url);
+                        InputStream inputStream;
+                        try {
+                            inputStream = url.openStream();
+                            var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                            PROPERTIES.load(reader);
+                        } catch (IOException e) {
+                            LOGGER.error("load properties error", e);
+                        }
+                    }
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                LOGGER.debug("application.properties url: " + url);
+                InputStream inputStream;
+                try {
+                    inputStream = url.openStream();
+                    var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    PROPERTIES.load(reader);
+                } catch (IOException e) {
+                    LOGGER.error("load properties error", e);
+                }
             }
         }
     }
@@ -57,11 +98,23 @@ public class BaseProperties {
     }
 
     public Properties getProperties() {
+        Properties result = new Properties();
+        // OS environment variable
+        var env = System.getenv();
+        result.putAll(env);
+        // jvm properties
+        var systemProperties = System.getProperties();
+        result.putAll(systemProperties);
+        // project properties
         var properties = BaseProperties.PROPERTIES;
         if (properties.isEmpty()) {
             BaseProperties.readPropertiesFile();
+            properties = BaseProperties.PROPERTIES;
         }
-        return properties;
+        // custom properties will cover system properties
+        result.putAll(properties);
+
+        return result;
     }
 
     public Map<String, String> getMatchedKey(String keyPrefix) {
@@ -153,6 +206,29 @@ public class BaseProperties {
         }
         if (value != null) {
             return value.split(split);
+        }
+        return null;
+    }
+
+    public Map<String, String> getMapValue(String key, String keyValueSplit, String split) {
+        var value = getValue(key);
+        if (split == null || split.isBlank()) {
+            throw new RuntimeException("illegal split");
+        }
+        if (value != null) {
+            String[] splitValue = value.split(split);
+            Map<String, String> result = new HashMap<>();
+            for (String s : splitValue) {
+                if (s.contains(keyValueSplit)) {
+                    String[] keyValue = s.split(keyValueSplit);
+                    if (keyValue.length == 2) {
+                        result.put(keyValue[0], keyValue[1]);
+                    } else {
+                        throw new IllegalArgumentException("key and value must split by " + keyValueSplit);
+                    }
+                }
+            }
+            return result;
         }
         return null;
     }

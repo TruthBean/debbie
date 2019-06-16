@@ -39,7 +39,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
     public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
         UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, beanFactoryHandler);
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        MvcRouterRegister.registerRouter(configuration, beanInitialization);
+        MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
 
         SessionManager sessionManager = new InMemorySessionManager(configuration.getName());
@@ -72,6 +72,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             public void start(String... args) {
                 server.start();
                 LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
             }
 
             @Override
