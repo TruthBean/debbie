@@ -6,6 +6,7 @@ import com.truthbean.debbie.mvc.RouterSession;
 import java.io.File;
 import java.io.InputStream;
 import java.net.HttpCookie;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,8 @@ public class DefaultRouterRequest implements RouterRequest {
     private MediaTypeInfo responseType;
 
     private final Map<String, Object> requestAttribute = new HashMap<>();
+
+    private Charset charset;
 
     @Override
     public String getId() {
@@ -348,6 +351,16 @@ public class DefaultRouterRequest implements RouterRequest {
             clone.queries = new HashMap<>(queries);
         }
         return clone;
+    }
+
+    @Override
+    public void setCharacterEncoding(Charset charset) {
+        this.charset = charset;
+    }
+
+    @Override
+    public String getRemoteAddr() {
+        return null;
     }
 
     @Override

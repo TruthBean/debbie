@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.net.HttpCookie;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -46,6 +47,8 @@ public class NettyRouterRequest implements RouterRequest {
     private final DefaultRouterRequest routerRequestCache;
 
     private SessionManager sessionManager;
+
+    private Charset charset;
 
     HttpPostRequestDecoder decoder;
     private final HttpDataFactory nettyHttpDataFactory;
@@ -286,6 +289,11 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
+    public void setPathAttributes(Map<String, List<String>> map) {
+        routerRequestCache.setPathAttributes(map);
+    }
+
+    @Override
     public Map<String, List<String>> getMatrix() {
         return routerRequestCache.getMatrix();
     }
@@ -373,6 +381,16 @@ public class NettyRouterRequest implements RouterRequest {
     @Override
     public RouterRequest copy() {
         return new NettyRouterRequest(sessionManager, id, httpRequest, host, port);
+    }
+
+    @Override
+    public void setCharacterEncoding(Charset charset) {
+        this.charset = charset;
+    }
+
+    @Override
+    public String getRemoteAddr() {
+        return null;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyRouterRequest.class);

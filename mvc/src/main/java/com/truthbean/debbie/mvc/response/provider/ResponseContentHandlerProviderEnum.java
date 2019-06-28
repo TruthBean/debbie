@@ -4,6 +4,7 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
 import com.truthbean.debbie.mvc.response.view.NoTemplateViewHandler;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,8 @@ public enum ResponseContentHandlerProviderEnum {
 
     private static AbstractTemplateViewHandler templateViewFilter() {
         AbstractTemplateViewHandler search;
-        ServiceLoader<AbstractTemplateViewHandler> serviceLoader = ServiceLoader.load(AbstractTemplateViewHandler.class);
+        var classLoader = ClassLoaderUtils.getClassLoader(ResponseContentHandlerProviderEnum.class);
+        ServiceLoader<AbstractTemplateViewHandler> serviceLoader = ServiceLoader.load(AbstractTemplateViewHandler.class, classLoader);
         Iterator<AbstractTemplateViewHandler> handlerIterator = serviceLoader.iterator();
         if (handlerIterator.hasNext()) {
             search = handlerIterator.next();

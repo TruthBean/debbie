@@ -29,12 +29,31 @@ public class BeanInitialization {
     }
 
     public void init(Class<?> beanClass) {
-        BeanRegisterCenter.register(beanClass);
+        if (beanClass.isAnonymousClass()) {
+            if ("".equals(beanClass.getSimpleName())) {
+                Class<?>[] interfaces = beanClass.getInterfaces();
+                if (interfaces.length == 1) {
+                    BeanRegisterCenter.register(interfaces[0]);
+                } else {
+                    Class<?> superclass = beanClass.getSuperclass();
+                    if (superclass != Object.class) {
+                        BeanRegisterCenter.register(superclass);
+                    }
+                }
+            }
+        } else {
+            BeanRegisterCenter.register(beanClass);
+        }
     }
 
     public void initSingletonBean(DebbieBeanInfo<?> beanInfo) {
         beanInfo.setBeanType(BeanType.SINGLETON);
         BeanRegisterCenter.register(beanInfo);
+    }
+
+    public void refreshSingletonBean(DebbieBeanInfo<?> beanInfo) {
+        beanInfo.setBeanType(BeanType.SINGLETON);
+        BeanRegisterCenter.refresh(beanInfo);
     }
 
     public void refreshBean(DebbieBeanInfo<?> beanInfo) {
@@ -104,6 +123,15 @@ public class BeanInitialization {
                     result.add(registerRawBean);
                 }
             }
+        }
+        return result;
+    }
+
+    public Set<DebbieBeanInfo> getRegisteredRawBeans() {
+        Set<DebbieBeanInfo> result = new HashSet<>();
+        Collection<DebbieBeanInfo> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
+        if (!registerRawBeans.isEmpty()) {
+            result.addAll(registerRawBeans);
         }
         return result;
     }

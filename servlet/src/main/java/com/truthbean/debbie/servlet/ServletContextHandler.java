@@ -2,13 +2,13 @@ package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
-import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.filter.CharacterEncodingFilter;
+import com.truthbean.debbie.mvc.filter.CorsFilter;
+import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.servlet.filter.CharacterEncodingFilter;
-import com.truthbean.debbie.servlet.filter.CorsFilter;
 import com.truthbean.debbie.servlet.filter.RouterFilterWrapper;
-import com.truthbean.debbie.servlet.filter.csrf.CsrfFilter;
+import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -81,18 +81,21 @@ public class ServletContextHandler {
                 DispatcherType.ASYNC, DispatcherType.ERROR
         );
 
-        servletContext.addFilter("characterEncodingFilter", new CharacterEncodingFilter())
+        var charsetEncodingFilter = new RouterFilterWrapper(new CharacterEncodingFilter().setMvcConfiguration(servletConfiguration));
+        servletContext.addFilter("characterEncodingFilter", charsetEncodingFilter)
                 .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 
         // cors filter
         if (servletConfiguration.isEnableCors()) {
-            servletContext.addFilter("corsFilter", new CorsFilter(servletConfiguration))
+            var corsFilter = new RouterFilterWrapper(new CorsFilter().setMvcConfiguration(servletConfiguration));
+            servletContext.addFilter("corsFilter", corsFilter)
                     .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
         }
 
         // csrf filter
         if (servletConfiguration.isEnableCrsf()) {
-            servletContext.addFilter("csrfFilter", new CsrfFilter(servletConfiguration))
+            var csrfFilter = new RouterFilterWrapper(new CsrfFilter().setMvcConfiguration(servletConfiguration));
+            servletContext.addFilter("csrfFilter", csrfFilter)
                     .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
         }
 

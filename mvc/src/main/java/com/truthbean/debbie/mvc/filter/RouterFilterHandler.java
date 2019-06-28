@@ -1,4 +1,4 @@
-package com.truthbean.debbie.mvc.request.filter;
+package com.truthbean.debbie.mvc.filter;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.RouterRequest;

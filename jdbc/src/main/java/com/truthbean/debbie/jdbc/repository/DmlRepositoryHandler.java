@@ -144,6 +144,16 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
+    public int delete(Connection connection) throws TransactionException {
+        var entityInfo = getEntityInfo();
+        var table = entityInfo.getTable();
+
+        var sqlBuilder = DynamicSqlBuilder.sql().delete().from(table);
+
+        var sql = sqlBuilder.builder();
+        return super.update(connection, sql);
+    }
+
     @SuppressWarnings("unchecked")
     public ID insert(Connection connection, E entity, boolean withNull) throws TransactionException {
         var entityInfo = entityResolver.resolveEntity(entity);
@@ -194,7 +204,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, columnValues.toArray()) == 1;
     }
 
-    public int update(Connection connection, E entity, boolean withNull, String whereSql) {
+    public int update(Connection connection, E entity, boolean withNull, String whereSql, Object... args) {
         var entityInfo = entityResolver.resolveEntity(entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -209,14 +219,32 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var sql = DynamicSqlBuilder.sql().update(table).set(columnNames);
-        var trimWhereSql = whereSql.trim();
-        if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
-            sql.extra(whereSql);
-        } else {
-            sql.where().extra(whereSql);
+        if (whereSql != null && !whereSql.isBlank()) {
+            var trimWhereSql = whereSql.trim();
+            if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
+                sql.extra(whereSql);
+            } else {
+                sql.where().extra(whereSql);
+            }
         }
 
-        return super.update(connection, sql.builder());
+        return super.update(connection, sql.builder(), args);
+    }
+
+    public <S extends E> S save(Connection connection, S entity) {
+        var entityInfo = entityResolver.resolveEntity(entity);
+        ColumnInfo primaryKey = entityInfo.getPrimaryKey();
+        if (primaryKey.getValue() != null) {
+            var bool = update(connection, entity, true);
+            if (bool) {
+                return (S) selectOne(connection, entity, false);
+            } else {
+                return entity;
+            }
+        } else {
+            ID insert = insert(connection, entity, true);
+            return (S) selectById(connection, insert);
+        }
     }
 
     public E selectOne(Connection connection, E condition, boolean withNull) {
@@ -240,6 +268,31 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         } else {
             return super.queryOne(connection, sql.builder(), entityClass);
         }
+    }
+
+    public E selectOne(Connection connection, String whereSql, Object... args) {
+        var entityInfo = getEntityInfo();
+        var entityClass = entityInfo.getJavaType();
+
+        var table = entityInfo.getTable();
+        var columns = entityInfo.getColumnInfoList();
+
+        List<String> columnNames = new LinkedList<>();
+        for (ColumnInfo column : columns) {
+            columnNames.add(column.getColumnName());
+        }
+
+        var sql = DynamicSqlBuilder.sql().select(columnNames).from(table);
+        if (whereSql != null && !whereSql.isBlank()) {
+            var trimWhereSql = whereSql.trim();
+            if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
+                sql.extra(whereSql);
+            } else {
+                sql.where().extra(whereSql);
+            }
+        }
+
+        return super.queryOne(connection, sql.builder(), entityClass, args);
     }
 
     protected <T> DynamicSqlBuilder select(T entity) {
@@ -290,8 +343,45 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
+    private SqlAndArgs<E> preSelect(String whereSql, Object... args) {
+        var entityInfo = getEntityInfo();
+        var entityClass = entityInfo.getJavaType();
+
+        var table = entityInfo.getTable();
+        var columns = entityInfo.getColumnInfoList();
+
+        List<String> columnNames = new LinkedList<>();
+        for (ColumnInfo column : columns) {
+            columnNames.add(column.getColumnName());
+        }
+
+        var sqlBuilder = DynamicSqlBuilder.sql().select(columnNames).from(table);
+        if (whereSql != null && !whereSql.isBlank()) {
+            var trimWhereSql = whereSql.trim();
+            if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
+                sqlBuilder.extra(whereSql);
+            } else {
+                sqlBuilder.where().extra(whereSql);
+            }
+        }
+
+        var sqlAndArgs = new SqlAndArgs<E>();
+        sqlAndArgs.sqlBuilder = sqlBuilder;
+        sqlAndArgs.args = args;
+        sqlAndArgs.entityClass = entityClass;
+
+        return sqlAndArgs;
+    }
+
     public List<E> selectList(Connection connection, E condition, boolean withNull) {
         SqlAndArgs<E> sqlAndArgs = preSelect(condition, withNull);
+
+        var sql = sqlAndArgs.sqlBuilder.builder();
+        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+    }
+
+    public List<E> selectList(Connection connection, String whereSql, Object... args) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(whereSql, args);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
         return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
@@ -307,14 +397,18 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public Page<E> selectPaged(Connection connection, PageRequest pageable) {
-        SqlAndArgs<E> sqlAndArgs = preSelect(null, false);
+    public Page<E> selectPaged(Connection connection, PageRequest pageable, String whereSql, Object... args) {
+        SqlAndArgs<E> sqlAndArgs = preSelect(whereSql, args);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
 
         var count = count(connection);
         List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
+    }
+
+    public Page<E> selectPaged(Connection connection, PageRequest pageable) {
+        return selectPaged(connection, pageable, null);
     }
 
     public List<E> selectAll(Connection connection) {
@@ -367,6 +461,16 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
                 .where().eq(primaryKey.getColumnName(), "?").builder();
         return super.queryOne(connection, sql, entityClass, id);
+    }
+
+    public Boolean existsById(Connection connection, ID id) {
+        var entityInfo = getEntityInfo();
+        var table = entityInfo.getTable();
+        var primaryKey = entityInfo.getPrimaryKey();
+        var subSql = DynamicSqlBuilder.sql().select(primaryKey.getColumnName()).from(table)
+                .where().eq(primaryKey.getColumnName(), "?").builder();
+        var sql = DynamicSqlBuilder.sql().select().exist(subSql).builder();
+        return super.queryOne(connection, sql, Long.class, id) > 0L;
     }
 
     public Optional<E> selectOptionalById(Connection connection, ID id) {

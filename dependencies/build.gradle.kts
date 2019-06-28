@@ -1,5 +1,5 @@
 plugins {
-    id("io.spring.dependency-management") version "1.0.6.RELEASE"
+    id("io.spring.dependency-management") version "1.0.8.RELEASE"
 }
 dependencyManagement {
     dependencies {
@@ -94,5 +94,11 @@ dependencyManagement {
         dependency("io.swagger.core.v3:swagger-annotations:$swaggerVersion")
 
         dependency("com.truthbean.debbie:debbie-swagger:$projectVersion")
+
+        // freemarker
+        val freemarkerVersion: String by project
+        dependency("org.freemarker:freemarker:$freemarkerVersion")
+
+        dependency("com.truthbean.debbie:debbie-freemarker:$projectVersion")
     }
 }

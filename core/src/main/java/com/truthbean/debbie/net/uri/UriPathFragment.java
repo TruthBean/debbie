@@ -1,9 +1,6 @@
 package com.truthbean.debbie.net.uri;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -20,6 +17,7 @@ public class UriPathFragment implements Cloneable {
     private Pattern pattern;
 
     private final Map<String, List<String>> pathVariable = new HashMap<>();
+    private final Map<UriPathVariable, List<String>> uriPathVariable = new HashMap<>();
 
     public String getFragment() {
         return fragment;
@@ -51,23 +49,52 @@ public class UriPathFragment implements Cloneable {
         return pathVariable;
     }
 
-    public void addPathVariable(String name, String value) {
+    public Map<UriPathVariable, List<String>> getUriPathVariable() {
+        return uriPathVariable;
+    }
+
+    public List<UriPathVariable> getUriPathVariableNames() {
+        List<UriPathVariable> list = new ArrayList<>();
+        UriPathVariable[] uriPathVariables = uriPathVariable.keySet().toArray(UriPathVariable[]::new);
+        for (int i = uriPathVariables.length - 1; i >= 0; i--) {
+            list.add(uriPathVariables[i]);
+        }
+        return list;
+    }
+
+    public UriPathVariable getUriPathVariable(String name) {
+        List<UriPathVariable> list = new ArrayList<>();
+        Set<UriPathVariable> uriPathVariables = uriPathVariable.keySet();
+        for (UriPathVariable variable : uriPathVariables) {
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+        return null;
+    }
+
+    public void addPathVariable(UriPathVariable name, String value) {
         List<String> values;
-        if (pathVariable.containsKey(name)) {
-            values = pathVariable.get(name);
+        if (uriPathVariable.containsKey(name)) {
+            values = uriPathVariable.get(name);
         } else {
             values = new ArrayList<>();
         }
         values.add(value);
-        pathVariable.put(name, values);
+        pathVariable.put(name.getName(), values);
+        uriPathVariable.put(name, values);
     }
 
-    public void addPathVariable(String name, List<String> value) {
-        pathVariable.put(name, value);
+    public void addPathVariable(UriPathVariable name, List<String> value) {
+        uriPathVariable.put(name, value);
+        pathVariable.put(name.getName(), value);
     }
 
-    public void addPathVariables(Map<String, List<String>> map) {
-        pathVariable.putAll(map);
+    public void addPathVariables(Map<UriPathVariable, List<String>> map) {
+        if (map != null && !map.isEmpty()) {
+            uriPathVariable.putAll(map);
+            map.forEach((key, value) -> pathVariable.put(key.getName(), value));
+        }
     }
 
     @Override

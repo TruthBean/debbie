@@ -8,6 +8,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.net.NetWorkUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
@@ -73,6 +74,11 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
         server.setPort(configuration.getPort());
         server.setHostname(configuration.getHost());
 
+        /*Connector connector = new Connector("HTTP/1.1");
+        connector.setPort(configuration.getPort());
+        connector.setAsyncTimeout(60000);
+        server.setConnector(connector);*/
+
         try {
             Path tempPath = Files.createTempDirectory("tomcat-base-dir");
             server.setBaseDir(tempPath.toString());
@@ -113,10 +119,10 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
     public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
         TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, beanFactoryHandler);
         config(configuration);
-        return tomcatApplication(configuration);
+        return tomcatApplication(configuration, beanFactoryHandler);
     }
 
-    private DebbieApplication tomcatApplication(TomcatConfiguration configuration) {
+    private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
         return new DebbieApplication() {
             @Override
             public void start(String... args) {
@@ -124,6 +130,7 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
                     server.init();
                     server.getConnector();
                     server.start();
+                    this.beforeStart(LOGGER, beanFactoryHandler);
                     LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
                 } catch (LifecycleException e) {

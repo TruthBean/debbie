@@ -20,4 +20,40 @@ public class BeanConfigurationTest {
         };
     }
 
+    @DebbieBean(name = "hehe")
+    public Object hahahaha() {
+        class Inner {
+            private String aaa = "少年包青天";
+        }
+        return new Inner() {
+            public void hello() {
+                System.out.println("匿名内部类...");
+            }
+        };
+    }
+
+    @DebbieBean(name = "狄青")
+    public Inner 狄青() {
+        return new Inner() {
+            public void haha() {
+                System.out.println("匿名内部类...");
+            }
+        };
+    }
+
+    @DebbieBean
+    public 幽灵 幽灵() {
+        return () -> System.out.println("匿名内部类...");
+    }
+
+    private class Inner {
+        public void hello() {
+            System.out.println("匿名内部类...");
+        }
+    }
+
+    private interface 幽灵 {
+        void v();
+    }
+
 }

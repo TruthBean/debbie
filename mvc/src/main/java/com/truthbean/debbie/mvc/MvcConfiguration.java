@@ -7,6 +7,7 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.util.StringUtils;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -57,6 +58,9 @@ public class MvcConfiguration extends BeanScanConfiguration {
     private String templateSuffix;
     private String templatePrefix;
 
+    // charset
+    private Charset charset;
+
     private Class<? extends AbstractResponseContentHandler> responseContentHandler;
 
     public MvcConfiguration() {
@@ -80,6 +84,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
         this.corsOrigins = configuration.corsOrigins;
         this.corsMethods = configuration.corsMethods;
         this.corsHeaders = configuration.corsHeaders;
+
+        this.charset = configuration.charset;
 
         this.templatePrefix = configuration.templatePrefix;
         this.templateSuffix = configuration.templateSuffix;
@@ -152,6 +158,14 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
     public void setTemplatePrefix(String templatePrefix) {
         this.templatePrefix = templatePrefix;
+    }
+
+    public Charset getCharset() {
+        return charset;
+    }
+
+    public void setCharset(Charset charset) {
+        this.charset = charset;
     }
 
     public Class<? extends AbstractResponseContentHandler> getResponseContentHandler() {
@@ -249,6 +263,11 @@ public class MvcConfiguration extends BeanScanConfiguration {
             configuration.templateSuffix = suffix;
             configuration.templatePrefix = prefix;
             configuration.responseContentHandler = responseContentHandler;
+            return this;
+        }
+
+        public Builder charset(Charset charset) {
+            configuration.charset = charset;
             return this;
         }
 

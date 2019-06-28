@@ -99,4 +99,12 @@ public class SurnameRepository {
         });
     }
 
+    public Boolean exists(Long id) {
+        var transaction = factory.getTransaction();
+        return RepositoryCallback.action(transaction, () -> {
+            Connection connection = transaction.getConnection();
+            return repositoryHandler.existsById(connection, id);
+        });
+    }
+
 }

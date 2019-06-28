@@ -6,8 +6,8 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.net.NetWorkUtils;
-import com.truthbean.debbie.mvc.request.filter.RouterFilterInfo;
-import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
 import com.truthbean.debbie.undertow.handler.HttpHandlerFilter;
@@ -71,6 +71,7 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
             @Override
             public void start(String... args) {
                 server.start();
+                this.beforeStart(LOGGER, beanFactoryHandler);
                 LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
             }

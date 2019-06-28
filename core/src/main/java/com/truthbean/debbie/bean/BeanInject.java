@@ -13,5 +13,12 @@ public @interface BeanInject {
 
     String name() default "";
 
+    /**
+     * same as name
+     * @since 0.0.2
+     * @return name
+     */
+    String value() default "";
+
     boolean require() default true;
 }

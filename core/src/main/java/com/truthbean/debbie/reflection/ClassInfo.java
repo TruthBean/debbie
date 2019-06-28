@@ -21,15 +21,19 @@ public class ClassInfo<C> {
     private List<Field> fields;
 
     private List<Method> methods;
-    // private Map<? extends Annotation, List<Method>> methodWithAnnotation;
 
     public ClassInfo(Class<C> clazz) {
         this.clazz = clazz;
 
-        var annotations = clazz.getAnnotations();
-        if (annotations != null && annotations.length > 0) {
+        getClassInfo();
+    }
+
+    private void getClassInfo() {
+        Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
+
+        if (annotations != null && !annotations.isEmpty()) {
             for (Annotation annotation : annotations) {
-                classAnnotations.put(annotation.annotationType(), annotation);
+                this.classAnnotations.put(annotation.annotationType(), annotation);
             }
         }
 
@@ -37,23 +41,6 @@ public class ClassInfo<C> {
 
         this.constructors = (Constructor<C>[]) clazz.getConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
-
-        /*this.methodWithAnnotation = new HashMap<>();
-        if (this.methods != null && !this.methods.isEmpty()) {
-            for (Method method : this.methods) {
-                Annotation[] methodAnnotations = method.getDeclaredAnnotations();
-                if (methodAnnotations != null && methodAnnotations.length > 0) {
-                    for (Annotation methodAnnotation : methodAnnotations) {
-                        List<Method> methods = methodWithAnnotation.get(methodAnnotation);
-                        if (methods == null) {
-                            methods = new ArrayList<>();
-                        }
-                        methods.add(method);
-                        methodWithAnnotation.put(methodAnnotation.annotationType(), methods);
-                    }
-                }
-            }
-        }*/
     }
 
     public Class<C> getClazz() {
@@ -79,10 +66,6 @@ public class ClassInfo<C> {
         return null;
     }
 
-    /*public Map<? extends Annotation, List<Method>> getMethodWithAnnotation() {
-        return methodWithAnnotation;
-    }*/
-
     public List<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
         List<Method> methods = new ArrayList<>();
         for (Method method : this.methods) {
@@ -107,11 +90,15 @@ public class ClassInfo<C> {
             return false;
         }
         ClassInfo classInfo = (ClassInfo) o;
-        return clazz.getName().equals(clazz.getName());
+        return clazz.getName().equals(classInfo.getClazz().getName());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(clazz.getName());
+    }
+
+    public ClassInfo<C> copy() {
+        return new ClassInfo<>(clazz);
     }
 }

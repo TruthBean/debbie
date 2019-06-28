@@ -3,6 +3,7 @@ package com.truthbean.debbie.io;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,6 +145,14 @@ public class MediaTypeInfo {
                 return true;
         }
         return false;
+    }
+
+    public boolean includes(String mediaType) {
+        return type.equalsIgnoreCase(Objects.requireNonNull(parse(mediaType)).type);
+    }
+
+    public boolean includes(MediaType mediaType) {
+        return type.equalsIgnoreCase(mediaType.info().type);
     }
 
     @Override

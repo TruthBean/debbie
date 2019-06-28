@@ -61,11 +61,6 @@ public class RouterInvoker {
 
     private void resolveResponse(Object methodResult, MediaType responseType, RouterResponse routerResponse) {
         var response = routerInfo.getResponse();
-        AbstractResponseContentHandler handler = response.getHandler();
-        if (handler != null && handler.getClass() != NothingResponseHandler.class) {
-            handler.handleResponse(routerResponse, methodResult);
-            return;
-        }
         if (response.hasTemplate()) {
             if (methodResult instanceof StaticResourcesView) {
                 var content = ((StaticResourcesView) methodResult).render();
@@ -80,9 +75,22 @@ public class RouterInvoker {
                 } catch (Exception e) {
                     LOGGER.error("render error. ", e);
                 }
+                routerResponse.setContent(methodResult);
+            } else {
+                AbstractResponseContentHandler handler = response.getHandler();
+                if (handler != null && handler.getClass() != NothingResponseHandler.class) {
+                    handler.handleResponse(routerResponse, methodResult);
+                    return;
+                }
+                routerResponse.setContent(methodResult);
             }
-            routerResponse.setContent(methodResult);
         } else {
+            AbstractResponseContentHandler handler = response.getHandler();
+            if (handler != null && handler.getClass() != NothingResponseHandler.class) {
+                handler.handleResponse(routerResponse, methodResult);
+                return;
+            }
+
             if (methodResult == null) return;
 
             var provider = ResponseContentHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());

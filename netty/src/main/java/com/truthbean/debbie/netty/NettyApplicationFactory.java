@@ -6,7 +6,7 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.net.NetWorkUtils;
-import com.truthbean.debbie.mvc.request.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.netty.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
@@ -40,7 +40,8 @@ public class NettyApplicationFactory extends AbstractApplicationFactory {
             @Override
             public void start(String... args) {
                 run(configuration, sessionManager, beanFactoryHandler);
-                LOGGER.debug("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                this.beforeStart(LOGGER, beanFactoryHandler);
+                LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
             }
 

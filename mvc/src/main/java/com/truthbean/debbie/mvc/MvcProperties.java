@@ -8,6 +8,7 @@ import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.properties.DebbieProperties;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,8 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
 
 
     private static final String SERVER_CSRF = "debbie.web.csrf";
+
+    private static final String SERVER_CHARSET = "debbie.web.charset";
 
     private static final String SERVER_CORS = "debbie.web.cors";
     private static final String SERVER_CORS_ORIGINS = "debbie.web.cors.origins";
@@ -87,6 +90,9 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
         if (csrf) {
             builder.enableCrsf();
         }
+
+        var charset = properties.getStringValue(SERVER_CHARSET, "UTF-8");
+        builder.charset(Charset.forName(charset));
 
         boolean cors = properties.getBooleanValue(SERVER_CORS, false);
         if (cors) {

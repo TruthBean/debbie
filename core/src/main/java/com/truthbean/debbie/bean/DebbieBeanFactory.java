@@ -29,7 +29,7 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     public Bean getBean() {
         var beanBeanInvoker = new BeanInvoker<>(getBeanType(), beanFactoryHandler);
         var bean = beanBeanInvoker.getBean();
-        var classInfo = beanBeanInvoker.getClassInfo();
+        var classInfo = beanBeanInvoker.getBeanInfo();
         beanFactoryHandler.resolveDependentBean(bean, classInfo);
         return bean;
     }

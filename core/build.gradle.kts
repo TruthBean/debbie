@@ -10,4 +10,6 @@ dependencies {
     testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+
+    testCompile(project(":debbie-undertow"))
 }

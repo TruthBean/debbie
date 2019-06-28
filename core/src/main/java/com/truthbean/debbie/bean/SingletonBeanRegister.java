@@ -20,4 +20,9 @@ public class SingletonBeanRegister {
         initialization.initSingletonBean(beanInfo);
         beanFactoryHandler.refreshBeans();
     }
+
+    public <T extends I, I> void registerSingletonBean(DebbieBeanInfo<T> beanInfo) {
+        initialization.refreshSingletonBean(beanInfo);
+        beanFactoryHandler.refreshBeans();
+    }
 }

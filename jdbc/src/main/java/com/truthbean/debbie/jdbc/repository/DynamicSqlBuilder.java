@@ -352,8 +352,8 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder exist(String column) {
-        dynamicSql.append(" EXIST( ").append(column).append(" ) ");
+    public DynamicSqlBuilder exist(String subSql) {
+        dynamicSql.append(" EXISTS( ").append(subSql).append(" ) ");
         return this;
     }
 

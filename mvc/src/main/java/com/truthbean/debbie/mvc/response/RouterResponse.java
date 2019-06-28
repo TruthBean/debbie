@@ -5,6 +5,7 @@ import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 
 import java.net.HttpCookie;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -28,6 +29,8 @@ public class RouterResponse implements Cloneable {
     private Class<?> restResponseClass;
     private Object content;
     private AbstractResponseContentHandler<?, ?> handler;
+
+    private Charset charset;
 
     public boolean isRedirect() {
         return redirect;
@@ -123,6 +126,14 @@ public class RouterResponse implements Cloneable {
 
     public AbstractResponseContentHandler<?, ?> getHandler() {
         return handler;
+    }
+
+    public void setCharacterEncoding(Charset charset) {
+        this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     public void setHandler(AbstractResponseContentHandler<?, ?> handler) {

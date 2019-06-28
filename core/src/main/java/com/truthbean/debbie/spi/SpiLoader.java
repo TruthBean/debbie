@@ -24,7 +24,7 @@ public class SpiLoader {
     private static final String SPI = "com.truthbean.debbie.spi";
 
     public static <S> S loadProvider(Class<S> serviceClass) {
-        var classLoader = ClassLoaderUtils.getClassLoader(SpiLoader.class);
+        var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
         return loadProvider(serviceClass, classLoader);
     }
 
@@ -40,7 +40,8 @@ public class SpiLoader {
 
     public static <S> Set<S> loadProviders(Class<S> serviceClass) {
         Set<S> result = new HashSet<>();
-        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass);
+        var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
+        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         for (S s : serviceLoader) {
             result.add(s);
         }

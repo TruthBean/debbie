@@ -16,7 +16,7 @@ public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
         System.out.println(tmpRepository);
     }
 
-    public boolean save(Surname surname) {
+    public boolean insert(Surname surname) {
         Long id = super.insert(surname, false);
         boolean result = id > 0L;
         if (result) {

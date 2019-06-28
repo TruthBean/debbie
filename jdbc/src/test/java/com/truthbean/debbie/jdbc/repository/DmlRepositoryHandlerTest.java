@@ -39,7 +39,7 @@ public class DmlRepositoryHandlerTest {
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        surnameRepository = new SurnameRepository();
+        surnameRepository = applicationFactory.factory(SurnameRepository.class);
     }
 
     @Test
@@ -109,5 +109,11 @@ public class DmlRepositoryHandlerTest {
     public void findPaged() {
         var l = surnameRepository.findPaged(PageRequest.of(0, 10));
         System.out.println(l);
+    }
+
+    @Test
+    public void existsById() {
+        Boolean exists = surnameRepository.exists(4L);
+        System.out.println(exists);
     }
 }

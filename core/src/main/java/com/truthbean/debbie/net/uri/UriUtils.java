@@ -102,6 +102,13 @@ public final class UriUtils {
 
     public static List<UriPathFragment> getPathFragment(String uri) {
         List<UriPathFragment> result = new ArrayList<>();
+        if ("/".equals(uri)) {
+            UriPathFragment fragment = new UriPathFragment();
+            fragment.setFragment("/");
+            result.add(fragment);
+            return result;
+        }
+
         var urlPaths = getPaths(uri);
         String[] paths = urlPaths.split("/");
         for (String path: paths) {

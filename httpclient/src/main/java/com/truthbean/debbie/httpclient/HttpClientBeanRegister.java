@@ -36,9 +36,13 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerHttpClientFactory() {
-        HttpClientFactory httpClientFactory = initialization.getRegisterBean(HttpClientFactory.class);
-        if (httpClientFactory == null) {
+        DebbieBeanInfo<HttpClientFactory> httpClientFactoryBeanInfo = initialization.getRegisterRawBean(HttpClientFactory.class);
+        if (httpClientFactoryBeanInfo == null) {
             registerSingletonBean(handler, HttpClientFactory.class, "httpClientFactory");
+        } else if (httpClientFactoryBeanInfo.getBean() == null) {
+            httpClientFactoryBeanInfo.setBeanName("httpClientFactory");
+            httpClientFactoryBeanInfo.setBean(handler);
+            registerSingletonBean(httpClientFactoryBeanInfo);
         }
     }
 }

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpCookie;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -257,6 +258,20 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     @Override
     public String getContextPath() {
         return request.getContextPath();
+    }
+
+    @Override
+    public void setCharacterEncoding(Charset charset) {
+        try {
+            request.setCharacterEncoding(charset.name());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public String getRemoteAddr() {
+        return request.getRemoteAddr();
     }
 
     @Override

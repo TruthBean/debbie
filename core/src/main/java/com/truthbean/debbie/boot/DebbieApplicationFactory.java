@@ -1,8 +1,6 @@
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.bean.BeanConfigurationRegister;
-import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -10,6 +8,8 @@ import com.truthbean.debbie.spi.SpiLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
+import java.sql.Timestamp;
 import java.util.Set;
 
 /**
@@ -79,6 +79,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     protected static DebbieApplicationFactory debbieApplicationFactory;
 
     public static DebbieApplication factory() {
+        LOGGER.info("debbie start time: " + (new Timestamp(System.currentTimeMillis())));
         if (debbieApplication != null) return debbieApplication;
         debbieApplicationFactory = new DebbieApplicationFactory();
         debbieApplicationFactory.config();

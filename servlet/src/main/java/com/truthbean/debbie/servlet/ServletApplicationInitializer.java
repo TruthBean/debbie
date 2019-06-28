@@ -38,6 +38,10 @@ public class ServletApplicationInitializer extends DebbieApplicationFactory impl
         var handler = new ServletContextHandler(ctx, beanFactoryHandler);
         handler.registerRouter();
         handler.registerFilter(ctx);
+
+        // if run with war package
+        if (debbieApplication == null)
+            beanFactoryHandler.autoCreateBeans();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServletApplicationInitializer.class);

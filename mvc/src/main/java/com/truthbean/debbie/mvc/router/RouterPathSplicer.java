@@ -1,8 +1,10 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.net.uri.UriPathFragment;
+import com.truthbean.debbie.net.uri.UriPathVariable;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
+import com.truthbean.debbie.reflection.ExecutableArgument;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -125,17 +127,18 @@ public class RouterPathSplicer {
         return patterns;
     }
 
-    public static Map<String, List<String>> getPathVariable(String routerPath, String targetUrl) {
+    public static Map<String, List<String>> getPathVariable(UriPathFragment pathFragment, String targetUrl) {
         Map<String, List<String>> result = new HashMap<>();
+        var routerPath = pathFragment.getFragment();
         String[] split = routerPath.split(VARIABLE_REGEX);
-        for (String s: split) {
-            String[] values = targetUrl.split(s);
-            String[] names = routerPath.split(s);
-            for (int i = 0; i < names.length; i++) {
-                var name = names[i];
-                var value = values[i];
-                if (!name.isBlank()) {
-                    name = name.substring(1, name.length() - 1);
+        List<UriPathVariable> uriPathVariableNames = pathFragment.getUriPathVariableNames();
+        if (split.length == 0) {
+            var name = routerPath.substring(1, routerPath.length() - 1);
+            var uriPathVariableName = pathFragment.getUriPathVariable(name);
+            if (uriPathVariableName != null) {
+                Pattern pattern = uriPathVariableName.getPattern();
+                if (pattern == null) return result;
+                if (pattern.matcher(targetUrl).matches()) {
                     var resultCopy = new HashMap<>(result);
                     List<String> list;
                     if (resultCopy.containsKey(name)) {
@@ -143,8 +146,32 @@ public class RouterPathSplicer {
                     } else {
                         list = new ArrayList<>();
                     }
-                    list.add(value);
+                    list.add(targetUrl);
                     result.put(name, list);
+                }
+            }
+        } else {
+            for (String s : split) {
+                if ("".equals(s)) continue;
+                String[] values = targetUrl.split(s);
+                for (int i = 0; i < values.length; i++) {
+                    var uriPathVariableName = uriPathVariableNames.get(i);
+                    if (uriPathVariableName == null) continue;
+                    var value = values[i];
+                    Pattern pattern = uriPathVariableName.getPattern();
+                    if (pattern == null) continue;
+                    if (pattern.matcher(value).matches()) {
+                        String name = uriPathVariableName.getName();
+                        var resultCopy = new HashMap<>(result);
+                        List<String> list;
+                        if (resultCopy.containsKey(name)) {
+                            list = resultCopy.get(name);
+                        } else {
+                            list = new ArrayList<>();
+                        }
+                        list.add(value);
+                        result.put(name, list);
+                    }
                 }
             }
         }
@@ -157,16 +184,28 @@ public class RouterPathSplicer {
         for (String path : paths) {
             var fragment = new RouterPathFragments();
             List<UriPathFragment> pathFragments = UriUtils.getPathFragment(path);
-            for (var pathFragment: pathFragments) {
+            for (var pathFragment : pathFragments) {
                 var regex = pathFragment.getFragment();
                 if (regex.contains("*")) {
                     regex = regex.replace("*", "\\*");
                 }
+
                 Matcher matcher = VARIABLE_PATTERN.matcher(regex);
                 while (matcher.find()) {
                     String group = matcher.group();
-                    pathFragment.addPathVariable(group, new ArrayList<>());
-                    regex = regex.replace(group, "[\\w]*");
+                    UriPathVariable uriPathVariable = new UriPathVariable();
+                    if (group.contains(":")) {
+                        String[] split = group.split(":");
+                        uriPathVariable.setName(split[0].substring(1));
+                        var pattern = split[1].substring(0, split[1].length() - 1);
+                        uriPathVariable.setPattern(Pattern.compile(pattern));
+                        regex = regex.replace(group, pattern);
+                    } else {
+                        uriPathVariable.setName(group.substring(1, group.length() - 1));
+                        uriPathVariable.setPattern(Pattern.compile("[\\w]*"));
+                        regex = regex.replace(group, "[\\w]*");
+                    }
+                    pathFragment.addPathVariable(uriPathVariable, new ArrayList<>());
                 }
                 pathFragment.setPattern(Pattern.compile(regex));
             }

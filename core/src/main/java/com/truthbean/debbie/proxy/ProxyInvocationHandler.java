@@ -58,9 +58,10 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         Class<?> targetClass = target.getClass();
         LOGGER.debug(proxyClassName + " proxy " + targetClass.getName());
         Method targetMethod;
+        Class<?>[] parameterClass = method.getParameterTypes();
         try {
-            targetMethod = targetClass.getDeclaredMethod(method.getName(), method.getParameterTypes());
-        } catch (NoSuchMethodException e) {
+            targetMethod = ReflectionHelper.getDeclaredMethod(targetClass, method.getName(), parameterClass);
+        } catch (Exception e) {
             LOGGER.warn(targetClass + " has no method(" + method.getName() + "). ");
             targetMethod = method;
         }

@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.net.HttpCookie;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -38,6 +40,8 @@ public class UndertowRouterRequest implements RouterRequest {
     public UndertowRouterRequest(HttpServerExchange exchange) {
         this(UUID.randomUUID().toString(), exchange);
     }
+
+    private Charset charset;
 
     private UndertowRouterRequest(String id, HttpServerExchange exchange) {
         this.id = id;
@@ -222,6 +226,11 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
+    public void setPathAttributes(Map<String, List<String>> map) {
+        routerRequestCache.setPathAttributes(map);
+    }
+
+    @Override
     public Map<String, List<String>> getMatrix() {
         var matrix = routerRequestCache.getMatrix();
         if (matrix == null) {
@@ -324,6 +333,19 @@ public class UndertowRouterRequest implements RouterRequest {
     @Override
     public UndertowRouterRequest copy() {
         return new UndertowRouterRequest(id, exchange);
+    }
+
+    @Override
+    public void setCharacterEncoding(Charset charset) {
+        this.charset = charset;
+    }
+
+    @Override
+    public String getRemoteAddr() {
+        InetSocketAddress destinationAddress = exchange.getDestinationAddress();
+        if (destinationAddress != null)
+            return destinationAddress.toString();
+        return null;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UndertowRouterRequest.class);

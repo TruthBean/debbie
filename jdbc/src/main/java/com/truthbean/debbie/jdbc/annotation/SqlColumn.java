@@ -34,4 +34,10 @@ public @interface SqlColumn {
     String defaultValue() default "";
 
     String comment() default "";
+
+    /**
+     * TODO
+     * column definition
+     */
+    String columnDefinition() default "";
 }

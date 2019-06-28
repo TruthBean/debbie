@@ -1,5 +1,7 @@
 package com.truthbean.debbie.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -13,8 +15,10 @@ public class MultipartFile {
     private MediaType contentType;
 
     private byte[] content;
+    private InputStream inputStream;
 
     private String fileExt;
+
 
     public String getFileName() {
         return fileName;
@@ -34,6 +38,13 @@ public class MultipartFile {
 
     public byte[] getContent() {
         return content;
+    }
+
+    public InputStream getInputStream() {
+        if (inputStream == null && content != null) {
+            inputStream = new ByteArrayInputStream(content);
+        }
+        return inputStream;
     }
 
     public void setContent(byte[] content) {

@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -18,9 +18,17 @@ import java.util.Objects;
 public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private String beanName;
     private BeanType beanType;
+    private Boolean lazyCreate;
 
     private BeanFactory<Bean> beanFactory;
     private Bean bean;
+
+    private boolean noInterface = false;
+    private Class<?> beanInterface;
+
+    private Map<Integer, DebbieBeanInfo> constructorBeanDependent;
+    private Map<Field, DebbieBeanInfo> fieldBeanDependent;
+    private boolean hasVirtualValue;
 
     public DebbieBeanInfo(Class<Bean> clazz) {
         super(clazz);
@@ -34,6 +42,54 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         }
     }
 
+    public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo> constructorBeanDependent) {
+        this.constructorBeanDependent = constructorBeanDependent;
+    }
+
+    public void addConstructorBeanDependent(Integer index, DebbieBeanInfo beanInfo) {
+        if (this.constructorBeanDependent == null) {
+            this.constructorBeanDependent = new HashMap<>();
+        }
+        this.constructorBeanDependent.put(index, beanInfo);
+    }
+
+    public void setFieldBeanDependent(Map<Field, DebbieBeanInfo> fieldBeanDependent) {
+        this.fieldBeanDependent = fieldBeanDependent;
+    }
+
+    public void addFieldBeanDependent(Field field, DebbieBeanInfo debbieBeanInfo) {
+        if (this.fieldBeanDependent == null) {
+            this.fieldBeanDependent = new HashMap<>();
+        }
+        this.fieldBeanDependent.put(field, debbieBeanInfo);
+    }
+
+    public Map<Integer, DebbieBeanInfo> getConstructorBeanDependent() {
+        return constructorBeanDependent;
+    }
+
+    public boolean isConstructorBeanDependentHasValue() {
+        for (DebbieBeanInfo value : constructorBeanDependent.values()) {
+            if (!value.hasVirtualValue) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Map<Field, DebbieBeanInfo> getFieldBeanDependent() {
+        return fieldBeanDependent;
+    }
+
+
+    public boolean isHasVirtualValue() {
+        return hasVirtualValue;
+    }
+
+    public void setHasVirtualValue(boolean hasVirtualValue) {
+        this.hasVirtualValue = hasVirtualValue;
+    }
+
     public void setBeanFactory(BeanFactory<Bean> beanFactory) {
         this.beanFactory = beanFactory;
     }
@@ -45,8 +101,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private boolean resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
         if (key == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
-            beanName = beanService.value();
+            beanName = beanService.name();
+            if (beanName.isBlank()) {
+                beanName = beanService.value();
+            }
             beanType = beanService.type();
+            lazyCreate = beanService.lazy();
             return true;
         }
 
@@ -55,6 +115,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             Method[] methods = key.getMethods();
             Method valueMethod = null;
             Method typeMethod = null;
+            Method lazyMethod = null;
             for (Method method : methods) {
                 if ("value".equals(method.getName()) && method.getReturnType() == String.class) {
                     valueMethod = method;
@@ -63,11 +124,15 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
                 if ("type".equals(method.getName()) && method.getReturnType() == BeanType.class) {
                     typeMethod = method;
                 }
+                if ("lazy".equals(method.getName()) && method.getReturnType() == BeanType.class) {
+                    lazyMethod = method;
+                }
             }
 
             if (valueMethod != null && typeMethod != null) {
                 beanName = ReflectionHelper.invokeMethod(value, valueMethod);
                 beanType = ReflectionHelper.invokeMethod(value, typeMethod);
+                lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);
             }
         }
 
@@ -80,6 +145,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
 
     /**
      * WARN: only used by BeanInitialization.init(DebbieBeanInfo)
+     *
      * @param beanType BeanType
      */
     void setBeanType(BeanType beanType) {
@@ -91,14 +157,20 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     }
 
     public <T> Class<T> getBeanInterface() {
-        Class<?> clazz = super.getClazz();
-        Class<?>[] interfaces = clazz.getInterfaces();
-        if (interfaces == null || interfaces.length == 0) {
-            LOGGER.debug(clazz.getName() + " has no direct interface");
-            return null;
-        } else {
-            return (Class<T>) interfaces[0];
+        if (noInterface) return null;
+        if (beanInterface == null) {
+            Class<?> clazz = super.getClazz();
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces == null || interfaces.length == 0) {
+                LOGGER.debug(clazz.getName() + " has no direct interface");
+                noInterface = true;
+                beanInterface = null;
+            } else {
+                beanInterface = interfaces[0];
+                noInterface = false;
+            }
         }
+        return (Class<T>) beanInterface;
     }
 
     public String getServiceName() {
@@ -122,6 +194,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         this.bean = bean;
     }
 
+    public Boolean getLazyCreate() {
+        return lazyCreate;
+    }
+
     public Bean getBean() {
         return bean;
     }
@@ -138,6 +214,11 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), beanName);
+    }
+
+    @Override
+    public DebbieBeanInfo<Bean> copy() {
+        return new DebbieBeanInfo<>(getClazz());
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);

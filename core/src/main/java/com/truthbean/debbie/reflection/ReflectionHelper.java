@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -91,7 +92,7 @@ public class ReflectionHelper {
         return null;
     }
 
-    public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz) {
+    public static Type[] getActualTypes(Class<?> clazz) {
         if (clazz == Object.class || clazz == Void.class) {
             return null;
         }
@@ -176,6 +177,31 @@ public class ReflectionHelper {
         return null;
     }
 
+    public static Set<Annotation> getClassAnnotations(Class<?> clazz) {
+        Set<Annotation> annotations = new HashSet<>();
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            Annotation[] classAnnotations = superClass.getAnnotations();
+            if (classAnnotations.length > 0) {
+                annotations.addAll(Arrays.asList(classAnnotations));
+            }
+            getInterfaceAnnotations(annotations, clazz);
+        }
+        return annotations;
+    }
+
+    private static void getInterfaceAnnotations(Set<Annotation> result, Class<?> clazz) {
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces != null) {
+            for (Class<?> anInterface : interfaces) {
+                Annotation[] annotations = anInterface.getAnnotations();
+                if (annotations != null && annotations.length > 0) {
+                    Collections.addAll(result, annotations);
+                }
+                getInterfaceAnnotations(result, anInterface);
+            }
+        }
+    }
+
     public static List<Field> getDeclaredFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
         for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
@@ -230,12 +256,13 @@ public class ReflectionHelper {
         }
     }
 
-    public static Method getDeclaredMethod(Class<?> clazz, String methodName) {
+    public static Method getDeclaredMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
         for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             Method[] declaredMethods = superClass.getDeclaredMethods();
             if (declaredMethods.length > 0) {
                 for (Method declaredMethod : declaredMethods) {
-                    if (methodName.equals(declaredMethod.getName())) {
+                    Class<?>[] parameterClass = declaredMethod.getParameterTypes();
+                    if (methodName.equals(declaredMethod.getName()) && Arrays.equals(parameterClass, parameterTypes)) {
                         return declaredMethod;
                     }
                 }
@@ -331,7 +358,20 @@ public class ReflectionHelper {
         }
     }
 
+    public static Object getField(Object target, Field field) {
+        try {
+            if (field.trySetAccessible()) {
+                field.setAccessible(true);
+            }
+            return field.get(target);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static <T> T invokeMethod(Object target, Method method, Object... parameters) {
+        if (method == null) return null;
         try {
             if (parameters == null || parameters.length == 0) {
                 return (T) method.invoke(target);
@@ -476,6 +516,22 @@ public class ReflectionHelper {
             string += fieldName.substring(1);
         }
         return string;
+    }
+
+    public static Set<Class<?>> getInterfaces(Class<?> clazz) {
+        Set<Class<?>> result = new HashSet<>();
+        getInterfaces(result, clazz);
+        return result;
+    }
+
+    private static void getInterfaces(Set<Class<?>> result, Class<?> clazz) {
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces != null) {
+            for (Class<?> anInterface : interfaces) {
+                getInterfaces(result, anInterface);
+                result.add(anInterface);
+            }
+        }
     }
 
     public static <T> List<Class<? extends T>> getSubClass(Class<T> parentClass) {

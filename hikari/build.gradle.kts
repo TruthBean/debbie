@@ -15,4 +15,6 @@ dependencies {
     
     val mariadbVersion: String by project
     testCompile("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
+
+    testCompile(project(":debbie-undertow"))
 }

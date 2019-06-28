@@ -5,6 +5,7 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
+import com.truthbean.debbie.net.uri.UriPathFragment;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -16,10 +17,7 @@ import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -55,24 +53,7 @@ public class MvcRouterHandler {
         var set = MvcRouterRegister.getRouterInfoSet();
         var routerInfos = matchRouterPath(url, set, routerRequest);
 
-        Set<RouterInfo> rawPathEqualed = new HashSet<>();
         for (var routerInfo : routerInfos) {
-            var paths = routerInfo.getPaths();
-            for (var path : paths) {
-                if (path.getRawPath().equals(UriUtils.getPathsWithoutMatrix(url))) {
-                    rawPathEqualed.add(routerInfo);
-                }
-            }
-        }
-
-        Set<RouterInfo> targetRouterInfoSet;
-        if (rawPathEqualed.isEmpty()) {
-            targetRouterInfoSet = routerInfos;
-        } else {
-            targetRouterInfoSet = rawPathEqualed;
-        }
-
-        for (var routerInfo : targetRouterInfoSet) {
             var paths = routerInfo.getPaths();
             LOGGER.debug("match uri " + paths);
 
@@ -137,6 +118,7 @@ public class MvcRouterHandler {
             }
             LOGGER.debug("match request type: " + requestType.info());
 
+            routerRequest.setPathAttributes(routerInfo.getRequest().getPathAttributes());
             result = routerInfo;
             break;
         }
@@ -154,38 +136,40 @@ public class MvcRouterHandler {
     public static Set<RouterInfo> matchRouterPath(String url, Set<RouterInfo> routerInfos, RouterRequest routerRequest) {
         Set<RouterInfo> result = new HashSet<>();
 
+        // if no path variable and no matrix
         for (RouterInfo routerInfo : routerInfos) {
-            List<RouterPathFragments> paths = routerInfo.getPaths();
-            // if has no matched, then match no variable path
-            for (var pattern : paths) {
-                if (!pattern.hasVariable()) {
-                    if (pattern.getRawPath().equalsIgnoreCase(url)) {
-                        result.add(routerInfo.clone());
-                    }
-                }
+            if (matchedRawPath(routerInfo, url, false)) {
+                routerInfo.setRequest(routerRequest.copy());
+                result.add(routerInfo.clone());
             }
         }
 
+        if (!result.isEmpty())
+            return result;
 
+        // if has no matched, then match variable path
         for (RouterInfo routerInfo : routerInfos) {
-            List<RouterPathFragments> paths = routerInfo.getPaths();
-            // if has no matched, then match variable path
-            for (var pattern : paths) {
-                if (pattern.hasVariable()) {
-                    if (pattern.getPattern().matcher(url).find()) {
-                        var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
-                        routerRequest.getPathAttributes().putAll(pathAttributes);
-                        result.add(routerInfo.clone());
-                    }
-                }
+            if (matchedSameLengthVariablePath(routerInfo, url, false, routerRequest.copy())) {
+                result.add(routerInfo.clone());
             }
         }
+
+        if (!result.isEmpty())
+            return result;
+
+        for (RouterInfo routerInfo : routerInfos) {
+            if (matchedNotSameLengthVariablePath(routerInfo, url, false, routerRequest.copy())) {
+                result.add(routerInfo.clone());
+            }
+        }
+
+        if (!result.isEmpty())
+            return result;
 
         // if has no matched, then remove matrix
         url = UriUtils.getPathsWithoutMatrix(url);
         for (RouterInfo routerInfo : routerInfos) {
-            List<RouterPathFragments> paths = routerInfo.getPaths();
-            var matched = matchRouterPath(url, paths, routerRequest, true);
+            var matched = matchRouterPath(url, routerInfo, routerRequest, true);
             if (matched) {
                 result.add(routerInfo.clone());
             }
@@ -193,10 +177,19 @@ public class MvcRouterHandler {
         return result;
     }
 
-    public static boolean matchRouterPath(String url, List<RouterPathFragments> paths, RouterRequest routerRequest,
-                                          boolean withoutMatrix) {
+    /*public static boolean matchRouterPath(String url, RouterInfo routerInfo, boolean withoutMatrix) {
         var matchUrl = false;
 
+        // if has no matched, then match no variable path
+        matchUrl = matchedRawPath(routerInfo, url, withoutMatrix);
+    }*/
+
+    public static boolean matchRouterPath(String url, RouterInfo routerInfo, RouterRequest routerRequest,
+                                          boolean withoutMatrix) {
+
+        List<RouterPathFragments> paths = routerInfo.getPaths();
+
+        var matchUrl = false;
         // if has no matched, then match no variable path
         for (var pattern : paths) {
             if (!pattern.hasVariable()) {
@@ -209,24 +202,125 @@ public class MvcRouterHandler {
 
         // if has no matched, then match variable path
         if (!matchUrl) {
-            for (var pattern : paths) {
-                if (pattern.hasVariable()) {
-                    if (pattern.getPattern().matcher(url).find()) {
-                        matchUrl = true;
-                        var pathAttributes = RouterPathSplicer.getPathVariable(pattern.getRawPath(), url);
-                        routerRequest.getPathAttributes().putAll(pathAttributes);
-                        break;
-                    }
-                }
-            }
+            matchUrl = matchedSameLengthVariablePath(routerInfo, url, withoutMatrix, routerRequest.copy());
+        }
+
+        if (!matchUrl) {
+            matchUrl = matchedNotSameLengthVariablePath(routerInfo, url, withoutMatrix, routerRequest.copy());
         }
 
         // if has no matched, then remove matrix
         if (!matchUrl && !withoutMatrix) {
             url = UriUtils.getPathsWithoutMatrix(url);
-            matchUrl = matchRouterPath(url, paths, routerRequest, true);
+            matchUrl = matchRouterPath(url, routerInfo, routerRequest, true);
         }
         return matchUrl;
+    }
+
+
+    private static boolean matchedSameLengthVariablePath(RouterInfo routerInfo, String url, boolean withoutMatrix,
+                                                         RouterRequest routerRequest) {
+        if (withoutMatrix) {
+            url = UriUtils.getPathsWithoutMatrix(url);
+        }
+
+        List<UriPathFragment> urlPathFragments = UriUtils.getPathFragment(url);
+
+        int urlPathFragmentsSize = urlPathFragments.size();
+        // if has no matched, then match variable path
+
+        List<RouterPathFragments> paths = routerInfo.getPaths();
+
+        out:
+        for (var pattern : paths) {
+            if (pattern.hasVariable()) {
+                List<UriPathFragment> pathFragments = pattern.getPathFragments();
+                // same length
+                if (urlPathFragmentsSize == pathFragments.size()) {
+                    Map<String, List<String>> requestPathAttributes = new HashMap<>();
+                    for (int i = 0; i < urlPathFragmentsSize; i++) {
+                        UriPathFragment iUriPathFragment = pathFragments.get(i);
+                        UriPathFragment jUriPathFragment = urlPathFragments.get(i);
+                        if (!iUriPathFragment.hasVariable()) {
+                            if (!iUriPathFragment.getFragment().equals(jUriPathFragment.getFragment()))
+                                continue out;
+                        } else {
+                            if (iUriPathFragment.getPattern().matcher(url).find()) {
+                                var pathAttributes = RouterPathSplicer.getPathVariable(iUriPathFragment, jUriPathFragment.getFragment());
+                                if (pathAttributes.isEmpty() || pathAttributes.size() != iUriPathFragment.getUriPathVariable().size()) {
+                                    continue out;
+                                }
+                                mergePathAttributes(requestPathAttributes, pathAttributes);
+                            } else {
+                                continue out;
+                            }
+                        }
+
+                    }
+                    routerRequest.getPathAttributes().putAll(requestPathAttributes);
+                    routerInfo.setRequest(routerRequest);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void mergePathAttributes(Map<String, List<String>> requestPathAttributes, Map<String, List<String>> pathAttributes) {
+        Set<String> keys = pathAttributes.keySet();
+        for (String key : keys) {
+            if (requestPathAttributes.containsKey(key)) {
+                List<String> value = requestPathAttributes.get(key);
+                value.addAll(pathAttributes.get(key));
+            } else {
+                requestPathAttributes.put(key, pathAttributes.get(key));
+            }
+        }
+    }
+
+    private static boolean matchedNotSameLengthVariablePath(RouterInfo routerInfo, String url,
+                                                            boolean withoutMatrix, RouterRequest routerRequest) {
+        if (withoutMatrix) {
+            url = UriUtils.getPathsWithoutMatrix(url);
+        }
+
+        // if has no matched, then match variable path
+        List<RouterPathFragments> paths = routerInfo.getPaths();
+        for (var pattern : paths) {
+            if (pattern.getPattern().matcher(url).find()) {
+                Map<String, List<String>> requestPathAttributes = new HashMap<>();
+                for (UriPathFragment pathFragment : pattern.getPathFragments()) {
+                    if (pathFragment.hasVariable()) {
+                        var pathAttributes = RouterPathSplicer.getPathVariable(pathFragment, url);
+                        if (pathAttributes.isEmpty()) {
+                            continue;
+                        }
+                        mergePathAttributes(requestPathAttributes, pathAttributes);
+                    }
+                }
+                routerRequest.getPathAttributes().putAll(requestPathAttributes);
+                routerInfo.setRequest(routerRequest);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // if no path variable and no matrix
+    private static boolean matchedRawPath(RouterInfo routerInfo, String url, boolean withoutMatrix) {
+        if (withoutMatrix) {
+            url = UriUtils.getPathsWithoutMatrix(url);
+        }
+        List<RouterPathFragments> paths = routerInfo.getPaths();
+        // if has no matched, then match no variable path
+        for (var pattern : paths) {
+            if (!pattern.hasVariable()) {
+                if (pattern.getRawPath().equalsIgnoreCase(url)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryHandler handler) {

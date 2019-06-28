@@ -2,6 +2,7 @@ package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
@@ -23,10 +24,15 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerDataSourceFactory() {
-        DataSourceFactory dataSourceFactory = initialization.getRegisterBean(DataSourceFactory.class);
-        if (dataSourceFactory == null) {
-            dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler);
+        DebbieBeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = initialization.getRegisterRawBean(DataSourceFactory.class);
+        if (dataSourceFactoryBeanInfo == null) {
+            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler);
             registerSingletonBean(dataSourceFactory, DataSourceFactory.class, "dataSourceFactory");
+        } else if (dataSourceFactoryBeanInfo.getBean() == null) {
+            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler);
+            dataSourceFactoryBeanInfo.setBean(dataSourceFactory);
+            dataSourceFactoryBeanInfo.setBeanName("dataSourceFactory");
+            registerSingletonBean(dataSourceFactoryBeanInfo);
         }
     }
 }

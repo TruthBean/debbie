@@ -1,1 +1,2 @@
-com.truthbean.debbie.jdbc.domain.PageableRouterMethodArgumentResolver
+com.truthbean.debbie.jdbc.domain.PageableHandlerMethodArgumentResolver
+com.truthbean.debbie.jdbc.domain.SortHandlerMethodArgumentResolver

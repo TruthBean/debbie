@@ -15,5 +15,9 @@
             <appender-ref ref="Console"/>
         </Root>
 
+        <Logger level="INFO" name="com.truthbean.debbie.reflection.ReflectionHelper" additivity="false">
+            <appender-ref ref="Console"/>
+        </Logger>
+
     </Loggers>
 </configuration>

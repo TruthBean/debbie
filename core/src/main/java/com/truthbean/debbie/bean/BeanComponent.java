@@ -11,8 +11,20 @@ import java.lang.annotation.*;
 @Documented
 public @interface BeanComponent {
 
+    /**
+     * same as value
+     * @since 0.0.2
+     */
+    String name() default "";
+
     String value() default "";
 
     BeanType type() default BeanType.NO_LIMIT;
+
+    /**
+     * lazy create bean, default true
+     * @return boolean
+     */
+    boolean lazy() default true;
 
 }

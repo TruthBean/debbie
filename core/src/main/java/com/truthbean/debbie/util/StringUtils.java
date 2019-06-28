@@ -155,6 +155,12 @@ public final class StringUtils {
         return builder.toString();
     }
 
+    public static <T> String joining(Iterator<T> iterator, String split) {
+        StringBuilder builder = new StringBuilder();
+        joining(builder, iterator, split);
+        return builder.toString();
+    }
+
     public static <T> void joining(StringBuilder builder, Collection<T> list, String split) {
         if (list != null && !list.isEmpty()) {
             int size = list.size();
@@ -169,6 +175,18 @@ public final class StringUtils {
             if (e != null) {
                 builder.append(e);
             }
+        }
+    }
+
+    public static <T> void joining(StringBuilder builder, Iterator<T> iterator, String split) {
+        if (iterator != null && iterator.hasNext()) {
+            while (iterator.hasNext()) {
+                T e = iterator.next();
+                if (e != null) {
+                    builder.append(e).append(split);
+                }
+            }
+            builder.deleteCharAt(builder.lastIndexOf(split));
         }
     }
 
@@ -210,8 +228,8 @@ public final class StringUtils {
     }
 
     public static <K, T> void joining(Map<K, List<T>> map,
-                                       String split, String elementSplit, String valueSplit,
-                                       StringBuilder builder) {
+                                      String split, String elementSplit, String valueSplit,
+                                      StringBuilder builder) {
         if (map != null && !map.isEmpty()) {
             int size = map.size();
             var keys = map.keySet().iterator();
@@ -236,8 +254,8 @@ public final class StringUtils {
     }
 
     public static <K, T> void joiningWithMultiKey(Map<K, List<T>> map,
-                                      String split, String elementSplit,
-                                      StringBuilder builder) {
+                                                  String split, String elementSplit,
+                                                  StringBuilder builder) {
         if (map != null && !map.isEmpty()) {
             int size = map.size();
             var keys = map.keySet().iterator();
@@ -264,6 +282,8 @@ public final class StringUtils {
     }
 
     public static String toFirstCharLowerCase(String string) {
+        if (string == null || string.isBlank())
+            return "";
         String first = string.substring(0, 1).toLowerCase();
         return first + string.substring(1);
     }
@@ -272,7 +292,7 @@ public final class StringUtils {
         char[] chars = snakeCaseString.toCharArray();
         char[] newChars = new char[chars.length];
         int j = 0;
-        for (int i = 0, charsLength = chars.length; i < charsLength;) {
+        for (int i = 0, charsLength = chars.length; i < charsLength; ) {
             char c = chars[i++];
             if (c == '-') {
                 c = chars[i++];

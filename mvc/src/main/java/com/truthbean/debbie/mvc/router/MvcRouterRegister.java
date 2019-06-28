@@ -65,17 +65,7 @@ public class MvcRouterRegister {
                 RouterResponse response = new RouterResponse();
                 response.setRestResponseClass(method.getReturnType());
 
-                response.setHasTemplate(router.hasTemplate());
-                if (router.templatePrefix().isBlank()) {
-                    response.setTemplatePrefix(webConfiguration.getTemplatePrefix());
-                } else {
-                    response.setTemplatePrefix(router.templatePrefix());
-                }
-                if (router.templatePrefix().isBlank()) {
-                    response.setTemplateSuffix(webConfiguration.getTemplateSuffix());
-                } else {
-                    response.setTemplateSuffix(router.templateSuffix());
-                }
+                setTemplate(response, router, webConfiguration);
                 routerInfo.setResponse(response);
 
                 // response type
@@ -146,6 +136,20 @@ public class MvcRouterRegister {
                 LOGGER.debug("register router: " + routerInfo);
                 ROUTER_INFO_SET.add(routerInfo);
             }
+        }
+    }
+
+    private static void setTemplate(RouterResponse response, Router router, MvcConfiguration webConfiguration) {
+        response.setHasTemplate(router.hasTemplate());
+        if (router.templatePrefix().isBlank()) {
+            response.setTemplatePrefix(webConfiguration.getTemplatePrefix());
+        } else {
+            response.setTemplatePrefix(router.templatePrefix());
+        }
+        if (router.templatePrefix().isBlank()) {
+            response.setTemplateSuffix(webConfiguration.getTemplateSuffix());
+        } else {
+            response.setTemplateSuffix(router.templateSuffix());
         }
     }
 

@@ -1,4 +1,4 @@
-package com.truthbean.debbie.mvc.request.filter;
+package com.truthbean.debbie.mvc.filter;
 
 import com.truthbean.debbie.bean.AnnotationRegister;
 

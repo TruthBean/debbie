@@ -1,12 +1,19 @@
 package com.truthbean.debbie.jdbc.domain;
 
+import com.truthbean.debbie.data.Streamable;
+import com.truthbean.debbie.util.Assert;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class Page<T> {
+public class Page<T> implements Streamable<T> {
 
     /**
      * previous page
@@ -135,12 +142,29 @@ public class Page<T> {
         }
     }
 
+    public <U> Page<U> map(Function<? super T, ? extends U> converter) {
+        return createPage(currentPage, pageSize, totalCount,getConvertedContent(converter));
+    }
+
+    public <U> List<U> getConvertedContent(Function<? super T, ? extends U> converter) {
+        Assert.notNull(converter, "Function must not be null!");
+        return this.stream().map(converter::apply).collect(Collectors.toList());
+    }
+
+    public boolean hasPrevious() {
+        return currentPage > 0;
+    }
+
     public int getPreviousPage() {
         return previousPage;
     }
 
     public int getCurrentPage() {
         return currentPage;
+    }
+
+    public boolean hasNext() {
+        return currentPage + 1 < totalPage;
     }
 
     public long getNextPage() {
@@ -179,5 +203,15 @@ public class Page<T> {
                 ",\"offset\":" + offset +
                 ",\"totalCount\":" + totalCount +
                 '}';
+    }
+
+    @Override
+    public Stream<T> get() {
+        return null;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return content.iterator();
     }
 }

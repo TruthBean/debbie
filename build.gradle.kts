@@ -158,7 +158,7 @@ subprojects {
                         }*/
 
                         description.set("a java microservice project")
-                        url.set("http://debbie.truthbean.com/")
+                        url.set("http://www.truthbean.com/debbie")
                         licenses {
                             license {
                                 name.set("MIT License")

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.data.transformer;
 
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import org.slf4j.Logger;
@@ -36,8 +37,9 @@ public class DataTransformerFactory {
             }
         }
 
+        var classLoader = ClassLoaderUtils.getClassLoader(target);
         @SuppressWarnings("rawtypes")
-        ServiceLoader<DataTransformer> serviceLoader = ServiceLoader.load(DataTransformer.class);
+        ServiceLoader<DataTransformer> serviceLoader = ServiceLoader.load(DataTransformer.class, classLoader);
         for (var transformer: serviceLoader) {
             LOGGER.debug(transformer.getClass().getName());
             Type[] argsType = ReflectionHelper.getActualTypes(transformer.getClass());

@@ -6,6 +6,7 @@ import com.truthbean.debbie.mvc.RouterSession;
 import java.io.File;
 import java.io.InputStream;
 import java.net.HttpCookie;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,8 @@ public interface RouterRequest {
     Map<String, Object> getAttributes();
 
     Map<String, List<String>> getPathAttributes();
+
+    void setPathAttributes(Map<String, List<String>> map);
 
     Map<String, List<String>> getMatrix();
 
@@ -98,4 +101,8 @@ public interface RouterRequest {
     File getFileBody();
 
     RouterRequest copy();
+
+    void setCharacterEncoding(Charset charset);
+
+    String getRemoteAddr();
 }

@@ -39,7 +39,10 @@ public class RouterPathFragments {
     public RouterPathFragments setPattern() {
         if (pathFragments != null && !pathFragments.isEmpty()) {
             var regex = pathFragments.stream().map(UriPathFragment::getRegex).collect(Collectors.joining("/"));
-            this.pattern = Pattern.compile("/" + regex);
+            if (!regex.startsWith("/")) {
+                regex = "/" + regex;
+            }
+            this.pattern = Pattern.compile(regex);
         }
         return this;
     }
@@ -55,9 +58,12 @@ public class RouterPathFragments {
 
     public RouterPathFragments setRawPath() {
         if (pathFragments != null && !pathFragments.isEmpty()) {
-            this.rawPath = "/" + pathFragments.stream()
+            this.rawPath = pathFragments.stream()
                     .map(UriPathFragment::getFragment)
                     .collect(Collectors.joining("/"));
+            if (!this.rawPath.startsWith("/")) {
+                this.rawPath = "/" + rawPath;
+            }
         }
         return this;
     }

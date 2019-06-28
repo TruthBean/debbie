@@ -49,15 +49,15 @@ for microservice
     com.truthbean.debbie:debbie-servlet:current
     com.truthbean.debbie:debbie-server:current
     
-    org.apache.tomcat.embed:tomcat-embed-core:9.0.19
-    org.apache.tomcat.embed:tomcat-embed-jasper:9.0.19
-    org.apache.tomcat.embed:tomcat-embed-el:9.0.19
+    org.apache.tomcat.embed:tomcat-embed-core:9.0.21
+    org.apache.tomcat.embed:tomcat-embed-jasper:9.0.21
+    org.apache.tomcat.embed:tomcat-embed-el:9.0.21
     
 #### undertow:
     org.slf4j:slf4j-api:1.7.26
     com.truthbean.debbie:debbie-server:current
     
-    io.undertow:undertow-core:2.0.20.Final
+    io.undertow:undertow-core:2.0.22.Final
     
 #### netty:
     org.slf4j:slf4j-api:1.7.26
