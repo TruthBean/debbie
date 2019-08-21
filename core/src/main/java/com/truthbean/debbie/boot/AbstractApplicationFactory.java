@@ -25,6 +25,10 @@ public abstract class AbstractApplicationFactory {
 
     /**
      * application factory
+     * @param factory configurationFactory
+     * @see DebbieConfigurationFactory
+     * @param beanFactoryHandler beanFactoryHandler
+     * @see BeanFactoryHandler
      * @return DebbieApplication
      */
     public abstract DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler);

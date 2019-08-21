@@ -98,7 +98,12 @@ public class BeanInvoker<Bean> {
             }
         } catch (Exception e) {
             LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
-            throw new BeanCreatedException(e);
+            Throwable cause = e.getCause();
+            var errorMessage = e.getMessage();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            throw new BeanCreatedException(errorMessage);
         }
     }
 
@@ -141,7 +146,12 @@ public class BeanInvoker<Bean> {
                 }
             }
         } catch (Exception e) {
-            throw new BeanCreatedException(e);
+            Throwable cause = e.getCause();
+            var errorMessage = e.getMessage();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            throw new BeanCreatedException(errorMessage);
         }
     }
 
@@ -174,7 +184,7 @@ public class BeanInvoker<Bean> {
         }
     }
 
-    void resolveFieldsDependent() {
+    void resolveFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
         Map<Field, DebbieBeanInfo> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
         try {
             // find all field its has BeanInject or Inject annotation
@@ -193,11 +203,11 @@ public class BeanInvoker<Bean> {
                         }
                         var fieldValue = ReflectionHelper.getField(this.bean, field);
                         if (fieldValue == null) {
-                            var beanInfo = fieldBeanDependent.get(field);
+                            DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(field);
                             if (beanInfo == null) {
                                 throw new NoBeanException("no bean " + name + " found .");
                             } else {
-                                var bean = beanInfo.getBean();
+                                var bean = beanFactoryHandler.factory(beanInfo);
                                 if (bean != null) {
                                     ReflectionHelper.setField(this.bean, field, bean);
                                 } else if (annotation.require()) {
@@ -209,7 +219,12 @@ public class BeanInvoker<Bean> {
                 }
             }
         } catch (Exception e) {
-            throw new BeanCreatedException(e);
+            Throwable cause = e.getCause();
+            var errorMessage = e.getMessage();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            throw new BeanCreatedException(errorMessage);
         }
     }
 
@@ -225,7 +240,12 @@ public class BeanInvoker<Bean> {
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.error("new instance by constructor error \n");
-            throw new BeanCreatedException(e);
+            Throwable cause = e.getCause();
+            var errorMessage = e.getMessage();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            throw new BeanCreatedException(errorMessage);
         }
     }
 
@@ -265,7 +285,12 @@ public class BeanInvoker<Bean> {
 
         } catch (Exception e) {
             LOGGER.error("new instance by constructor error \n");
-            throw new BeanCreatedException(e);
+            Throwable cause = e.getCause();
+            var errorMessage = e.getMessage();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            throw new BeanCreatedException(errorMessage);
         }
     }
 

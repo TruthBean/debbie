@@ -125,13 +125,14 @@ public class TomcatApplicationFactory extends AbstractApplicationFactory {
     private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
         return new DebbieApplication() {
             @Override
-            public void start(String... args) {
+            public void start(long beforeStartTime, String... args) {
                 try {
                     server.init();
                     server.getConnector();
                     server.start();
                     this.beforeStart(LOGGER, beanFactoryHandler);
                     LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                    LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat start error", e);

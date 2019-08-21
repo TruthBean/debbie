@@ -69,10 +69,11 @@ public final class UndertowApplicationFactory extends AbstractApplicationFactory
 
         return new DebbieApplication() {
             @Override
-            public void start(String... args) {
+            public void start(long beforeStartTime, String... args) {
                 server.start();
                 this.beforeStart(LOGGER, beanFactoryHandler);
                 LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
             }
 

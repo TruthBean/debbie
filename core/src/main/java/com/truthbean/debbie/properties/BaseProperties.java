@@ -190,7 +190,7 @@ public class BaseProperties {
             result = defaultValue;
         } else {
             try {
-                result = Long.valueOf(value);
+                result = Long.parseLong(value);
             } catch (Exception e) {
                 LOGGER.error(value + " to long error", e);
                 result = defaultValue;

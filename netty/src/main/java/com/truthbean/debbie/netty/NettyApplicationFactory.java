@@ -38,10 +38,11 @@ public class NettyApplicationFactory extends AbstractApplicationFactory {
         final SessionManager sessionManager = new SessionManager();
         return new DebbieApplication() {
             @Override
-            public void start(String... args) {
+            public void start(long beforeStartTime, String... args) {
                 run(configuration, sessionManager, beanFactoryHandler);
                 this.beforeStart(LOGGER, beanFactoryHandler);
                 LOGGER.info("application start with http://" + NetWorkUtils.getLocalHost() + ":" + configuration.getPort());
+                LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
             }
 

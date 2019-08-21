@@ -109,12 +109,14 @@ public class HttpConnectionHandler extends HttpHandler {
             return null;
         }
 
+        LOGGER.debug("remote service response status: " + status);
+
         if (status / 100 == 5) {
             LOGGER.info("remote service is unavailable (status " + status + ")");
             return null;
         } else {
             String responseBody;
-            if (status != 200) {
+            if (status / 100 != 2) {
                 try {
                     responseBody = StreamHelper.getAndClose(connection.getErrorStream());
                     LOGGER.error("Plain post error response: " + responseBody);

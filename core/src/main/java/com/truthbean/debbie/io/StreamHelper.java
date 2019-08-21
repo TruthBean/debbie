@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -323,6 +324,39 @@ public final class StreamHelper {
             }
 
             return content.toString();
+        }
+    }
+
+    public static String copyToString(InputStream stream, Charset charset) throws IOException {
+        if (stream == null) {
+            return "";
+        } else {
+            InputStreamReader reader = new InputStreamReader(stream, charset);
+            StringWriter out = new StringWriter();
+            copy(reader, out);
+            return out.toString();
+        }
+    }
+
+    /**
+     * Copy the contents of the given Reader to the given Writer.
+     * Closes both when done.
+     * @param in the Reader to copy from
+     * @param out the Writer to copy to
+     * @return the number of characters copied
+     * @throws IOException in case of I/O errors
+     */
+    public static int copy(Reader in, Writer out) throws IOException {
+        try (in; out) {
+            int byteCount = 0;
+            char[] buffer = new char[DEFAULT_BUFFER_SIZE];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+                byteCount += bytesRead;
+            }
+            out.flush();
+            return byteCount;
         }
     }
 

@@ -54,7 +54,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     public void callStarter() {
         Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
-        if (debbieModuleStarters != null) {
+        if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug("debbieModuleStarter : " + debbieModuleStarter);
                 debbieModuleStarter.starter(configurationFactory, this);
@@ -79,12 +79,14 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     protected static DebbieApplicationFactory debbieApplicationFactory;
 
     public static DebbieApplication factory() {
-        LOGGER.info("debbie start time: " + (new Timestamp(System.currentTimeMillis())));
+        long beforeStartTime = System.currentTimeMillis();
+        LOGGER.info("debbie start time: " + (new Timestamp(beforeStartTime)));
         if (debbieApplication != null) return debbieApplication;
         debbieApplicationFactory = new DebbieApplicationFactory();
         debbieApplicationFactory.config();
         debbieApplicationFactory.callStarter();
         debbieApplication = debbieApplicationFactory.factoryApplication();
+        debbieApplication.setBeforeStartTime(beforeStartTime);
         return debbieApplication;
     }
 

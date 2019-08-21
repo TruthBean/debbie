@@ -7,6 +7,7 @@ import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.InterfaceDynamicProxy;
 import com.truthbean.debbie.reflection.ClassInfo;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +186,7 @@ public class BeanFactoryHandler {
         return factory(serviceName, null, true);
     }
 
-    private <T, K extends T> T factory(DebbieBeanInfo<T> beanInfo) {
+    public <T, K extends T> T factory(DebbieBeanInfo<T> beanInfo) {
         if (beanInfo.getBeanType() == BeanType.SINGLETON) {
             resolveFieldBeans(beanInfo);
             var bean = beanInfo.getBean();
@@ -228,7 +229,7 @@ public class BeanFactoryHandler {
             }
 
             BeanInvoker<T> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
-            beanInvoker.resolveFieldsDependent();
+            beanInvoker.resolveFieldsDependent(this);
             T bean = beanInvoker.getBean();
             beanInfo.setBean(bean);
         }
@@ -377,7 +378,12 @@ public class BeanFactoryHandler {
             }
         } else {
             // todo if inject is exist
-            // parameter.getAnnotation(Inject.class);
+            /*try {
+                Class injectClass = Class.forName("javax.inject.Inject");
+                var inject = parameter.getAnnotation(injectClass);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }*/
         }
         throw new NoBeanException("no bean " + parameter.getName() + " found .");
     }

@@ -314,28 +314,6 @@ public class ReflectionHelper {
             } else {
                 LOGGER.error(fieldName + " set method not found. \n", e.getMessage());
             }
-
-            methodName = "is" + handleFieldName(fieldName);
-            LOGGER.warn("try to invoke " + methodName + " method");
-            try {
-                var method = targetClass.getMethod(methodName, fieldType);
-                if (TypeHelper.isRawBaseType(fieldType)) {
-                    fieldType = TypeHelper.getWrapperClass(fieldType);
-                }
-                return method.invoke(target, DataTransformerFactory.transform(arg, fieldType));
-            } catch (NoSuchMethodException ex) {
-                cause = ex.getCause();
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.error(methodName + " method not found \n", Objects.requireNonNullElse(cause, ex));
-                } else {
-                    LOGGER.error(methodName + " method not found \n" + ex.getMessage());
-                }
-                throw ex;
-            } catch (IllegalAccessException | InvocationTargetException ex) {
-                cause = ex.getCause();
-                LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, ex));
-            }
-
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error("", Objects.requireNonNullElse(cause, e));

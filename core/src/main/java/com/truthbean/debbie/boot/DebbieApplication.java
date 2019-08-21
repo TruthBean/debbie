@@ -7,21 +7,34 @@ import org.slf4j.Logger;
  * @author TruthBean
  * @since 0.0.1
  */
-public interface DebbieApplication {
+public abstract class DebbieApplication {
 
-    default void beforeStart(Logger logger, BeanFactoryHandler beanFactoryHandler) {
+    private Logger logger;
+    private long beforeStartTime;
+
+    public void setBeforeStartTime(long beforeStartTime) {
+        this.beforeStartTime = beforeStartTime;
+    }
+
+    protected void beforeStart(Logger logger, BeanFactoryHandler beanFactoryHandler) {
+        this.logger = logger;
         beanFactoryHandler.autoCreateBeans();
     }
 
     /**
      * run application
+     * @param beforeStartTime time of application starting spending
      * @param args args
      */
-    void start(String... args);
+    protected abstract void start(long beforeStartTime, String... args);
+
+    public final void start(String... args) {
+        start(beforeStartTime, args);
+    }
 
     /**
      * exit application
      * @param args args
      */
-    void exit(String... args);
+    public abstract void exit(String... args);
 }
