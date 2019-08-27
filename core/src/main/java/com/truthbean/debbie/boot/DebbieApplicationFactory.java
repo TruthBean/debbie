@@ -1,6 +1,7 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -50,6 +51,9 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         BeanConfigurationRegister register = new BeanConfigurationRegister();
         register.register(targetClasses);
         super.refreshBeans();
+        // event
+        EventListenerBeanRegister eventListenerBeanRegister = new EventListenerBeanRegister(this);
+        eventListenerBeanRegister.register();
     }
 
     public void callStarter() {

@@ -1,11 +1,13 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.net.uri.QueryStringEncoder;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLParameters;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +38,7 @@ public class HttpClientAction extends HttpHandler {
         this.httpClient = createHttpClient();
     }
 
-    private HttpClient createHttpClient() {
+    protected HttpClient createHttpClient() {
         HttpClient.Builder builder = HTTP_CLIENT_BUILDER;
         if (configuration.useProxy()) {
             builder.proxy(createProxySelector());
@@ -46,11 +48,12 @@ public class HttpClientAction extends HttpHandler {
         }
         if (configuration.isInsecure()) {
             builder.sslContext(createSSLContext());
+            System.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
         }
         return builder.build();
     }
 
-    private <T> HttpResponse<T> getResponse(CompletableFuture<HttpResponse<T>> future) {
+    protected <T> HttpResponse<T> getResponse(CompletableFuture<HttpResponse<T>> future) {
         HttpResponse<T> response = null;
         try {
             response = future.get(configuration.getResponseTimeout(), TimeUnit.MILLISECONDS);
@@ -60,7 +63,7 @@ public class HttpClientAction extends HttpHandler {
         return response;
     }
 
-    private <T> HttpResponse<T> actionWithRetryWhenFail(CompletableFuture<HttpResponse<T>> future) {
+    protected <T> HttpResponse<T> actionWithRetryWhenFail(CompletableFuture<HttpResponse<T>> future) {
         int tryCount = 0;
         HttpResponse<T> response = null;
         while ((response == null) && tryCount < configuration.getRetryTime()) {
@@ -174,7 +177,7 @@ public class HttpClientAction extends HttpHandler {
 
     }
 
-    private Map<String, String> action(HttpRequest httpRequest, long startTime) {
+    protected Map<String, String> action(HttpRequest httpRequest, long startTime) {
         Map<String, String> result = null;
         CompletableFuture<HttpResponse<String>> future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
         HttpResponse<String> response;
@@ -187,6 +190,7 @@ public class HttpClientAction extends HttpHandler {
         if (response != null) {
             result = new HashMap<>();
             LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
+            LOGGER.debug(OPERATION_NAME + "通讯完成，http 状态：" + HttpStatus.valueOf(response.statusCode()));
             result.put("code", String.valueOf(response.statusCode()));
             if (response.body() != null) {
                 String responseBody = response.body();
@@ -199,7 +203,7 @@ public class HttpClientAction extends HttpHandler {
                     } catch (Exception e) {
                         LOGGER.error("通讯成功，解析返回值异常", e);
                     }
-                    LOGGER.debug(OPERATION_NAME + "返回内容：" + result);
+                    LOGGER.trace(OPERATION_NAME + "返回内容：" + result);
                 } else {
                     LOGGER.error("通讯成功，返回内容为空");
                 }

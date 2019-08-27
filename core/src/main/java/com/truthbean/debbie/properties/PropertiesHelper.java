@@ -137,7 +137,7 @@ public final class PropertiesHelper {
      * @param params
      * @return
      */
-    private static String replaceProperty(String expression, Properties params) {
+    public static String replaceProperty(String expression, Properties params) {
         if (expression == null || expression.length() == 0 || !expression.contains("$")) {
             return expression;
         }

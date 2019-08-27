@@ -1,34 +1,24 @@
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.mvc.response.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientHandler extends HttpHandler {
-    private HttpClient httpClient;
+public class HttpClientHandler extends HttpClientAction {
 
     public HttpClientHandler(HttpClientConfiguration configuration) {
         super(configuration);
-        this.httpClient = createHttpClient();
     }
-
-    private HttpClientConfiguration configuration = super.getConfiguration();
 
     public String get(String url) {
         return get(url, new HashMap<>());
@@ -174,96 +164,6 @@ public class HttpClientHandler extends HttpHandler {
             httpRequest = builder.method("delete", body).build();
         }
         return action(httpRequest, startTime);
-    }
-
-    // =====================================================================================================
-
-    private static final HttpClient.Builder HTTP_CLIENT_BUILDER = HttpClient.newBuilder();
-
-    private HttpClient createHttpClient() {
-        HttpClient.Builder builder = HTTP_CLIENT_BUILDER;
-        if (configuration.useProxy()) {
-            builder.proxy(createProxySelector());
-        }
-        if (configuration.needAuth()) {
-            builder.authenticator(basicAuth());
-        }
-        if (configuration.isInsecure()) {
-            builder.sslContext(createSSLContext());
-        }
-        return builder.build();
-    }
-
-    private <T> HttpResponse<T> getResponse(CompletableFuture<HttpResponse<T>> future) {
-        HttpResponse<T> response = null;
-        try {
-            response = future.get(configuration.getResponseTimeout(), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            LOGGER.error("response error. ", e);
-        }
-        return response;
-    }
-
-    private <T> HttpResponse<T> actionWithRetryWhenFail(CompletableFuture<HttpResponse<T>> future) {
-        int tryCount = 0;
-        HttpResponse<T> response = null;
-        while ((response == null) && tryCount < configuration.getRetryTime()) {
-            LOGGER.debug("HttpRequest is not successful, retry " + tryCount + " time");
-            tryCount++;
-            // retry the HttpRequest
-            future = future.copy();
-            response = getResponse(future);
-            if (response != null) {
-                try {
-                    LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
-                } catch (Exception e) {
-                    LOGGER.error("", e);
-                }
-            }
-        }
-        return response;
-    }
-
-    private Map<String, String> action(HttpRequest httpRequest, long startTime) {
-        Map<String, String> result = null;
-        CompletableFuture<HttpResponse<String>> future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
-        HttpResponse<String> response;
-        if (configuration.retry()) {
-            response = actionWithRetryWhenFail(future);
-        } else {
-            response = getResponse(future);
-        }
-
-        if (response != null) {
-            result = new HashMap<>();
-            LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
-            LOGGER.debug(OPERATION_NAME + "通讯完成，http 状态：" + HttpStatus.valueOf(response.statusCode()));
-            result.put("code", String.valueOf(response.statusCode()));
-            if (response.body() != null) {
-                String responseBody = response.body();
-                if (responseBody != null) {
-                    try {
-                        HttpHeaders responseHeaders = response.headers();
-                        LOGGER.debug(
-                                "whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
-                        result.put("body", responseBody);
-                    } catch (Exception e) {
-                        LOGGER.error("通讯成功，解析返回值异常", e);
-                    }
-                    LOGGER.debug(OPERATION_NAME + "返回内容：" + result);
-                } else {
-                    LOGGER.error("通讯成功，返回内容为空");
-                }
-            } else {
-                LOGGER.error("通讯异常");
-            }
-        } else {
-            LOGGER.error("通讯失败");
-        }
-
-        long endTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "共计耗时:" + ((endTime - startTime) / 1000000.0) + "ms");
-        return result;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientHandler.class);

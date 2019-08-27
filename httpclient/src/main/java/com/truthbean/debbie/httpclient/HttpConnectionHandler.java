@@ -15,6 +15,7 @@ import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +176,7 @@ public class HttpConnectionHandler extends HttpHandler {
 
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, new TrustManager[]{SSL_HANDLER}, null);
+            sc.init(null, new TrustManager[]{SSL_HANDLER}, new SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier(SSL_HANDLER);
 

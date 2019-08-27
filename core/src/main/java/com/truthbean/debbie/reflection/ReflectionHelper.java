@@ -59,18 +59,18 @@ public class ReflectionHelper {
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
 
-    public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz, int typeLength) {
+    public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz, int typeNum) {
         if (clazz == Object.class || clazz == Void.class) {
             return null;
         }
         Type[] types = clazz.getTypeParameters();
-        if (types != null && types.length >= typeLength) {
+        if (types != null && types.length >= typeNum) {
             return types;
         }
         Type genType = clazz.getGenericSuperclass();
         if (genType instanceof ParameterizedType) {
             Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
-            if (params.length >= typeLength) {
+            if (params.length >= typeNum) {
                 return params;
             }
         }
@@ -80,20 +80,20 @@ public class ReflectionHelper {
             for (var type : interfaces) {
                 if (type instanceof ParameterizedType) {
                     Type[] params = ((ParameterizedType) type).getActualTypeArguments();
-                    if (params != null && params.length >= typeLength) {
+                    if (params != null && params.length >= typeNum) {
                         return params;
                     }
                 }
             }
         } else {
-            return getActualTypes(clazz.getSuperclass(), typeLength);
+            return getActualTypes(clazz.getSuperclass(), typeNum);
         }
 
         return null;
     }
 
     public static Type[] getActualTypes(Class<?> clazz) {
-        if (clazz == Object.class || clazz == Void.class) {
+        if (clazz == null || clazz == Object.class || clazz == Void.class) {
             return null;
         }
         Type[] types = clazz.getTypeParameters();

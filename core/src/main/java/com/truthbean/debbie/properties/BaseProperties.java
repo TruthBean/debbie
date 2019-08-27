@@ -10,6 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author TruthBean
@@ -22,6 +24,11 @@ public class BaseProperties {
      * slf4j logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseProperties.class);
+
+    /**
+     * properties变量名称正则
+     */
+    private static Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
 
     /**
      * properties
@@ -117,6 +124,42 @@ public class BaseProperties {
         return result;
     }
 
+    /**
+     * replace property
+     *
+     * @param expression
+     * @param params
+     * @return
+     */
+    private static String replaceProperty(String expression, Properties params) {
+        if (expression == null || expression.length() == 0 || !expression.contains("$")) {
+            return expression;
+        }
+        Matcher matcher = VARIABLE_PATTERN.matcher(expression);
+        StringBuffer sb = new StringBuffer();
+        // 逐个匹配
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            LOGGER.debug("env key:" + key);
+            String value = System.getProperty(key);
+            if (value == null && params != null) {
+                value = params.getProperty(key);
+            }
+            if (value == null) {
+                value = System.getenv(key);
+                if (value == null) {
+                    value = "";
+                } else {
+                    System.setProperty(key, value);
+                }
+            }
+            LOGGER.debug("env value:" + value);
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
     public Map<String, String> getMatchedKey(String keyPrefix) {
         if (keyPrefix == null || keyPrefix.isBlank()) {
             throw new RuntimeException("illegal keyPrefix");
@@ -138,7 +181,7 @@ public class BaseProperties {
         var properties = getProperties();
         String value = null;
         if (properties.containsKey(key)) {
-            value = properties.getProperty(key);
+            value = replaceProperty(properties.getProperty(key, null), properties);
         }
         return value;
     }
@@ -149,6 +192,22 @@ public class BaseProperties {
             value = defaultValue;
         }
         return value;
+    }
+
+    public char getCharacterValue(String key, char defaultValue) {
+        var value = getValue(key);
+        char result;
+        if (value == null) {
+            result = defaultValue;
+        } else {
+            try {
+                result = value.charAt(0);
+            } catch (Exception e) {
+                LOGGER.error(value + " to char error", e);
+                result = defaultValue;
+            }
+        }
+        return result;
     }
 
     public boolean getBooleanValue(String key, boolean defaultValue) {
@@ -175,6 +234,22 @@ public class BaseProperties {
         } else {
             try {
                 result = Integer.parseInt(value);
+            } catch (Exception e) {
+                LOGGER.error(value + " to int error", e);
+                result = defaultValue;
+            }
+        }
+        return result;
+    }
+
+    public double getDoubleValue(String key, double defaultValue) {
+        var value = getValue(key);
+        double result;
+        if (value == null) {
+            result = defaultValue;
+        } else {
+            try {
+                result = Double.parseDouble(value);
             } catch (Exception e) {
                 LOGGER.error(value + " to int error", e);
                 result = defaultValue;

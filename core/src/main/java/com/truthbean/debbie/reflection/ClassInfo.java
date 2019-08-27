@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -21,6 +22,8 @@ public class ClassInfo<C> {
     private List<Field> fields;
 
     private List<Method> methods;
+
+    private List<Type> actualTypes;
 
     public ClassInfo(Class<C> clazz) {
         this.clazz = clazz;
@@ -41,6 +44,11 @@ public class ClassInfo<C> {
 
         this.constructors = (Constructor<C>[]) clazz.getConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
+
+        Type[] actualTypes = ReflectionHelper.getActualTypes(clazz);
+        if (actualTypes != null) {
+            this.actualTypes = Arrays.asList(actualTypes);
+        }
     }
 
     public Class<C> getClazz() {
@@ -49,6 +57,10 @@ public class ClassInfo<C> {
 
     public Constructor<C>[] getConstructors() {
         return constructors;
+    }
+
+    public List<Type> getActualTypes() {
+        return actualTypes;
     }
 
     public List<Method> getMethods() {

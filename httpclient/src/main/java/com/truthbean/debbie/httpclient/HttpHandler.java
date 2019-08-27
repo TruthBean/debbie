@@ -35,10 +35,6 @@ public class HttpHandler {
         return configuration;
     }
 
-    public HostnameVerifier hostnameVerifier() {
-        return (s, sslSession) -> true;
-    }
-
     public SSLContext createSSLContext() {
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
@@ -58,7 +54,7 @@ public class HttpHandler {
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return null;
+            return new X509Certificate[0];
         }
 
         @Override
