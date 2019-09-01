@@ -15,11 +15,10 @@ import java.util.Set;
  */
 public class DataSourceConfigurationFactory {
 
-    public static <Configuration extends DataSourceConfiguration>
-    Configuration factory(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-        Set<DataSourceConfiguration> configurations = configurationFactory.getConfigurations(DataSourceConfiguration.class, beanFactoryHandler);
+    public static <Configuration extends DataSourceConfiguration> Configuration factory(
+        DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler, Class<Configuration> configurationClass) {
+        Set<Configuration> configurations = configurationFactory.getConfigurations(configurationClass, beanFactoryHandler);
         for (DataSourceConfiguration configuration : configurations) {
-            var configurationClass = configuration.getClass();
             LOGGER.debug("DataSourcePoolProperties : " + configurationClass);
             if (configurationClass != DefaultDataSourcePoolConfiguration.class && configurationClass != DataSourceConfiguration.class) {
                 return (Configuration) configuration;

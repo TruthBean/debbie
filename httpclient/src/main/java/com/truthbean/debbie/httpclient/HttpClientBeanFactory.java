@@ -30,4 +30,9 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     public boolean isSingleton() {
         return true;
     }
+
+    @Override
+    public void destroy() {
+        httpClientFactory.destroy();
+    }
 }

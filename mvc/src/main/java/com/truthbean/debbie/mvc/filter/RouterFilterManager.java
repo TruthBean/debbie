@@ -73,5 +73,9 @@ public class RouterFilterManager {
                 .collect(Collectors.toList());
     }
 
+    public static void reset() {
+        FILTERS.clear();
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterFilterManager.class);
 }

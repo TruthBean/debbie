@@ -57,7 +57,7 @@ subprojects {
     apply(plugin = "eclipse")
 
     dependencies {
-        if (project.name != "debbie-dependencies") {
+        if (project.name != "debbie-dependencies" && project.name != "debbie-test") {
             val slf4jVersion: String by project
             "compileOnly"("org.slf4j:slf4j-api:$slf4jVersion")
 

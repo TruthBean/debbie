@@ -90,6 +90,13 @@ public class BeanFactoryHandler {
 
     public void destroy(DebbieBeanInfo beanInfo) {
         beanServiceInfoSet.remove(beanInfo);
+        singletonBeanInvokerMap.remove(beanInfo);
+    }
+
+    public void destroy() {
+        beanServiceInfoSet.clear();
+        singletonBeanInvokerMap.clear();
+        beanInitialization.reset();
     }
 
     private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, Set<DebbieBeanInfo> beanInfoSet) {

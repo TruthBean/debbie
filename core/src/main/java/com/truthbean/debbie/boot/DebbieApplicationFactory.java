@@ -1,6 +1,8 @@
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.bean.BeanConfigurationRegister;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
@@ -9,7 +11,6 @@ import com.truthbean.debbie.spi.SpiLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.sql.Timestamp;
 import java.util.Set;
 
@@ -43,10 +44,23 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         LOGGER.debug("init configuration");
         // beanInitialization
         var beanInitialization = super.getBeanInitialization();
+
+        // add framework beans
+        beanInitialization.registerAnnotations();
+
         BeanScanConfiguration configuration = ClassesScanProperties.toConfiguration();
         var targetClasses = configuration.getTargetClasses();
         beanInitialization.init(targetClasses);
         super.refreshBeans();
+
+        Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
+        if (!debbieModuleStarters.isEmpty()) {
+            for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
+                LOGGER.debug("debbieModuleStarter : " + debbieModuleStarter);
+                debbieModuleStarter.registerBean(beanInitialization);
+            }
+        }
+
         // beanConfiguration
         BeanConfigurationRegister register = new BeanConfigurationRegister();
         register.register(targetClasses);

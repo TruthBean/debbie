@@ -181,7 +181,7 @@ public class SpiLoader {
             Class<? extends MethodProxyHandler> handlerClass = null;
             if (annotationType != null) {
                 try {
-                    handlerClass = (Class<? extends MethodProxyHandler>) classLoader.loadClass(split[1]);
+                    handlerClass = (Class<MethodProxyHandler>) classLoader.loadClass(split[1]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

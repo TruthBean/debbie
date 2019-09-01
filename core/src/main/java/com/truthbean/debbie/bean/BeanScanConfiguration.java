@@ -90,4 +90,11 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
         return Collections.unmodifiableSet(classes);
     }
+
+    public void reset() {
+        this.scanClasses.clear();
+        this.scanBasePackages.clear();
+        this.scanExcludePackages.clear();
+        this.scanExcludeClasses.clear();
+    }
 }

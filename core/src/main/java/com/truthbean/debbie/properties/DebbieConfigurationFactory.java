@@ -67,7 +67,7 @@ public class DebbieConfigurationFactory {
                 result.add((C) value);
             }*/
             if (configurationClass == value.getClass()) {
-                LOGGER.debug("configuration class: " + key.getName());
+                LOGGER.debug("properties class: " + key.getName() + ", configuration class: " + value.getClass());
                 result.add((C) value);
             }
         }
@@ -96,6 +96,10 @@ public class DebbieConfigurationFactory {
             }
         }
         return null;
+    }
+
+    public void reset() {
+        configurations.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieConfigurationFactory.class);

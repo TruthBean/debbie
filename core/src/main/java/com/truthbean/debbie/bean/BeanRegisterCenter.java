@@ -26,7 +26,7 @@ final class BeanRegisterCenter {
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
-    protected static <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
+    static <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.debug("register class " + beanClass.getName());
 
@@ -63,7 +63,7 @@ final class BeanRegisterCenter {
         }
     }
 
-    protected static <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
+    static <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.debug("refresh class " + beanClass.getName());
 
@@ -75,12 +75,12 @@ final class BeanRegisterCenter {
         beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
     }
 
-    protected static void register(Class<?> beanClass) {
+    static void register(Class<?> beanClass) {
         var beanClassInfo = new DebbieBeanInfo<>(beanClass);
         register(beanClassInfo);
     }
 
-    protected static void register(Class<? extends Annotation> classAnnotation, String packageName) {
+    static void register(Class<? extends Annotation> classAnnotation, String packageName) {
         var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
         if (!allClass.isEmpty()) {
             allClass.forEach(c -> {
@@ -91,22 +91,22 @@ final class BeanRegisterCenter {
         }
     }
 
-    protected static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames) {
+    static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames) {
         packageNames.forEach(packageName -> register(classAnnotation, packageName));
     }
 
-    protected static void register(String packageName) {
+    static void register(String packageName) {
         var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
         if (!allClass.isEmpty()) {
             allClass.forEach(BeanRegisterCenter::register);
         }
     }
 
-    protected static void register(List<String> packageNames) {
+    static void register(List<String> packageNames) {
         packageNames.forEach(BeanRegisterCenter::register);
     }
 
-    protected static List<Method> getBeanMethods(Class<?> beanClass) {
+    static List<Method> getBeanMethods(Class<?> beanClass) {
         var classInfoSet = BEAN_CLASSES;
         if (!classInfoSet.containsKey(beanClass)) {
             LOGGER.error(beanClass.getName() + " has not register");
@@ -115,7 +115,7 @@ final class BeanRegisterCenter {
         return classInfoSet.get(beanClass).getMethods();
     }
 
-    protected static <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {
+    static <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {
         var classInfoSet = CLASS_INFO_SET;
 
         Set<DebbieBeanInfo> result = new HashSet<>();
@@ -127,11 +127,11 @@ final class BeanRegisterCenter {
         return result;
     }
 
-    public static <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean) {
+    static <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean) {
         return BEAN_CLASSES.get(bean);
     }
 
-    public static Collection<DebbieBeanInfo> getRegisterRawBeans() {
+    static Collection<DebbieBeanInfo> getRegisterRawBeans() {
         return Collections.unmodifiableCollection(BEAN_CLASSES.values());
     }
 
@@ -140,11 +140,11 @@ final class BeanRegisterCenter {
 
     }*/
 
-    protected static Set<DebbieBeanInfo> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
+    static Set<DebbieBeanInfo> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
         return ANNOTATION_METHOD_BEANS.get(methodAnnotation);
     }
 
-    protected static Set<DebbieBeanInfo> getBeansByInterface(Class<?> interfaceType) {
+    static Set<DebbieBeanInfo> getBeansByInterface(Class<?> interfaceType) {
         if (!BEAN_CLASSES.containsKey(interfaceType)) {
             return null;
         }
@@ -165,7 +165,7 @@ final class BeanRegisterCenter {
         return classInfoSet;
     }
 
-    protected static Set<DebbieBeanInfo> getBeanByAbstractSuper(Class<?> abstractType) {
+    static Set<DebbieBeanInfo> getBeanByAbstractSuper(Class<?> abstractType) {
         if (!BEAN_CLASSES.containsKey(abstractType)) {
             return null;
         }
@@ -182,8 +182,17 @@ final class BeanRegisterCenter {
         return classInfoSet;
     }
 
-    protected static Set<Class<? extends Annotation>> getBeanAnnotations() {
+    static Set<Class<? extends Annotation>> getBeanAnnotations() {
         return Collections.unmodifiableSet(CLASS_ANNOTATION);
+    }
+
+    static void reset() {
+        BEAN_CLASSES.clear();
+        CLASS_INFO_SET.clear();
+        CLASS_ANNOTATION.clear();
+        BEAN_CLASS_METHOD_MAP.clear();
+        METHOD_ANNOTATION.clear();
+        ANNOTATION_METHOD_BEANS.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanRegisterCenter.class);

@@ -27,4 +27,8 @@ public class HttpClientFactory {
 
         return  (HttpClientBean) interfaceProxyFactory.newInstance(this, HttpClientExecutor.class);
     }
+
+    public void destroy() {
+        knownMappers.clear();
+    }
 }

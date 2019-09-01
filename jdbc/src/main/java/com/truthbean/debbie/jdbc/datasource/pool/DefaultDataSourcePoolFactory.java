@@ -36,4 +36,9 @@ public class DefaultDataSourcePoolFactory implements DataSourceFactory {
     public DataSource getDataSource() {
         return pooledDataSource;
     }
+
+    @Override
+    public void destroy() {
+        pooledDataSource.close();
+    }
 }

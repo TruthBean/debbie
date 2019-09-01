@@ -289,6 +289,7 @@ public class ReflectionHelper {
             try {
                 invokeSetMethod(superClass, target, field.getName(), field.getType(), arg);
                 invoked = true;
+                break;
             } catch (NoSuchMethodException ignored) {
             }
         }

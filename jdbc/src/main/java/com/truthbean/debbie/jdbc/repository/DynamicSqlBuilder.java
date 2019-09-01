@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * dynamic build sql
+ *
  * @author TruthBean
  * @since 0.0.1
  */
@@ -82,12 +83,12 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder leftParenthesis(){
+    public DynamicSqlBuilder leftParenthesis() {
         dynamicSql.append(" ( ");
         return this;
     }
 
-    public DynamicSqlBuilder rightParenthesis(){
+    public DynamicSqlBuilder rightParenthesis() {
         dynamicSql.append(" ) ");
         return this;
     }
@@ -112,12 +113,12 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder autoIncrement(){
+    public DynamicSqlBuilder autoIncrement() {
         dynamicSql.append(" AUTO_INCREMENT ");
         return this;
     }
 
-    public DynamicSqlBuilder autoIncrement(int begin){
+    public DynamicSqlBuilder autoIncrement(int begin) {
         dynamicSql.append(" AUTO_INCREMENT=").append(begin).append(" ");
         return this;
     }
@@ -217,13 +218,12 @@ public class DynamicSqlBuilder {
 
     public DynamicSqlBuilder select(List<String> columns) {
         dynamicSql.append(" SELECT ");
-        this.columns(columns);
+        this.joinWith(",", columns);
         return this;
     }
 
     public DynamicSqlBuilder select(String columns) {
-        dynamicSql.append(" SELECT ");
-        this.columns(List.of(columns));
+        dynamicSql.append(" SELECT ").append(columns).append(" ");
         return this;
     }
 
@@ -247,7 +247,7 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder columns(List<String> columns) {
+    public DynamicSqlBuilder joinWith(String split, List<String> columns) {
         int size;
         if (columns != null && (size = columns.size()) > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -264,13 +264,13 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder columns(String... columns) {
+    public DynamicSqlBuilder joinWith(String split, String... columns) {
         int size;
         if (columns != null && (size = columns.length) > 0) {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns[i];
                 if (iColumn != null) {
-                    dynamicSql.append(" ").append(iColumn).append(", ");
+                    dynamicSql.append(" ").append(iColumn).append(split).append(" ");
                 }
             }
             var iColumn = columns[size - 1];

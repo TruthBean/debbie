@@ -149,13 +149,7 @@ public final class StringUtils {
         return joining(list, ",");
     }
 
-    public static <T> String joining(Collection<T> list, String split) {
-        StringBuilder builder = new StringBuilder();
-        joining(builder, list, split);
-        return builder.toString();
-    }
-
-    public static <T> String joining(Iterator<T> iterator, String split) {
+    public static <T> String joining(Collection<T> iterator, String split) {
         StringBuilder builder = new StringBuilder();
         joining(builder, iterator, split);
         return builder.toString();

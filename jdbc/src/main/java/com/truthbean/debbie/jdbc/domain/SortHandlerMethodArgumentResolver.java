@@ -254,7 +254,7 @@ public class SortHandlerMethodArgumentResolver implements ExecutableArgumentReso
      * direction.
      *
      * @param sort must not be {@literal null}.
-     * @return
+     * @return list
      * @throws IllegalArgumentException if a {@link Sort} with multiple {@link Sort.Direction}s has been handed in.
      */
     protected List<String> legacyFoldExpressions(Sort sort) {

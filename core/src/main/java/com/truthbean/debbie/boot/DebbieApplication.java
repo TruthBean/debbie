@@ -12,7 +12,7 @@ public abstract class DebbieApplication {
     private Logger logger;
     private long beforeStartTime;
 
-    public void setBeforeStartTime(long beforeStartTime) {
+    void setBeforeStartTime(long beforeStartTime) {
         this.beforeStartTime = beforeStartTime;
     }
 
@@ -30,6 +30,10 @@ public abstract class DebbieApplication {
 
     public final void start(String... args) {
         start(beforeStartTime, args);
+    }
+
+    protected void beforeExit(BeanFactoryHandler beanFactoryHandler) {
+
     }
 
     /**

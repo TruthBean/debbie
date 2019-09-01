@@ -5,6 +5,7 @@ import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +33,11 @@ public class JdbcRepository<Entity, Id> extends DmlRepositoryHandler<Entity, Id>
     public Id insert(Entity entity, boolean withEntityPropertyNull) {
         Connection connection = getConnection();
         return super.insert(connection, entity, withEntityPropertyNull);
+    }
+
+    public int insert(Collection<Entity> entities, boolean withEntityPropertyNull) {
+        Connection connection = getConnection();
+        return super.insert(connection, entities, withEntityPropertyNull);
     }
 
     public boolean update(Entity entity, boolean withEntityPropertyNull) {

@@ -23,6 +23,9 @@ public class TransactionInfo implements Closeable {
 
     private Connection connection;
 
+    private boolean forceCommit;
+    private Class<? extends Throwable> rollbackFor;
+
     private final Map<String, Object> resources = new LinkedHashMap<>();
 
     public TransactionInfo() {
@@ -51,6 +54,22 @@ public class TransactionInfo implements Closeable {
 
     public void setConnection(Connection connection) {
         this.connection = connection;
+    }
+
+    public boolean isForceCommit() {
+        return forceCommit;
+    }
+
+    public void setForceCommit(boolean forceCommit) {
+        this.forceCommit = forceCommit;
+    }
+
+    public Class<? extends Throwable> getRollbackFor() {
+        return rollbackFor;
+    }
+
+    public void setRollbackFor(Class<? extends Throwable> rollbackFor) {
+        this.rollbackFor = rollbackFor;
     }
 
     public void bindResource(String key, Object value) {

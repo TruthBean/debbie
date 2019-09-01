@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.debbie.bean.BeanClosure;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -13,15 +14,16 @@ import java.sql.SQLException;
  * @author TruthBean
  * @since 0.0.1
  */
-public interface DataSourceFactory {
+public interface DataSourceFactory extends BeanClosure {
 
     /**
      * create DataSourceFactory by application.properties
      *
      * @return DataSourceFactory
      */
-    static DataSourceFactory factory(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-        var config = DataSourceConfigurationFactory.factory(configurationFactory, beanFactoryHandler);
+    static <Configuration extends DataSourceConfiguration> DataSourceFactory factory(
+        DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler, Class<Configuration> configurationClass) {
+        var config = DataSourceConfigurationFactory.factory(configurationFactory, beanFactoryHandler, configurationClass);
         return loadFactory(config);
     }
 
@@ -71,6 +73,14 @@ public interface DataSourceFactory {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * close dataSource
+     * @since 0.0.2
+     */
+    default void destroy() {
+        // do nothing
     }
 
 }

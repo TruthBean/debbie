@@ -59,4 +59,8 @@ public class HikariDataSourceFactory implements DataSourceFactory {
     public DataSource getDataSource() {
         return hikariDataSource;
     }
+
+    public void destroy() {
+        hikariDataSource.close();
+    }
 }

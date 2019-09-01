@@ -371,4 +371,8 @@ public class BaseProperties {
         return result;
     }
 
+    public void reset() {
+        BaseProperties.PROPERTIES.clear();
+    }
+
 }

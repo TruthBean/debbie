@@ -5,7 +5,7 @@ package com.truthbean.debbie.bean;
  * @since 0.0.2
  * Created on 2019/06/02 16:50.
  */
-public interface BeanFactory<Bean> {
+public interface BeanFactory<Bean> extends BeanClosure {
 
     Bean getBean();
 

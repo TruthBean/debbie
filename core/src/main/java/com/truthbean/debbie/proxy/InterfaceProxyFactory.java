@@ -36,8 +36,8 @@ public class InterfaceProxyFactory<T> {
     }
 
     public T newInstance(Object object, Class<? extends AbstractMethodExecutor> executorClass) {
-        final InterfaceProxy<T> mapperProxy = new InterfaceProxy<>(executorClass, object, interfaceType, methodCache,
-                configuration);
+        final InterfaceProxy<T> mapperProxy =
+            new InterfaceProxy<>(executorClass, object, interfaceType, methodCache, configuration);
         return newInstance(mapperProxy);
     }
 }

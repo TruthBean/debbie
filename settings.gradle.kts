@@ -4,8 +4,9 @@ val modules =
         arrayOf("core",
                 "jdbc", "mvc",
                 "servlet", "httpclient", "hikari",
-                "server", "tomcat", "undertow", "netty",
-                "dependencies"
+                "server", "tomcat", "undertow", "netty", "se",
+                "dependencies",
+                "test"
         )
 
 modules.forEach { dir ->

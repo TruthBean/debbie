@@ -11,9 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -174,10 +172,63 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         });
 
         var sql = DynamicSqlBuilder.sql().insert().extra(table).leftParenthesis()
-                .columns(columnNames).rightParenthesis().values(signs).builder();
+            .joinWith(",", columnNames).rightParenthesis().values(signs).builder();
         var primaryKey = entityInfo.getPrimaryKey();
         var generatedKeys = primaryKey.getPrimaryKeyType() != null;
         return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+    }
+
+    public int insert(Connection connection, Collection<E> entities, boolean withNull) throws TransactionException {
+        Iterator<E> iterator = entities.iterator();
+        E entity = iterator.next();
+        var entityInfo = entityResolver.resolveEntity(entity);
+
+        var table = entityInfo.getTable();
+        var columns = entityInfo.getColumnInfoList();
+
+        Set<List<ColumnInfo>> columnSet = new LinkedHashSet<>();
+        columnSet.add(columns);
+        while (iterator.hasNext()) {
+            E e = iterator.next();
+            EntityInfo<E> eEntityInfo = entityResolver.resolveEntity(e);
+            columnSet.add(eEntityInfo.getColumnInfoList());
+        }
+
+        List<String> columnNames = new LinkedList<>();
+        List<String> signs = new LinkedList<>();
+
+        columns.forEach(column -> {
+            var value = column.getValue();
+            var bool = withNull || value != null;
+            if (bool) {
+                columnNames.add(column.getColumnName());
+                signs.add("?");
+            }
+        });
+
+        List<Object> columnValues = new LinkedList<>();
+
+        columnSet.forEach((e) -> {
+            e.forEach(column -> {
+                var value = column.getValue();
+                var bool = withNull || value != null;
+                if (bool) {
+                    columnValues.add(value);
+                }
+            });
+        });
+
+        var sqlBuilder = DynamicSqlBuilder.sql().insert().extra(table)
+            .leftParenthesis().joinWith(",", columnNames).rightParenthesis()
+            .extra(" VALUES ");
+
+        int size = entities.size();
+        String[] values = new String[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = DynamicSqlBuilder.sql().leftParenthesis().joinWith(",", signs).rightParenthesis().builder();
+        }
+        sqlBuilder.joinWith(",", values);
+        return super.update(connection, sqlBuilder.builder(), columnValues.toArray());
     }
 
     public boolean update(Connection connection, E entity, boolean withNull) throws TransactionException {
@@ -200,7 +251,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         columnValues.add(primaryKey.getValue());
 
         var sql = DynamicSqlBuilder.sql().update(table).set(columnNames)
-                .where().eq(primaryKey.getColumnName(), "?").builder();
+            .where().eq(primaryKey.getColumnName(), "?").builder();
         return super.update(connection, sql, columnValues.toArray()) == 1;
     }
 
@@ -459,7 +510,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var sql = DynamicSqlBuilder.sql().select(columnNames).from(table)
-                .where().eq(primaryKey.getColumnName(), "?").builder();
+            .where().eq(primaryKey.getColumnName(), "?").builder();
         return super.queryOne(connection, sql, entityClass, id);
     }
 
@@ -468,7 +519,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
         var subSql = DynamicSqlBuilder.sql().select(primaryKey.getColumnName()).from(table)
-                .where().eq(primaryKey.getColumnName(), "?").builder();
+            .where().eq(primaryKey.getColumnName(), "?").builder();
         var sql = DynamicSqlBuilder.sql().select().exist(subSql).builder();
         return super.queryOne(connection, sql, Long.class, id) > 0L;
     }

@@ -67,9 +67,13 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         } else if (jdbcTransactional == null && !classJdbcTransactional.readonly()) {
             transactionInfo.setAutoCommit(false);
             autoCommit = false;
+            transactionInfo.setForceCommit(classJdbcTransactional.forceCommit());
+            transactionInfo.setRollbackFor(classJdbcTransactional.rollbackFor());
         } else if (jdbcTransactional != null && !jdbcTransactional.readonly()) {
             transactionInfo.setAutoCommit(false);
             autoCommit = false;
+            transactionInfo.setForceCommit(jdbcTransactional.forceCommit());
+            transactionInfo.setRollbackFor(jdbcTransactional.rollbackFor());
         } else {
             transactionInfo.setAutoCommit(true);
             autoCommit = true;
@@ -88,11 +92,11 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     public void whenExceptionCatched(Throwable e) throws Throwable {
         LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
         if (!autoCommit) {
-            if (jdbcTransactional.forceCommit()) {
+            if (transactionInfo.isForceCommit()) {
                 LOGGER.debug("force commit ..");
                 transactionInfo.commit();
             } else {
-                if (jdbcTransactional.rollbackFor().isInstance(e)) {
+                if (transactionInfo.getRollbackFor().isInstance(e)) {
                     transactionInfo.rollback();
                     LOGGER.debug("rollback ..");
                 } else {

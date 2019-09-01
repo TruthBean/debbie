@@ -1,6 +1,6 @@
 package com.truthbean.debbie.bean;
 
-import com.truthbean.debbie.spi.SpiLoader;
+import com.truthbean.debbie.boot.DebbieModuleStarter;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -13,12 +13,6 @@ import java.util.Set;
  * Created on 2019/3/23 11:47.
  */
 public class BeanInitialization {
-    static {
-        // TODO: how to flush
-        Set<AnnotationRegister> annotationRegisters = SpiLoader.loadProviders(AnnotationRegister.class);
-        annotationRegisters.forEach(AnnotationRegister::register);
-    }
-
     private BeanInitialization() {
     }
 
@@ -27,6 +21,24 @@ public class BeanInitialization {
     static BeanInitialization getInstance() {
         return INITIALIZATION;
     }
+
+    private static final Set<AnnotationRegister> annotationRegisters = new HashSet<>();
+    public <A extends AnnotationRegister> void addAnnotationRegister(A register) {
+        annotationRegisters.add(register);
+    }
+    public void registerAnnotations() {
+        for (AnnotationRegister annotationRegister : annotationRegisters) {
+            annotationRegister.register();
+        }
+    }
+
+    /*private static final Set<DebbieModuleStarter> debbieModuleStarters = new HashSet<>();
+    public <A extends DebbieModuleStarter> void addDebbieModuleStarter(A moduleStarter) {
+        debbieModuleStarters.add(moduleStarter);
+    }
+    public Set<DebbieModuleStarter> getDebbieModuleStarters() {
+        return debbieModuleStarters;
+    }*/
 
     public void init(Class<?> beanClass) {
         if (beanClass.isAnonymousClass()) {
@@ -134,6 +146,10 @@ public class BeanInitialization {
             result.addAll(registerRawBeans);
         }
         return result;
+    }
+
+    public void reset() {
+        BeanRegisterCenter.reset();
     }
 
 }

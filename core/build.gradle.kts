@@ -11,5 +11,5 @@ dependencies {
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    testCompile(project(":debbie-undertow"))
+    testCompile(project(":debbie-test"))
 }

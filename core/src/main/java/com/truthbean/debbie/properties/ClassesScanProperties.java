@@ -89,4 +89,13 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
     public BeanScanConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
         return toConfiguration();
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        scanClasses.clear();
+        scanBasePackages.clear();
+        scanExcludeClasses.clear();
+        scanExcludePackages.clear();
+    }
 }

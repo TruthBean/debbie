@@ -40,15 +40,17 @@ public class HikariTest {
         DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory();
         applicationFactory.config();
         applicationFactory.callStarter();
-        DataSourceFactory factory = DataSourceFactory.factory(applicationFactory.getConfigurationFactory(), applicationFactory);
+        DataSourceFactory factory = applicationFactory.factory("dataSourceFactory");
         System.out.println(factory);
 
         try {
             Connection connection = factory.getConnection();
-            Thread.sleep(1000);
+            Thread.sleep(2000);
             connection.close();
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            factory.destroy();
         }
     }
 }

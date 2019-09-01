@@ -43,4 +43,9 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     public boolean isSingleton() {
         return beanInfo.getBeanType() == BeanType.SINGLETON;
     }
+
+    @Override
+    public void destroy() {
+        beanFactoryHandler.destroy(beanInfo);
+    }
 }

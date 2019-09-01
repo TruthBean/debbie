@@ -1,6 +1,7 @@
 package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
 import java.lang.annotation.*;
 
@@ -14,6 +15,18 @@ import java.lang.annotation.*;
 @Documented
 @BeanComponent
 public @interface PropertiesConfiguration {
+
+    /**
+     * event bean name
+     * @return router bean name
+     */
+    String value() default "";
+
+    /**
+     * router always be singleton
+     * @return BeanType
+     */
+    BeanType type() default BeanType.SINGLETON;
 
     String keyPrefix() default "";
 }

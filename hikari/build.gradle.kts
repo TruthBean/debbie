@@ -6,6 +6,7 @@ dependencies {
 
     val jacksonVersion: String by project
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     val log4j2Version: String by project
     testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
@@ -16,5 +17,5 @@ dependencies {
     val mariadbVersion: String by project
     testCompile("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
 
-    testCompile(project(":debbie-undertow"))
+    testCompile(project(":debbie-test"))
 }
