@@ -60,6 +60,7 @@ public class HikariDataSourceFactory implements DataSourceFactory {
         return hikariDataSource;
     }
 
+    @Override
     public void destroy() {
         hikariDataSource.close();
     }

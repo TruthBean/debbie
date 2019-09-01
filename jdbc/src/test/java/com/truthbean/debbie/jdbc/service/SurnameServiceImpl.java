@@ -10,7 +10,7 @@ import com.truthbean.debbie.jdbc.repository.SurnameJdbcRepository;
 import java.util.List;
 import java.util.Optional;
 
-@BeanComponent("surnameService")
+@BeanComponent(value = "surnameService", lazy = false)
 @JdbcTransactional
 public class SurnameServiceImpl implements SurnameService {
 

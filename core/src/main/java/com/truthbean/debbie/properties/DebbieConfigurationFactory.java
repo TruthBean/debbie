@@ -21,7 +21,18 @@ public class DebbieConfigurationFactory {
 
     private Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
-    private void loadConfiguration(ClassLoader classLoader, BeanFactoryHandler beanFactoryHandler) {
+    private BeanFactoryHandler factoryHandler;
+
+    public DebbieConfigurationFactory(BeanFactoryHandler beanFactoryHandler) {
+        this.factoryHandler = beanFactoryHandler;
+    }
+
+    public void register(Class<? extends DebbieProperties> propertiesClass) {
+        DebbieProperties properties = ReflectionHelper.newInstance(propertiesClass);
+        configurations.put(propertiesClass, properties.toConfiguration(factoryHandler));
+    }
+
+    /*private void loadConfiguration(ClassLoader classLoader, BeanFactoryHandler beanFactoryHandler) {
         Map<Class<DebbieProperties>, Class<DebbieConfiguration>> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
         if (classClassMap != null && !classClassMap.isEmpty()) {
             classClassMap.forEach((key, value) -> {
@@ -31,12 +42,13 @@ public class DebbieConfigurationFactory {
                 configurations.put(key, properties.toConfiguration(beanFactoryHandler));
             });
         }
-    }
+    }*/
 
     public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {
-            var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);
+            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+            loadConfiguration(classLoader, beanFactoryHandler);*/
+            return null;
         }
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
@@ -56,8 +68,9 @@ public class DebbieConfigurationFactory {
     public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
-            var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);
+            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+            loadConfiguration(classLoader, beanFactoryHandler);*/
+            return null;
         }
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
@@ -77,8 +90,9 @@ public class DebbieConfigurationFactory {
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C factory(Class<C> configurationClass, Class<P> propertiesClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {
-            var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);
+            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+            loadConfiguration(classLoader, beanFactoryHandler);*/
+            return null;
         }
         if (configurations.containsKey(propertiesClass)) {
             return (C) configurations.get(propertiesClass);

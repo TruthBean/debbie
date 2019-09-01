@@ -1,6 +1,7 @@
 package com.truthbean.debbie.httpclient.annotation;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
 import java.lang.annotation.*;
 
@@ -14,5 +15,17 @@ import java.lang.annotation.*;
 @Documented
 @BeanComponent
 public @interface HttpClientRouter {
+    /**
+     * bean name
+     * @return bean name
+     */
+    String value() default "";
+
+    /**
+     * bean type
+     * @return BeanType
+     */
+    BeanType type() default BeanType.SINGLETON;
+
     String[] baseUrl() default {""};
 }

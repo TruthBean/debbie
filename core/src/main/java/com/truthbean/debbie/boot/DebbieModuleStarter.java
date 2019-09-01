@@ -10,7 +10,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  */
 public interface DebbieModuleStarter {
 
-    void registerBean(BeanInitialization beanInitialization);
+    void registerBean(BeanFactoryHandler beanFactoryHandler);
 
     void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler);
 }

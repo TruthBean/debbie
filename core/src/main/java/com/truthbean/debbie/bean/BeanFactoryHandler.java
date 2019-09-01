@@ -3,6 +3,7 @@ package com.truthbean.debbie.bean;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.InterfaceDynamicProxy;
@@ -31,13 +32,19 @@ public class BeanFactoryHandler {
     private final Map<DebbieBeanInfo, BeanInvoker> singletonBeanInvokerMap = new HashMap<>();
 
     private final BeanInitialization beanInitialization;
+    private final DebbieConfigurationFactory configurationFactory;
 
     protected BeanFactoryHandler() {
         beanInitialization = BeanInitialization.getInstance();
+        configurationFactory = new DebbieConfigurationFactory(this);
     }
 
     public BeanInitialization getBeanInitialization() {
         return beanInitialization;
+    }
+
+    public DebbieConfigurationFactory getConfigurationFactory() {
+        return configurationFactory;
     }
 
     public void refreshBeans() {

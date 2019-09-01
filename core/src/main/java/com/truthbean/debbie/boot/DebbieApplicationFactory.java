@@ -22,11 +22,8 @@ import java.util.Set;
 public class DebbieApplicationFactory extends BeanFactoryHandler {
     private final AbstractApplicationFactory application = loadApplication();
 
-    private DebbieConfigurationFactory configurationFactory;
     public DebbieApplicationFactory(){
         super();
-        // properties
-        configurationFactory = new DebbieConfigurationFactory();
     }
 
     private AbstractApplicationFactory loadApplication() {
@@ -56,8 +53,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-                LOGGER.debug("debbieModuleStarter : " + debbieModuleStarter);
-                debbieModuleStarter.registerBean(beanInitialization);
+                LOGGER.debug("debbieModuleStarter (" + debbieModuleStarter + ") registerBean");
+                debbieModuleStarter.registerBean(this);
             }
         }
 
@@ -72,6 +69,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     public void callStarter() {
         Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
+        DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
         if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug("debbieModuleStarter : " + debbieModuleStarter);
@@ -82,11 +80,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     public DebbieApplication factoryApplication() {
         LOGGER.debug("create debbieApplication ...");
+        DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
         return application.factory(configurationFactory, this);
-    }
-
-    public DebbieConfigurationFactory getConfigurationFactory() {
-        return configurationFactory;
     }
 
     public BeanFactoryHandler getBeanFactoryHandler() {

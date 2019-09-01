@@ -2,6 +2,7 @@ package com.truthbean.debbie.test;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
@@ -50,8 +51,8 @@ public class DebbieApplicationExtension implements ParameterResolver, BeforeTest
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
         DebbieApplicationFactory beanFactoryHandler = new DebbieApplicationFactory();
-        beanFactoryHandler.config();
-        beanFactoryHandler.callStarter();
+        DebbieApplication debbieApplication = DebbieApplicationFactory.factory();
+        debbieApplication.start();
         context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL)
             .put(BeanFactoryHandler.class, beanFactoryHandler.getBeanFactoryHandler());
 

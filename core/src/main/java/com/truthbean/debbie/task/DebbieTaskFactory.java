@@ -24,8 +24,10 @@ public class DebbieTaskFactory implements DebbieBeanApplication {
 
     public void registerTask() {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        Set<DebbieBeanInfo> jobFactories = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
-        taskBeans.addAll(jobFactories);
+        Set<DebbieBeanInfo> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
+        if (tasks != null && tasks.isEmpty()) {
+            taskBeans.addAll(tasks);
+        }
     }
 
     public void doTask() {

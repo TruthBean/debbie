@@ -1,3 +1,0 @@
-com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties --> com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration
-
-com.truthbean.debbie.jdbc.datasource.DataSourceProperties --> com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration
