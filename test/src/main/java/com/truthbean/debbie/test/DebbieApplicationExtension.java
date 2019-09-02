@@ -11,12 +11,28 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-public class DebbieApplicationExtension implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
+public class DebbieApplicationExtension extends DebbieApplicationFactory implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class.getName());
 
     private static final String START_TIME = "start time";
     private static final String NAMESPACE = "com.truthbean.debbie.test";
+
+    private static BeanFactoryHandler beanFactoryHandler;
+
+    public DebbieApplicationExtension() {
+        if (debbieApplication == null) {
+            beanFactoryHandler = getBeanFactoryHandler();
+            super.config();
+            super.callStarter();
+        } else {
+            beanFactoryHandler = debbieApplicationFactory;
+        }
+    }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
@@ -50,11 +66,9 @@ public class DebbieApplicationExtension implements ParameterResolver, BeforeTest
 
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
-        DebbieApplicationFactory beanFactoryHandler = new DebbieApplicationFactory();
         DebbieApplication debbieApplication = DebbieApplicationFactory.factory();
         debbieApplication.start();
-        context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL)
-            .put(BeanFactoryHandler.class, beanFactoryHandler.getBeanFactoryHandler());
+        context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL).put(BeanFactoryHandler.class, beanFactoryHandler);
 
         getStore(context).put(START_TIME, System.currentTimeMillis());
     }

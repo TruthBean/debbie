@@ -28,9 +28,11 @@ final class BeanRegisterCenter {
 
     static <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
-        LOGGER.debug("register class " + beanClass.getName());
 
-        BEAN_CLASSES.put(beanClass, beanClassInfo);
+        DebbieBeanInfo put = BEAN_CLASSES.put(beanClass, beanClassInfo);
+        if (put == null) {
+            LOGGER.trace("register class " + beanClass.getName());
+        }
         CLASS_INFO_SET.add(beanClassInfo);
 
         List<Method> declaredMethods = beanClassInfo.getMethods();

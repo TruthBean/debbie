@@ -25,6 +25,7 @@ public class BeanInitialization {
     private static final Set<AnnotationRegister> annotationRegisters = new HashSet<>();
     public <A extends AnnotationRegister> void addAnnotationRegister(A register) {
         annotationRegisters.add(register);
+        register.register();
     }
     public void registerAnnotations() {
         for (AnnotationRegister annotationRegister : annotationRegisters) {

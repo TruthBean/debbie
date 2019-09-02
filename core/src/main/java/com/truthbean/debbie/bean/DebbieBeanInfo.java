@@ -208,6 +208,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         if (!(o instanceof DebbieBeanInfo)) return false;
         if (!super.equals(o)) return false;
         DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
+        boolean beanNameEmpty = beanName == null || beanName.isBlank() || beanInfo.beanName == null || beanInfo.beanName.isBlank();
+        if (beanNameEmpty && super.equals(o)) return true;
         return Objects.equals(beanName, beanInfo.beanName);
     }
 

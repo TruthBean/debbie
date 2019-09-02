@@ -22,7 +22,7 @@ import java.util.Set;
 public class DebbieApplicationFactory extends BeanFactoryHandler {
     private final AbstractApplicationFactory application = loadApplication();
 
-    public DebbieApplicationFactory(){
+    public DebbieApplicationFactory() {
         super();
     }
 
@@ -41,9 +41,6 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         LOGGER.debug("init configuration");
         // beanInitialization
         var beanInitialization = super.getBeanInitialization();
-
-        // add framework beans
-        beanInitialization.registerAnnotations();
 
         BeanScanConfiguration configuration = ClassesScanProperties.toConfiguration();
         var targetClasses = configuration.getTargetClasses();
@@ -94,7 +91,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     public static DebbieApplication factory() {
         long beforeStartTime = System.currentTimeMillis();
         LOGGER.info("debbie start time: " + (new Timestamp(beforeStartTime)));
-        if (debbieApplication != null) return debbieApplication;
+        if (debbieApplication != null)
+            return debbieApplication;
         debbieApplicationFactory = new DebbieApplicationFactory();
         debbieApplicationFactory.config();
         debbieApplicationFactory.callStarter();
