@@ -13,6 +13,7 @@ public class SingletonBeanRegister {
         initialization = beanFactoryHandler.getBeanInitialization();
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends I, I> void registerSingletonBean(T bean, Class<I> beanClass, String beanName) {
         DebbieBeanInfo beanInfo = new DebbieBeanInfo<>(beanClass);
         beanInfo.setBeanName(beanName);

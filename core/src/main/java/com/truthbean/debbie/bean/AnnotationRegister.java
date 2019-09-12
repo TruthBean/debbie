@@ -17,6 +17,6 @@ public interface AnnotationRegister<A extends Annotation> {
     void register();
 
     default void register(Class<A> annotation) {
-        BeanRegisterCenter.register(annotation);
+        BeanRegisterCenter.registerBeanAnnotation(annotation);
     }
 }

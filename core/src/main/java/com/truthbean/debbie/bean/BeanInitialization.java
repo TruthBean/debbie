@@ -1,11 +1,13 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -14,6 +16,7 @@ import java.util.Set;
  */
 public class BeanInitialization {
     private BeanInitialization() {
+        BeanRegisterCenter.registerBeanAnnotation(BeanComponent.class);
     }
 
     private static final BeanInitialization INITIALIZATION = new BeanInitialization();
@@ -40,6 +43,20 @@ public class BeanInitialization {
     public Set<DebbieModuleStarter> getDebbieModuleStarters() {
         return debbieModuleStarters;
     }*/
+
+    public <D extends DataTransformer> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
+        Type[] types = new Type[2];
+        types[0] = argsType1;
+        types[1] = argsType2;
+        DataTransformerFactory.register(dataTransformer, types);
+    }
+    public <D extends DataTransformer> void registerDataTransformer(D transformer) {
+        Type[] argsType = ReflectionHelper.getActualTypes(transformer.getClass());
+        DataTransformerFactory.register(transformer, argsType);
+    }
+    public <O, T> T transform(final O origin, final Class<T> target) {
+        return DataTransformerFactory.transform(origin, target);
+    }
 
     public void init(Class<?> beanClass) {
         if (beanClass.isAnonymousClass()) {
@@ -89,6 +106,10 @@ public class BeanInitialization {
 
     public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {
         return BeanRegisterCenter.getAnnotatedClass(annotationClass);
+    }
+
+    public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedBeans() {
+        return BeanRegisterCenter.getAnnotatedBeans();
     }
 
     public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedMethodBean(Class<T> annotationClass) {

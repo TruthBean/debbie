@@ -15,6 +15,9 @@ public class HikariModuleStarter implements DebbieModuleStarter {
     public void registerBean(BeanFactoryHandler beanFactoryHandler) {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         beanInitialization.init(HikariConfiguration.class);
+
+        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
+        configurationFactory.register(HikariProperties.class);
     }
 
     @Override

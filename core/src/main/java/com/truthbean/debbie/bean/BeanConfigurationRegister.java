@@ -53,11 +53,13 @@ public class BeanConfigurationRegister {
     }
 
     public <Configuration> void register(Configuration beanConfiguration) {
+        @SuppressWarnings("unchecked")
         Class<Configuration> beanConfigurationClass = (Class<Configuration>) beanConfiguration.getClass();
         ClassInfo<Configuration> classInfo = new ClassInfo<>(beanConfigurationClass);
         register(beanConfiguration, classInfo);
     }
 
+    @SuppressWarnings("unchecked")
     private <Configuration> void register(Configuration configuration, ClassInfo<Configuration> classInfo) {
         List<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {

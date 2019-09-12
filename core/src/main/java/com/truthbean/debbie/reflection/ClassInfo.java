@@ -1,6 +1,6 @@
 package com.truthbean.debbie.reflection;
 
-import java.lang.annotation.Annotation;
+import java.lang.annotation.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,8 +31,26 @@ public class ClassInfo<C> {
         getClassInfo();
     }
 
+    @SuppressWarnings("unchecked")
     private void getClassInfo() {
         Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
+
+        if (annotations != null && !annotations.isEmpty()) {
+            Set<Annotation> annotationsCopy = new HashSet<>(annotations);
+            for (Annotation annotation : annotationsCopy) {
+                Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
+                if (annotationInAnnotation != null && !annotationInAnnotation.isEmpty()) {
+                    for (Annotation ann : annotationInAnnotation) {
+                        Class<? extends Annotation> annotationType = ann.annotationType();
+                        if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
+                            !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
+                            !Documented.class.equals(annotationType)) {
+                            annotations.add(ann);
+                        }
+                    }
+                }
+            }
+        }
 
         if (annotations != null && !annotations.isEmpty()) {
             for (Annotation annotation : annotations) {

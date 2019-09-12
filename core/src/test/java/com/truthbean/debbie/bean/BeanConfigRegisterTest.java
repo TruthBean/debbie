@@ -1,9 +1,6 @@
 package com.truthbean.debbie.bean;
 
-import com.truthbean.debbie.bean.inter.A;
-import com.truthbean.debbie.bean.inter.Abc;
-import com.truthbean.debbie.bean.inter.B;
-import com.truthbean.debbie.bean.inter.C;
+import com.truthbean.debbie.bean.inter.*;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
@@ -24,7 +21,8 @@ public class BeanConfigRegisterTest {
                          @BeanInject CBean cBean,
                          @BeanInject ABCBean abcBean,
                          @BeanInject A a, @BeanInject B b, @BeanInject C c,
-                         @BeanInject Abc abc) {
+                         @BeanInject Abc abc,
+                         @BeanInject DemoBeanComponent demoBeanComponent) {
         System.out.println(dataTransformer.reverse('a'));
         System.out.println(hehe);
         System.out.println(狄青);
@@ -57,5 +55,15 @@ public class BeanConfigRegisterTest {
         System.out.println(abc.getcBean());
         System.out.println("------------------------------------------------------------------------------");
 
+        System.out.println(demoBeanComponent.getUuid());
+        System.out.println(demoBeanComponent.getDemo1().getUuid());
+        System.out.println(demoBeanComponent.getDemo2().getUuid());
+    }
+
+    @Test
+    public void demo(@BeanInject DemoBeanComponent demoBeanComponent) {
+        System.out.println(demoBeanComponent.getUuid());
+        System.out.println(demoBeanComponent.getDemo1().getUuid());
+        System.out.println(demoBeanComponent.getDemo2().getUuid());
     }
 }

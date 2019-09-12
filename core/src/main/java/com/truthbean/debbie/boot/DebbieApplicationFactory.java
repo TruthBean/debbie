@@ -31,6 +31,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         AbstractApplicationFactory factory = null;
         try {
             factory = SpiLoader.loadProvider(AbstractApplicationFactory.class, classLoader);
+            LOGGER.debug("ApplicationFactory( " + factory.getClass() + " ) loaded. ");
         } catch (Exception e) {
             LOGGER.error("", e);
         }
@@ -85,8 +86,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         return this;
     }
 
-    protected static DebbieApplication debbieApplication;
-    protected static DebbieApplicationFactory debbieApplicationFactory;
+    protected volatile static DebbieApplication debbieApplication;
+    protected volatile static DebbieApplicationFactory debbieApplicationFactory;
 
     public static DebbieApplication factory() {
         long beforeStartTime = System.currentTimeMillis();
@@ -97,6 +98,21 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         debbieApplicationFactory.config();
         debbieApplicationFactory.callStarter();
         debbieApplication = debbieApplicationFactory.factoryApplication();
+        debbieApplication.setBeforeStartTime(beforeStartTime);
+        return debbieApplication;
+    }
+
+    public DebbieApplication createApplication() {
+        long beforeStartTime = System.currentTimeMillis();
+        LOGGER.info("debbie start time: " + (new Timestamp(beforeStartTime)));
+        if (debbieApplication != null)
+            return debbieApplication;
+
+        debbieApplicationFactory = this;
+
+        config();
+        callStarter();
+        debbieApplication = factoryApplication();
         debbieApplication.setBeforeStartTime(beforeStartTime);
         return debbieApplication;
     }

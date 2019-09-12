@@ -72,9 +72,10 @@ public class UndertowRouterSession implements RouterSession {
     public Map<String, Object> getAttributes() {
         Map<String, Object> map = new HashMap<>();
         Set<String> names = session.getAttributeNames();
-        for (String name : names) {
-            map.put(name, session.getAttribute(name));
-        }
+        if (names != null && !names.isEmpty())
+            for (String name : names) {
+                map.put(name, session.getAttribute(name));
+            }
         return map;
     }
 }

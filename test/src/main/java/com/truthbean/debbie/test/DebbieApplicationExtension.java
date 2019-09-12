@@ -15,34 +15,24 @@ import java.lang.reflect.Parameter;
  * @author truthbean
  * @since 0.0.2
  */
-public class DebbieApplicationExtension extends DebbieApplicationFactory implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
+public class DebbieApplicationExtension implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
-    private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class);
 
     private static final String START_TIME = "start time";
     private static final String NAMESPACE = "com.truthbean.debbie.test";
 
-    private static BeanFactoryHandler beanFactoryHandler;
-
-    public DebbieApplicationExtension() {
-        if (debbieApplication == null) {
-            beanFactoryHandler = getBeanFactoryHandler();
-            super.config();
-            super.callStarter();
-        } else {
-            beanFactoryHandler = debbieApplicationFactory;
-        }
-    }
-
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
+        logger.debug("supportsParameter....");
         return parameterContext.isAnnotated(BeanInject.class);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
+        logger.debug("resolveParameter....");
         return getDebbieBean(parameterContext.getParameter(), extensionContext);
     }
 
@@ -66,20 +56,30 @@ public class DebbieApplicationExtension extends DebbieApplicationFactory impleme
 
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
-        DebbieApplication debbieApplication = DebbieApplicationFactory.factory();
+        logger.debug("beforeTestExecution...");
+        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory();
+        DebbieApplication debbieApplication = applicationFactory.createApplication();
         debbieApplication.start();
-        context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL).put(BeanFactoryHandler.class, beanFactoryHandler);
+        BeanFactoryHandler beanFactoryHandler = applicationFactory.getBeanFactoryHandler();
+        ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
+        store.put(BeanFactoryHandler.class, beanFactoryHandler);
+        store.put(DebbieApplication.class, debbieApplication);
 
         getStore(context).put(START_TIME, System.currentTimeMillis());
     }
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
+        logger.debug("afterTestExecution...");
         Method testMethod = context.getRequiredTestMethod();
         long startTime = getStore(context).remove(START_TIME, long.class);
         long duration = System.currentTimeMillis() - startTime;
 
         logger.info(String.format("Method [%s.%s] took %s ms.", testMethod.getDeclaringClass(), testMethod.getName(), duration));
+
+        ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
+        DebbieApplication debbieApplication = store.getOrComputeIfAbsent(DebbieApplication.class);
+        debbieApplication.exit();
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {

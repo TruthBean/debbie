@@ -116,6 +116,7 @@ public class SpiLoader {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private static <P extends DebbieProperties, C extends DebbieConfiguration>
     void resolvePropertiesClass(List<String> strings, Map<Class<P>, Class<C>> map, ClassLoader classLoader) {
         for (String string : strings) {
@@ -167,6 +168,7 @@ public class SpiLoader {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private static <A extends Annotation> void resolveProxyHandlerClass
             (List<String> strings, Map<Class<A>, List<Class<? extends MethodProxyHandler>>> map, ClassLoader classLoader) {
         for (String string : strings) {

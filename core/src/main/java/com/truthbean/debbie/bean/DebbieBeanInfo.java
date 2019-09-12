@@ -152,10 +152,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         this.beanType = beanType;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Class<T> getBeanClass() {
         return (Class<T>) super.getClazz();
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Class<T> getBeanInterface() {
         if (noInterface) return null;
         if (beanInterface == null) {
@@ -220,7 +222,18 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
 
     @Override
     public DebbieBeanInfo<Bean> copy() {
-        return new DebbieBeanInfo<>(getClazz());
+        DebbieBeanInfo<Bean> beanInfo = new DebbieBeanInfo<>(getClazz());
+
+        if (beanName != null && !beanName.isEmpty()) {
+            beanInfo.setBeanName(beanName);
+        }
+        if (beanFactory != null) {
+            beanInfo.setBeanFactory(beanFactory);
+        }
+        if (beanType != null)
+            beanInfo.setBeanType(beanType);
+
+        return beanInfo;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);

@@ -44,6 +44,7 @@ public class DebbieConfigurationFactory {
         }
     }*/
 
+    @SuppressWarnings("unchecked")
     public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {
             /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
@@ -65,6 +66,7 @@ public class DebbieConfigurationFactory {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
@@ -87,6 +89,7 @@ public class DebbieConfigurationFactory {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C factory(Class<C> configurationClass, Class<P> propertiesClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {

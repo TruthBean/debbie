@@ -37,7 +37,7 @@ public @interface SqlColumn {
 
     /**
      * TODO
-     * column definition
+     * @return column definition
      */
     String columnDefinition() default "";
 }

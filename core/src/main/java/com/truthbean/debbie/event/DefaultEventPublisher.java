@@ -14,6 +14,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure 
         eventListenerMap.put(eventType, listener);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void publishEvent(DebbieEvent event) {
         long start = System.currentTimeMillis();

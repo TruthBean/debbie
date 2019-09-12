@@ -17,6 +17,7 @@ public class EventListenerBeanRegister {
         this.beanFactoryHandler = beanFactoryHandler;
     }
 
+    @SuppressWarnings("unchecked")
     public void register() {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         DefaultEventPublisher eventPublisher = new DefaultEventPublisher();

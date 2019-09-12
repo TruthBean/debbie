@@ -170,6 +170,7 @@ public final class TypeHelper {
         return clazz.cast(value);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T valueOf(Class<T> clazz, String value) {
         if (clazz == Integer.class || clazz == int.class) {
             try {

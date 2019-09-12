@@ -31,6 +31,7 @@ public class ReflectionHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> type) {
         if (Modifier.isAbstract(type.getModifiers()) && !type.isInterface()) {
             throw new IllegalStateException(type.getName() + " cannot be abstract class");
@@ -349,6 +350,7 @@ public class ReflectionHelper {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T invokeMethod(Object target, Method method, Object... parameters) {
         if (method == null) return null;
         try {
@@ -519,6 +521,7 @@ public class ReflectionHelper {
         return getSubClass(allClass, parentClass);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> List<Class<? extends T>> getSubClass(List<Class<?>> allClass, Class<T> parentClass) {
         List<Class<? extends T>> result = new ArrayList<>();
         for (var clazz : allClass) {

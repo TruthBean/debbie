@@ -75,7 +75,6 @@ public class NettyRouterRequest implements RouterRequest {
         this.routerRequestCache.setMethod(com.truthbean.debbie.mvc.request.HttpMethod.valueOf(httpMethod.name()));
 
         String uri = httpRequest.uri();
-        LOGGER.debug("url ..... " + uri);
 
         String rawUrl = "http://" + host + ":" + port + uri;
         URL url;

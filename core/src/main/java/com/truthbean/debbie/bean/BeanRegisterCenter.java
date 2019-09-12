@@ -17,6 +17,8 @@ final class BeanRegisterCenter {
     private BeanRegisterCenter() {
     }
 
+    private static final Set<Class<? extends Annotation>> BEAN_ANNOTATION = new LinkedHashSet<>();
+
     private static final Map<Class<?>, DebbieBeanInfo> BEAN_CLASSES = new HashMap<>();
     private static final Set<DebbieBeanInfo<?>> CLASS_INFO_SET = new HashSet<>();
 
@@ -25,6 +27,14 @@ final class BeanRegisterCenter {
 
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo>> ANNOTATION_METHOD_BEANS = new HashMap<>();
+
+    static <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
+        BEAN_ANNOTATION.add(annotationType);
+    }
+
+    static Set<Class<? extends Annotation>> getBeanAnnotations() {
+        return Collections.unmodifiableSet(BEAN_ANNOTATION);
+    }
 
     static <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
@@ -65,6 +75,7 @@ final class BeanRegisterCenter {
         }
     }
 
+    @SuppressWarnings("unchecked")
     static <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.debug("refresh class " + beanClass.getName());
@@ -108,6 +119,7 @@ final class BeanRegisterCenter {
         packageNames.forEach(BeanRegisterCenter::register);
     }
 
+    @SuppressWarnings("unchecked")
     static List<Method> getBeanMethods(Class<?> beanClass) {
         var classInfoSet = BEAN_CLASSES;
         if (!classInfoSet.containsKey(beanClass)) {
@@ -129,6 +141,24 @@ final class BeanRegisterCenter {
         return result;
     }
 
+    static <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedBeans() {
+        var classInfoSet = CLASS_INFO_SET;
+        var beanAnnotations = BEAN_ANNOTATION;
+
+        Set<DebbieBeanInfo> result = new HashSet<>();
+
+        for (Class<? extends Annotation> annotationType : beanAnnotations) {
+            for (DebbieBeanInfo<?> classInfo : classInfoSet) {
+                if (classInfo.getClassAnnotations().containsKey(annotationType)) {
+                    result.add(classInfo);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
     static <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean) {
         return BEAN_CLASSES.get(bean);
     }
@@ -182,10 +212,6 @@ final class BeanRegisterCenter {
         });
 
         return classInfoSet;
-    }
-
-    static Set<Class<? extends Annotation>> getBeanAnnotations() {
-        return Collections.unmodifiableSet(CLASS_ANNOTATION);
     }
 
     static void reset() {

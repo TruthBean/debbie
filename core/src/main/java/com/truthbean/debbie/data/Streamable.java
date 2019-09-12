@@ -22,7 +22,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
     /**
      * Returns an empty {@link Streamable}.
-     *
+     * @param <T> the Type to return
      * @return will never be {@literal null}.
      */
     static <T> Streamable<T> empty() {
@@ -33,7 +33,6 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
      * Returns a {@link Streamable} with the given elements.
      *
      * @param t the elements to return.
-     * @return
      */
     @SafeVarargs
     static <T> Streamable<T> of(T... t) {
@@ -44,7 +43,6 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
      * Returns a {@link Streamable} for the given {@link Iterable}.
      *
      * @param iterable must not be {@literal null}.
-     * @return
      */
     static <T> Streamable<T> of(Iterable<T> iterable) {
         Assert.notNull(iterable, "Iterable must not be null!");

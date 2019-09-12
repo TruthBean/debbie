@@ -37,7 +37,7 @@ public final class ResourcesHandler {
     public static String handleStaticResource(String resource) {
         try {
             InputStream in = handle(resource);
-
+            if (in == null) return null;
             InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
             StringWriter writer = new StringWriter();
 

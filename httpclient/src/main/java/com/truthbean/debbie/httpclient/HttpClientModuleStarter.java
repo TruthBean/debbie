@@ -14,16 +14,15 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(BeanFactoryHandler beanFactoryHandler) {
+        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        beanInitialization.addAnnotationRegister(new HttpClientRouterRegister());
+
         DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
         configurationFactory.register(HttpClientProperties.class);
     }
 
     @Override
     public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        beanInitialization.addAnnotationRegister(new HttpClientRouterRegister());
-        beanFactoryHandler.refreshBeans();
-
         HttpClientBeanRegister register = new HttpClientBeanRegister(beanFactoryHandler);
         register.registerHttpClient();
         register.registerHttpClientFactory();

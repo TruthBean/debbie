@@ -75,6 +75,9 @@ dependencyManagement {
         dependency("com.truthbean.debbie:debbie-undertow:$projectVersion")
         dependency("com.truthbean.debbie:debbie-netty:$projectVersion")
 
+        dependency("com.truthbean.debbie:debbie-se:$projectVersion")
+        dependency("com.truthbean.debbie:debbie-test:$projectVersion")
+
         // extra
 
         // mybatis

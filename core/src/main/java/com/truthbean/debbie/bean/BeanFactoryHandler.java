@@ -7,6 +7,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.InterfaceDynamicProxy;
+import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -33,10 +34,12 @@ public class BeanFactoryHandler {
 
     private final BeanInitialization beanInitialization;
     private final DebbieConfigurationFactory configurationFactory;
+    private final MethodProxyHandlerRegister methodProxyHandlerRegister;
 
     protected BeanFactoryHandler() {
         beanInitialization = BeanInitialization.getInstance();
         configurationFactory = new DebbieConfigurationFactory(this);
+        methodProxyHandlerRegister = new MethodProxyHandlerRegister();
     }
 
     public BeanInitialization getBeanInitialization() {
@@ -47,14 +50,18 @@ public class BeanFactoryHandler {
         return configurationFactory;
     }
 
+    public MethodProxyHandlerRegister getMethodProxyHandlerRegister() {
+        return methodProxyHandlerRegister;
+    }
+
     public void refreshBeans() {
-        Set<DebbieBeanInfo> registeredBeans = beanInitialization.getRegisteredRawBeans();
         beanServiceInfoSet.addAll(beanInitialization.getRegisteredBeans());
-        var beanServiceInfoList = beanInitialization.getAnnotatedClass(BeanComponent.class);
+        var beanServiceInfoList = beanInitialization.getAnnotatedBeans();
 
         beanServiceInfoList.forEach((i) -> {
             var clazz = i.getClazz();
             if (clazz.isAnnotation()) {
+                @SuppressWarnings("unchecked")
                 var annotation = (Class<? extends Annotation>) clazz;
                 var set = beanInitialization.getAnnotatedClass(annotation);
                 beanServiceInfoSet.addAll(set);
@@ -75,6 +82,7 @@ public class BeanFactoryHandler {
 
     }
 
+    @SuppressWarnings("unchecked")
     public void autoCreateSingletonBeans() {
         beanServiceInfoSet.forEach(i -> {
             Boolean lazyCreate = i.getLazyCreate();
@@ -85,6 +93,7 @@ public class BeanFactoryHandler {
         });
     }
 
+    @SuppressWarnings("unchecked")
     public void autoCreateBeans() {
         beanServiceInfoSet.forEach(i -> {
             Boolean lazyCreate = i.getLazyCreate();
@@ -156,6 +165,7 @@ public class BeanFactoryHandler {
             throw new OneMoreBeanRegisteredException(serviceName + " must be only one");
         }
 
+        @SuppressWarnings("unchecked")
         DebbieBeanInfo<T> beanInfo = list.get(0);
         if (type == null || type.isAssignableFrom(beanInfo.getBeanClass())) {
             if (beanInfo.getBeanType() == BeanType.SINGLETON) {
@@ -229,6 +239,7 @@ public class BeanFactoryHandler {
         return factory(null, type, true);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> void resolveFieldBeans(DebbieBeanInfo<T> beanInfo) {
         Map<Field, DebbieBeanInfo> fieldBeanDependents = beanInfo.getFieldBeanDependent();
         if (fieldBeanDependents != null && !fieldBeanDependents.isEmpty()) {
@@ -242,7 +253,12 @@ public class BeanFactoryHandler {
                 }
             }
 
-            BeanInvoker<T> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
+            BeanInvoker<T> beanInvoker;
+            if (beanInfo.getBeanType() == BeanType.SINGLETON) {
+                beanInvoker = singletonBeanInvokerMap.get(beanInfo);
+            } else {
+                beanInvoker = new BeanInvoker<>(beanInfo, this);
+            }
             beanInvoker.resolveFieldsDependent(this);
             T bean = beanInvoker.getBean();
             beanInfo.setBean(bean);
@@ -329,7 +345,7 @@ public class BeanFactoryHandler {
                 }
                 Class<?> type = field.getType();
                 if (transform == null || transform.getClass() != type) {
-                    transform = DataTransformerFactory.transform(value, type);
+                    transform = beanInitialization.transform(value, type);
                 }
                 // use setter method to inject filed
                 // if setter method not found, inject directly
@@ -415,14 +431,20 @@ public class BeanFactoryHandler {
         return bean;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> BeanInvoker<T> setIfNotExist(DebbieBeanInfo<T> beanInfo) {
-        if (singletonBeanInvokerMap.containsKey(beanInfo)) {
-            return singletonBeanInvokerMap.get(beanInfo);
+        if (beanInfo.getBeanType() == BeanType.SINGLETON) {
+            if (singletonBeanInvokerMap.containsKey(beanInfo)) {
+                return singletonBeanInvokerMap.get(beanInfo);
+            } else {
+                BeanInvoker<T> beanInvoker = new BeanInvoker<>(beanInfo, this);
+                singletonBeanInvokerMap.put(beanInfo, beanInvoker);
+                return beanInvoker;
+            }
         } else {
-            BeanInvoker<T> beanInvoker = new BeanInvoker<>(beanInfo, this);
-            singletonBeanInvokerMap.put(beanInfo, beanInvoker);
-            return beanInvoker;
+            return new BeanInvoker<>(beanInfo, this);
         }
+
     }
 
     public <T> T factoryNoLimit(DebbieBeanInfo<T> beanInfo) {

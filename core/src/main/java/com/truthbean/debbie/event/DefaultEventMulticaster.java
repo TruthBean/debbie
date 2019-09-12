@@ -37,6 +37,7 @@ public class DefaultEventMulticaster implements DebbieEventMulticaster {
         listenerBeans.clear();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <E extends DebbieEvent> void multicastEvent(E event) {
         long start = System.currentTimeMillis();

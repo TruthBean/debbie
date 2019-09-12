@@ -54,7 +54,9 @@ public class RouterRequestValues {
     public Map<String, List> getMatrixAttributes() {
         if (matrixAttributes == null) {
             matrixAttributes = new HashMap<>();
-            matrixAttributes.putAll(routerRequest.getMatrix());
+            Map<String, List<String>> matrix = routerRequest.getMatrix();
+            if (matrix != null && !matrix.isEmpty())
+                matrixAttributes.putAll(matrix);
         }
         return Collections.unmodifiableMap(matrixAttributes);
     }
@@ -91,7 +93,9 @@ public class RouterRequestValues {
     public Map<String, List> getCookieAttributes() {
         if (cookieAttributes == null) {
             cookieAttributes = new HashMap<>();
-            setCookieAttributes(routerRequest.getCookies());
+            List<HttpCookie> cookies = routerRequest.getCookies();
+            if (cookies != null && !cookies.isEmpty())
+                setCookieAttributes(cookies);
         }
         return Collections.unmodifiableMap(cookieAttributes);
     }
@@ -114,7 +118,7 @@ public class RouterRequestValues {
         if (sessionAttributes == null && routerSession != null) {
             sessionAttributes = new HashMap<>();
             var attributes = routerRequest.getSession().getAttributes();
-            if (attributes != null)
+            if (attributes != null && !attributes.isEmpty())
                 sessionAttributes.putAll(attributes);
         }
         if (sessionAttributes == null) {
@@ -145,7 +149,9 @@ public class RouterRequestValues {
     public Map<String, List> getPathAttributes() {
         if (pathAttributes == null) {
             pathAttributes = new HashMap<>();
-            this.pathAttributes.putAll(routerRequest.getPathAttributes());
+            Map<String, List<String>> pathAttributes = routerRequest.getPathAttributes();
+            if (pathAttributes != null && !pathAttributes.isEmpty())
+                this.pathAttributes.putAll(pathAttributes);
         }
         return pathAttributes;
     }

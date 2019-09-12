@@ -171,7 +171,7 @@ public class SortHandlerMethodArgumentResolver implements ExecutableArgumentReso
      * Returns the sort parameter to be looked up from the request. Potentially applies qualifiers to it.
      *
      * @param parameter can be {@literal null}.
-     * @return
+     * @return sortParameter
      */
     protected String getSortParameter(ExecutableArgument parameter) {
         return sortParameter;
@@ -225,7 +225,7 @@ public class SortHandlerMethodArgumentResolver implements ExecutableArgumentReso
      * of the same direction into a single expression if they are in order.
      *
      * @param sort must not be {@literal null}.
-     * @return
+     * @return list
      */
     protected List<String> foldIntoExpressions(Sort sort) {
 

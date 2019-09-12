@@ -36,17 +36,18 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private boolean keepAlive;
-    private volatile NettyRouterRequest routerRequest;
+    private final ThreadLocal<NettyRouterRequest> routerRequest;
     private final NettyConfiguration configuration;
 
-    private SessionManager sessionManager;
+    private final SessionManager sessionManager;
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryHandler beanFactoryHandler;
 
     public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, BeanFactoryHandler beanFactoryHandler) {
         this.configuration = configuration;
         this.sessionManager = sessionManager;
         this.beanFactoryHandler = beanFactoryHandler;
+        this.routerRequest = new ThreadLocal<>();
     }
 
     @Override
@@ -57,7 +58,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             LOGGER.debug("msg instanceof HttpRequest. ");
             HttpRequest httpRequest = (HttpRequest) msg;
 
-            routerRequest = new NettyRouterRequest(sessionManager, httpRequest, configuration.getHost(), configuration.getPort());
+            var nettyRouterRequest = new NettyRouterRequest(sessionManager, httpRequest, configuration.getHost(), configuration.getPort());
+            routerRequest.set(nettyRouterRequest);
 
             if (HttpUtil.is100ContinueExpected(httpRequest)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
@@ -68,62 +70,69 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             LOGGER.debug("msg instanceof LastHttpContent. ");
 
             LastHttpContent httpContent = (LastHttpContent) msg;
-            assert routerRequest != null;
-            var contentType = routerRequest.getContentType();
-            if (MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)
+
+            NettyRouterRequest routerRequest = this.routerRequest.get();
+            if (routerRequest != null) {
+                var contentType = routerRequest.getContentType();
+                if (MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)
                     || contentType.toMediaType() == MediaType.MULTIPART_FORM_DATA) {
-                routerRequest.handleHttpData(httpContent);
-            }
-            if (!MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)
+                    routerRequest.handleHttpData(httpContent);
+                }
+                if (!MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)
                     && contentType.toMediaType() != MediaType.MULTIPART_FORM_DATA) {
 
-                ByteBuf content = httpContent.content();
-                routerRequest.setInputStreamBody(content);
+                    ByteBuf content = httpContent.content();
+                    routerRequest.setInputStreamBody(content);
 
-                routerRequest.setTextBody(httpContent);
+                    routerRequest.setTextBody(httpContent);
 
-                HttpHeaders trailer = httpContent.trailingHeaders();
-                routerRequest.setParameters(trailer);
+                    HttpHeaders trailer = httpContent.trailingHeaders();
+                    routerRequest.setParameters(trailer);
+                }
+
+                handleRouter(ctx);
+
+                routerRequest.resetHttpRequest();
+                httpContent.release();
+                this.routerRequest.remove();
             }
-
-            handleRouter(ctx);
-
-            routerRequest.resetHttpRequest();
-            httpContent.release();
-            routerRequest = null;
         }
     }
 
     private void handleRouter(ChannelHandlerContext ctx) {
-        byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
-        if (bytes != null) {
-            RouterResponse routerResponse = new RouterResponse();
-            if (handleFilter(routerRequest, routerResponse, ctx)) {
-                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+        NettyRouterRequest routerRequest = this.routerRequest.get();
+        if (routerRequest != null) {
+            byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
+            if (bytes != null) {
+                RouterResponse routerResponse = new RouterResponse();
+                if (handleFilter(routerRequest, routerResponse, ctx)) {
+                    ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                    FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
 
-                RouterSession session = routerRequest.getSession();
-                if (session != null) {
-                    response.headers().add(COOKIE, session.getId());
-                }
+                    RouterSession session = routerRequest.getSession();
+                    if (session != null) {
+                        response.headers().add(COOKIE, session.getId());
+                    }
 
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-                if (!keepAlive) {
-                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                    response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                    ctx.writeAndFlush(response);
+                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+                    if (!keepAlive) {
+                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                    } else {
+                        response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+                        ctx.writeAndFlush(response);
+                    }
                 }
-            }
-        } else {
-            RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
-            RouterResponse routerResponse = routerInfo.getResponse();
-            if (handleFilter(routerRequest, routerResponse, ctx)) {
-                MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
-                routerResponse = routerInfo.getResponse();
-                doResponse(routerResponse, ctx);
+            } else {
+                RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
+                RouterResponse routerResponse = routerInfo.getResponse();
+                if (handleFilter(routerRequest, routerResponse, ctx)) {
+                    MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
+                    routerResponse = routerInfo.getResponse();
+                    doResponse(routerResponse, ctx);
+                }
             }
         }
+
     }
 
     private boolean handleFilter(RouterRequest request, RouterResponse response, ChannelHandlerContext ctx) {
@@ -150,33 +159,36 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
     }
 
     private void doResponse(RouterResponse routerResponse, ChannelHandlerContext ctx) {
-        beforeResponse(routerRequest, routerResponse);
+        NettyRouterRequest routerRequest = this.routerRequest.get();
+        if (routerRequest != null) {
+            beforeResponse(routerRequest, routerResponse);
 
-        MediaTypeInfo responseType = routerResponse.getResponseType();
-        Object resp = routerResponse.getContent();
+            MediaTypeInfo responseType = routerResponse.getResponseType();
+            Object resp = routerResponse.getContent();
 
-        ByteBuf byteBuf = Unpooled.wrappedBuffer("null".getBytes());
-        if (resp instanceof String) {
-            byteBuf = Unpooled.wrappedBuffer(((String) resp).getBytes());
-        } else {
-            if (resp instanceof byte[]) {
-                byteBuf = Unpooled.wrappedBuffer((byte[]) resp);
+            ByteBuf byteBuf = Unpooled.wrappedBuffer("null".getBytes());
+            if (resp instanceof String) {
+                byteBuf = Unpooled.wrappedBuffer(((String) resp).getBytes());
+            } else {
+                if (resp instanceof byte[]) {
+                    byteBuf = Unpooled.wrappedBuffer((byte[]) resp);
+                }
             }
-        }
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
 
-        RouterSession session = routerRequest.getSession();
-        if (session != null) {
-            response.headers().add(COOKIE, session.getId());
-        }
+            RouterSession session = routerRequest.getSession();
+            if (session != null) {
+                response.headers().add(COOKIE, session.getId());
+            }
 
-        response.headers().set(CONTENT_TYPE, responseType.toString());
-        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-        if (!keepAlive) {
-            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-        } else {
-            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.writeAndFlush(response);
+            response.headers().set(CONTENT_TYPE, responseType.toString());
+            response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+            if (!keepAlive) {
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } else {
+                response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+                ctx.writeAndFlush(response);
+            }
         }
     }
 

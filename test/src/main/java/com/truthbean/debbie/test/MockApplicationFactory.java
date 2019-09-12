@@ -19,6 +19,7 @@ public class MockApplicationFactory extends AbstractApplicationFactory {
             protected void start(long beforeStartTime, String... args) {
                 DebbieTaskStarter taskStarter = new DebbieTaskStarter();
                 taskStarter.start(beanFactoryHandler);
+                this.beforeStart(logger, beanFactoryHandler);
                 logger.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
                 DebbieTaskFactory taskFactory = beanFactoryHandler.factory("taskFactory");
