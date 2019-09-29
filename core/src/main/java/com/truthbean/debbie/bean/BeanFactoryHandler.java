@@ -19,6 +19,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 
 /**
@@ -220,7 +223,16 @@ public class BeanFactoryHandler {
         }
         var beanFactory = beanInfo.getBeanFactory();
         if (beanFactory != null) {
-            return beanFactory.getBean();
+            if (System.getSecurityManager() != null) {
+                // TODO to set securityContextProvider
+                try {
+                    AccessControlContext securityContextProvider = AccessController.getContext();
+                    AccessController.doPrivileged((PrivilegedAction<T>) beanFactory::getBean, securityContextProvider);
+                } catch (Exception e) {
+                    LOGGER.error("getBean from factory via securityContextProvider error", e);
+                }
+            } else
+                return beanFactory.getBean();
         }
         Class<K> clazz = beanInfo.getBeanClass();
         Class<T> beanInterface = beanInfo.getBeanInterface();

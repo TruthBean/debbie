@@ -2,7 +2,7 @@ rootProject.name = "debbie"
 
 val modules =
         arrayOf("core",
-                "jdbc", "mvc",
+                "jdbc", "mvc", "rmi",
                 "servlet", "httpclient", "hikari",
                 "server", "tomcat", "undertow", "netty", "se",
                 "dependencies",
