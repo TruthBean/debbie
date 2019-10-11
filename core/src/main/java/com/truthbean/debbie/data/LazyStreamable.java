@@ -45,6 +45,6 @@ final class LazyStreamable<T> implements Streamable<T> {
     }
 
     public String toString() {
-        return "LazyStreamable(stream=" + this.getStream() + ")";
+        return "LazyStreamable:{stream:" + this.getStream() + "}";
     }
 }

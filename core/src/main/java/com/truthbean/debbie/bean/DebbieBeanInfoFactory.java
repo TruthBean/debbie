@@ -6,16 +6,16 @@ package com.truthbean.debbie.bean;
  * Created on 2019/06/02 16:37.
  */
 public class DebbieBeanInfoFactory {
-    private DebbieBeanInfo beanInfo;
+    private DebbieBeanInfo<?> beanInfo;
 
     public DebbieBeanInfoFactory() {
     }
 
-    public DebbieBeanInfoFactory(DebbieBeanInfo beanInfo) {
+    public DebbieBeanInfoFactory(DebbieBeanInfo<?> beanInfo) {
         this.beanInfo = beanInfo;
     }
 
-    public void setBeanInfo(DebbieBeanInfo beanInfo) {
+    public void setBeanInfo(DebbieBeanInfo<?> beanInfo) {
         this.beanInfo = beanInfo;
     }
 }

@@ -25,7 +25,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerHttpClient() {
-        Set<DebbieBeanInfo> annotatedClass = initialization.getAnnotatedClass(HttpClientRouter.class);
+        Set<DebbieBeanInfo<?>> annotatedClass = initialization.getAnnotatedClass(HttpClientRouter.class);
         if (annotatedClass != null && !annotatedClass.isEmpty()) {
             for (DebbieBeanInfo<?> httpClientRouter : annotatedClass) {
                 httpClientRouter.setBeanFactory(new HttpClientBeanFactory<>(httpClientRouter.getBeanClass(), handler));

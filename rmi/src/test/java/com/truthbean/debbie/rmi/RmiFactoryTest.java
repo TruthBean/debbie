@@ -1,20 +1,18 @@
 package com.truthbean.debbie.rmi;
 
-import java.rmi.RemoteException;
+import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import org.junit.jupiter.api.Test;
 
 public class RmiFactoryTest {
 
-    public static void main(String[] args) {
-        //注册管理器
-        RemoteServiceRegister register = new RemoteServiceRegister("192.168.1.198", 8088);
-        //创建一个服务
-        TestRmiService service = null;
-        try {
-            service = new TestRmiServiceImpl();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+    @Test
+    public void test() {
+        var application = DebbieApplicationFactory.factory();
+        application.start();
+    }
 
-        register.bind("test", service);
+    public static void main(String[] args) {
+        var application = DebbieApplicationFactory.factory();
+        application.start();
     }
 }

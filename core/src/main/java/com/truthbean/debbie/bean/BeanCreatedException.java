@@ -1,6 +1,8 @@
 package com.truthbean.debbie.bean;
 
 public class BeanCreatedException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
     public BeanCreatedException() {
     }
 

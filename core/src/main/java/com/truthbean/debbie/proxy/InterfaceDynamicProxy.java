@@ -13,14 +13,19 @@ import java.lang.reflect.Proxy;
  * @since 0.0.1
  * Created on 2019/3/23 10:36.
  */
-public class InterfaceDynamicProxy {
+public class InterfaceDynamicProxy<T, K extends T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceDynamicProxy.class);
 
-    public static <T, K extends T> T doJdkProxy(BeanFactoryHandler handler, Class<T> targetInterface, K target) {
+    public T invokeJdkProxy(BeanFactoryHandler handler, Class<T> targetInterface, K target) {
+        InvocationHandler invocationHandler = new ProxyInvocationHandler<>(target, handler);
+
+        return doJdkProxy(targetInterface, target, invocationHandler);
+    }
+
+    public T doJdkProxy(Class<T> targetInterface, K target, InvocationHandler invocationHandler) {
         var targetClass = target.getClass();
         var classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         var interfaces = new Class[]{targetInterface};
-        InvocationHandler invocationHandler = new ProxyInvocationHandler<>(target, handler);
 
         var proxyInstance = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
         var proxyClass = proxyInstance.getClass();
@@ -42,6 +47,15 @@ public class InterfaceDynamicProxy {
         LOGGER.debug("after proxy ....");
 
         return result;
+    }
+
+    public K getRealValue(Object proxyValue) {
+        InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxyValue);
+        if (invocationHandler instanceof ProxyInvocationHandler) {
+            ProxyInvocationHandler<K> proxyInvocationHandler = (ProxyInvocationHandler) invocationHandler;
+            return proxyInvocationHandler.getRealTarget();
+        }
+        return null;
     }
 
 }

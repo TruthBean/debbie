@@ -51,7 +51,7 @@ public class BeanInvoker<Bean> {
                 int parameterCount = constructor.getParameterCount();
                 if (parameterCount > 0) {
                     Object[] values = new Object[parameterCount];
-                    Map<Integer, DebbieBeanInfo> constructorBeanDependent = new HashMap<>();
+                    Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent = new HashMap<>();
 
                     Parameter[] parameters = constructor.getParameters();
                     String[] names = new String[parameterCount];
@@ -112,7 +112,7 @@ public class BeanInvoker<Bean> {
             // find all field its has BeanInject or Inject annotation
             if (this.bean != null) {
                 List<Field> fields = beanInfo.getFields();
-                Map<Field, DebbieBeanInfo> map = new HashMap<>();
+                Map<Field, DebbieBeanInfo<?>> map = new HashMap<>();
                 for (Field field : fields) {
                     Class<?> fieldType = field.getType();
                     BeanInject annotation = field.getAnnotation(BeanInject.class);
@@ -156,7 +156,7 @@ public class BeanInvoker<Bean> {
     }
 
     void createBeanByConstructorDependent() {
-        Map<Integer, DebbieBeanInfo> beanDependent = this.beanInfo.getConstructorBeanDependent();
+        Map<Integer, DebbieBeanInfo<?>> beanDependent = this.beanInfo.getConstructorBeanDependent();
         Constructor<Bean> constructor = beanInfo.getConstructors()[0];
         int parameterCount = constructor.getParameterCount();
         Parameter[] parameters = constructor.getParameters();
@@ -185,7 +185,7 @@ public class BeanInvoker<Bean> {
     }
 
     void resolveFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
-        Map<Field, DebbieBeanInfo> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
+        Map<Field, DebbieBeanInfo<?>> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
         try {
             // find all field its has BeanInject or Inject annotation
             if (this.bean != null) {

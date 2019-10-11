@@ -1,15 +1,26 @@
 package com.truthbean.debbie.rmi;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import com.truthbean.debbie.bean.BeanInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class TestRmiServiceImpl extends UnicastRemoteObject implements TestRmiService {
-    public TestRmiServiceImpl() throws RemoteException {
+import java.io.Serializable;
+
+@DebbieRmiService("test")
+public class TestRmiServiceImpl implements TestRmiService {
+
+    private final TestBeanD testBeanD;
+
+    public TestRmiServiceImpl(@BeanInject TestBeanD testBeanD) {
         super();
+        this.testBeanD = testBeanD;
     }
 
     @Override
-    public String queryName(String id) throws RemoteException {
-        return "pong " + id;
+    public String queryName(String id) {
+        logger.debug("debuggggggggggggggggggggggggggggggggggggggger");
+        return "pong " + id + "---->" + testBeanD.getId();
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(TestRmiServiceImpl.class);
 }

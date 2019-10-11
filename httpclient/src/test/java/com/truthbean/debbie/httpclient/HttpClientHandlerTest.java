@@ -16,7 +16,7 @@ public class HttpClientHandlerTest {
     @BeforeEach
     public void before() {
         var properties = new HttpClientProperties();
-        httpClientHandler = new HttpClientHandler(properties.toConfiguration());
+        httpClientHandler = new HttpClientHandler(properties.loadConfiguration());
     }
 
     @Test
@@ -91,9 +91,9 @@ public class HttpClientHandlerTest {
             System.out.println(body);
 
             var header = new HashMap<String, String>();
-            header.put("Authorization", "a684ea92-905e-4f80-a4c1-97a0ef10b4e6");
+            header.put("Authorization", "244705ab-532f-4c38-b358-64b3825f8c24");
             header.put("Content-Type", "application/json;charset=UTF-8");
-            var response = httpClientHandler.post("http://192.168.1.7:31202/cameras", body, header);
+            var response = httpClientHandler.post("http://192.168.1.12:31202/cameras", body, header);
             System.out.println(response);
         }
 
@@ -103,8 +103,8 @@ public class HttpClientHandlerTest {
     public void delete() {
         for (int i = 0; i < 100; i++) {
             var header = new HashMap<String, String>();
-            header.put("Authorization", "a684ea92-905e-4f80-a4c1-97a0ef10b4e6");
-            var r = httpClientHandler.delete("http://192.168.1.7:31202/cameras/" + (i), header);
+            header.put("Authorization", "244705ab-532f-4c38-b358-64b3825f8c24");
+            var r = httpClientHandler.delete("http://192.168.1.12:31202/cameras/" + (i), header);
             System.out.println(r);
         }
     }

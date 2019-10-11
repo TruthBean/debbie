@@ -44,6 +44,8 @@ public final class StreamHelper {
                         result.add(line.trim());
                     }
                 }
+                bufferedReader.close();
+                reader.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,6 +64,7 @@ public final class StreamHelper {
                     result.add(line.trim());
                 }
             }
+            bufferedReader.close();
         } catch (IOException e) {
             LOGGER.error("", e);
         }

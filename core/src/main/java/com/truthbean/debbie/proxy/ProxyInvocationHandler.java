@@ -1,10 +1,9 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.reflection.ClassInfo;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.spi.SpiLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     private Target target;
 
-    private ClassInfo<Target> classInfo;
+    private DebbieBeanInfo<Target> classInfo;
     private ClassLoader classLoader;
 
     private BeanFactoryHandler beanFactoryHandler;
@@ -35,7 +34,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         this.beanFactoryHandler = beanFactoryHandler;
         var target = ReflectionHelper.newInstance(targetClass);
-        classInfo = new ClassInfo<>(targetClass);
+        classInfo = new DebbieBeanInfo<>(targetClass);
         if (target == null) {
             LOGGER.error("new instance by default constructor error");
         } else {
@@ -50,7 +49,15 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         this.target = target;
         Class<Target> targetClass = (Class<Target>) target.getClass();
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
-        classInfo = new ClassInfo<>(targetClass);
+        classInfo = new DebbieBeanInfo<>(targetClass);
+    }
+
+    public Target getRealTarget() {
+        return target;
+    }
+
+    protected DebbieBeanInfo<Target> getBeanInfo() {
+        return classInfo;
     }
 
     @Override

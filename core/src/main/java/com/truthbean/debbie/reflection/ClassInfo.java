@@ -1,5 +1,6 @@
 package com.truthbean.debbie.reflection;
 
+import java.io.Serializable;
 import java.lang.annotation.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -12,7 +13,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/3/23 13:23.
  */
-public class ClassInfo<C> {
+public class ClassInfo<C> implements Serializable {
     private Class<C> clazz;
     private Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 

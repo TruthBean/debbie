@@ -20,10 +20,21 @@ public class RouterFilterManager {
     private static final Set<RouterFilterInfo> FILTERS = new TreeSet<>();
 
     public static void registerFilter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
-        Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Filter.class);
+        Set<DebbieBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInitialization.getAnnotatedClass(Filter.class));
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Set<DebbieBeanInfo<? extends RouterFilter>> change(Set<DebbieBeanInfo<?>> raw) {
+        Set<DebbieBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
+        if (raw != null && !raw.isEmpty()) {
+            for (var beanInfo : raw) {
+                result.add((DebbieBeanInfo<? extends RouterFilter>) beanInfo);
+            }
+        }
+        return result;
     }
 
     private static void registerFilter(ClassInfo<? extends RouterFilter> classInfo, MvcConfiguration configuration) {

@@ -1,9 +1,8 @@
 package com.truthbean.debbie.rmi;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import java.io.Serializable;
 
-@DebbieRmiService
-public interface TestRmiService extends Remote {
-    String queryName(String id) throws RemoteException;
+@DebbieRmiMapper
+public interface TestRmiService extends Serializable {
+    String queryName(String id);
 }

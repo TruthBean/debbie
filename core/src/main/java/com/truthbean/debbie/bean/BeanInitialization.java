@@ -1,13 +1,14 @@
 package com.truthbean.debbie.bean;
 
-import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -25,13 +26,13 @@ public class BeanInitialization {
         return INITIALIZATION;
     }
 
-    private static final Set<AnnotationRegister> annotationRegisters = new HashSet<>();
-    public <A extends AnnotationRegister> void addAnnotationRegister(A register) {
+    private static final Set<AnnotationRegister<?>> annotationRegisters = new HashSet<>();
+    public <A extends AnnotationRegister<?>> void addAnnotationRegister(A register) {
         annotationRegisters.add(register);
         register.register();
     }
     public void registerAnnotations() {
-        for (AnnotationRegister annotationRegister : annotationRegisters) {
+        for (AnnotationRegister<?> annotationRegister : annotationRegisters) {
             annotationRegister.register();
         }
     }
@@ -44,13 +45,13 @@ public class BeanInitialization {
         return debbieModuleStarters;
     }*/
 
-    public <D extends DataTransformer> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
+    public <D extends DataTransformer<?,?>> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
         Type[] types = new Type[2];
         types[0] = argsType1;
         types[1] = argsType2;
         DataTransformerFactory.register(dataTransformer, types);
     }
-    public <D extends DataTransformer> void registerDataTransformer(D transformer) {
+    public <D extends DataTransformer<?,?>> void registerDataTransformer(D transformer) {
         Type[] argsType = ReflectionHelper.getActualTypes(transformer.getClass());
         DataTransformerFactory.register(transformer, argsType);
     }
@@ -104,23 +105,23 @@ public class BeanInitialization {
         }
     }
 
-    public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedClass(Class<T> annotationClass) {
+    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass) {
         return BeanRegisterCenter.getAnnotatedClass(annotationClass);
     }
 
-    public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedBeans() {
+    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
         return BeanRegisterCenter.getAnnotatedBeans();
     }
 
-    public <T extends Annotation> Set<DebbieBeanInfo> getAnnotatedMethodBean(Class<T> annotationClass) {
+    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedMethodBean(Class<T> annotationClass) {
         return BeanRegisterCenter.getAnnotatedMethodsBean(annotationClass);
     }
 
-    public Set<DebbieBeanInfo> getBeanByInterface(Class<?> interfaceType) {
+    public Set<DebbieBeanInfo<?>> getBeanByInterface(Class<?> interfaceType) {
         return BeanRegisterCenter.getBeansByInterface(interfaceType);
     }
 
-    public Set<DebbieBeanInfo> getBeanByAbstractSuper(Class<?> abstractType) {
+    public Set<DebbieBeanInfo<?>> getBeanByAbstractSuper(Class<?> abstractType) {
         return BeanRegisterCenter.getBeansByInterface(abstractType);
     }
 
@@ -148,11 +149,11 @@ public class BeanInitialization {
         }
     }
 
-    public Set<DebbieBeanInfo> getRegisteredBeans() {
-        Set<DebbieBeanInfo> result = new HashSet<>();
-        Collection<DebbieBeanInfo> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
+    public Set<DebbieBeanInfo<?>> getRegisteredBeans() {
+        Set<DebbieBeanInfo<?>> result = new HashSet<>();
+        Collection<DebbieBeanInfo<?>> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
         if (!registerRawBeans.isEmpty()) {
-            for (DebbieBeanInfo registerRawBean : registerRawBeans) {
+            for (DebbieBeanInfo<?> registerRawBean : registerRawBeans) {
                 if (registerRawBean.getBean() != null) {
                     result.add(registerRawBean);
                 }
@@ -161,9 +162,18 @@ public class BeanInitialization {
         return result;
     }
 
-    public Set<DebbieBeanInfo> getRegisteredRawBeans() {
-        Set<DebbieBeanInfo> result = new HashSet<>();
-        Collection<DebbieBeanInfo> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
+    public Set<DebbieBeanInfo<?>> getRegisteredRawBeans() {
+        Set<DebbieBeanInfo<?>> result = new HashSet<>();
+        Collection<DebbieBeanInfo<?>> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
+        if (!registerRawBeans.isEmpty()) {
+            result.addAll(registerRawBeans);
+        }
+        return result;
+    }
+
+    public Set<Class<?>> getRegisteredRawBeanType() {
+        Set<Class<?>> result = new HashSet<>();
+        Collection<Class<?>> registerRawBeans = BeanRegisterCenter.getRegisterRawBeanTypes();
         if (!registerRawBeans.isEmpty()) {
             result.addAll(registerRawBeans);
         }

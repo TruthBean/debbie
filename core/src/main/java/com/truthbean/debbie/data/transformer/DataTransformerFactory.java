@@ -14,9 +14,9 @@ import java.util.Map;
  */
 public class DataTransformerFactory {
 
-    private static final Map<DataTransformer, Type[]> cache = new LinkedHashMap<>();
+    private static final Map<DataTransformer<?,?>, Type[]> cache = new LinkedHashMap<>();
 
-    public static void register(DataTransformer transformer, Type[] types) {
+    public static void register(DataTransformer<?,?> transformer, Type[] types) {
         cache.put(transformer, types);
     }
 
@@ -31,15 +31,15 @@ public class DataTransformerFactory {
         return target.cast(origin);
     }
 
-    public static <O, T> T transform(final O origin, final Class<T> target, Map<DataTransformer, Type[]> dataTransformerMap) {
+    public static <O, T> T transform(final O origin, final Class<T> target, Map<DataTransformer<?,?>, Type[]> dataTransformerMap) {
         if (origin == null) return null;
 
         final Class<?> originType = origin.getClass();
         T r = transformWithCache(origin, originType, target);
         if (r != null) return r;
 
-        for (Map.Entry<DataTransformer, Type[]> entry : dataTransformerMap.entrySet()) {
-            DataTransformer transformer = entry.getKey();
+        for (Map.Entry<DataTransformer<?,?>, Type[]> entry : dataTransformerMap.entrySet()) {
+            DataTransformer<?,?> transformer = entry.getKey();
             Type[] argsType = entry.getValue();
             LOGGER.debug(transformer.getClass().getName());
             cache.put(transformer, argsType);
@@ -58,8 +58,8 @@ public class DataTransformerFactory {
             return target.cast(origin);
         }
 
-        for (Map.Entry<DataTransformer, Type[]> entry : cache.entrySet()) {
-            DataTransformer key = entry.getKey();
+        for (Map.Entry<DataTransformer<?,?>, Type[]> entry : cache.entrySet()) {
+            DataTransformer<?,?> key = entry.getKey();
             Type[] value = entry.getValue();
             T result = cast(value, key, originType, target, origin);
             if (result != null) {

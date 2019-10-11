@@ -59,12 +59,12 @@ public class BeanConfigurationRegister {
         register(beanConfiguration, classInfo);
     }
 
-    @SuppressWarnings("unchecked")
+    // @SuppressWarnings("unchecked")
     private <Configuration> void register(Configuration configuration, ClassInfo<Configuration> classInfo) {
         List<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {
             for (Method method : annotationMethod) {
-                DebbieBeanInfo beanInfo = new DebbieBeanInfo<>(method.getReturnType());
+                DebbieBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());
                 DebbieBean debbieBean = method.getAnnotation(DebbieBean.class);
                 String name = debbieBean.name();
                 if (name.isBlank()) {

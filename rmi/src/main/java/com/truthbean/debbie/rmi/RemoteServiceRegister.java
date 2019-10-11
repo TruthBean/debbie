@@ -1,6 +1,14 @@
 package com.truthbean.debbie.rmi;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.proxy.ProxyInvocationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -20,16 +28,20 @@ public class RemoteServiceRegister {
 
     private final Registry registry;
 
-    public RemoteServiceRegister(int rmiBindPort) {
+    private final BeanFactoryHandler handler;
+
+    public RemoteServiceRegister(BeanFactoryHandler handler, int rmiBindPort) {
+        this.handler = handler;
         this.rmiBindPort = rmiBindPort;
         this.rmiBindAddress = "localhost";
-        registry = register(false, "192.168.1.198", 8088);
+        registry = register(false, rmiBindAddress, rmiBindPort);
     }
 
-    public RemoteServiceRegister(String rmiBindAddress, int rmiBindPort) {
+    public RemoteServiceRegister(BeanFactoryHandler handler, String rmiBindAddress, int rmiBindPort) {
+        this.handler = handler;
         this.rmiBindPort = rmiBindPort;
         this.rmiBindAddress = rmiBindAddress;
-        registry = register(false, "192.168.1.198", 8088);
+        registry = register(false, rmiBindAddress, rmiBindPort);
     }
 
     public Registry register(boolean rmiRegistrySSL, String rmiBindAddress, int registryPort) {
@@ -66,15 +78,17 @@ public class RemoteServiceRegister {
         Registry registry = null;
         try {
             registry = LocateRegistry.createRegistry(registryPort, registryCsf, registrySsf);
+            LOGGER.info("Create the RMI registry with port: " + registryPort);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
 
         if (registry == null) {
             try {
                 registry = LocateRegistry.createRegistry(registryPort);
-            } catch (RemoteException e1) {
-                e1.printStackTrace();
+                LOGGER.info("Create the RMI registry with port: " + registryPort);
+            } catch (RemoteException e) {
+                LOGGER.error("", e);
             }
         }
 
@@ -89,8 +103,28 @@ public class RemoteServiceRegister {
         bind(registry, serviceName, service);
     }
 
+    public <S, SI extends S> void bind(Class<S> serviceClass) {
+        try {
+            DebbieBeanInfo<S> beanInfo = handler.getBeanInfo(serviceClass);
+            S bean = beanInfo.getBean();
+            InvocationHandler invocationHandler = Proxy.getInvocationHandler(bean);
+
+            if (invocationHandler instanceof ProxyInvocationHandler) {
+                ProxyInvocationHandler<SI> proxyInvocationHandler = (ProxyInvocationHandler) invocationHandler;
+                SI realService = proxyInvocationHandler.getRealTarget();
+
+                RemoteServiceProxy<S> remoteServiceProxy = new RemoteServiceProxy<>();
+                remoteServiceProxy.setService(realService);
+
+                bind(beanInfo.getServiceName(), remoteServiceProxy);
+            }
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+    }
+
     public void bind(Registry registry, String serviceName, Remote service) {
-        System.out.println("registry ...");
+        LOGGER.trace("register (" + registry + ") bind " + serviceName + " to " + service);
 
         boolean serviceBind = false;
         try {
@@ -104,28 +138,28 @@ public class RemoteServiceRegister {
                 }
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
 
         if (serviceBind) {
             try {
                 Remote lookup = registry.lookup(serviceName);
-                System.out.println(lookup);
+                LOGGER.debug(lookup.toString());
             } catch (RemoteException | NotBoundException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
         } else {
-            //将服务绑定命名
+            // 将服务绑定命名
             try {
                 registry.bind(serviceName, service);
 
                 String[] list = registry.list();
                 for (String s : list) {
-                    System.out.println("bind server " + s);
+                    LOGGER.debug("bind server " + s);
                 }
 
             } catch (RemoteException | AlreadyBoundException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
         }
     }
@@ -139,7 +173,7 @@ public class RemoteServiceRegister {
             try {
                 bindAddress = InetAddress.getByName(address);
             } catch (UnknownHostException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
             this.bindAddress = bindAddress;
         }
@@ -149,4 +183,6 @@ public class RemoteServiceRegister {
             return new ServerSocket(port, 0, bindAddress);
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemoteServiceRegister.class);
 }

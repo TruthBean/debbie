@@ -1,7 +1,9 @@
 package com.truthbean.debbie.rmi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -14,7 +16,7 @@ public class RmiClientFactory {
         try {
             registry = LocateRegistry.getRegistry(port);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 
@@ -22,7 +24,7 @@ public class RmiClientFactory {
         try {
             registry = LocateRegistry.getRegistry(address, port);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 
@@ -34,7 +36,7 @@ public class RmiClientFactory {
         try {
             return registry.list();
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -48,19 +50,23 @@ public class RmiClientFactory {
                 }
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return false;
     }
 
-    public Remote lookup(String name) {
+    public <S> S lookup(String name) {
         if (exits(name)) {
             try {
-                return registry.lookup(name);
+                RemoteService<S> remoteService = (RemoteService<S>) registry.lookup(name);
+                LOGGER.debug("remote server version: " + remoteService.getVersion());
+                return remoteService.getService();
             } catch (RemoteException | NotBoundException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
         }
         return null;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RmiClientFactory.class);
 }

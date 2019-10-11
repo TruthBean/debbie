@@ -30,8 +30,8 @@ public class MvcRouterRegister {
 
     public static void registerRouter(MvcConfiguration webConfiguration, BeanFactoryHandler beanFactoryHandler) {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
-        for (DebbieBeanInfo classInfo : classInfoSet) {
+        Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
+        for (DebbieBeanInfo<?> classInfo : classInfoSet) {
             Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
             Watcher watcher = (Watcher) classAnnotations.get(Watcher.class);
             if (watcher == null || watcher.type() == WatcherType.HTTP) {

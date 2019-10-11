@@ -20,11 +20,11 @@ public class DebbieTaskFactory implements DebbieBeanApplication {
         this.beanFactoryHandler = beanFactoryHandler;
     }
 
-    private Set<DebbieBeanInfo> taskBeans = new LinkedHashSet<>();
+    private Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
 
     public void registerTask() {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        Set<DebbieBeanInfo> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
+        Set<DebbieBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
         if (tasks != null && tasks.isEmpty()) {
             taskBeans.addAll(tasks);
         }

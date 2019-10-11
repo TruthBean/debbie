@@ -26,50 +26,53 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     private boolean noInterface = false;
     private Class<?> beanInterface;
 
-    private Map<Integer, DebbieBeanInfo> constructorBeanDependent;
-    private Map<Field, DebbieBeanInfo> fieldBeanDependent;
+    private Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent;
+    private Map<Field, DebbieBeanInfo<?>> fieldBeanDependent;
     private boolean hasVirtualValue;
 
-    public DebbieBeanInfo(Class<Bean> clazz) {
-        super(clazz);
+    public DebbieBeanInfo(Class<Bean> beanClass) {
+        super(beanClass);
         Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
 
         for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
             Class<? extends Annotation> key = entry.getKey();
             Annotation value = entry.getValue();
-            if (resolveBeanComponent(key, value))
+            // resolve BeanComponent if has no bean Annotation, use it
+            resolveBeanComponent(key, value);
+            // 如果有其他Annotation，则使用其他的，而不是BeanComponent
+            if (resolveComponent(key, value))
                 break;
         }
     }
 
-    public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo> constructorBeanDependent) {
+    public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent) {
         this.constructorBeanDependent = constructorBeanDependent;
     }
 
-    public void addConstructorBeanDependent(Integer index, DebbieBeanInfo beanInfo) {
+    public void addConstructorBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
         if (this.constructorBeanDependent == null) {
             this.constructorBeanDependent = new HashMap<>();
         }
         this.constructorBeanDependent.put(index, beanInfo);
     }
 
-    public void setFieldBeanDependent(Map<Field, DebbieBeanInfo> fieldBeanDependent) {
+    public void setFieldBeanDependent(Map<Field, DebbieBeanInfo<?>> fieldBeanDependent) {
         this.fieldBeanDependent = fieldBeanDependent;
     }
 
-    public void addFieldBeanDependent(Field field, DebbieBeanInfo debbieBeanInfo) {
+    public void addFieldBeanDependent(Field field, DebbieBeanInfo<?> debbieBeanInfo) {
         if (this.fieldBeanDependent == null) {
             this.fieldBeanDependent = new HashMap<>();
         }
         this.fieldBeanDependent.put(field, debbieBeanInfo);
     }
 
-    public Map<Integer, DebbieBeanInfo> getConstructorBeanDependent() {
+    public Map<Integer, DebbieBeanInfo<?>> getConstructorBeanDependent() {
         return constructorBeanDependent;
     }
 
     public boolean isConstructorBeanDependentHasValue() {
-        for (DebbieBeanInfo value : constructorBeanDependent.values()) {
+        for (DebbieBeanInfo<?> value : constructorBeanDependent.values()) {
             if (!value.hasVirtualValue) {
                 return false;
             }
@@ -77,7 +80,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         return true;
     }
 
-    public Map<Field, DebbieBeanInfo> getFieldBeanDependent() {
+    public Map<Field, DebbieBeanInfo<?>> getFieldBeanDependent() {
         return fieldBeanDependent;
     }
 
@@ -98,7 +101,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         return beanFactory;
     }
 
-    private boolean resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
+    private void resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
         if (key == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
             beanName = beanService.name();
@@ -107,9 +110,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             }
             beanType = beanService.type();
             lazyCreate = beanService.lazy();
-            return true;
         }
+    }
 
+    private boolean resolveComponent(Class<? extends Annotation> key, Annotation value) {
         BeanComponent annotation = key.getAnnotation(BeanComponent.class);
         if (annotation != null) {
             Method[] methods = key.getMethods();
@@ -123,6 +127,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
                 }
                 if ("type".equals(method.getName()) && method.getReturnType() == BeanType.class) {
                     typeMethod = method;
+                    continue;
                 }
                 if ("lazy".equals(method.getName()) && method.getReturnType() == BeanType.class) {
                     lazyMethod = method;
@@ -133,11 +138,13 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
                 beanName = ReflectionHelper.invokeMethod(value, valueMethod);
                 beanType = ReflectionHelper.invokeMethod(value, typeMethod);
                 lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);
-            }
-        }
 
-        if (beanName == null || beanName.isBlank()) {
-            beanName = getServiceName();
+                if (beanName == null || beanName.isBlank()) {
+                    beanName = getServiceName();
+                }
+
+                return true;
+            }
         }
 
         return false;

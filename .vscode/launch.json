@@ -2,6 +2,18 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - TestClient",
+            "request": "launch",
+            "mainClass": "com.truthbean.debbie.rmi.TestClient"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - RmiFactoryTest",
+            "request": "launch",
+            "mainClass": "com.truthbean.debbie.rmi.RmiFactoryTest"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - ExampleApplication",
             "request": "launch",
             "mainClass": "com.truthbean.code.debbie.example.ExampleApplication",

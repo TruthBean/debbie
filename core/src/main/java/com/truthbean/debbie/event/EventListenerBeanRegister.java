@@ -21,7 +21,7 @@ public class EventListenerBeanRegister {
     public void register() {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         DefaultEventPublisher eventPublisher = new DefaultEventPublisher();
-        Set<DebbieBeanInfo> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
+        Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
         for (DebbieBeanInfo debbieBeanInfo : classInfoSet) {
             Class<?> beanType = debbieBeanInfo.getBeanClass();
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
