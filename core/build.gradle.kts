@@ -7,7 +7,9 @@ dependencies {
     compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     val log4j2Version: String by project
-    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+    }
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 

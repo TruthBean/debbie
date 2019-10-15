@@ -27,4 +27,9 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
         register.registerHttpClient();
         register.registerHttpClientFactory();
     }
+
+    @Override
+    public int getOrder() {
+        return 21;
+    }
 }

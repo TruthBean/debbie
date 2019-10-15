@@ -269,6 +269,15 @@ public class ReflectionHelper {
                 }
             }
         }
+        Set<Method> interfaceDefaultMethods = getInterfaceDefaultMethods(clazz);
+        if (interfaceDefaultMethods.size() > 0) {
+            for (Method declaredMethod : interfaceDefaultMethods) {
+                Class<?>[] parameterClass = declaredMethod.getParameterTypes();
+                if (methodName.equals(declaredMethod.getName()) && Arrays.equals(parameterClass, parameterTypes)) {
+                    return declaredMethod;
+                }
+            }
+        }
         return null;
     }
 

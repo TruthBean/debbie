@@ -67,6 +67,7 @@ dependencyManagement {
         dependency("com.truthbean.debbie:debbie-core:$projectVersion")
         dependency("com.truthbean.debbie:debbie-jdbc:$projectVersion")
         dependency("com.truthbean.debbie:debbie-mvc:$projectVersion")
+        dependency("com.truthbean.debbie:debbie-rmi:$projectVersion")
         dependency("com.truthbean.debbie:debbie-servlet:$projectVersion")
         dependency("com.truthbean.debbie:debbie-httpclient:$projectVersion")
         dependency("com.truthbean.debbie:debbie-hikari:$projectVersion")

@@ -41,4 +41,9 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
         register.registerDataSourceFactory();
         beanFactoryHandler.refreshBeans();
     }
+
+    @Override
+    public int getOrder() {
+        return 10;
+    }
 }

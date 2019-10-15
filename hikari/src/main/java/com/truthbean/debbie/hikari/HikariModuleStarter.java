@@ -23,4 +23,9 @@ public class HikariModuleStarter implements DebbieModuleStarter {
     @Override
     public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
     }
+
+    @Override
+    public int getOrder() {
+        return 22;
+    }
 }

@@ -12,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author TruthBean
@@ -50,6 +52,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
         Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         if (!debbieModuleStarters.isEmpty()) {
+            debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug("debbieModuleStarter (" + debbieModuleStarter + ") registerBean");
                 debbieModuleStarter.registerBean(this);
@@ -69,6 +72,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         Set<DebbieModuleStarter> debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
         if (!debbieModuleStarters.isEmpty()) {
+            debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug("debbieModuleStarter : " + debbieModuleStarter);
                 debbieModuleStarter.starter(configurationFactory, this);

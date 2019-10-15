@@ -15,4 +15,9 @@ public class ServletModuleStarter implements DebbieModuleStarter {
     public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
 
     }
+
+    @Override
+    public int getOrder() {
+        return 20;
+    }
 }

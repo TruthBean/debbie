@@ -1,8 +1,10 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.JacksonUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
@@ -113,6 +115,19 @@ public class ExecutableArgumentHandler {
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
                 value = JacksonUtils.jsonStreamToBean(stream, invokedParameter.getType());
+                break;
+            case TEXT_PLAIN:
+            case TEXT_PLAIN_UTF8:
+            case TEXT_CSS:
+            case TEXT_CSS_UTF8:
+            case TEXT_HTML:
+            case TEXT_HTML_UTF8:
+            case TEXT_MARKDOWN:
+                try {
+                    value = StreamHelper.getAndClose(stream);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             // TODO MORE CASE
             default:

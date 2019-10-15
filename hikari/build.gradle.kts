@@ -2,7 +2,9 @@ dependencies {
     compile(project(":debbie-jdbc"))
 
     val hikariVersion: String by project
-    compile("com.zaxxer:HikariCP:$hikariVersion")
+    compile("com.zaxxer:HikariCP:$hikariVersion") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+    }
 
     val jacksonVersion: String by project
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")

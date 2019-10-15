@@ -25,6 +25,12 @@ import java.net.URL;
  * @since 0.0.2
  */
 public class DebbieCoreModuleStarter implements DebbieModuleStarter {
+
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+
     @Override
     public void registerBean(BeanFactoryHandler beanFactoryHandler) {
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();

@@ -61,6 +61,8 @@ subprojects {
             val slf4jVersion: String by project
             "compileOnly"("org.slf4j:slf4j-api:$slf4jVersion")
 
+            "testImplementation"("org.slf4j:slf4j-api:$slf4jVersion")
+
             val jupiterVersion: String by project
             "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
             "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
