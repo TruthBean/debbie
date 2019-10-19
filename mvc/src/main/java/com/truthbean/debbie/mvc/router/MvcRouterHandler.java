@@ -30,7 +30,7 @@ public class MvcRouterHandler {
 
     public static byte[] handleStaticResources(RouterRequest routerRequest, Map<String, String> mappingAndLocation) {
         final var url = routerRequest.getUrl();
-        LOGGER.debug("router uri: {}", url);
+        LOGGER.trace("is static resource router uri: {} ?", url);
         for (Map.Entry<String, String> entry : mappingAndLocation.entrySet()) {
             var mapping = entry.getKey();
             var location = entry.getValue();
@@ -39,6 +39,7 @@ public class MvcRouterHandler {
                 String resource = location + url.substring(mapping.length());
                 var result = ResourcesHandler.handleStaticBytesResource(resource);
                 if (result != null) {
+                    LOGGER.debug("match static resource uri: {}", url);
                     return result;
                 }
             }
@@ -48,28 +49,28 @@ public class MvcRouterHandler {
 
     public static RouterInfo getMatchedRouter(RouterRequest routerRequest, MvcConfiguration configuration) {
         var url = routerRequest.getUrl();
-        LOGGER.debug("router uri: {}", url);
+        LOGGER.trace("is dynamic router uri: {} ?", url);
         RouterInfo result = null;
         var set = MvcRouterRegister.getRouterInfoSet();
         var routerInfos = matchRouterPath(url, set, routerRequest);
 
         for (var routerInfo : routerInfos) {
             var paths = routerInfo.getPaths();
-            LOGGER.debug("match uri " + paths);
+            LOGGER.trace("match uri " + paths);
 
             var requestMethod = routerInfo.getRequestMethod();
             var matchMethod = requestMethod.contains(routerRequest.getMethod()) || requestMethod.contains(HttpMethod.ALL);
             if (!matchMethod) {
                 continue;
             }
-            LOGGER.debug("match method: " + requestMethod);
+            LOGGER.trace("match method: " + requestMethod);
 
             // response type
             var response = routerInfo.getResponse();
             var responseType = response.getResponseType();
-            LOGGER.debug("responseType: " + responseType);
+            LOGGER.trace("responseType: " + responseType);
             var responseTypeInRequestHeader = routerRequest.getResponseType();
-            LOGGER.debug("responseTypeInRequestHeader: " + responseTypeInRequestHeader);
+            LOGGER.trace("responseTypeInRequestHeader: " + responseTypeInRequestHeader);
             Set<MediaTypeInfo> defaultResponseTypes = configuration.getDefaultResponseTypes();
             var matchResponseType = responseTypeInRequestHeader.isAny() ||
                     (!responseType.isAny() && responseType.isSameMediaType(responseTypeInRequestHeader)) ||
@@ -93,13 +94,13 @@ public class MvcRouterHandler {
                     }
                 }
             }
-            LOGGER.debug("match response type: " + responseType);
+            LOGGER.trace("match response type: " + responseType);
 
             // content type
             var requestType = routerInfo.getRequestType();
-            LOGGER.debug("requestType: " + requestType);
+            LOGGER.trace("requestType: " + requestType);
             var contextType = routerRequest.getContentType();
-            LOGGER.debug("contextType: " + contextType);
+            LOGGER.trace("contextType: " + contextType);
             Set<MediaTypeInfo> defaultContentTypes = configuration.getDefaultContentTypes();
             var matchRequestType = contextType.isAny() ||
                     (!MediaType.ANY.isSame(requestType) && requestType.isSame(contextType))
@@ -116,7 +117,7 @@ public class MvcRouterHandler {
             if (flag) {
                 routerInfo.setRequestType(contextType.toMediaType());
             }
-            LOGGER.debug("match request type: " + requestType.info());
+            LOGGER.trace("match request type: " + requestType.info());
 
             routerRequest.setPathAttributes(routerInfo.getRequest().getPathAttributes());
             result = routerInfo;
@@ -128,7 +129,7 @@ public class MvcRouterHandler {
             return RouterErrorResponseHandler.resourceNotFound(routerRequest);
         } else {
             result.setRequest(routerRequest);
-            LOGGER.debug(result.toString());
+            LOGGER.debug("matched router info: " + result.toString());
             return result;
         }
     }

@@ -39,7 +39,7 @@ public interface RouterSession {
      *
      * @return last accessed time
      */
-    long getLastAccessedTime();
+    Long getLastAccessedTime();
 
     /**
      * Specifies the time, in seconds, between client requests before the
@@ -48,7 +48,7 @@ public interface RouterSession {
      *
      * @return max inactive interval
      */
-    long getMaxInactiveInterval();
+    Long getMaxInactiveInterval();
 
     /**
      * Returns the object bound with the specified name in this session, or

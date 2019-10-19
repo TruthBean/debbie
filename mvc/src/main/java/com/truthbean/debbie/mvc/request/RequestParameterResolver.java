@@ -23,8 +23,8 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
 
     @Override
     public boolean supportsParameter(ExecutableArgument parameter) {
-        var annotation = parameter.getAnnotation(RequestParameter.class);
-        if (annotation != null) {
+        RequestParameterInfo requestParameterInfo = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
+        if (requestParameterInfo != null) {
             this.handler = new RouterMethodArgumentHandler();
             return true;
         }
@@ -39,8 +39,10 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
 
     @Override
     public boolean resolveArgument(ExecutableArgument parameter, Object originValues, DataValidateFactory validateFactory) {
-        var annotation = parameter.getAnnotation(RequestParameter.class);
-        RequestParameter requestParameter = (RequestParameter) annotation;
+        RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
+        if (requestParameter == null) {
+            throw new NullPointerException("RequestParameter annotation miss");
+        }
         LOGGER.debug("annotation is RequestParameter");
 
         RouterRequestValues parameters = (RouterRequestValues) originValues;
@@ -101,11 +103,15 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 if (type == MediaType.ANY) {
                     type = requestType;
                 }
-                String textBody = parameters.getTextBody();
-                if (textBody == null) {
-                    handler.handleStream(parameters.getBody(), type, parameter);
+                if (requestParameter.bodyType().isText()) {
+                    String textBody = parameters.getTextBody();
+                    if (textBody == null) {
+                        handler.handleStream(parameters.getBody(), type, parameter);
+                    } else {
+                        handler.handleStream(textBody, type, parameter);
+                    }
                 } else {
-                    handler.handleStream(textBody, type, parameter);
+                    handler.handleStream(parameters.getBody(), type, parameter);
                 }
                 break;
             case HEAD:

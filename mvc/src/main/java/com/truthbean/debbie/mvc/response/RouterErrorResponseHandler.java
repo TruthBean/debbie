@@ -18,47 +18,41 @@ public final class RouterErrorResponseHandler {
     }
 
     public static RouterInfo resourceNotFound(RouterRequest httpRequest) {
-        RouterInfo resourcesNotFound = new RouterInfo();
-        ResponseEntity data = ResponseHelper.resourcesNotFound();
+        ResponseEntity<Object> data = ResponseHelper.resourcesNotFound();
         Map<String, String> value = new HashMap<>();
         value.put("uri", httpRequest.getUrl());
         value.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        value.put("method", httpRequest.getMethod().name());
         data.setData(value);
 
-        RouterResponse routerResponse = new RouterResponse();
-        if (httpRequest.getResponseType().toMediaType() == MediaType.APPLICATION_XML) {
-            routerResponse.setResponseType(httpRequest.getResponseType());
-            resourcesNotFound.setErrorInfo(JacksonUtils.toXml(data));
-        } else {
-            routerResponse.setResponseType(MediaType.APPLICATION_JSON);
-            resourcesNotFound.setErrorInfo(JacksonUtils.toJson(data));
-        }
-        resourcesNotFound.setResponse(routerResponse);
-
-        resourcesNotFound.setRequest(httpRequest.copy());
-
-        return resourcesNotFound;
+        return error(httpRequest, data);
     }
 
     public static RouterInfo exception(RouterRequest httpRequest, Exception e) {
-        RouterInfo resourcesNotFound = new RouterInfo();
-        ResponseEntity data = ResponseHelper.error(e.getMessage());
+        ResponseEntity<Object> data = ResponseHelper.error(e.getMessage());
         Map<String, Object> value = new HashMap<>();
         value.put("uri", httpRequest.getUrl());
         value.put("timestamp", String.valueOf(System.currentTimeMillis()));
         value.put("exception", e);
+        value.put("method", httpRequest.getMethod().name());
         data.setData(value);
+
+        return error(httpRequest, data);
+    }
+
+    public static RouterInfo error(RouterRequest httpRequest, ResponseEntity data) {
+        RouterInfo error = new RouterInfo();
 
         RouterResponse routerResponse = new RouterResponse();
         if (httpRequest.getResponseType().toMediaType() == MediaType.APPLICATION_XML) {
             routerResponse.setResponseType(httpRequest.getResponseType());
-            resourcesNotFound.setErrorInfo(JacksonUtils.toXml(data));
+            error.setErrorInfo(JacksonUtils.toXml(data));
         } else {
             routerResponse.setResponseType(MediaType.APPLICATION_JSON);
-            resourcesNotFound.setErrorInfo(JacksonUtils.toJson(data));
+            error.setErrorInfo(JacksonUtils.toJson(data));
         }
-        resourcesNotFound.setResponse(routerResponse);
+        error.setResponse(routerResponse);
 
-        return resourcesNotFound;
+        return error;
     }
 }

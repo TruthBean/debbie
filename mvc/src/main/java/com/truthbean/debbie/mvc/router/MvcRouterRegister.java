@@ -4,6 +4,7 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.request.BodyParameter;
 import com.truthbean.debbie.mvc.response.ResponseContentHandlerFactory;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ExecutableArgument;
@@ -46,7 +47,7 @@ public class MvcRouterRegister {
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         for (var method : methods) {
-            Router router = method.getAnnotation(Router.class);
+            RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
             List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method.getParameters());
             if (router != null) {
                 var routerInfo = new RouterInfo();
@@ -105,17 +106,23 @@ public class MvcRouterRegister {
                             Map<Class<? extends Annotation>, Annotation> annotations = methodParam.getAnnotations();
                             if (annotations != null && !annotations.isEmpty()) {
                                 annotations.forEach((key, value) -> {
+                                    boolean isBody = false;
                                     if (key == RequestParameter.class) {
                                         RequestParameter requestParameter = (RequestParameter) value;
                                         if (requestParameter.paramType() == RequestParameterType.BODY) {
-                                            if (!defaultContentTypes.isEmpty()) {
-                                                routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
+                                            isBody = true;
+                                        }
+                                    } else if (key == BodyParameter.class) {
+                                        isBody = true;
+                                    }
+                                    if (isBody) {
+                                        if (!defaultContentTypes.isEmpty()) {
+                                            routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
+                                        } else {
+                                            if (!webConfiguration.isAcceptClientContentType()) {
+                                                throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
                                             } else {
-                                                if (!webConfiguration.isAcceptClientContentType()) {
-                                                    throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
-                                                } else {
-                                                    routerInfo.setRequestType(MediaType.ANY);
-                                                }
+                                                routerInfo.setRequestType(MediaType.ANY);
                                             }
                                         }
                                     } else {
@@ -139,7 +146,7 @@ public class MvcRouterRegister {
         }
     }
 
-    private static void setTemplate(RouterResponse response, Router router, MvcConfiguration webConfiguration) {
+    private static void setTemplate(RouterResponse response, RouterAnnotationInfo router, MvcConfiguration webConfiguration) {
         response.setHasTemplate(router.hasTemplate());
         if (router.templatePrefix().isBlank()) {
             response.setTemplatePrefix(webConfiguration.getTemplatePrefix());

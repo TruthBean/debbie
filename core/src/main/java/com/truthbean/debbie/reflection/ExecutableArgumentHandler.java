@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -116,13 +117,21 @@ public class ExecutableArgumentHandler {
             case APPLICATION_JSON_UTF8:
                 value = JacksonUtils.jsonStreamToBean(stream, invokedParameter.getType());
                 break;
-            case TEXT_PLAIN:
             case TEXT_PLAIN_UTF8:
-            case TEXT_CSS:
             case TEXT_CSS_UTF8:
-            case TEXT_HTML:
             case TEXT_HTML_UTF8:
+            case TEXT_ANY_UTF8:
+                try {
+                    value = StreamHelper.copyToString(stream, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case TEXT_PLAIN:
+            case TEXT_CSS:
+            case TEXT_HTML:
             case TEXT_MARKDOWN:
+            case TEXT_ANY:
                 try {
                     value = StreamHelper.getAndClose(stream);
                 } catch (IOException e) {

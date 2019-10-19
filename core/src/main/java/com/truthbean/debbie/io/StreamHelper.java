@@ -174,6 +174,16 @@ public final class StreamHelper {
         return output.toByteArray();
     }
 
+    public static ByteArrayOutputStream toByteArrayOutputStream(InputStream inputStream) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            copy(inputStream, output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return output;
+    }
+
     // copy from InputStream
     //-----------------------------------------------------------------------
 

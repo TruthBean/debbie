@@ -81,8 +81,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 if (!MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)
                     && contentType.toMediaType() != MediaType.MULTIPART_FORM_DATA) {
 
-                    ByteBuf content = httpContent.content();
-                    routerRequest.setInputStreamBody(content);
+                    routerRequest.setInputStreamBody(httpContent);
 
                     routerRequest.setTextBody(httpContent);
 

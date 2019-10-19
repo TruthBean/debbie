@@ -21,8 +21,8 @@ public class ResponseHelper {
         return entity;
     }
 
-    public static ResponseEntity error(String message) {
-        var response = new ResponseEntity();
+    public static ResponseEntity<Object> error(String message) {
+        var response = new ResponseEntity<>();
         response.setStatus(500);
         response.setMessage(message);
         return response;
@@ -35,8 +35,8 @@ public class ResponseHelper {
         return response;
     }
 
-    public static ResponseEntity resourcesNotFound() {
-        var response = new ResponseEntity();
+    public static ResponseEntity<Object> resourcesNotFound() {
+        var response = new ResponseEntity<>();
         response.setStatus(404);
         response.setMessage("resources not found");
         return response;

@@ -30,6 +30,7 @@ import java.net.HttpCookie;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -42,7 +43,7 @@ public class NettyRouterRequest implements RouterRequest {
     private String host;
     private int port;
     private String id;
-    private io.netty.handler.codec.http.HttpRequest httpRequest;
+    private final ThreadLocal<io.netty.handler.codec.http.HttpRequest> httpRequest;
 
     private final DefaultRouterRequest routerRequestCache;
 
@@ -63,7 +64,8 @@ public class NettyRouterRequest implements RouterRequest {
 
         this.sessionManager = sessionManager;
 
-        this.httpRequest = httpRequest;
+        this.httpRequest = new ThreadLocal<>();
+        this.httpRequest.set(httpRequest);
         this.routerRequestCache = new DefaultRouterRequest();
         this.id = id;
         this.routerRequestCache.setId(id);
@@ -117,38 +119,58 @@ public class NettyRouterRequest implements RouterRequest {
         }
     }
 
-    public void setInputStreamBody(ByteBuf content) {
-        ByteBufInputStream byteBufInputStream = new ByteBufInputStream(content);
+    public void setInputStreamBody(HttpContent httpContent) {
+        HttpContent copy = httpContent.copy();
+        ByteBufInputStream byteBufInputStream = new ByteBufInputStream(copy.content());
         this.routerRequestCache.setInputStreamBody(byteBufInputStream);
     }
 
     public void handleHttpData(HttpContent httpContent) {
-        decoder.offer(httpContent);
-        while (decoder.hasNext()) {
-            InterfaceHttpData data = decoder.next();
-            if (data != null) {
-                try {
-                    handleAttribute(data);
-                } finally {
-                    data.release();
+        try {
+            decoder.offer(httpContent);
+            while (decoder.hasNext()) {
+                InterfaceHttpData data = decoder.next();
+                if (data != null) {
+                    try {
+                        handleAttribute(data);
+                    } finally {
+                        data.release();
+                    }
                 }
+            }
+        } catch (Exception e) {
+            if (e instanceof HttpPostRequestDecoder.EndOfDataDecoderException
+                || e instanceof HttpPostRequestDecoder.ErrorDataDecoderException) {
+                LOGGER.error(e.getMessage());
+            } else {
+                LOGGER.error("", e);
             }
         }
     }
 
     public void resetHttpRequest() {
         try {
-            decoder.destroy();
+            decoder.removeHttpDataFromClean(decoder.currentPartialHttpData());
         } catch (Exception e) {
-            e.printStackTrace();
+            if (e instanceof HttpPostRequestDecoder.EndOfDataDecoderException
+                || e instanceof HttpPostRequestDecoder.ErrorDataDecoderException) {
+                LOGGER.error(e.getMessage());
+            } else {
+                LOGGER.error("", e);
+            }
         }
         decoder = null;
 
-        httpRequest = null;
+        httpRequest.remove();
     }
 
     public void setTextBody(HttpContent httpContent) {
-        this.routerRequestCache.setTextBody(httpContent.toString());
+        HttpContent copy = httpContent.copy();
+        ByteBuf content = copy.content();
+        if (content.isReadable()) {
+            this.routerRequestCache.setTextBody(content.toString(StandardCharsets.UTF_8));
+        }
+        copy.release();
     }
 
     /**
@@ -369,17 +391,17 @@ public class NettyRouterRequest implements RouterRequest {
 
     @Override
     public String getTextBody() {
-        return null;
+        return routerRequestCache.getTextBody();
     }
 
     @Override
     public File getFileBody() {
-        return null;
+        return routerRequestCache.getFileBody();
     }
 
     @Override
     public RouterRequest copy() {
-        return new NettyRouterRequest(sessionManager, id, httpRequest, host, port);
+        return new NettyRouterRequest(sessionManager, id, httpRequest.get(), host, port);
     }
 
     @Override

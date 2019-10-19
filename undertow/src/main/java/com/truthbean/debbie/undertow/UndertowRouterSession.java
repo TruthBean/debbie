@@ -34,13 +34,13 @@ public class UndertowRouterSession implements RouterSession {
     }
 
     @Override
-    public long getLastAccessedTime() {
+    public Long getLastAccessedTime() {
         return session.getLastAccessedTime();
     }
 
     @Override
-    public long getMaxInactiveInterval() {
-        return session.getMaxInactiveInterval();
+    public Long getMaxInactiveInterval() {
+        return Long.valueOf(session.getMaxInactiveInterval());
     }
 
     @Override

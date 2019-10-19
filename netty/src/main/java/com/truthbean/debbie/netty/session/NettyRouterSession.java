@@ -44,7 +44,7 @@ public class NettyRouterSession implements RouterSession {
     }
 
     @Override
-    public long getLastAccessedTime() {
+    public Long getLastAccessedTime() {
         return lastAccessedTime;
     }
 
@@ -53,7 +53,7 @@ public class NettyRouterSession implements RouterSession {
     }
 
     @Override
-    public long getMaxInactiveInterval() {
+    public Long getMaxInactiveInterval() {
         return maxInactiveInterval;
     }
 

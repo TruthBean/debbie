@@ -50,6 +50,8 @@ public enum MediaType {
     APPLICATION_OCTET_STREAM("application/octet-stream"),
 
     ANY("*/*"),
+    TEXT_ANY("text/*"),
+    TEXT_ANY_UTF8("text/*;Charset=UTF-8"),
 
     APPLICATION_ATOM_XML("application/atom+xml"),
 
@@ -246,5 +248,19 @@ public enum MediaType {
             default:
                 return MediaType.ANY;
         }
+    }
+
+    public boolean isText() {
+        MediaTypeInfo info = info();
+        String type = info.type();
+        if ("text".equals(type)) {
+            return true;
+        }
+        if ("application".equals(type)){
+            String subtype = info.subtype();
+            return "json".equals(subtype) || "xml".equals(subtype) || "javascript".equals(subtype)
+                || "xhtml+xml".equals(subtype);
+        }
+        return false;
     }
 }

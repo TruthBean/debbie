@@ -4,7 +4,7 @@ import com.truthbean.debbie.data.validate.DefaultDataValidateFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
-import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.request.RequestParameterInfo;
 import com.truthbean.debbie.mvc.request.RequestParameterResolver;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -229,9 +228,8 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                               ExecutableArgument invokedParameter, MediaType requestType) {
         Map<String, List> mixValues = parameters.getMixValues();
 
-        Annotation annotation = invokedParameter.getAnnotation(RequestParameter.class);
-        if (annotation != null) {
-            RequestParameter requestParameter = (RequestParameter) annotation;
+        RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(invokedParameter);
+        if (requestParameter != null) {
 
             switch (requestParameter.paramType()) {
                 case MIX:
@@ -317,9 +315,13 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     invokedParameter.setName(name);
                 }
             }
-            RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
+            RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
             if (requestParameter != null) {
-                invokedParameter.setName(requestParameter.name());
+                var name = requestParameter.value();
+                if (name.isBlank()) {
+                    name = requestParameter.name();
+                }
+                invokedParameter.setName(name);
             }
             invokedParameter.setAnnotations(parameter.getAnnotations());
 

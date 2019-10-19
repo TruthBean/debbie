@@ -1,17 +1,16 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.mvc.request.RequestParameterInfo;
+import com.truthbean.debbie.mvc.router.RouterAnnotationInfo;
 import com.truthbean.debbie.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
-import com.truthbean.debbie.mvc.router.Router;
 import com.truthbean.debbie.mvc.router.RouterPathSplicer;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.HttpCookie;
 import java.util.*;
@@ -42,9 +41,9 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             this.configuration = new HttpClientConfiguration();
         }
 
-        Router router = method.getAnnotation(Router.class);
+        RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
         if (router == null) {
-            throw new IllegalArgumentException(method.getName() + " have no @Router annotation ");
+            throw new IllegalArgumentException(method.getName() + " have no Router annotation ");
         }
         this.httpClientAction = new HttpClientAction(this.configuration);
 
@@ -70,16 +69,19 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         var parameter = parameters[i];
                         var invokedParameter = new ExecutableArgument();
 
-                        RequestParameter requestParameter = parameter.getAnnotation(RequestParameter.class);
+                        RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
                         if (requestParameter != null) {
                             var type = parameter.getType();
-                            var name = requestParameter.name();
+                            var name = requestParameter.value();
+                            if (name.isBlank()) {
+                                name = requestParameter.name();
+                            }
                             if (name.isBlank()) {
                                 name = parameter.getName();
                             }
                             invokedParameter.setName(name);
                             invokedParameter.setIndex(i);
-                            invokedParameter.setAnnotation(requestParameter);
+                            invokedParameter.setAnnotation(requestParameter.getAnnotation());
                             invokedParameter.setType(type);
                         }
 
@@ -106,13 +108,15 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                     continue;
                 }
 
-                Annotation annotation = parameter.getAnnotation(RequestParameter.class);
-                if (annotation != null) {
-                    RequestParameter requestParameter = (RequestParameter) annotation;
+                RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
+                if (requestParameter != null) {
                     var type = requestParameter.paramType();
                     var header = request.getHeader();
                     if (type == RequestParameterType.HEAD) {
-                        var headerName = requestParameter.name();
+                        var headerName = requestParameter.value();
+                        if (headerName.isBlank()) {
+                            headerName = requestParameter.name();
+                        }
                         if (arg instanceof String) {
                             header.addHeader(headerName, List.of((String) arg));
                         } else if (arg instanceof List) {
@@ -123,11 +127,17 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             header.addHeader(headerName, List.of(arg.toString()));
                         }
                     } else if (type == RequestParameterType.COOKIE) {
-                        var cookieName = requestParameter.name();
+                        var cookieName = requestParameter.value();
+                        if (cookieName.isBlank()) {
+                            cookieName = requestParameter.name();
+                        }
                         var cookie = new HttpCookie(cookieName, arg.toString());
                         request.addCookie(cookie);
                     } else if (type == RequestParameterType.QUERY) {
-                        var queryName = requestParameter.name();
+                        var queryName = requestParameter.value();
+                        if (queryName.isBlank()) {
+                            queryName = requestParameter.name();
+                        }
                         if (arg instanceof String) {
                             request.addQueries(queryName, List.of((String) arg));
                         } else if (arg instanceof List) {
@@ -138,7 +148,10 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             header.addHeader(queryName, List.of(arg.toString()));
                         }
                     } else if (type == RequestParameterType.PARAM) {
-                        var paramName = requestParameter.name();
+                        var paramName = requestParameter.value();
+                        if (paramName.isBlank()) {
+                            paramName = requestParameter.name();
+                        }
                         if (arg instanceof List) {
                             request.addParameters(paramName, (List) arg);
                         } else if (arg instanceof Map) {

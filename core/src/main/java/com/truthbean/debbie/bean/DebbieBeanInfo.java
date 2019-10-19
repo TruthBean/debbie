@@ -171,7 +171,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             Class<?> clazz = super.getClazz();
             Class<?>[] interfaces = clazz.getInterfaces();
             if (interfaces == null || interfaces.length == 0) {
-                LOGGER.debug(clazz.getName() + " has no direct interface");
+                LOGGER.trace(clazz.getName() + " has no direct interface");
                 noInterface = true;
                 beanInterface = null;
             } else {

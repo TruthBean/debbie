@@ -91,9 +91,9 @@ public class HttpClientHandlerTest {
             System.out.println(body);
 
             var header = new HashMap<String, String>();
-            header.put("Authorization", "244705ab-532f-4c38-b358-64b3825f8c24");
+            header.put("Authorization", "b34c891c-76ca-4c8d-9a85-0771b1cbcd1d");
             header.put("Content-Type", "application/json;charset=UTF-8");
-            var response = httpClientHandler.post("http://192.168.1.12:31202/cameras", body, header);
+            var response = httpClientHandler.post("http://192.168.1.2:31202/cameras", body, header);
             System.out.println(response);
         }
 
@@ -103,8 +103,8 @@ public class HttpClientHandlerTest {
     public void delete() {
         for (int i = 0; i < 100; i++) {
             var header = new HashMap<String, String>();
-            header.put("Authorization", "244705ab-532f-4c38-b358-64b3825f8c24");
-            var r = httpClientHandler.delete("http://192.168.1.12:31202/cameras/" + (i), header);
+            header.put("Authorization", "b34c891c-76ca-4c8d-9a85-0771b1cbcd1d");
+            var r = httpClientHandler.delete("http://192.168.1.2:31202/cameras/" + (i), header);
             System.out.println(r);
         }
     }

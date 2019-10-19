@@ -11,13 +11,12 @@ import java.lang.annotation.*;
 /**
  * @author TruthBean
  * @since 0.0.2
- * Created on 2019/08/04 15:16.
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @BeanComponent
-public @interface PutRouter {
+public @interface HeadRouter {
     /**
      * router bean name
      * @return router bean name
