@@ -26,9 +26,21 @@ public class ReflectionHelper {
     public static <T> Constructor<T> getConstructorIfAvailable(Class<T> clazz, Class<?>... paramTypes) {
         try {
             return clazz.getConstructor(paramTypes);
-        } catch (NoSuchMethodException var3) {
+        } catch (NoSuchMethodException e) {
             return null;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(String className) {
+        ClassLoader classLoader = ClassLoaderUtils.getDefaultClassLoader();
+        try {
+            return (T) newInstance(classLoader.loadClass(className));
+            // return (T) Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -144,7 +156,7 @@ public class ReflectionHelper {
             LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
         } finally {
             if (!flag) {
-                constructor.setAccessible(flag);
+                constructor.setAccessible(false);
             }
         }
         return null;
@@ -347,6 +359,18 @@ public class ReflectionHelper {
         }
     }
 
+    public static void setField(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getField(fieldName);
+            if (field.trySetAccessible()) {
+                field.setAccessible(true);
+            }
+            field.set(target, value);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static Object getField(Object target, Field field) {
         try {
             if (field.trySetAccessible()) {
@@ -355,6 +379,50 @@ public class ReflectionHelper {
             return field.get(target);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Object invokeMethod(Object target, String methodName, Object... parameters) {
+        try {
+            Class<?> targetClass = target.getClass();
+            Method declaredMethod;
+            if (parameters != null && parameters.length > 0) {
+                List<Class<?>> parameterTypes = new LinkedList<>();
+                for (Object parameter : parameters) {
+                    parameterTypes.add(parameter.getClass());
+                }
+                declaredMethod = targetClass.getDeclaredMethod(methodName, parameterTypes.toArray(new Class[]{}));
+            } else {
+                declaredMethod = targetClass.getDeclaredMethod(methodName);
+            }
+            if (declaredMethod.trySetAccessible()) {
+                declaredMethod.setAccessible(true);
+            }
+            return declaredMethod.invoke(target, parameters);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
+        }
+        return null;
+    }
+
+    public static Object invokeMethod(Object target, String methodName, Object[] parameters, Class<?>[] parameterTypes) {
+        try {
+            Class<?> targetClass = target.getClass();
+            Method declaredMethod;
+            if (parameters != null && parameters.length > 0) {
+                declaredMethod = targetClass.getDeclaredMethod(methodName, parameterTypes);
+            } else {
+                declaredMethod = targetClass.getDeclaredMethod(methodName);
+            }
+            if (declaredMethod.trySetAccessible()) {
+                declaredMethod.setAccessible(true);
+            }
+            return declaredMethod.invoke(target, parameters);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -375,7 +443,7 @@ public class ReflectionHelper {
         return null;
     }
 
-    public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?>... parameterTypes) {
+    public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?> parameterTypes) {
         Class<?> clazz = target.getClass();
         for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             try {
@@ -397,7 +465,7 @@ public class ReflectionHelper {
      * @return invoke method result
      */
     public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg,
-                                         Class<?>... parameterTypes) throws NoSuchMethodException {
+                                         Class<?> parameterTypes) throws NoSuchMethodException {
 
         var methodName = "set" + handleFieldName(fieldName);
         try {

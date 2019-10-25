@@ -14,4 +14,7 @@ dependencies {
     testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     testCompile(project(":debbie-test"))
+
+    testImplementation("org.javassist:javassist:3.26.0-GA")
+    testCompile("cglib:cglib:3.3.0")
 }
