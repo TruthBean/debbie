@@ -16,7 +16,7 @@ class SurnameServiceTest {
 
     @BeforeAll
     static void before() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory();
+        DebbieApplicationFactory factory = new DebbieApplicationFactory(SurnameServiceTest.class);
         factory.config();
         factory.callStarter();
 
@@ -44,7 +44,7 @@ class SurnameServiceTest {
 
     @Test
     void selectAll() {
-        System.out.println(surnameService.selectAll());
+        System.out.println(surnameService.list());
     }
 
     @Test

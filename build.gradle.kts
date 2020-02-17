@@ -208,8 +208,9 @@ subprojects {
 
         // 进行数字签名
         signing {
-            isRequired = isReleaseBuild
-            sign(publishing.publications["uploadToMavenRepository"])
+            if(isReleaseBuild) {
+                sign(publishing.publications["uploadToMavenRepository"])
+            }
         }
 
         eclipse {

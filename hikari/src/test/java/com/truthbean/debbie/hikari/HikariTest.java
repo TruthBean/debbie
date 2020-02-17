@@ -37,8 +37,9 @@ public class HikariTest {
 
     @Test
     public void testDataSource() {
-        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory();
-        applicationFactory.config();
+        var classLoader = HikariTest.class.getClassLoader();
+        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory(classLoader);
+        applicationFactory.config(HikariTest.class);
         applicationFactory.callStarter();
         DataSourceFactory factory = applicationFactory.factory("dataSourceFactory");
         System.out.println(factory);

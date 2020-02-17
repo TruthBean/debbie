@@ -10,6 +10,7 @@ import com.truthbean.debbie.mvc.response.view.NoViewRender;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ public class RouterInvoker {
         this.routerInfo = routerInfo;
     }
 
-    public void action(RouterResponse routerResponse, BeanFactoryHandler beanFactoryHandler) {
+    public void action(RouterResponse routerResponse, BeanFactoryHandler beanFactoryHandler) throws Throwable {
         if (routerInfo == null) {
             return;
         }
@@ -50,7 +51,14 @@ public class RouterInvoker {
 
         var type = routerInfo.getRouterClass();
         var method = routerInfo.getMethod();
-        Object any = beanFactoryHandler.factoryAndInvokeMethod(type, method, values);
+
+        var instance = routerInfo.getRouterInstance();
+        if (instance == null) {
+            instance = beanFactoryHandler.factory(type);
+            routerInfo.setRouterInstance(instance);
+        }
+
+        Object any = ReflectionHelper.invokeMethod(true, instance, method, values);
 
         for (ExecutableArgument methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
@@ -59,6 +67,7 @@ public class RouterInvoker {
         resolveResponse(any, httpRequest.getResponseType().toMediaType(), routerResponse);
     }
 
+    @SuppressWarnings({"unchecked"})
     private void resolveResponse(Object methodResult, MediaType responseType, RouterResponse routerResponse) {
         var response = routerInfo.getResponse();
         if (response.hasTemplate()) {
@@ -77,19 +86,11 @@ public class RouterInvoker {
                 }
                 routerResponse.setContent(methodResult);
             } else {
-                AbstractResponseContentHandler handler = response.getHandler();
-                if (handler != null && handler.getClass() != NothingResponseHandler.class) {
-                    handler.handleResponse(routerResponse, methodResult);
-                    return;
-                }
+                if (handleResponse(methodResult, routerResponse, response)) return;
                 routerResponse.setContent(methodResult);
             }
         } else {
-            AbstractResponseContentHandler handler = response.getHandler();
-            if (handler != null && handler.getClass() != NothingResponseHandler.class) {
-                handler.handleResponse(routerResponse, methodResult);
-                return;
-            }
+            if (handleResponse(methodResult, routerResponse, response)) return;
 
             if (methodResult == null) return;
 
@@ -101,6 +102,16 @@ public class RouterInvoker {
             LOGGER.debug(filter.toString());
             routerResponse.setContent(filter);
         }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private boolean handleResponse(Object methodResult, RouterResponse routerResponse, RouterResponse response) {
+        AbstractResponseContentHandler handler = response.getHandler();
+        if (handler != null && handler.getClass() != NothingResponseHandler.class) {
+            handler.handleResponse(routerResponse, methodResult);
+            return true;
+        }
+        return false;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterInvoker.class);

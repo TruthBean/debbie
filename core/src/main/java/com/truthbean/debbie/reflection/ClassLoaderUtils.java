@@ -20,11 +20,15 @@ public class ClassLoaderUtils {
             // No thread context class loader -> use class loader of this class.
             cl = ClassLoaderUtils.class.getClassLoader();
             if (cl == null) {
-                // getClassLoader() returning null indicates the bootstrap ClassLoader
                 try {
-                    cl = ClassLoader.getSystemClassLoader();
-                } catch (Throwable ignored) {
-                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    cl = ClassLoader.getPlatformClassLoader();
+                } catch (Throwable ignored1) {
+                    // getClassLoader() returning null indicates the bootstrap ClassLoader
+                    try {
+                        cl = ClassLoader.getSystemClassLoader();
+                    } catch (Throwable ignored2) {
+                        // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    }
                 }
             }
         }
@@ -32,7 +36,12 @@ public class ClassLoaderUtils {
     }
 
     public static ClassLoader getClassLoader(Class<?> clazz) {
-        ClassLoader cl = clazz.getClassLoader();
+        ClassLoader cl = null;
+        try {
+            cl = clazz.getClassLoader();
+        } catch (Throwable e) {
+            // SecurityException
+        }
         if (cl == null) {
             // getClassLoader() returning null indicates the bootstrap ClassLoader
             try {
@@ -43,9 +52,14 @@ public class ClassLoaderUtils {
             if (cl == null) {
                 // No thread context class loader -> use class loader of this class.
                 try {
-                    cl = ClassLoader.getSystemClassLoader();
-                } catch (Throwable ignored) {
-                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    cl = ClassLoader.getPlatformClassLoader();
+                } catch (Throwable ignored1) {
+                    // getClassLoader() returning null indicates the bootstrap ClassLoader
+                    try {
+                        cl = ClassLoader.getSystemClassLoader();
+                    } catch (Throwable ignored2) {
+                        // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    }
                 }
             }
         }

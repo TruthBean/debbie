@@ -2,6 +2,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.*;
 
@@ -11,11 +12,35 @@ import java.util.*;
  * Created on 2019/3/5 23:16.
  */
 public class BeanScanConfiguration implements DebbieConfiguration {
-    private final Set<Class<?>> scanClasses = new HashSet<>();
+    private final Set<Class<?>> scanClasses;
 
-    private final Set<String> scanBasePackages = new HashSet<>();
-    private final Set<String> scanExcludePackages = new HashSet<>();
-    private final Set<Class<?>> scanExcludeClasses = new HashSet<>();
+    private final Set<String> scanBasePackages;
+    private final Set<String> scanExcludePackages;
+    private final Set<Class<?>> scanExcludeClasses;
+
+    public final ClassLoader classLoader;
+
+    /*public BeanScanConfiguration() {
+        this.scanClasses = new HashSet<>();
+
+        this.scanBasePackages = new HashSet<>();
+        this.scanExcludePackages = new HashSet<>();
+        this.scanExcludeClasses = new HashSet<>();
+    }*/
+
+    public BeanScanConfiguration(ClassLoader classLoader) {
+        this.scanClasses = new HashSet<>();
+
+        this.scanBasePackages = new HashSet<>();
+        this.scanExcludePackages = new HashSet<>();
+        this.scanExcludeClasses = new HashSet<>();
+
+        this.classLoader = classLoader;
+    }
+
+    /*public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }*/
 
     public Set<Class<?>> getScanClasses() {
         return scanClasses;
@@ -24,6 +49,12 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     public void addScanClasses(Set<Class<?>> scanClasses) {
         if (scanClasses != null) {
             this.scanClasses.addAll(scanClasses);
+        }
+    }
+
+    public void addScanClasses(Class<?>... classes) {
+        if (classes != null) {
+            this.scanClasses.addAll(Arrays.asList(classes));
         }
     }
 
@@ -51,12 +82,28 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanBasePackages.addAll(scanBasePackages);
     }
 
+    public void addScanBasePackages(String... scanBasePackages) {
+        if (scanBasePackages != null) {
+            for (String scanBasePackage : scanBasePackages) {
+                if (StringUtils.hasText(scanBasePackage)) {
+                    this.scanBasePackages.add(scanBasePackage);
+                }
+            }
+        }
+    }
+
     public Set<String> getScanExcludePackages() {
         return scanExcludePackages;
     }
 
     public void addScanExcludePackages(Collection<String> scanExcludePackages) {
         this.scanExcludePackages.addAll(scanExcludePackages);
+    }
+
+    public void addScanExcludePackages(String... scanExcludePackages) {
+        if (scanExcludePackages != null) {
+            this.scanExcludePackages.addAll(Arrays.asList(scanExcludePackages));
+        }
     }
 
     public Set<Class<?>> getScanExcludeClasses() {
@@ -67,6 +114,12 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanExcludeClasses.addAll(scanExcludeClasses);
     }
 
+    public void addScanExcludeClasses(Class<?>... excludeClasses) {
+        if (excludeClasses != null) {
+            this.scanExcludeClasses.addAll(Arrays.asList(excludeClasses));
+        }
+    }
+
     public Set<Class<?>> getTargetClasses() {
         Set<Class<?>> classes = new HashSet<>();
         if (!scanClasses.isEmpty()) {
@@ -74,7 +127,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName);
+                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.addAll(classList);
             });
         }
@@ -84,7 +137,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         if (!scanExcludePackages.isEmpty()) {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName);
+                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.removeAll(classList);
             });
         }

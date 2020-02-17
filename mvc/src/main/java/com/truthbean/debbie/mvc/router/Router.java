@@ -1,7 +1,6 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanComponent;
-import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
@@ -24,12 +23,16 @@ public @interface Router {
      * router bean name
      * @return router bean name
      */
+    @BeanAliceForName
+    @BeanAliceFor(name = "name")
     String name() default "";
 
     /**
      * router always be singleton
      * @return BeanType
      */
+    @BeanAliceForType
+    @BeanAliceFor(name = "type")
     BeanType type() default BeanType.SINGLETON;
 
     /**

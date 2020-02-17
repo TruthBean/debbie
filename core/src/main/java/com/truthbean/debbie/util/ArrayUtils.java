@@ -3,6 +3,10 @@ package com.truthbean.debbie.util;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class ArrayUtils {
     /**
      * 将多个数组合并在一起<br>

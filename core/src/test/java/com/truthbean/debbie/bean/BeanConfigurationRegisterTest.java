@@ -5,27 +5,32 @@ import com.truthbean.debbie.bean.inter.Abc;
 import com.truthbean.debbie.bean.inter.B;
 import com.truthbean.debbie.bean.inter.C;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
 class BeanConfigurationRegisterTest {
+
+    private DebbieApplicationFactory factory;
 
     @BeforeEach
     void setUp() {
+        factory = new DebbieApplicationFactory(BeanConfigurationRegisterTest.class);
+        factory.config(BeanConfigurationRegisterTest.class);
+        factory.callStarter();
     }
 
     @AfterEach
     void tearDown() {
+        factory.release();
     }
 
     @Test
     void register() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory();
-        factory.config();
-        factory.callStarter();
 
         BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
         DataTransformer<Integer, Character> bean = beanFactoryHandler.factory("dataTransformer");

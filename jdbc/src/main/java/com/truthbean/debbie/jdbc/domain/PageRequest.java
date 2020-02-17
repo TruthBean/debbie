@@ -23,6 +23,7 @@ public class PageRequest implements Serializable {
      * @param page zero-based page index.
      * @param size the size of the page to be returned.
      * @param sort must not be {@literal null}.
+     * @return PageRequest
      * @since 0.0.2
      */
     public static PageRequest of(int page, int size, Sort sort) {
@@ -36,6 +37,7 @@ public class PageRequest implements Serializable {
      * @param size       the size of the page to be returned.
      * @param direction  must not be {@literal null}.
      * @param properties must not be {@literal null}.
+     * @return PageRequest
      * @since 0.0.2
      */
     public static PageRequest of(int page, int size, Sort.Direction direction, String... properties) {

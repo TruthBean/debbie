@@ -270,7 +270,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     }
 
     @Override
-    public String getRemoteAddr() {
+    public String getRemoteAddress() {
         return request.getRemoteAddr();
     }
 

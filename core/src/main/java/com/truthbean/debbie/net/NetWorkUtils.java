@@ -4,10 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.*;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author TruthBean
@@ -26,27 +25,28 @@ public class NetWorkUtils {
     private static final Pattern IPV6_PATTERN = Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
 
     public static boolean isValidIpv4Address(InetAddress address) {
-        if (address == null || address.isLoopbackAddress()) {
+        if (address == null || address.isLoopbackAddress() || address instanceof Inet6Address) {
             return false;
         }
 
-        LOGGER.debug(address.getClass().getName());
-        LOGGER.debug(address.toString());
+        LOGGER.trace(address.getClass().getName());
+        LOGGER.trace(address.toString());
 
         String name = address.getHostAddress();
         return (name != null
             && !ANY_IPV4.equals(name)
             && !LOCAL_IPV4.equals(name)
+                // 防止继承 InetAddress 重写 方法
             && IPV4_PATTERN.matcher(name).matches());
     }
 
     public static boolean isValidIpv6Address(InetAddress address) {
-        if (address == null || address.isLoopbackAddress()) {
+        if (address == null || address.isLoopbackAddress() || address instanceof Inet4Address) {
             return false;
         }
 
-        LOGGER.debug(address.getClass().getName());
-        LOGGER.debug(address.toString());
+        LOGGER.trace(address.getClass().getName());
+        LOGGER.trace(address.toString());
 
         String name = address.getHostAddress();
         return (name != null
@@ -88,10 +88,10 @@ public class NetWorkUtils {
         Inet6Address localAddress = getLocalIpv6Address0();
         if (localAddress == null) {
             try {
-                LOGGER.error("Could not get local host ip address, will use 127.0.0.1 instead.");
+                LOGGER.error("Could not get local host ip address, will use 0:0:0:0:0:0:0:1 instead.");
                 return (Inet6Address) InetAddress.getByName(LOCAL_IPV6);
             } catch (UnknownHostException e) {
-                LOGGER.error("Could not get 127.0.0.1 address, may network driver error.");
+                LOGGER.error("Could not get 0:0:0:0:0:0:0:1 address, may network driver error.");
             }
         } else {
             LOCAL_IPV6_ADDRESS_CACHE = localAddress;
@@ -160,7 +160,7 @@ public class NetWorkUtils {
     }
 
     public static List<InetAddress> getAllLocalAddress() {
-        List<InetAddress> result = new LinkedList<>();
+        List<InetAddress> result = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -186,7 +186,8 @@ public class NetWorkUtils {
     }
 
     public static List<InetAddress> getAllIpv4LocalAddress() {
-        List<InetAddress> result = new LinkedList<>();
+        LOGGER.trace("before getAllIpv4LocalAddress");
+        List<InetAddress> result = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -196,7 +197,7 @@ public class NetWorkUtils {
                     while (addresses.hasMoreElements()) {
                         try {
                             InetAddress address = addresses.nextElement();
-                            if (isValidIpv4Address(address) && address instanceof Inet4Address) {
+                            if (isValidIpv4Address(address)) {
                                 result.add(address);
                             }
                         } catch (Throwable e) {
@@ -210,6 +211,7 @@ public class NetWorkUtils {
         } catch (Throwable e) {
             LOGGER.warn("Failed to retriving ip address, " + e.getMessage(), e);
         }
+        LOGGER.trace("after getAllIpv4LocalAddress");
         return result;
     }
 

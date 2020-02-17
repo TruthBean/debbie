@@ -1,18 +1,18 @@
 dependencies {
-    compile(project(":debbie-servlet"))
-    compile(project(":debbie-server"))
+    implementation(project(":debbie-servlet"))
+    implementation(project(":debbie-server"))
 
     val tomcatVersion: String by project
-    compile("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")
-    compile("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion")
-    compile("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")
+    implementation("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion")
+    implementation("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
 
-    testCompile(project(":debbie-test"))
+    testImplementation(project(":debbie-test"))
     
     val log4j2Version: String by project
-    testCompile("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
 
     val jacksonVersion: String by project
-    testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    testCompile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 }

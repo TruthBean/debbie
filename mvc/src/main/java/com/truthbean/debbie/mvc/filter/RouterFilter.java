@@ -12,6 +12,10 @@ import java.io.Serializable;
  */
 public interface RouterFilter extends Serializable {
 
+    default boolean notFilter(RouterRequest request) {
+        return false;
+    }
+
     default boolean preRouter(RouterRequest request, RouterResponse response) {
         return true;
     }

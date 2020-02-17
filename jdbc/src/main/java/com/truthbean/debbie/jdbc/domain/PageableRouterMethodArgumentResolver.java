@@ -19,6 +19,7 @@ public class PageableRouterMethodArgumentResolver implements ExecutableArgumentR
         return annotation != null;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean resolveArgument(ExecutableArgument parameter, Object originValues, DataValidateFactory validateFactory) {
         Map<String, List> map = (Map<String, List>) originValues;

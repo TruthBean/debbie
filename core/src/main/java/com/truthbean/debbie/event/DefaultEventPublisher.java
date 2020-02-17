@@ -7,16 +7,20 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure {
-    private final Map<Class<? extends DebbieEvent>, DebbieEventListener> eventListenerMap = new LinkedHashMap<>();
+    private final Map<Class<? extends AbstractDebbieEvent>, DebbieEventListener> eventListenerMap = new LinkedHashMap<>();
 
-    public void addEventListener(Class<? extends DebbieEvent> eventType, DebbieEventListener<? extends DebbieEvent> listener) {
+    public void addEventListener(Class<? extends AbstractDebbieEvent> eventType, DebbieEventListener<? extends AbstractDebbieEvent> listener) {
         eventListenerMap.put(eventType, listener);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void publishEvent(DebbieEvent event) {
+    public void publishEvent(AbstractDebbieEvent event) {
         long start = System.currentTimeMillis();
         for (var classDebbieEventListenerEntry : eventListenerMap.entrySet()) {
             if (event.getClass() == classDebbieEventListenerEntry.getKey()) {

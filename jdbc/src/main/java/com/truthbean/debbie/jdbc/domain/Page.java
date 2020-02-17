@@ -142,6 +142,7 @@ public class Page<T> implements Streamable<T> {
         }
     }
 
+    @Override
     public <U> Page<U> map(Function<? super T, ? extends U> converter) {
         return createPage(currentPage, pageSize, totalCount,getConvertedContent(converter));
     }

@@ -9,11 +9,12 @@ import com.truthbean.debbie.server.AbstractServerConfiguration;
  */
 public class TomcatConfiguration extends AbstractServerConfiguration {
 
-    public TomcatConfiguration(){
-        super();
+    public TomcatConfiguration(ClassLoader classLoader){
+        super(classLoader);
     }
 
-    public TomcatConfiguration(AbstractServerConfiguration abstractServerConfiguration) {
+    public TomcatConfiguration(AbstractServerConfiguration abstractServerConfiguration, ClassLoader classLoader) {
+        super(classLoader);
         port(abstractServerConfiguration.getPort());
         host(abstractServerConfiguration.getHost());
         web(abstractServerConfiguration.isWeb());

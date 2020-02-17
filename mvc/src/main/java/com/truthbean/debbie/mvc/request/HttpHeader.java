@@ -1,5 +1,9 @@
 package com.truthbean.debbie.mvc.request;
 
+import com.truthbean.debbie.io.FileNameUtils;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
+
 import java.util.*;
 
 /**
@@ -17,10 +21,15 @@ public class HttpHeader {
         return headers.get(name);
     }
 
+    public String getHeader(HttpHeaderName headerName) {
+        return getHeader(headerName.getName());
+    }
+
     public String getHeader(String name) {
         var values = headers.get(name);
         if (values != null && !values.isEmpty()) {
-            return values.get(0);
+            String value = values.get(0);
+            if (value != null) return value;
         }
         return null;
     }
@@ -33,6 +42,17 @@ public class HttpHeader {
         this.headers.put(name, value);
     }
 
+    public void addHeader(String name, String value) {
+        if (name == null || name.isBlank()) return;
+
+        var values = headers.get(name);
+        if (values == null || values.isEmpty()) {
+            values = new ArrayList<>();
+        }
+        values.add(value);
+        this.headers.put(name, values);
+    }
+
     public HttpHeader copy() {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.headers.putAll(this.headers);
@@ -41,6 +61,22 @@ public class HttpHeader {
 
     public boolean isEmpty() {
         return headers.isEmpty();
+    }
+
+    public MediaTypeInfo getMediaTypeFromHeaders(String name, String url) {
+        String headerValue = getHeader(name);
+        MediaTypeInfo type;
+        if (headerValue != null && !headerValue.isBlank()) {
+            type = MediaTypeInfo.parse(headerValue);
+        } else {
+            String ext = FileNameUtils.getExtension(url);
+            if (ext == null || ext.isBlank()) {
+                type = MediaType.ANY.info();
+            } else {
+                type = MediaType.getTypeByUriExt(ext).info();
+            }
+        }
+        return type;
     }
 
     @Override
@@ -97,151 +133,189 @@ public class HttpHeader {
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Content_negotiation
          */
-        ACCEPT("accept"),
+        ACCEPT("Accept"),
 
-        ACCEPT_CHARSET("accept-charset"),
+        ACCEPT_CHARSET("Accept-Charset"),
 
-        ACCEPT_FEATURES("accept-features"),
+        ACCEPT_FEATURES("Accept-Features"),
 
-        ACCEPT_ENCODING("accept-encoding"),
+        ACCEPT_ENCODING("Accept-Encoding"),
 
-        ACCEPT_LANGUAGE("accept-language"),
+        ACCEPT_LANGUAGE("Accept-Language"),
 
-        ACCEPT_RANGES("accept-ranges"),
+        ACCEPT_RANGES("Accept-Ranges"),
 
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS
          */
 
-        ACCESS_CONTROL_ALLOW_CREDENTIALS("access-control-allow-credentials"),
+        ACCESS_CONTROL_ALLOW_CREDENTIALS("Access-Control-Allow-Credentials"),
 
-        ACCESS_CONTROL_ALLOW_ORIGIN("access-control-allow-origin"),
+        ACCESS_CONTROL_ALLOW_ORIGIN("Access-Control-Allow-Origin"),
 
-        ACCESS_CONTROL_ALLOW_METHODS("access-control-allow-methods"),
+        ACCESS_CONTROL_ALLOW_METHODS("Access-Control-Allow-Methods"),
 
-        ACCESS_CONTROL_ALLOW_HEADERS("access-control-allow-headers"),
+        ACCESS_CONTROL_ALLOW_HEADERS("Access-Control-Allow-Headers"),
 
-        ACCESS_CONTROL_MAX_AGE("access-control-max-age"),
+        ACCESS_CONTROL_MAX_AGE("Access-Control-Max-Age"),
 
-        ACCESS_CONTROL_EXPOSE_HEADERS("access-control-expose-headers"),
+        ACCESS_CONTROL_EXPOSE_HEADERS("Access-Control-Expose-Headers"),
 
-        ACCESS_CONTROL_REQUEST_METHOD("access-control-request-method"),
+        ACCESS_CONTROL_REQUEST_METHOD("Access-Control-Request-Method"),
 
-        ACCESS_CONTROL_REQUEST_HEADERS("access-control-request-headers"),
+        ACCESS_CONTROL_REQUEST_HEADERS("Access-Control-Request-Headers"),
 
 
-        AGE("age"),
+        AGE("Age"),
 
-        ALLOW("allow"),
+        ALLOW("Allow"),
 
-        ALTERNATES("alternates"),
+        Alt_Svc("Alt-Svc"),
 
-        AUTHORIZATION("authorization"),
+        ALTERNATES("Alternates"),
+
+        AUTHORIZATION("Authorization"),
 
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ
          */
-        CACHE_CONTROL("cache-control"),
+        CACHE_CONTROL("Cache-Control"),
 
-        CONNECTION("connection"),
+        CLEAR_SITE_DATA("Clear-Site-Data"),
 
-        CONTENT_ENCODING("content-encoding"),
+        CONNECTION("Connection"),
 
-        CONTENT_LANGUAGE("content-language"),
+        CONTENT_ENCODING("Content-Encoding"),
 
-        CONTENT_LENGTH("content-length"),
+        CONTENT_LANGUAGE("Content-Language"),
 
-        CONTENT_LOCATION("content-location"),
+        CONTENT_LENGTH("Content-Length"),
 
-        CONTENT_RANGE("content-range"),
+        CONTENT_LOCATION("Content-Location"),
+
+        CONTENT_RANGE("Content-Range"),
 
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP
          */
-        CONTENT_SECURITY_POLICY("content-security-policy"),
+        CONTENT_SECURITY_POLICY("Content-Security-Policy"),
 
-        CONTENT_TYPE("content-type"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only
+         */
+        CONTENT_SECURITY_POLICY_REPORT_ONLY("Content-Security-Policy-Report-Only"),
 
-        COOKIE("cookie"),
+        CONTENT_TYPE("Content-Type"),
+
+        COOKIE("Cookie"),
 
         /**
          * 设置该值为1， 表明用户明确退出任何形式的网上跟踪
          */
-        DNT("dnt"),
+        DNT("DNT"),
 
-        DATE("date"),
+        DPR("DPR"),
 
-        ETAG("etag"),
+        DATE("Date"),
 
-        EXPECT("expect"),
+        DIGEST("Digest"),
 
-        EXPIRES("expires"),
+        ETAG("ETag"),
 
-        FROM("from"),
+        EXPECT("Expect"),
 
-        HOST("host"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Expect-CT
+         */
+        EXPECT_CT("Expect-CT"),
 
-        IF_MATCH("if-match"),
+        EXPIRES("Expires"),
 
-        IF_MODIFIED_SINCE("if-modified-since"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Forwarded
+         */
+        FORWARDED("Forwarded"),
 
-        IF_NONE_MATCH("if-none-match"),
+        FROM("From"),
 
-        IF_RANGE("if-range"),
+        HOST("Host"),
 
-        IF_UNMODIFIED_SINCE("if-unmodified-since"),
+        IF_MATCH("If-Match"),
+
+        IF_MODIFIED_SINCE("If-Modified-Since"),
+
+        IF_NONE_MATCH("If-None-Match"),
+
+        IF_RANGE("If-Range"),
+
+        IF_UNMODIFIED_SINCE("If-Unmodified-Since"),
 
         /**
          * 给出服务器在先前HTTP连接上接收的最后事件的ID.
          * 用于同步文本/事件流
          */
-        LAST_EVENT_ID("last-event-id"),
+        LAST_EVENT_ID("Last-Event-Id"),
 
-        LAST_MODIFIED("last-modified"),
+        LAST_MODIFIED("Last-Modified"),
 
         /**
          * 等同于HTML标签中的"link"，但它是在HTTP层上，给出一个与获取的资源相关的URL以及关系的种类
          */
-        LINK("link"),
+        LINK("Link"),
 
-        LOCATION("location"),
+        LOCATION("Location"),
 
-        MAX_FORWARDS("max-forwards"),
+        MAX_FORWARDS("Max-Forwards"),
 
-        NEGOTIATE("negotiate"),
+        NEGOTIATE("Negotiate"),
 
-        ORIGIN("origin"),
+        ORIGIN("Origin"),
 
-        PRAGMA("pragma"),
+        PRAGMA("Pragma"),
 
-        PROXY_AUTHENTICATE("proxy-authenticate"),
+        PROXY_AUTHENTICATE("Proxy-Authenticate"),
 
-        PROXY_AUTHORIZATION("proxy-authorization"),
+        PROXY_AUTHORIZATION("Proxy-Authorization"),
 
-        RANGE("range"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Public-Key-Pins
+         */
+        PUBLIC_KEY_PINS("Public-Key-Pins"),
+
+        PUBLIC_KEY_PINS_REPORT_ONLY("Public-Key-Pins-Report-Only"),
+
+        RANGE("Range"),
 
         /**
          * （请注意，在HTTP / 0.9规范中引入的正交错误必须在协议的后续版本中保留）
          */
-        REFERER("referer"),
+        REFERER("Referer"),
 
-        RETRY_AFTER("retry-after"),
+        RETRY_AFTER("Retry-After"),
 
-        SEC_WEBSOCKET_EXTENSIONS("sec-websocket-extensions"),
+        SAVE_DATA("Save-Data"),
 
-        SEC_WEBSOCKET_KEY("sec-websocket-key"),
+        SEC_WEBSOCKET_EXTENSIONS("Sec-WebSocket-Extensions"),
 
-        SEC_WEBSOCKET_ORIGIN("sec-websocket-origin"),
+        SEC_WEBSOCKET_KEY("Sec-WebSocket-Key"),
 
-        SEC_WEBSOCKET_PROTOCOL("sec-websocket-protocol"),
+        SEC_WEBSOCKET_ORIGIN("Sec-WebSocket-Origin"),
 
-        SEC_WEBSOCKET_VERSION("sec-websocket-version"),
+        SEC_WEBSOCKET_PROTOCOL("Sec-WebSocket-Protocol"),
 
-        SERVER("server"),
+        SEC_WEBSOCKET_VERSION("Sec-WebSocket-Version"),
 
-        SET_COOKIE("set-cookie"),
+        SERVER("Server"),
 
-        SET_COOKIE2("set-cookie2"),
+        SET_COOKIE("Set-Cookie"),
+
+        @Deprecated
+        SET_COOKIE2("Set-Cookie2"),
+
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/SourceMap
+         */
+        SOURCEMAP("SourceMap"),
 
         /**
          * https://developer.mozilla.org/zh-CN/docs/Security/HTTP_Strict_Transport_Security
@@ -251,48 +325,79 @@ public class HttpHeader {
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Content_negotiation
          */
-        TCN("tcn"),
+        TCN("TCN"),
 
-        TE("te"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/TE
+         */
+        TE("TE"),
+
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Tk
+         */
+        TK("Tk"),
+
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Timing-Allow-Origin
+         */
+        Timing_Allow_Origin("Timing-Allow-Origin"),
 
         /**
          * 列出将在消息正文之后在尾部块中传输的头。这允许服务器计算一些值，如Content-MD5：在传输数据时。
          * 请注意，Trailer：标头不得列出Content-Length :, Trailer：或Transfer-Encoding：headers。
          */
-        TRAILER("trailer"),
+        TRAILER("Trailer"),
 
-        TRANSFER_ENCODING("transfer-encoding"),
+        TRANSFER_ENCODING("Transfer-Encoding"),
 
-        UPGRADE("upgrade"),
+        UPGRADE("Upgrade"),
+
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Upgrade-Insecure-Requests
+         */
+        UPGRADE_INSECURE_REQUESTS("Upgrade-Insecure-Requests"),
 
         /**
          * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/User-Agent/Firefox
          */
-        USER_AGENT("user-agent"),
+        USER_AGENT("User-Agent"),
 
-        VARIANT_VARY("variant-vary"),
+        VARIANT_VARY("Variant-Vary"),
 
         /**
          * 列出了用作Web服务器选择特定内容的条件的标头。
          * 此服务器对于高效和正确缓存发送的资源很重要。
          */
-        VARY("vary"),
+        VARY("Vary"),
 
-        VIA("via"),
+        VIA("Via"),
 
-        WARNING("warning"),
+        WARNING("Warning"),
 
-        WWW_AUTHENTICATE("www-authenticate"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/WWW-Authenticate
+         */
+        WWW_AUTHENTICATE("WWW-Authenticate"),
 
-        X_CONTENT_DURATION("x-content-duration"),
+        WANT_DIGEST("Want-Digest"),
 
-        X_CONTENT_SECURITY_POLICY("x-content-security-policy"),
+        X_CONTENT_DURATION("X-Content-Duration"),
 
-        X_DNSPREFETCH_CONTROL("x-dnsprefetch-control"),
+        X_CONTENT_SECURITY_POLICY("X-Content-Security-Policy"),
 
-        X_FRAME_OPTIONS("x-frame-options"),
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Controlling_DNS_prefetching
+         */
+        X_DNS_PREFETCH_CONTROL("X-DNS-Prefetch-Control"),
 
-        X_REQUESTED_WITH("x-requested-with"),
+        X_FRAME_OPTIONS("X-Frame-Options"),
+
+        X_REQUESTED_WITH("X-Requested-With"),
+
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/X-XSS-Protection
+         */
+        X_XSS_PROTECTION("X-XSS-Protection"),
 
         CUSTOM(""),
 

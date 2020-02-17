@@ -62,5 +62,6 @@ public @interface ConnectRouter {
      * @return mediaType
      */
     MediaType responseType() default MediaType.ANY;
+    @SuppressWarnings({"rawtypes"})
     Class<? extends AbstractResponseContentHandler> handlerClass() default NothingResponseHandler .class;
 }

@@ -19,11 +19,20 @@ import java.util.stream.Collectors;
 public class RouterFilterManager {
     private static final Set<RouterFilterInfo> FILTERS = new TreeSet<>();
 
+    private static final Pattern ALL = Pattern.compile("\\w");
+
     public static void registerFilter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
         Set<DebbieBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInitialization.getAnnotatedClass(Filter.class));
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);
         }
+    }
+
+    public static void registerFilter(RouterFilterInfo filterInfo, String... urlPatterns) {
+        setFilterUrlPatterns(filterInfo, urlPatterns);
+
+        LOGGER.debug("register filter: " + filterInfo);
+        FILTERS.add(filterInfo);
     }
 
     @SuppressWarnings("unchecked")
@@ -42,6 +51,7 @@ public class RouterFilterManager {
 
         RouterFilterInfo filterInfo = new RouterFilterInfo();
         filterInfo.setRouterFilterType(clazz);
+        filterInfo.setConfiguration(configuration);
 
         var classAnnotations = classInfo.getClassAnnotations();
         Filter filter = (Filter) classAnnotations.get(Filter.class);
@@ -58,20 +68,30 @@ public class RouterFilterManager {
         if (urlPatterns.length == 0) {
             urlPatterns = filter.value();
         }
+        setFilterUrlPatterns(filterInfo, urlPatterns);
+
+        LOGGER.debug("register filter: " + filterInfo);
+        FILTERS.add(filterInfo);
+    }
+
+    private static void setFilterUrlPatterns(RouterFilterInfo filterInfo, String[] urlPatterns) {
         if (urlPatterns.length == 0) {
-            throw new RouterFilterMappingFormatException("Filter (" + clazz.getName() + ") urlRegex cannot be empty. ");
+            throw new RouterFilterMappingFormatException("Filter (" + filterInfo.getRouterFilterType().getName() + ") urlRegex cannot be empty. ");
         }
         for (String pattern: urlPatterns) {
             if (pattern.contains("*")) {
-                String newPattern = pattern.replaceAll("\\*", "\\w");
-                filterInfo.addUrlPattern(Pattern.compile(newPattern));
-                filterInfo.addRawUrlPattern(pattern);
+                if ("/*".equals(pattern) || "/**".equals(pattern)) {
+                    filterInfo.addUrlPattern(ALL);
+                    filterInfo.addRawUrlPattern(pattern);
+                } else {
+                    String newPattern = pattern.replaceAll("\\*", "\\w");
+                    filterInfo.addUrlPattern(Pattern.compile(newPattern));
+                    filterInfo.addRawUrlPattern(pattern);
+                }
             } else {
                 filterInfo.addRawUrlPattern(pattern);
             }
         }
-        LOGGER.debug("register filter: " + filterInfo);
-        FILTERS.add(filterInfo);
     }
 
     public static Set<RouterFilterInfo> getFilters() {

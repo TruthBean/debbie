@@ -11,7 +11,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +29,8 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     private BeanFactoryHandler beanFactoryHandler;
 
+    private final MethodProxyHandlerHandler handler;
+
     public ProxyInvocationHandler(Class<Target> targetClass, BeanFactoryHandler beanFactoryHandler) {
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         this.beanFactoryHandler = beanFactoryHandler;
@@ -40,6 +41,9 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         } else {
             this.target = target;
         }
+
+        this.handler = new MethodProxyHandlerHandler();
+        this.handler.setLogger(LOGGER);
     }
 
     @SuppressWarnings("unchecked")
@@ -50,6 +54,9 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         Class<Target> targetClass = (Class<Target>) target.getClass();
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         classInfo = new DebbieBeanInfo<>(targetClass);
+
+        this.handler = new MethodProxyHandlerHandler();
+        this.handler.setLogger(LOGGER);
     }
 
     public Target getRealTarget() {
@@ -73,110 +80,14 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             LOGGER.warn(targetClass + " has no method(" + method.getName() + "). ");
             targetMethod = method;
         }
-        List<MethodProxyHandler> proxyHandlers = getMethodProxyHandler(targetMethod);
-        if (!proxyHandlers.isEmpty()) {
-            proxyHandlers.sort(MethodProxyHandler::compareTo);
+        List<MethodProxyHandler> methodInterceptors = getMethodProxyHandler(targetMethod);
+        if (!methodInterceptors.isEmpty()) {
+            methodInterceptors.sort(MethodProxyHandler::compareTo);
 
+            this.handler.setInterceptors(methodInterceptors);
             var methodName = method.getName();
-            // before
-            Map<MethodProxyHandler, Exception> beforeInvokeExceptions = new HashMap<>();
-            for (MethodProxyHandler proxyHandler : proxyHandlers) {
-                try {
-                    proxyHandler.before();
-                } catch (Exception e) {
-                    Throwable throwable = e.getCause();
-                    if (throwable == null) {
-                        throwable = e;
-                    }
-                    LOGGER.error(proxyHandler.getClass().getName() + " invoke method(" + methodName + ") on before error. \n " + throwable.getMessage(), throwable);
-                    beforeInvokeExceptions.put(proxyHandler, e);
-                }
-            }
-            if (!beforeInvokeExceptions.isEmpty()) {
-                beforeInvokeExceptions.forEach((key, value) -> {
-                    proxyHandlers.remove(key);
-                });
-            }
 
-            if (proxyHandlers.isEmpty()) {
-                return null;
-            }
-
-            // invoke
-            Throwable invokeException = null;
-            Object invoke = null;
-            try {
-                invoke = method.invoke(target, args);
-            } catch (Exception e) {
-                Throwable throwable = e.getCause();
-                if (throwable == null) {
-                    throwable = e;
-                }
-                LOGGER.error(" invoke method(" + methodName + ") error. \n", throwable);
-                invokeException = throwable;
-            }
-
-            Map<MethodProxyHandler, Throwable> catchedExceptions = new HashMap<>();
-
-            if (invokeException != null) {
-                // do catch exception
-                for (MethodProxyHandler proxyHandler : proxyHandlers) {
-                    try {
-                        proxyHandler.whenExceptionCatched(invokeException);
-                    } catch (Throwable e) {
-                        catchedExceptions.put(proxyHandler, e);
-                    }
-                }
-            } else {
-                // after
-                Map<MethodProxyHandler, Throwable> afterInvokeExceptions = new HashMap<>();
-                for (MethodProxyHandler proxyHandler : proxyHandlers) {
-                    try {
-                        proxyHandler.after();
-                    } catch (Exception e) {
-                        Throwable throwable = e.getCause();
-                        if (throwable == null) {
-                            throwable = e;
-                        }
-                        LOGGER.error(proxyHandler.getClass().getName() + " invoke method(" + methodName + ") on after error. \n", throwable);
-                        afterInvokeExceptions.put(proxyHandler, e);
-                    }
-                }
-
-                if (!afterInvokeExceptions.isEmpty()) {
-                    // do catch except
-                    afterInvokeExceptions.forEach((key, value) -> {
-                        try {
-                            key.whenExceptionCatched(value);
-                        } catch (Throwable e) {
-                            catchedExceptions.put(key, e);
-                        }
-                    });
-                }
-            }
-
-            // finally
-            for (MethodProxyHandler proxyHandler : proxyHandlers) {
-                try {
-                    proxyHandler.finallyRun();
-                } catch (Exception e) {
-                    Throwable throwable = e.getCause();
-                    if (throwable == null) {
-                        throwable = e;
-                    }
-                    LOGGER.error(proxyHandler.getClass().getName() + " invoke method(" + methodName + ") on finally error. \n", throwable);
-                }
-            }
-
-            if (invokeException != null) {
-                throw invokeException;
-            }
-
-            if (!catchedExceptions.isEmpty()) {
-                throw catchedExceptions.values().iterator().next();
-            }
-
-            return invoke;
+            return this.handler.proxy(methodName, () -> null, () -> method.invoke(target, args));
         }
 
         // no meothod proxy handler

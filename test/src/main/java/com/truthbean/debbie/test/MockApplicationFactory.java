@@ -9,6 +9,10 @@ import com.truthbean.debbie.task.DebbieTaskStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class MockApplicationFactory extends AbstractApplicationFactory {
     private final Logger logger = LoggerFactory.getLogger(MockApplicationFactory.class);
 
@@ -28,6 +32,7 @@ public class MockApplicationFactory extends AbstractApplicationFactory {
 
             @Override
             public void exit(String... args) {
+                beforeExit(beanFactoryHandler, args);
                 logger.info("application exit...");
             }
         };

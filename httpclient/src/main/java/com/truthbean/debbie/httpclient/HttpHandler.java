@@ -35,7 +35,7 @@ public class HttpHandler {
         return configuration;
     }
 
-    public SSLContext createSSLContext() {
+    public SSLContext createSslContext() {
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, new TrustManager[]{SSL_HANDLER}, new SecureRandom());
@@ -66,7 +66,7 @@ public class HttpHandler {
         }
 
         @Override
-        public boolean verify(String paramString, SSLSession paramSSLSession) {
+        public boolean verify(String paramString, SSLSession paramSslSession) {
             return true;
         }
     }

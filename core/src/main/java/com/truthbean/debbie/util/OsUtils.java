@@ -12,12 +12,15 @@ public class OsUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
     private static final boolean IS_LINUX_OS;
     private static final boolean IS_WIN_OS;
+    private static final boolean IS_MAC_OS;
 
     static {
         String osName = System.getProperty("os.name").toLowerCase();
         LOGGER.debug(" system property:" + System.getProperties().getProperty("os.name"));
+        osName = osName.toLowerCase();
         IS_LINUX_OS = osName.contains("linux");
         IS_WIN_OS = osName.contains("win");
+        IS_MAC_OS = osName.contains("mac");
     }
 
     private OsUtils() {
@@ -29,6 +32,20 @@ public class OsUtils {
 
     public static boolean isWinOs() {
         return IS_WIN_OS;
+    }
+
+    public static boolean isMacOs() {
+        return IS_MAC_OS;
+    }
+
+    public static String getLf() {
+        if (isWinOs()) {
+            return "\r\n";
+        } else if (isLinuxOs()) {
+            return "\n";
+        } else {
+            return "\n";
+        }
     }
 
 }

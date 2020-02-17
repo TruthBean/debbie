@@ -28,7 +28,7 @@ public class EventListenerBeanRegister {
                 Object bean = beanFactoryHandler.factory(beanType);
                 debbieBeanInfo.setBean(bean);
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
-                eventPublisher.addEventListener((Class<? extends DebbieEvent>) actualTypes.get(0), (DebbieEventListener<? extends DebbieEvent>) bean);
+                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), (DebbieEventListener<? extends AbstractDebbieEvent>) bean);
             }
         }
         SingletonBeanRegister register = new SingletonBeanRegister(beanFactoryHandler);

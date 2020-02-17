@@ -18,14 +18,21 @@ dependencyManagement {
         dependency("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
         dependency("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 
+        // logs
         val log4j2Version: String by project
         dependency("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+        val logbackVersion: String by project
+        dependency("ch.qos.logback:logback-classic:$logbackVersion") {
+            exclude("org.slf4j:slf4j-api")
+        }
 
         // jdbc-test
         val mysqlVersion: String by project
         dependency("mysql:mysql-connector-java:$mysqlVersion")
         val mariadbVersion: String by project
         dependency("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
+        val postgresqlVersion: String by project
+        dependency("org.postgresql:postgresql:$postgresqlVersion")
 
         // hikari
         val hikariVersion: String by project
@@ -76,6 +83,7 @@ dependencyManagement {
         dependency("com.truthbean.debbie:debbie-undertow:$projectVersion")
         dependency("com.truthbean.debbie:debbie-netty:$projectVersion")
 
+        dependency("com.truthbean.debbie:debbie-aio:$projectVersion")
         dependency("com.truthbean.debbie:debbie-se:$projectVersion")
         dependency("com.truthbean.debbie:debbie-test:$projectVersion")
 

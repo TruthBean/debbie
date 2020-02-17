@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @since 0.0.1
  * Created on 2019/2/25 22:02.
  */
-public class MvcProperties extends BaseProperties implements DebbieProperties {
+public class MvcProperties extends BaseProperties implements DebbieProperties<MvcConfiguration> {
     //===========================================================================
     /**
      * static resources mapping and location, only support /XX/**=XX, like /static/**=static, or /resources/**=META-INF/resources;/webjar/**=/META-INF/resources/webjars
@@ -55,18 +55,18 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
 
     private static MvcConfiguration configurationCache;
 
-    public static MvcConfiguration toConfiguration() {
+    public static MvcConfiguration toConfiguration(ClassLoader classLoader) {
         if (configurationCache != null) {
             return configurationCache;
         }
-        buildConfiguration();
+        buildConfiguration(classLoader);
         return configurationCache;
     }
 
-    private static void buildConfiguration() {
+    private static void buildConfiguration(ClassLoader classLoader) {
         MvcProperties properties = new MvcProperties();
 
-        MvcConfiguration.Builder builder = MvcConfiguration.builder()
+        MvcConfiguration.Builder builder = MvcConfiguration.builder(classLoader)
                 .staticResourcesMapping(properties.getMapValue(STATIC_RESOURCES_MAPPING_LOCATION, "=", ";"))
                 .dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"))
                 .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
@@ -83,6 +83,7 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
         }
 
         var nothingResponseHandler = "com.truthbean.debbie.mvc.response.provider.NothingResponseHandler";
+        @SuppressWarnings({"unchecked", "rawtypes"})
         var responseContentHandler = (Class<? extends AbstractResponseContentHandler>) properties.getClassValue(DEFAULT_RESPONSE_HANDLER, nothingResponseHandler);
         builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX), responseContentHandler);
 
@@ -125,6 +126,7 @@ public class MvcProperties extends BaseProperties implements DebbieProperties {
 
     @Override
     public MvcConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
-        return toConfiguration();
+        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+        return toConfiguration(classLoader);
     }
 }

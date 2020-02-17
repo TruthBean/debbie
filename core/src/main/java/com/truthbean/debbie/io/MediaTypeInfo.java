@@ -31,7 +31,8 @@ public class MediaTypeInfo {
     }
 
     /**
-     * Returns a media type for {@code string}, or null if {@code string} is not a well-formed media
+     * @param string raw media type
+     * @return a media type for {@code string}, or null if {@code string} is not a well-formed media
      * type.
      */
     public static MediaTypeInfo parse(String string) {
@@ -75,29 +76,41 @@ public class MediaTypeInfo {
     }
 
     /**
-     * Returns the high-level media type, such as "text", "image", "audio", "video", or
+     * @return the high-level media type, such as "text", "image", "audio", "video", or
      * "application".
      */
     public String type() {
         return type;
     }
 
+    public boolean isText() {
+        if ("text".equalsIgnoreCase(type)) {
+            return true;
+        }
+        if ("application".equalsIgnoreCase(type)){
+            return "json".equalsIgnoreCase(subtype) || "xml".equalsIgnoreCase(subtype)
+                    || "javascript".equalsIgnoreCase(subtype) || "xhtml+xml".equals(subtype);
+        }
+        return false;
+    }
+
     /**
-     * Returns a specific media subtype, such as "plain" or "png", "mpeg", "mp4" or "xml".
+     * @return a specific media subtype, such as "plain" or "png", "mpeg", "mp4" or "xml".
      */
     public String subtype() {
         return subtype;
     }
 
     /**
-     * Returns the charset of this media type, or null if this media type doesn't specify a charset.
+     * @return the charset of this media type, or null if this media type doesn't specify a charset.
      */
     public Charset charset() {
         return charset(null);
     }
 
     /**
-     * Returns the charset of this media type, or {@code defaultValue} if either this media type
+     * @param defaultValue default charset
+     * @return the charset of this media type, or {@code defaultValue} if either this media type
      * doesn't specify a charset, of it its charset is unsupported by the current runtime.
      */
     public Charset charset(Charset defaultValue) {
@@ -123,7 +136,7 @@ public class MediaTypeInfo {
     }
 
     public boolean isAny() {
-        return MediaType.ANY.getValue().equals(mediaType);
+        return "*".equals(type);
     }
 
     public boolean isSameMediaType(MediaType mediaType) {

@@ -28,4 +28,9 @@ public class HikariModuleStarter implements DebbieModuleStarter {
     public int getOrder() {
         return 22;
     }
+
+    @Override
+    public void release() {
+
+    }
 }

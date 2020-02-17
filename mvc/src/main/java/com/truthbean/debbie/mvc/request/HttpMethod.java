@@ -1,5 +1,8 @@
 package com.truthbean.debbie.mvc.request;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <a>https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods</a> HTTP defines a set of httpRequest methods to indicate the desired action to be performed for a given resource.
  * Although they can also be nouns, these httpRequest methods are sometimes referred to as HTTP verbs.
@@ -64,6 +67,15 @@ public enum HttpMethod {
     PATCH;
 
 
+    // http method mappings
+    private static final Map<String, HttpMethod> mappings = new HashMap<>(16);
+
+    static {
+        for (HttpMethod httpMethod : values()) {
+            mappings.put(httpMethod.name(), httpMethod);
+        }
+    }
+
     private static String GET_HTTP_1_1 = "GET / HTTP/1.1";
 
     public static HttpMethod of(String name) {
@@ -74,5 +86,31 @@ public enum HttpMethod {
             }
         }
         return ALL;
+    }
+
+    /**
+     * Resolve the given method value to an {@code HttpMethod}.
+     * @param method the method value as a String
+     * @return the corresponding {@code HttpMethod}, or {@code null} if not found
+     * @since 0.0.2
+     */
+    public static HttpMethod resolve(String method) {
+        return (method != null ? mappings.get(method) : null);
+    }
+
+
+    /**
+     * Determine whether this {@code HttpMethod} matches the given
+     * method value.
+     * @param method the method value as a String
+     * @return {@code true} if it matches, {@code false} otherwise
+     * @since 0.0.2
+     */
+    public boolean matches(String method) {
+        return (this == resolve(method));
+    }
+
+    public boolean matches(HttpMethod method) {
+        return (this == method);
     }
 }

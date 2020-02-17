@@ -21,10 +21,10 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
     private static Set<Class<?>> scanExcludeClasses = new HashSet<>();
 
     //===========================================================================
-    private static final String SCAN_CLASSES_KEY = "debbie.core.scan.classes";
-    private static final String SCAN_BASE_PACKAGES_KEY = "debbie.core.scan.base-packages";
-    private static final String SCAN_EXCLUDE_PACKAGES_KEY = "debbie.core.scan.exclude-packages";
-    private static final String SCAN_EXCLUDE_CLASSES_KEY = "debbie.core.scan.exclude-classes";
+    public static final String SCAN_CLASSES_KEY = "debbie.core.scan.classes";
+    public static final String SCAN_BASE_PACKAGES_KEY = "debbie.core.scan.base-packages";
+    public static final String SCAN_EXCLUDE_PACKAGES_KEY = "debbie.core.scan.exclude-packages";
+    public static final String SCAN_EXCLUDE_CLASSES_KEY = "debbie.core.scan.exclude-classes";
     //===========================================================================
 
     static {
@@ -72,12 +72,12 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
 
     private static BeanScanConfiguration configuration;
 
-    public static BeanScanConfiguration toConfiguration() {
+    public static BeanScanConfiguration toConfiguration(ClassLoader classLoader) {
         if (configuration != null) {
             return configuration;
         }
 
-        configuration = new BeanScanConfiguration();
+        configuration = new BeanScanConfiguration(classLoader);
         configuration.addScanBasePackages(scanBasePackages);
         configuration.addScanClasses(scanClasses);
         configuration.addScanExcludeClasses(scanExcludeClasses);
@@ -87,7 +87,8 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
 
     @Override
     public BeanScanConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
-        return toConfiguration();
+        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+        return toConfiguration(classLoader);
     }
 
     @Override

@@ -89,7 +89,7 @@ public class SpiLoader {
         return result;
     }
 
-    public static <P extends DebbieProperties, C extends DebbieConfiguration>
+    public static <P extends DebbieProperties<C>, C extends DebbieConfiguration>
     Map<Class<P>, Class<C>> loadPropertiesClasses(ClassLoader classLoader) {
         Map<Class<P>, Class<C>> result = new HashMap<>();
 
@@ -117,7 +117,7 @@ public class SpiLoader {
     }
 
     @SuppressWarnings("unchecked")
-    private static <P extends DebbieProperties, C extends DebbieConfiguration>
+    private static <P extends DebbieProperties<C>, C extends DebbieConfiguration>
     void resolvePropertiesClass(List<String> strings, Map<Class<P>, Class<C>> map, ClassLoader classLoader) {
         for (String string : strings) {
             String[] split = string.split(" --> ");
@@ -128,7 +128,7 @@ public class SpiLoader {
                 e.printStackTrace();
             }
 
-            Class configClass = null;
+            Class<?> configClass = null;
             if (propertiesClass != null) {
                 try {
                     configClass = classLoader.loadClass(split[1]);
@@ -137,7 +137,7 @@ public class SpiLoader {
                 }
             }
             if (propertiesClass != null && configClass != null) {
-                map.put(propertiesClass, configClass);
+                map.put(propertiesClass, (Class<C>) configClass);
             }
         }
     }

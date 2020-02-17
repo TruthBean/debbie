@@ -2,9 +2,8 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.bean.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.spi.SpiLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public class DebbieConfigurationFactory {
 
     private Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
-    private BeanFactoryHandler factoryHandler;
+    private final BeanFactoryHandler factoryHandler;
 
     public DebbieConfigurationFactory(BeanFactoryHandler beanFactoryHandler) {
         this.factoryHandler = beanFactoryHandler;
@@ -29,26 +28,39 @@ public class DebbieConfigurationFactory {
 
     public void register(Class<? extends DebbieProperties> propertiesClass) {
         DebbieProperties properties = ReflectionHelper.newInstance(propertiesClass);
-        configurations.put(propertiesClass, properties.toConfiguration(factoryHandler));
+        DebbieConfiguration debbieConfiguration = properties.toConfiguration(factoryHandler);
+        configurations.put(propertiesClass, debbieConfiguration);
+        DebbieConfigurationCenter.addConfiguration(debbieConfiguration);
     }
 
-    /*private void loadConfiguration(ClassLoader classLoader, BeanFactoryHandler beanFactoryHandler) {
-        Map<Class<DebbieProperties>, Class<DebbieConfiguration>> classClassMap = SpiLoader.loadPropertiesClasses(classLoader);
-        if (classClassMap != null && !classClassMap.isEmpty()) {
-            classClassMap.forEach((key, value) -> {
-                DebbieProperties properties = ReflectionHelper.newInstance(key);
-                // should not be null
-                assert properties != null;
-                configurations.put(key, properties.toConfiguration(beanFactoryHandler));
-            });
+    @SuppressWarnings("unchecked")
+    public <P extends BaseProperties, C extends BeanScanConfiguration>
+    C getConfigurationBySuperClassOrPropertiesClass(Class<C> superConfigurationClass, Class<P> propertiesClass,
+                                                    BeanFactoryHandler beanFactoryHandler) {
+        if (configurations.isEmpty()) {
+            return null;
         }
-    }*/
+        if (configurations.containsKey(propertiesClass)) {
+            return (C) configurations.get(propertiesClass);
+        }
+        for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
+            var key = classObjectEntry.getKey();
+            var value = classObjectEntry.getValue();
+            if (superConfigurationClass.isAssignableFrom(key)) {
+                LOGGER.debug("configuration class: " + key.getName());
+                return (C) value;
+            }
+            if (superConfigurationClass == value.getClass()) {
+                LOGGER.debug("configuration class: " + key.getName());
+                return (C) value;
+            }
+        }
+        return null;
+    }
 
     @SuppressWarnings("unchecked")
     public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {
-            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);*/
             return null;
         }
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
@@ -58,10 +70,6 @@ public class DebbieConfigurationFactory {
                 LOGGER.debug("configuration class: " + key.getName());
                 return (C) value;
             }
-            /*if (configurationClass.isAssignableFrom(value.getClass())) {
-                LOGGER.debug("configuration class: " + key.getName());
-                return (C) value;
-            }*/
         }
         return null;
     }
@@ -70,17 +78,11 @@ public class DebbieConfigurationFactory {
     public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, BeanFactoryHandler beanFactoryHandler) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
-            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);*/
             return null;
         }
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             DebbieConfiguration value = classObjectEntry.getValue();
-            /*if (configurationClass.isAssignableFrom(value.getClass())) {
-                LOGGER.debug("configuration class: " + key.getName());
-                result.add((C) value);
-            }*/
             if (configurationClass == value.getClass()) {
                 LOGGER.debug("properties class: " + key.getName() + ", configuration class: " + value.getClass());
                 result.add((C) value);
@@ -93,8 +95,6 @@ public class DebbieConfigurationFactory {
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C factory(Class<C> configurationClass, Class<P> propertiesClass, BeanFactoryHandler beanFactoryHandler) {
         if (configurations.isEmpty()) {
-            /*var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-            loadConfiguration(classLoader, beanFactoryHandler);*/
             return null;
         }
         if (configurations.containsKey(propertiesClass)) {
@@ -103,10 +103,6 @@ public class DebbieConfigurationFactory {
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
-            /*if (configurationClass.isAssignableFrom(key)) {
-                LOGGER.debug("configuration class: " + key.getName());
-                return (C) value;
-            }*/
             if (configurationClass == value.getClass()) {
                 LOGGER.debug("configuration class: " + key.getName());
                 return (C) value;

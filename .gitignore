@@ -25,14 +25,25 @@ hs_err_pid*
 # gradle
 .gradle/
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 */build
 */out
+dist
 
 # idea
 .idea/
+!.idea/vcs.xml
+!.idea/encodings.xml
+!.idea/inspectionProfiles/Project_Default.xml
+!.idea/codeStyles/Project.xml
 
 # vscode
 .vscode/
 
 */bin/
+
+# eclipse
+!*/.settings/org.eclipse.buildship.core.prefs
+!*/.settings/org.eclipse.jdt.core.prefs
+#.settings/

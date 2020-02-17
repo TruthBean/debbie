@@ -3,6 +3,10 @@ package com.truthbean.debbie.data.transformer;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
+/**
+ * @author truthbean
+ * @since 0.0.1
+ */
 public class ClassInstanceTransformer implements DataTransformer<Object, String> {
     @Override
     public String transform(Object o) {

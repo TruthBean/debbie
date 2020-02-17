@@ -11,7 +11,7 @@ import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-import com.truthbean.debbie.netty.session.SessionManager;
+import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -23,7 +23,6 @@ import java.util.List;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -106,7 +105,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 RouterResponse routerResponse = new RouterResponse();
                 if (handleFilter(routerRequest, routerResponse, ctx)) {
                     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                    FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+                    HttpResponseStatus status = HttpResponseStatus.valueOf(routerResponse.getStatus().getStatus());
+                    FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
 
                     RouterSession session = routerRequest.getSession();
                     if (session != null) {
@@ -173,7 +173,9 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                     byteBuf = Unpooled.wrappedBuffer((byte[]) resp);
                 }
             }
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, byteBuf);
+
+            HttpResponseStatus status = HttpResponseStatus.valueOf(routerResponse.getStatus().getStatus());
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
 
             RouterSession session = routerRequest.getSession();
             if (session != null) {
@@ -188,6 +190,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
                 ctx.writeAndFlush(response);
             }
+
         }
     }
 
@@ -196,6 +199,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // Close the connection when an exception is raised.
         cause.printStackTrace();
         ctx.close();
+        // clear ThreadLocal
+        routerRequest.remove();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);

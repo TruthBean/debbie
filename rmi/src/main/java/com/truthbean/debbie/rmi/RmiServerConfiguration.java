@@ -2,6 +2,10 @@ package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.properties.DebbieConfiguration;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RmiServerConfiguration implements DebbieConfiguration {
 
     private String rmiBindAddress;

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SqlRepository
-public class SurnameJdbcRepository extends JdbcRepository<Surname, Long> {
+public class SurnameJdbcRepository extends BaseRepository<Surname, Long> {
 
     public SurnameJdbcRepository(@BeanInject TmpRepository tmpRepository) {
         System.out.println(tmpRepository);

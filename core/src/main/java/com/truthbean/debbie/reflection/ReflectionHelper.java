@@ -3,6 +3,7 @@ package com.truthbean.debbie.reflection;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.Constants;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +32,15 @@ public class ReflectionHelper {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> T newInstance(String className) {
         ClassLoader classLoader = ClassLoaderUtils.getDefaultClassLoader();
+        return newInstance(className, classLoader);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(String className, ClassLoader classLoader) {
         try {
             return (T) newInstance(classLoader.loadClass(className));
-            // return (T) Class.forName(className);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -105,6 +109,67 @@ public class ReflectionHelper {
         return null;
     }
 
+    /**
+     *
+     * @param method 要获取方法参数类型的方法
+     * @param declaringClass 方法所在的（子）类
+     * @return 方法参数类型
+     */
+    public static Class<?>[] getMethodActualTypes(Method method, Class<?> declaringClass) {
+        // 类的泛型
+        Map<String, Type> typeParameters = getActualTypeMap(declaringClass);
+
+        Parameter[] parameters = method.getParameters();
+        int parameterCount = parameters.length;
+        if (parameterCount == 0) return new Class<?>[0];
+
+        Type[] genericParameterTypes = method.getGenericParameterTypes();
+
+        Class<?>[] parameterTypes = new Class<?>[parameterCount];
+
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            parameterTypes[i] = parameter.getType();
+        }
+
+        if (typeParameters != null && typeParameters.size() > 0) {
+
+            for (int i = 0; i < parameters.length; i++) {
+                Parameter parameter = parameters[i];
+                // 方法参数的泛型
+                String typeName = parameter.getType().getTypeName();
+                LOGGER.trace("parameter.getType().getTypeName() = " + typeName);
+
+                String typeName1 = parameter.getParameterizedType().getTypeName();
+                LOGGER.trace("parameter.getParameterizedType().getTypeName() = " + typeName);
+
+                String genericParameterTypeName = genericParameterTypes[i].getTypeName();
+                LOGGER.trace("genericParameterTypes: " + genericParameterTypeName);
+
+                for (Map.Entry<String, Type> nameTypeEntry : typeParameters.entrySet()) {
+                    var name = nameTypeEntry.getKey();
+                    var type = nameTypeEntry.getValue();
+
+                    if (genericParameterTypeName.equals(name)) {
+                        parameterTypes[i] = (Class<?>) type;
+                    }
+                }
+            }
+
+        }
+
+        // 判断泛型的名称相同来替换原型
+
+        return parameterTypes;
+    }
+
+    /**
+     * 需要注意 ParameterizedType、GenericArrayType、TypeVariable 这几个的区别
+     * @see "https://www.cnblogs.com/one777/p/7833789.html"
+     *
+     * @param clazz target class
+     * @return actual types
+     */
     public static Type[] getActualTypes(Class<?> clazz) {
         if (clazz == null || clazz == Object.class || clazz == Void.class) {
             return null;
@@ -114,6 +179,7 @@ public class ReflectionHelper {
             return types;
         }
         Type genType = clazz.getGenericSuperclass();
+
         if (genType == Object.class) {
             Type[] interfaces = clazz.getGenericInterfaces();
             for (var type : interfaces) {
@@ -133,6 +199,51 @@ public class ReflectionHelper {
             return null;
         }
         return params;
+    }
+
+    public static Map<String, Type> getActualTypeMap(Class<?> clazz) {
+        if (clazz == null || clazz == Object.class || clazz == Void.class) {
+            return null;
+        }
+        Type[] types = clazz.getTypeParameters();
+        if (types != null && types.length > 0) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Type> nameAndType = new HashMap<>();
+
+        Type genType = clazz.getGenericSuperclass();
+        if (genType == Object.class) {
+            Type[] interfaces = clazz.getGenericInterfaces();
+            Class<?>[] interfaceClasses = clazz.getInterfaces();
+            for (int i = 0; i < interfaces.length; i++) {
+                var type = interfaces[i];
+                var clz = interfaceClasses[i];
+                if (type instanceof ParameterizedType) {
+                    Type[] params = ((ParameterizedType) type).getActualTypeArguments();
+                    TypeVariable<? extends Class<?>>[] typeParameters = clz.getTypeParameters();
+
+                    for (int i1 = 0; i1 < params.length; i1++) {
+                        nameAndType.put(typeParameters[i1].getName(), params[i1]);
+                    }
+
+                }
+            }
+        }
+        if (!(genType instanceof ParameterizedType)) {
+            return getActualTypeMap(clazz.getSuperclass());
+        }
+        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        if (params == null || params.length == 0) {
+            return Collections.emptyMap();
+        }
+
+        TypeVariable<? extends Class<?>>[] typeParameters = clazz.getSuperclass().getTypeParameters();
+
+        for (int i = 0; i < params.length; i++) {
+            nameAndType.put(typeParameters[i].getName(), params[i]);
+        }
+        return nameAndType;
     }
 
     public static <T> T newInstance(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes, Object[] args) {
@@ -172,6 +283,19 @@ public class ReflectionHelper {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error("invoke static method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
+        }
+        return null;
+    }
+
+    public static Object invokeStaticMethod(Method declaredMethod) {
+        try {
+            if (declaredMethod.trySetAccessible()) {
+                declaredMethod.setAccessible(true);
+            }
+            return declaredMethod.invoke(null);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            LOGGER.error("invoke static method(" + declaredMethod + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -227,14 +351,27 @@ public class ReflectionHelper {
     }
 
     public static List<Method> getDeclaredMethods(Class<?> clazz) {
-        List<Method> fields = new ArrayList<>();
+        List<Method> methods = new ArrayList<>();
         for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             Method[] declaredMethods = superClass.getDeclaredMethods();
             if (declaredMethods.length > 0) {
-                fields.addAll(Arrays.asList(declaredMethods));
+                methods.addAll(Arrays.asList(declaredMethods));
             }
         }
-        return fields;
+        Set<Class<?>> interfaces = getInterfaces(clazz);
+        if (!interfaces.isEmpty()) {
+            for (Class<?> anInterface : interfaces) {
+                Method[] declaredMethods = anInterface.getDeclaredMethods();
+                if (declaredMethods.length > 0) {
+                    for (Method declaredMethod : declaredMethods) {
+                        if (declaredMethod.isDefault()) {
+                            methods.add(declaredMethod);
+                        }
+                    }
+                }
+            }
+        }
+        return methods;
     }
 
     public static Set<Method> getInterfaceDefaultMethods(Class<?> clazz) {
@@ -320,8 +457,7 @@ public class ReflectionHelper {
         }
     }
 
-    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Class<?> fieldType, Object arg)
-            throws NoSuchMethodException {
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Class<?> fieldType, Object arg) throws NoSuchMethodException {
         var methodName = "set" + handleFieldName(fieldName);
 
         try {
@@ -429,7 +565,17 @@ public class ReflectionHelper {
 
     @SuppressWarnings("unchecked")
     public static <T> T invokeMethod(Object target, Method method, Object... parameters) {
-        if (method == null) return null;
+        try {
+            return invokeMethod(false, target, method, parameters);
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invokeMethod(boolean throwException, Object target, Method method, Object... parameters) throws Throwable {
+        if (method == null)
+            return null;
         try {
             if (parameters == null || parameters.length == 0) {
                 return (T) method.invoke(target);
@@ -438,18 +584,27 @@ public class ReflectionHelper {
             }
         } catch (IllegalAccessException | InvocationTargetException | ClassCastException e) {
             Throwable cause = e.getCause();
-            LOGGER.error("invokeMethod error. \n", Objects.requireNonNullElse(cause, e));
+            Throwable throwable = Objects.requireNonNullElse(cause, e);
+            LOGGER.error("invokeMethod error. \n", throwable);
+            if (throwException) {
+                throw throwable;
+            }
         }
         return null;
     }
 
     public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?> parameterTypes) {
         Class<?> clazz = target.getClass();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        /*for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             try {
                 return invokeSetMethod(superClass, target, fieldName, arg, parameterTypes);
             } catch (NoSuchMethodException ignored) {
             }
+        }*/
+        try {
+            return invokeSetMethod(clazz, target, fieldName, arg, parameterTypes);
+        } catch (NoSuchMethodException ignored) {
+            LOGGER.error("", ignored);
         }
         return null;
     }
@@ -464,13 +619,11 @@ public class ReflectionHelper {
      * @throws NoSuchMethodException if this field has no getter method
      * @return invoke method result
      */
-    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg,
-                                         Class<?> parameterTypes) throws NoSuchMethodException {
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg, Class<?> parameterTypes) throws NoSuchMethodException {
 
         var methodName = "set" + handleFieldName(fieldName);
         try {
-            var method = targetClass.getMethod(methodName, parameterTypes);
-            return method.invoke(target, arg);
+            return invokeMethod(targetClass, target, methodName, new Class<?>[]{ parameterTypes }, new Object[]{arg});
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
@@ -481,8 +634,7 @@ public class ReflectionHelper {
             methodName = fieldName;
             LOGGER.warn("try to invoke " + methodName + " method");
             try {
-                var method = targetClass.getMethod(methodName, parameterTypes);
-                return method.invoke(target, arg);
+                return invokeMethod(targetClass, target, methodName, new Class<?>[]{ parameterTypes }, new Object[]{arg});
             } catch (NoSuchMethodException ex) {
                 cause = ex.getCause();
                 if (LOGGER.isDebugEnabled()) {
@@ -491,11 +643,11 @@ public class ReflectionHelper {
                     LOGGER.error(methodName + " method not found \n" + ex.getMessage());
                 }
                 throw ex;
-            } catch (IllegalAccessException | InvocationTargetException ex) {
+            } catch (InvocationTargetException ex) {
                 cause = ex.getCause();
                 LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, ex));
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, e));
         }
@@ -504,13 +656,58 @@ public class ReflectionHelper {
 
     public static Object invokeGetMethod(Object target, String fieldName) {
         Class<?> clazz = target.getClass();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        /*for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
             try {
                 return invokeGetMethod(superClass, target, fieldName);
             } catch (NoSuchMethodException ignored) {
             }
+        }*/
+        try {
+            return invokeGetMethod(clazz, target, fieldName);
+        } catch (NoSuchMethodException ignored) {
+            LOGGER.error("", ignored);
         }
         return null;
+    }
+
+    private static Object invokeMethod(Class<?> targetClass, Object target, String methodName,
+                                       Class<?>[] parameterTypes, Object[] parameters)
+            throws NoSuchMethodException, InvocationTargetException {
+        Method method = null;
+        try {
+            if (parameterTypes == null || parameterTypes.length == 0) {
+                method = targetClass.getDeclaredMethod(methodName);
+            } else
+                method = targetClass.getDeclaredMethod(methodName, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            Class<?> superclass = targetClass.getSuperclass();
+            if (superclass != Object.class) {
+                return invokeMethod(superclass, target, methodName, parameterTypes, parameters);
+            }
+            throw new NoSuchMethodException("No " + methodName + " method");
+        }
+        if (method != null) {
+            try {
+                if (parameterTypes == null || parameterTypes.length == 0) {
+                    return method.invoke(target);
+                } else {
+                    return method.invoke(target, parameters);
+                }
+            } catch (IllegalAccessException e) {
+                method.setAccessible(true);
+                try {
+                    if (parameterTypes == null || parameterTypes.length == 0) {
+                        return method.invoke(target);
+                    } else {
+                        return method.invoke(target, parameters);
+                    }
+                } catch (IllegalAccessException ex) {
+                    LOGGER.error(methodName + " invoke error \n" + ex.getMessage());
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        throw new NoSuchMethodException("No " + methodName + " method");
     }
 
     /**
@@ -525,8 +722,7 @@ public class ReflectionHelper {
 
         String methodName = "get" + handleFieldName(fieldName);
         try {
-            Method method = targetClass.getDeclaredMethod(methodName);
-            return method.invoke(target);
+            return invokeMethod(targetClass, target, methodName, null, null);
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
@@ -537,8 +733,7 @@ public class ReflectionHelper {
             methodName = "is" + handleFieldName(fieldName);
             LOGGER.warn("try to invoke " + methodName + " method ");
             try {
-                Method method = targetClass.getDeclaredMethod(methodName);
-                return method.invoke(target);
+                return invokeMethod(targetClass, target, methodName, null, null);
             } catch (NoSuchMethodException ex) {
                 cause = ex.getCause();
                 if (LOGGER.isDebugEnabled()) {
@@ -547,7 +742,7 @@ public class ReflectionHelper {
                     LOGGER.error(fieldName + " `is` method not found \n" + ex.getMessage());
                 }
                 throw ex;
-            } catch (IllegalAccessException | InvocationTargetException ex) {
+            } catch (InvocationTargetException ex) {
                 cause = ex.getCause();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.error(fieldName + " `is` method not found \n", Objects.requireNonNullElse(cause, ex));
@@ -555,7 +750,7 @@ public class ReflectionHelper {
                     LOGGER.error(methodName + " invoke error \n" + ex.getMessage());
                 }
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error(methodName + " invoke error \n", Objects.requireNonNullElse(cause, e));
         }
@@ -578,13 +773,17 @@ public class ReflectionHelper {
 
     public static Set<Class<?>> getInterfaces(Class<?> clazz) {
         Set<Class<?>> result = new HashSet<>();
-        getInterfaces(result, clazz);
+
+        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+            getInterfaces(result, superClass);
+        }
+
         return result;
     }
 
     private static void getInterfaces(Set<Class<?>> result, Class<?> clazz) {
         Class<?>[] interfaces = clazz.getInterfaces();
-        if (interfaces != null) {
+        if (interfaces != null && interfaces.length > 0) {
             for (Class<?> anInterface : interfaces) {
                 getInterfaces(result, anInterface);
                 result.add(anInterface);
@@ -613,10 +812,56 @@ public class ReflectionHelper {
     /**
      * 从包package中获取所有的Class
      *
-     * @param packageName package name
+     * @param resources resources
+     * @param classLoader class loader
      * @return class list
      */
-    public static List<Class<?>> getAllClassByPackageName(String packageName) {
+    public static List<Class<?>> getAllClassByResources(String resources, ClassLoader classLoader) {
+
+        // 第一个class类的集合
+        List<Class<?>> classes = new ArrayList<>();
+        // 是否循环迭代
+        var recursive = true;
+
+        if (classLoader == null)
+            classLoader = ClassLoaderUtils.getClassLoader(ReflectionHelper.class);
+
+        // 定义一个枚举的集合 并进行循环来处理这个目录下的things
+        Enumeration<URL> dirs;
+        try {
+            dirs = classLoader.getResources(resources);
+            // 循环迭代下去
+            while (dirs.hasMoreElements()) {
+                // 获取下一个元素
+                var url = dirs.nextElement();
+                // 得到协议的名称
+                var protocol = url.getProtocol();
+                // 如果是以文件的形式保存在服务器上
+                if ("file".equals(protocol)) {
+                    // 获取包的物理路径
+                    var filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
+                    // 以文件的方式扫描整个包下的文件 并添加到集合中
+                    findAndAddClassesInPackageByFile(classLoader, "", filePath, recursive, classes);
+                } else if ("jar".equals(protocol)) {
+                    var tmp = StreamHelper.getClassFromJarByPackageName("", url, "", classLoader);
+                    classes.addAll(tmp);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+
+        return classes;
+    }
+
+    /**
+     * 从包package中获取所有的Class
+     *
+     * @param packageName package name
+     * @param classLoader class loader
+     * @return class list
+     */
+    public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader) {
 
         // 第一个class类的集合
         List<Class<?>> classes = new ArrayList<>();
@@ -625,7 +870,8 @@ public class ReflectionHelper {
         // 获取包的名字 并进行替换
         var packageDirName = packageName.replace('.', '/');
 
-        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
+        if (classLoader == null)
+            classLoader = ClassLoaderUtils.getClassLoader(ReflectionHelper.class);
 
         // 定义一个枚举的集合 并进行循环来处理这个目录下的things
         Enumeration<URL> dirs;
@@ -658,10 +904,10 @@ public class ReflectionHelper {
     /**
      * 以文件的形式来获取包下的所有Class
      *
-     * @param packageName
-     * @param packagePath
-     * @param recursive
-     * @param classes
+     * @param packageName 包名
+     * @param packagePath 包路径
+     * @param recursive 是否递归
+     * @param classes 结果
      */
     private static void findAndAddClassesInPackageByFile(ClassLoader classLoader, String packageName, String packagePath, final boolean recursive, List<Class<?>> classes) {
         // 获取此包的目录 建立一个File
@@ -672,22 +918,33 @@ public class ReflectionHelper {
         }
         // 如果存在 就获取包下的所有文件 包括目录
         // 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
-        var dirfiles = dir.listFiles(file -> (recursive && file.isDirectory()) || (file.getName().endsWith(".class")));
+        var dirFiles = dir.listFiles(file -> (recursive && file.isDirectory()) || (file.getName().endsWith(".class")));
         // 循环所有文件
-        assert dirfiles != null;
+        assert dirFiles != null;
 
-        for (var file : dirfiles) {
+        for (var file : dirFiles) {
             // 如果是目录 则继续扫描
             if (file.isDirectory()) {
-                findAndAddClassesInPackageByFile(classLoader, packageName + "." + file.getName(), file.getAbsolutePath(), recursive, classes);
+                String newPackageName = packageName + "." + file.getName();
+                if (StringUtils.isBlank(packageName)) {
+                    newPackageName = file.getName();
+                }
+                findAndAddClassesInPackageByFile(classLoader, newPackageName, file.getAbsolutePath(), recursive, classes);
             } else {
-                // 如果是java类文件 去掉后面的.class 只留下类名
-                var className = file.getName().substring(0, file.getName().length() - 6);
-                try {
-                    // 添加到集合中去
-                    classes.add(classLoader.loadClass(packageName + '.' + className));
-                } catch (ClassNotFoundException e) {
-                    LOGGER.error("", e);
+                String fileName = file.getName();
+                if (fileName.endsWith(".class")) {
+                    // 如果是java类文件 去掉后面的.class 只留下类名
+                    var className = fileName.substring(0, file.getName().length() - 6);
+                    try {
+                        String newPackageName = packageName + "." + className;
+                        if (StringUtils.isBlank(packageName)) {
+                            newPackageName = packageName + '.' + className;
+                        }
+                        // 添加到集合中去
+                        classes.add(classLoader.loadClass(newPackageName));
+                    } catch (ClassNotFoundException e) {
+                        LOGGER.error("", e);
+                    }
                 }
             }
         }

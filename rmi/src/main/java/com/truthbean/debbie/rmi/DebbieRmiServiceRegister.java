@@ -8,6 +8,10 @@ import java.lang.annotation.Annotation;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class DebbieRmiServiceRegister implements AnnotationRegister<DebbieRmiService> {
     @Override
     public void register() {

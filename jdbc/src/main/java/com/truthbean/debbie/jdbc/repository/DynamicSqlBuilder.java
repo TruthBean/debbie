@@ -362,12 +362,22 @@ public class DynamicSqlBuilder {
         return this;
     }
 
+    public <T> DynamicSqlBuilder in(String column, int inValueSize) {
+        List<String> s = new ArrayList<>();
+        for (int i = 0; i < inValueSize; i++) {
+            s.add("?");
+        }
+
+        dynamicSql.append(column).append(" IN ( ").append(StringUtils.joining(s)).append(" )");
+        return this;
+    }
+
     public DynamicSqlBuilder extra(Object extra) {
         dynamicSql.append(extra);
         return this;
     }
 
-    public DynamicSqlBuilder foreach(String open, String close, Collection collection, String separator) {
+    public DynamicSqlBuilder foreach(String open, String close, Collection<?> collection, String separator) {
         if (collection != null && !collection.isEmpty()) {
             dynamicSql.append(open);
             dynamicSql.append(StringUtils.joining(collection, separator));

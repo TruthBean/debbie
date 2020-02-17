@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author truthbean
+ * @since 0.0.1
+ */
 public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy> {
 
     private String methodName;
@@ -40,7 +44,7 @@ public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy
     }
 
     @Override
-    public void whenExceptionCatched(Throwable e) throws Throwable {
+    public void catchException(Throwable e) throws Throwable {
         LOGGER.debug("runing when method(" + methodName + ") invoke throw exception and cached ..", e);
         if (e != null) {
             throw e;

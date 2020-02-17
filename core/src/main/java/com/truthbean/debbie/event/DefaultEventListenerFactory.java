@@ -2,6 +2,10 @@ package com.truthbean.debbie.event;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class DefaultEventListenerFactory implements EventListenerFactory {
 
     private int order = Integer.MAX_VALUE;
@@ -16,6 +20,7 @@ public class DefaultEventListenerFactory implements EventListenerFactory {
     }
 
 
+    @Override
     public boolean supportsMethod(Method method) {
         return true;
     }

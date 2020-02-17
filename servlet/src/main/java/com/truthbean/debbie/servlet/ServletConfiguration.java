@@ -8,4 +8,11 @@ import com.truthbean.debbie.mvc.MvcConfiguration;
  * Created on 2019/3/10 18:56.
  */
 public class ServletConfiguration extends MvcConfiguration {
+    public ServletConfiguration(ClassLoader classLoader) {
+        super(classLoader);
+    }
+
+    public ServletConfiguration(MvcConfiguration configuration, ClassLoader classLoader) {
+        super(configuration, classLoader);
+    }
 }

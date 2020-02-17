@@ -39,23 +39,12 @@ public class Sort implements Streamable<Sort.Order> {
      * Creates a new {@link Sort} instance.
      *
      * @param orders must not be {@literal null} or contain {@literal null}.
-     * @deprecated see {@link Sort#by(List)}
      */
     private Sort(List<Order> orders) {
 
         Assert.notNull(orders, "Orders must not be null!");
 
         this.orders = Collections.unmodifiableList(orders);
-    }
-
-    /**
-     * Creates a new {@link Sort} instance. Order defaults to {@value Direction#ASC}.
-     *
-     * @param properties must not be {@literal null} or contain {@literal null} or empty strings
-     * @deprecated use {@link Sort#by(String...)}
-     */
-    private Sort(String... properties) {
-        this(DEFAULT_DIRECTION, properties);
     }
 
     /**
@@ -91,20 +80,20 @@ public class Sort implements Streamable<Sort.Order> {
      * Creates a new {@link Sort} for the given properties.
      *
      * @param properties must not be {@literal null}.
-     * @return
+     * @return Sort
      */
     public static Sort by(String... properties) {
 
         Assert.notNull(properties, "Properties must not be null!");
 
-        return properties.length == 0 ? Sort.unsorted() : new Sort(properties);
+        return properties.length == 0 ? Sort.unsorted() : new Sort(DEFAULT_DIRECTION, properties);
     }
 
     /**
      * Creates a new {@link Sort} for the given {@link Order}s.
      *
      * @param orders must not be {@literal null}.
-     * @return
+     * @return Sort
      */
     public static Sort by(List<Order> orders) {
 
@@ -117,7 +106,7 @@ public class Sort implements Streamable<Sort.Order> {
      * Creates a new {@link Sort} for the given {@link Order}s.
      *
      * @param orders must not be {@literal null}.
-     * @return
+     * @return Sort
      */
     public static Sort by(Order... orders) {
 
@@ -127,11 +116,9 @@ public class Sort implements Streamable<Sort.Order> {
     }
 
     /**
-     * Creates a new {@link Sort} for the given {@link Order}s.
-     *
      * @param direction  must not be {@literal null}.
      * @param properties must not be {@literal null}.
-     * @return
+     * @return a new {@link Sort} for the given {@link Order}s.
      */
     public static Sort by(Direction direction, String... properties) {
 
@@ -139,33 +126,25 @@ public class Sort implements Streamable<Sort.Order> {
         Assert.notNull(properties, "Properties must not be null!");
         Assert.isTrue(properties.length > 0, "At least one property must be given!");
 
-        return Sort.by(Arrays.stream(properties)//
-                .map(it -> new Order(direction, it))//
-                .collect(Collectors.toList()));
+        return Sort.by(Arrays.stream(properties).map(it -> new Order(direction, it)).collect(Collectors.toList()));
     }
 
     /**
-     * Returns a {@link Sort} instances representing no sorting setup at all.
-     *
-     * @return
+     * @return a {@link Sort} instances representing no sorting setup at all.
      */
     public static Sort unsorted() {
         return UNSORTED;
     }
 
     /**
-     * Returns a new {@link Sort} with the current setup but descending order direction.
-     *
-     * @return
+     * @return a new {@link Sort} with the current setup but descending order direction.
      */
     public Sort descending() {
         return withDirection(Direction.DESC);
     }
 
     /**
-     * Returns a new {@link Sort} with the current setup but ascending order direction.
-     *
-     * @return
+     * @return a new {@link Sort} with the current setup but ascending order direction.
      */
     public Sort ascending() {
         return withDirection(Direction.ASC);
@@ -180,11 +159,10 @@ public class Sort implements Streamable<Sort.Order> {
     }
 
     /**
-     * Returns a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
-     * ones.
-     *
      * @param sort must not be {@literal null}.
-     * @return
+     *
+     * @return a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
+     * ones.
      */
     public Sort and(Sort sort) {
 
@@ -200,10 +178,9 @@ public class Sort implements Streamable<Sort.Order> {
     }
 
     /**
-     * Returns the order registered for the given property.
      *
-     * @param property
-     * @return
+     * @param property the given property
+     * @return the order registered for the given property.
      */
     public Order getOrderFor(String property) {
 
@@ -220,6 +197,7 @@ public class Sort implements Streamable<Sort.Order> {
      * (non-Javadoc)
      * @see java.lang.Iterable#iterator()
      */
+    @Override
     public Iterator<Order> iterator() {
         return this.orders.iterator();
     }
@@ -293,7 +271,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns whether the direction is ascending.
          *
-         * @return
+         * @return is ascending
          * @since 1.13
          */
         public boolean isAscending() {
@@ -303,7 +281,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns whether the direction is descending.
          *
-         * @return
+         * @return is descending
          * @since 1.13
          */
         public boolean isDescending() {
@@ -313,8 +291,8 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns the {@link Direction} enum for the given {@link String} value.
          *
-         * @param value
-         * @return
+         * @param value string value
+         * @return Direction
          * @throws IllegalArgumentException in case the given value cannot be parsed into an enum value.
          */
         public static Direction fromString(String value) {
@@ -331,8 +309,8 @@ public class Sort implements Streamable<Sort.Order> {
          * Returns the {@link Direction} enum for the given {@link String} or null if it cannot be parsed into an enum
          * value.
          *
-         * @param value
-         * @return
+         * @param value string value
+         * @return Optional&lt;Direction&gt;
          */
         public static Optional<Direction> fromOptionalString(String value) {
 
@@ -422,10 +400,12 @@ public class Sort implements Streamable<Sort.Order> {
         }
 
         /**
-         * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
-         * {@link Sort#DEFAULT_DIRECTION}.
          *
          * @param property must not be {@literal null} or empty.
+         *
+         * @return a new {@link Order} instance. Takes a single property. Direction defaults to
+         * {@link Sort#DEFAULT_DIRECTION}.
+         *
          * @since 2.0
          */
         public static Order by(String property) {
@@ -433,10 +413,12 @@ public class Sort implements Streamable<Sort.Order> {
         }
 
         /**
-         * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
-         * NullHandling {@link NullHandling#NATIVE}.
          *
          * @param property must not be {@literal null} or empty.
+         *
+         * @return a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
+         * NullHandling {@link NullHandling#NATIVE}.
+         *
          * @since 2.0
          */
         public static Order asc(String property) {
@@ -444,10 +426,12 @@ public class Sort implements Streamable<Sort.Order> {
         }
 
         /**
-         * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
-         * NullHandling {@link NullHandling#NATIVE}.
          *
          * @param property must not be {@literal null} or empty.
+         *
+         * @return a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
+         * NullHandling {@link NullHandling#NATIVE}.
+         *
          * @since 2.0
          */
         public static Order desc(String property) {
@@ -479,7 +463,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns the order the property shall be sorted for.
          *
-         * @return
+         * @return Direction
          */
         public Direction getDirection() {
             return direction;
@@ -488,7 +472,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns the property to order for.
          *
-         * @return
+         * @return String
          */
         public String getProperty() {
             return property;
@@ -497,7 +481,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns whether sorting for this property shall be ascending.
          *
-         * @return
+         * @return boolean
          */
         public boolean isAscending() {
             return this.direction.isAscending();
@@ -506,7 +490,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns whether sorting for this property shall be descending.
          *
-         * @return
+         * @return boolean
          * @since 1.13
          */
         public boolean isDescending() {
@@ -516,7 +500,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns whether or not the sort will be case sensitive.
          *
-         * @return
+         * @return boolean
          */
         public boolean isIgnoreCase() {
             return ignoreCase;
@@ -525,8 +509,8 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a new {@link Order} with the given {@link Direction}.
          *
-         * @param direction
-         * @return
+         * @param direction Direction
+         * @return Order
          */
         public Order with(Direction direction) {
             return new Order(direction, this.property, this.ignoreCase, this.nullHandling);
@@ -536,7 +520,7 @@ public class Sort implements Streamable<Sort.Order> {
          * Returns a new {@link Order}
          *
          * @param property must not be {@literal null} or empty.
-         * @return
+         * @return Order
          * @since 1.13
          */
         public Order withProperty(String property) {
@@ -546,8 +530,8 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a new {@link Sort} instance for the given properties.
          *
-         * @param properties
-         * @return
+         * @param properties properties
+         * @return Sort
          */
         public Sort withProperties(String... properties) {
             return Sort.by(this.direction, properties);
@@ -556,7 +540,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a new {@link Order} with case insensitive sorting enabled.
          *
-         * @return
+         * @return Order
          */
         public Order ignoreCase() {
             return new Order(direction, property, true, nullHandling);
@@ -566,7 +550,7 @@ public class Sort implements Streamable<Sort.Order> {
          * Returns a {@link Order} with the given {@link NullHandling}.
          *
          * @param nullHandling can be {@literal null}.
-         * @return
+         * @return Order
          * @since 1.8
          */
         public Order with(NullHandling nullHandling) {
@@ -576,7 +560,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint.
          *
-         * @return
+         * @return Order
          * @since 1.8
          */
         public Order nullsFirst() {
@@ -586,7 +570,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a {@link Order} with {@link NullHandling#NULLS_LAST} as null handling hint.
          *
-         * @return
+         * @return Order
          * @since 1.7
          */
         public Order nullsLast() {
@@ -596,7 +580,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns a {@link Order} with {@link NullHandling#NATIVE} as null handling hint.
          *
-         * @return
+         * @return Order
          * @since 1.7
          */
         public Order nullsNative() {
@@ -606,7 +590,7 @@ public class Sort implements Streamable<Sort.Order> {
         /**
          * Returns the used {@link NullHandling} hint, which can but may not be respected by the used datastore.
          *
-         * @return
+         * @return NullHandling
          * @since 1.7
          */
         public NullHandling getNullHandling() {

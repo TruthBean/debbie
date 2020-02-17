@@ -10,6 +10,7 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevelTransformer;
+import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.jdbc.transaction.TransactionalMethodProxyHandler;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
@@ -45,5 +46,10 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     @Override
     public int getOrder() {
         return 10;
+    }
+
+    @Override
+    public void release() {
+        TransactionManager.clear();
     }
 }

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.proxy.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ public class BeanInvoker<Bean> {
     private final Class<Bean> beanClass;
     private static final Map<String, Method> BEAN_METHODS = new HashMap<>();
 
+    private Method initMethod;
     private Bean bean;
     private DebbieBeanInfo<Bean> beanInfo;
 
@@ -24,21 +26,59 @@ public class BeanInvoker<Bean> {
         this.beanClass = beanClass;
         var methods = BeanRegisterCenter.getBeanMethods(beanClass);
         this.beanInfo = BeanRegisterCenter.getRegisterRawBean(beanClass);
-        methods.forEach(method -> BEAN_METHODS.put(method.getName(), method));
-        createBean(beanFactoryHandler);
+
+        setMethods(methods);
+        if (initMethod != null) {
+            this.bean = beanFactoryHandler.getBeanByInitMethod(initMethod, beanFactoryHandler);
+        }
+
+        if (this.bean == null) {
+            this.bean = beanFactoryHandler.getBeanByFactory(beanClass, null);
+            if (this.bean == null) {
+                createBean(beanFactoryHandler);
+            }
+        }
     }
 
     public BeanInvoker(DebbieBeanInfo<Bean> beanInfo, BeanFactoryHandler beanFactoryHandler) {
         this.beanClass = beanInfo.getBeanClass();
         var methods = beanInfo.getMethods();
         this.beanInfo = beanInfo;
-        methods.forEach(method -> BEAN_METHODS.put(method.getName(), method));
+        setMethods(methods);
+        if (initMethod != null) {
+            this.bean = beanFactoryHandler.getBeanByInitMethod(initMethod, beanFactoryHandler);
+        }
 
-        resolveConstructorDependent(beanFactoryHandler);
-        getFieldsDependent(beanFactoryHandler);
+        if (bean == null)
+            this.bean = beanFactoryHandler.getBeanByFactory(beanInfo);
     }
 
-    private void resolveConstructorDependent(BeanFactoryHandler beanFactoryHandler) {
+    private void setMethods(List<Method> methods) {
+        methods.forEach(method -> {
+            BEAN_METHODS.put(method.getName(), method);
+            if (method.getAnnotation(BeanInit.class) != null) {
+                initMethod = method;
+            }
+        });
+    }
+
+    public static <T> BeanInvoker<T> create(DebbieBeanInfo<T> beanInfo, BeanFactoryHandler factoryHandler,
+                                            Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
+        BeanInvoker<T> invoker = new BeanInvoker<>(beanInfo, factoryHandler);
+        invoker.resolveConstructor(factoryHandler, singletonBeanInvokerMap);
+        return invoker;
+    }
+
+    public void resolveConstructor(BeanFactoryHandler factoryHandler,
+                                   Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
+        if (this.bean == null) {
+            this.resolveConstructorDependent(factoryHandler, singletonBeanInvokerMap);
+        }
+        this.getFieldsDependent(factoryHandler);
+    }
+
+    private void resolveConstructorDependent(BeanFactoryHandler beanFactoryHandler,
+                                             Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = beanInfo.getConstructors();
@@ -46,7 +86,7 @@ public class BeanInvoker<Bean> {
 
             // if has no Non params constructor
             // find a constructor its all param has BeanInject or Inject annotation
-            if (this.bean == null) {
+            if (this.bean == null && constructors.length > 0) {
                 Constructor<Bean> constructor = constructors[0];
                 int parameterCount = constructor.getParameterCount();
                 if (parameterCount > 0) {
@@ -68,14 +108,21 @@ public class BeanInvoker<Bean> {
                             } else {
                                 names[i] = name;
                             }
+                            // todo
                             DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, parameter.getType(), annotation.require());
                             if (beanInfo == null && annotation.require()) {
                                 throw new NoBeanException("no bean " + names[i] + " found .");
                             } else if (beanInfo != null) {
-                                constructorBeanDependent.put(i, beanInfo);
-                                var bean = beanInfo.getBean();
-                                if (bean != null) {
-                                    values[i] = bean;
+                                boolean flag = singletonBeanInvokerMap.containsKey(beanInfo);
+                                if (flag && beanInfo.getBeanType() == BeanType.SINGLETON) {
+                                    BeanInvoker<?> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
+                                    constructorBeanDependent.put(i, beanInvoker.getBeanInfo());
+                                } else {
+                                    constructorBeanDependent.put(i, beanInfo);
+                                    var bean = beanFactoryHandler.factory(beanInfo);
+                                    if (bean != null) {
+                                        values[i] = bean;
+                                    }
                                 }
                             }
                         }
@@ -98,12 +145,7 @@ public class BeanInvoker<Bean> {
             }
         } catch (Exception e) {
             LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
-            Throwable cause = e.getCause();
-            var errorMessage = e.getMessage();
-            if (cause != null) {
-                errorMessage = cause.getMessage();
-            }
-            throw new BeanCreatedException(errorMessage);
+            throwException(e);
         }
     }
 
@@ -132,7 +174,12 @@ public class BeanInvoker<Bean> {
                             } else {
                                 var bean = beanInfo.getBean();
                                 if (bean != null) {
-                                    ReflectionHelper.setField(this.bean, field, bean);
+                                    if (fieldType.isInstance(bean)) {
+                                        ReflectionHelper.setField(this.bean, field, bean);
+                                    } else {
+                                        bean = JdkDynamicProxy.getRealValue(bean);
+                                        ReflectionHelper.setField(this.bean, field, bean);
+                                    }
                                 } else {
                                     map.put(field, beanInfo);
                                 }
@@ -146,12 +193,7 @@ public class BeanInvoker<Bean> {
                 }
             }
         } catch (Exception e) {
-            Throwable cause = e.getCause();
-            var errorMessage = e.getMessage();
-            if (cause != null) {
-                errorMessage = cause.getMessage();
-            }
-            throw new BeanCreatedException(errorMessage);
+            throwException(e);
         }
     }
 
@@ -168,7 +210,7 @@ public class BeanInvoker<Bean> {
             BeanInject annotation = parameter.getAnnotation(BeanInject.class);
             if (annotation != null) {
                 var bean = beanDependent.get(i);
-                LOGGER.debug("resolve bean(" + beanClass.getName() + ") constructor dependent " + bean.getServiceName());
+                LOGGER.trace("resolve bean(" + beanClass.getName() + ") constructor dependent " + bean.getServiceName());
                 if (annotation.require() && !bean.isHasVirtualValue() && bean.getBean() == null) {
                     throw new NoBeanException("bean " + bean.getServiceName() + " value is null .");
                 }
@@ -179,8 +221,9 @@ public class BeanInvoker<Bean> {
         }
         try {
             this.bean = constructor.newInstance(values);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
             LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
+            LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
         }
     }
 
@@ -219,12 +262,7 @@ public class BeanInvoker<Bean> {
                 }
             }
         } catch (Exception e) {
-            Throwable cause = e.getCause();
-            var errorMessage = e.getMessage();
-            if (cause != null) {
-                errorMessage = cause.getMessage();
-            }
-            throw new BeanCreatedException(errorMessage);
+            throwException(e);
         }
     }
 
@@ -240,12 +278,7 @@ public class BeanInvoker<Bean> {
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.error("new instance by constructor error \n");
-            Throwable cause = e.getCause();
-            var errorMessage = e.getMessage();
-            if (cause != null) {
-                errorMessage = cause.getMessage();
-            }
-            throw new BeanCreatedException(errorMessage);
+            throwException(e);
         }
     }
 
@@ -285,13 +318,20 @@ public class BeanInvoker<Bean> {
 
         } catch (Exception e) {
             LOGGER.error("new instance by constructor error \n");
-            Throwable cause = e.getCause();
-            var errorMessage = e.getMessage();
-            if (cause != null) {
-                errorMessage = cause.getMessage();
-            }
-            throw new BeanCreatedException(errorMessage);
+            throwException(e);
         }
+    }
+
+    private void throwException(Exception e) {
+        LOGGER.trace("", e);
+        Throwable cause = e.getCause();
+        var errorMessage = e.getMessage();
+        if (cause != null) {
+            errorMessage = cause.getMessage();
+        }
+        if (errorMessage != null)
+            throw new BeanCreatedException(errorMessage);
+        else throw new BeanCreatedException(Objects.requireNonNullElse(cause, e));
     }
 
     public Bean getBean() {
@@ -309,25 +349,12 @@ public class BeanInvoker<Bean> {
 
     public Object invokeMethod(Class<? extends Annotation> methodAnnotation, String methodName, Object[] parameters) {
         var beanMethod = BEAN_METHODS.get(methodName);
+        // TODO: 2019-11-30  methodAnnotation ???
         return invokeMethod(beanMethod, parameters);
     }
 
     public Object invokeMethod(Method routerMethod, Object[] parameters) {
-        return invokeMethod(bean, routerMethod, parameters);
-    }
-
-    public static <Bean> Object invokeMethod(Bean bean, Method routerMethod, Object[] parameters) {
-        try {
-            if (parameters == null || parameters.length == 0) {
-                return routerMethod.invoke(bean);
-            } else {
-                return routerMethod.invoke(bean, parameters);
-            }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            LOGGER.error("invokeMethod error \n", Objects.requireNonNullElse(cause, e));
-        }
-        return null;
+        return ReflectionHelper.invokeMethod(bean, routerMethod, parameters);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanInvoker.class);

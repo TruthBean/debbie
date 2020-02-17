@@ -31,8 +31,9 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
     /**
      * Returns a {@link Streamable} with the given elements.
-     *
+     * @param <T> element type
      * @param t the elements to return.
+     * @return Streamable
      */
     @SafeVarargs
     static <T> Streamable<T> of(T... t) {
@@ -41,8 +42,9 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
     /**
      * Returns a {@link Streamable} for the given {@link Iterable}.
-     *
+     * @param <T> element type
      * @param iterable must not be {@literal null}.
+     * @return Streamable
      */
     static <T> Streamable<T> of(Iterable<T> iterable) {
         Assert.notNull(iterable, "Iterable must not be null!");
@@ -63,11 +65,11 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
     }
 
     /**
-     * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
-     *
+     * @param <R> the element type of the returns Streamable
      * @param mapper must not be {@literal null}.
-     * @return
      * @see Stream#map(Function)
+     *
+     * @return Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
      */
     default <R> Streamable<R> map(Function<? super T, ? extends R> mapper) {
         Assert.notNull(mapper, "Mapping function must not be null!");
@@ -76,11 +78,12 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
     }
 
     /**
-     * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
      *
+     * @param <R> the element type of the returns Streamable
      * @param mapper must not be {@literal null}.
-     * @return
      * @see Stream#flatMap(Function)
+     *
+     * @return a new {@link Streamable} that will apply the given {@link Function} to the current one.
      */
     default <R> Streamable<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
         Assert.notNull(mapper, "Mapping function must not be null!");
@@ -92,7 +95,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
      * Returns a new {@link Streamable} that will apply the given filter {@link Predicate} to the current one.
      *
      * @param predicate must not be {@literal null}.
-     * @return
+     * @return Streamable
      * @see Stream#filter(Predicate)
      */
     default Streamable<T> filter(Predicate<? super T> predicate) {
@@ -104,7 +107,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
     /**
      * Returns whether the current {@link Streamable} is empty.
      *
-     * @return
+     * @return boolean
      */
     default boolean isEmpty() {
         return !iterator().hasNext();
@@ -114,7 +117,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
      * Creates a new {@link Streamable} from the current one and the given {@link Stream} concatenated.
      *
      * @param stream must not be {@literal null}.
-     * @return
+     * @return Streamable
      * @since 2.1
      */
     default Streamable<T> and(Supplier<? extends Stream<? extends T>> stream) {
@@ -128,6 +131,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
      * (non-Javadoc)
      * @see java.util.function.Supplier#get()
      */
+    @Override
     default Stream<T> get() {
         return stream();
     }

@@ -1,3 +1,3 @@
 dependencies {
-    compile(project(":debbie-mvc"))
+    api(project(":debbie-mvc"))
 }

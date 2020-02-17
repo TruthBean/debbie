@@ -43,4 +43,9 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     public int getOrder() {
         return 12;
     }
+
+    @Override
+    public void release() {
+
+    }
 }

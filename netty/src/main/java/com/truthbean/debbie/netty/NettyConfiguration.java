@@ -8,4 +8,7 @@ import com.truthbean.debbie.server.AbstractServerConfiguration;
  * Created on 2019/4/30 22:37.
  */
 public class NettyConfiguration extends AbstractServerConfiguration {
+    protected NettyConfiguration(ClassLoader classLoader) {
+        super(classLoader);
+    }
 }

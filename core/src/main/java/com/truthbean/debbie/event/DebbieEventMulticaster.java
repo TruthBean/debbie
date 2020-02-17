@@ -1,11 +1,15 @@
 package com.truthbean.debbie.event;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public interface DebbieEventMulticaster {
     /**
      * Add a listener to be notified of all events.
      * @param listener the listener to add
      */
-    void addEventListener(DebbieEventListener<? extends DebbieEvent> listener);
+    void addEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener);
 
     /**
      * Add a listener bean to be notified of all events.
@@ -17,7 +21,7 @@ public interface DebbieEventMulticaster {
      * Remove a listener from the notification list.
      * @param listener the listener to remove
      */
-    void removeEventListener(DebbieEventListener<? extends DebbieEvent> listener);
+    void removeEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener);
 
     /**
      * Remove a listener bean from the notification list.
@@ -34,7 +38,8 @@ public interface DebbieEventMulticaster {
 
     /**
      * Multicast the given application event to appropriate listeners.
+     * @param <E> AbstractDebbieEvent subclass
      * @param event the event to multicast
      */
-    <E extends DebbieEvent> void multicastEvent(E event);
+    <E extends AbstractDebbieEvent> void multicastEvent(E event);
 }

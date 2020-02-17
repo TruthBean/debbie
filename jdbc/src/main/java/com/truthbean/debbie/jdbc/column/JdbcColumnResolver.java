@@ -27,7 +27,7 @@ public class JdbcColumnResolver {
             var resultSetMetaData = resultSet.getMetaData();
 
             int columnCount = resultSetMetaData.getColumnCount();
-            LOGGER.debug("columnCount: {}", columnCount);
+            LOGGER.trace("columnCount: {}", columnCount);
 
             ColumnInfo columnInfo;
             List<ColumnInfo> columnList;
@@ -37,25 +37,25 @@ public class JdbcColumnResolver {
                 for (int i = 1; i <= columnCount; i++) {
 
                     int columnType = resultSetMetaData.getColumnType(i);
-                    LOGGER.debug("columnType: {}", columnType);
+                    LOGGER.trace("columnType: {}", columnType);
 
                     String columnClassName = resultSetMetaData.getColumnClassName(i);
-                    LOGGER.debug("columnClassName: {}", columnClassName);
+                    LOGGER.trace("columnClassName: {}", columnClassName);
 
                     String columnLabel = resultSetMetaData.getColumnLabel(i);
-                    LOGGER.debug("columnLabel: {}", columnLabel);
+                    LOGGER.trace("columnLabel: {}", columnLabel);
 
                     String columnName = resultSetMetaData.getColumnName(i);
-                    LOGGER.debug("columnName: {}", columnName);
+                    LOGGER.trace("columnName: {}", columnName);
 
                     String columnTypeName = resultSetMetaData.getColumnTypeName(i);
-                    LOGGER.debug("columnTypeName: {}", columnTypeName);
+                    LOGGER.trace("columnTypeName: {}", columnTypeName);
 
                     int scale = resultSetMetaData.getScale(i);
-                    LOGGER.debug("scale: {}", scale);
+                    LOGGER.trace("scale: {}", scale);
 
                     int precision = resultSetMetaData.getPrecision(i);
-                    LOGGER.debug("precision: {}", precision);
+                    LOGGER.trace("precision: {}", precision);
 
                     String type = ColumnTypeHandler.getType(columnTypeName, precision, scale);
 

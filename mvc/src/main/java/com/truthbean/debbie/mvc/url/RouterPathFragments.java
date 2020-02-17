@@ -72,6 +72,14 @@ public class RouterPathFragments {
         return hasVariable;
     }
 
+    public boolean isDynamic() {
+        return !getPattern().toString().equals(rawPath);
+    }
+
+    public boolean matchUrl(String url) {
+        return getPattern().matcher(url).find();
+    }
+
     public RouterPathFragments setVariable() {
         if (pathFragments != null && !pathFragments.isEmpty()) {
             for (UriPathFragment pathFragment : pathFragments) {

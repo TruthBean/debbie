@@ -30,6 +30,8 @@ public class ServletResponseHandler implements ResponseHandler {
 
     @Override
     public void handle(RouterResponse routerResponse) {
+        response.setStatus(routerResponse.getStatus().getStatus());
+
         var any = routerResponse.getContent();
         var headers = routerResponse.getHeaders();
         if (!headers.isEmpty()) {

@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class SetStringTransformer implements DataTransformer<Set<String>, String> {
     @Override
     public String transform(Set<String> strings) {

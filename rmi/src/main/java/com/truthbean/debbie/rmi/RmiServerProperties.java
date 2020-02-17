@@ -4,6 +4,10 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RmiServerProperties extends BaseProperties implements DebbieProperties {
 
     private final RmiServerConfiguration configuration;

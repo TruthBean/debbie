@@ -1,5 +1,7 @@
 package com.truthbean.debbie.mvc.filter;
 
+import com.truthbean.debbie.mvc.MvcConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,9 +15,12 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
     private int order;
     private String name;
     private Class<? extends RouterFilter> routerFilterType;
+    private MvcConfiguration configuration;
 
     private List<String> rawUrlPattern;
     private List<Pattern> urlPattern;
+
+    private RouterFilter filterInstance;
 
     public RouterFilterInfo() {
         urlPattern = new ArrayList<>();
@@ -28,6 +33,14 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
 
     public void setRouterFilterType(Class<? extends RouterFilter> routerFilterType) {
         this.routerFilterType = routerFilterType;
+    }
+
+    public MvcConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(MvcConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     public List<Pattern> getUrlPattern() {
@@ -64,6 +77,14 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public RouterFilter getFilterInstance() {
+        return filterInstance;
+    }
+
+    public void setFilterInstance(RouterFilter filterInstance) {
+        this.filterInstance = filterInstance;
     }
 
     @Override

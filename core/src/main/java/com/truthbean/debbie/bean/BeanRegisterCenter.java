@@ -88,13 +88,25 @@ final class BeanRegisterCenter {
         beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
     }
 
-    static void register(Class<?> beanClass) {
-        var beanClassInfo = new DebbieBeanInfo<>(beanClass);
-        register(beanClassInfo);
+    public static boolean support(Class<?> beanClass) {
+        if (beanClass == null)
+            return false;
+        if (beanClass.isEnum())
+            return false;
+        if (beanClass.isAnnotation())
+            return false;
+        return true;
     }
 
-    static void register(Class<? extends Annotation> classAnnotation, String packageName) {
-        var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
+    static void register(Class<?> beanClass) {
+        if (support(beanClass)) {
+            var beanClassInfo = new DebbieBeanInfo<>(beanClass);
+            register(beanClassInfo);
+        }
+    }
+
+    static void register(Class<? extends Annotation> classAnnotation, String packageName, ClassLoader classLoader) {
+        var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
         if (!allClass.isEmpty()) {
             allClass.forEach(c -> {
                 if (c.isAnnotationPresent(classAnnotation)) {
@@ -104,19 +116,19 @@ final class BeanRegisterCenter {
         }
     }
 
-    static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames) {
-        packageNames.forEach(packageName -> register(classAnnotation, packageName));
+    static void register(Class<? extends Annotation> classAnnotation, List<String> packageNames, ClassLoader classLoader) {
+        packageNames.forEach(packageName -> register(classAnnotation, packageName, classLoader));
     }
 
-    static void register(String packageName) {
-        var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
+    static void register(String packageName, ClassLoader classLoader) {
+        var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
         if (!allClass.isEmpty()) {
             allClass.forEach(BeanRegisterCenter::register);
         }
     }
 
-    static void register(List<String> packageNames) {
-        packageNames.forEach(BeanRegisterCenter::register);
+    static void register(List<String> packageNames, ClassLoader classLoader) {
+        packageNames.forEach(ele -> BeanRegisterCenter.register(ele, classLoader));
     }
 
     static List<Method> getBeanMethods(Class<?> beanClass) {

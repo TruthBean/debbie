@@ -18,7 +18,10 @@ public interface DataSourceFactory extends BeanClosure {
 
     /**
      * create DataSourceFactory by application.properties
-     *
+     * @param <Configuration> DataSourceConfiguration subclass
+     * @param beanFactoryHandler beanFactoryHandler
+     * @param configurationClass configurationClass
+     * @param configurationFactory configurationFactory
      * @return DataSourceFactory
      */
     static <Configuration extends DataSourceConfiguration> DataSourceFactory factory(
@@ -79,6 +82,7 @@ public interface DataSourceFactory extends BeanClosure {
      * close dataSource
      * @since 0.0.2
      */
+    @Override
     default void destroy() {
         // do nothing
     }

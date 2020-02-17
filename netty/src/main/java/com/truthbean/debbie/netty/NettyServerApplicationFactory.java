@@ -5,9 +5,10 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.netty.session.SessionManager;
+import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
+import com.truthbean.debbie.server.session.SimpleSessionManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -39,7 +40,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
-        final SessionManager sessionManager = new SessionManager();
+        final SessionManager sessionManager = new SimpleSessionManager();
         return new NettyDebbieApplication(configuration, sessionManager, beanFactoryHandler);
     }
 
@@ -136,6 +137,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
 
         @Override
         public void exit(String... args) {
+            beforeExit(beanFactoryHandler, args);
             shutdown();
         }
     }

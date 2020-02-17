@@ -1,7 +1,6 @@
 package com.truthbean.debbie.mvc.csrf;
 
 import com.truthbean.debbie.mvc.MvcConfiguration;
-import com.truthbean.debbie.mvc.filter.Filter;
 import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -29,7 +28,7 @@ public class CsrfFilter implements RouterFilter {
         logger.debug("crsfToken in header: " + csrfTokenInHeader);
         String csrfTokenInParams = (String) request.getParameter("_CSRF_TOKEN");
         logger.debug("crsfToken in hidden form: " + csrfTokenInParams);
-        return true;
+        return configuration.isEnableCrsf();
     }
 
     @Override

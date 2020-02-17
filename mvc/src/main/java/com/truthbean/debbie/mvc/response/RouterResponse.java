@@ -2,6 +2,7 @@ package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 
 import java.net.HttpCookie;
@@ -31,6 +32,7 @@ public class RouterResponse implements Cloneable {
     private AbstractResponseContentHandler<?, ?> handler;
 
     private Charset charset;
+    private HttpStatus status;
 
     public boolean isRedirect() {
         return redirect;
@@ -42,6 +44,10 @@ public class RouterResponse implements Cloneable {
 
     public void addHeader(String name, String value) {
         headers.put(name, value);
+    }
+
+    public void addHeader(HttpHeader.HttpHeaderName headerName, String value) {
+        headers.put(headerName.getName(), value);
     }
 
     public void addCookie(HttpCookie cookie) {
@@ -136,6 +142,14 @@ public class RouterResponse implements Cloneable {
         return charset;
     }
 
+    public HttpStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(HttpStatus status) {
+        this.status = status;
+    }
+
     public void setHandler(AbstractResponseContentHandler<?, ?> handler) {
         if (handler != null && handler.getClass() != NothingResponseHandler.class) {
             this.handler = handler;
@@ -167,6 +181,8 @@ public class RouterResponse implements Cloneable {
         this.templateSuffix = response.templateSuffix;
 
         this.restResponseClass = response.restResponseClass;
+
+        this.status = response.status;
     }
 
     @Override
@@ -187,6 +203,9 @@ public class RouterResponse implements Cloneable {
         response.hasTemplate = this.hasTemplate;
         response.templatePrefix = this.templatePrefix;
         response.templateSuffix = this.templateSuffix;
+
+        response.status = this.status;
+
         return response;
     }
 

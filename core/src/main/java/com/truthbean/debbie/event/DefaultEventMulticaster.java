@@ -8,11 +8,11 @@ import java.util.Set;
 
 public class DefaultEventMulticaster implements DebbieEventMulticaster {
 
-    private final Set<DebbieEventListener<? extends DebbieEvent>> listeners = new LinkedHashSet<>();
+    private final Set<DebbieEventListener<? extends AbstractDebbieEvent>> listeners = new LinkedHashSet<>();
     private final Set<String> listenerBeans = new LinkedHashSet<>();
 
     @Override
-    public void addEventListener(DebbieEventListener<? extends DebbieEvent> listener) {
+    public void addEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener) {
         listeners.add(listener);
     }
 
@@ -22,7 +22,7 @@ public class DefaultEventMulticaster implements DebbieEventMulticaster {
     }
 
     @Override
-    public void removeEventListener(DebbieEventListener<? extends DebbieEvent> listener) {
+    public void removeEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener) {
         listeners.remove(listener);
     }
 
@@ -39,7 +39,7 @@ public class DefaultEventMulticaster implements DebbieEventMulticaster {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends DebbieEvent> void multicastEvent(E event) {
+    public <E extends AbstractDebbieEvent> void multicastEvent(E event) {
         long start = System.currentTimeMillis();
         for (DebbieEventListener listener : listeners) {
             if (listener instanceof GenericEventListener) {

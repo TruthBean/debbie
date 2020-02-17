@@ -14,6 +14,6 @@ public class NettyApplicationTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplicationFactory.factory().start();
+        DebbieApplicationFactory.create(NettyApplicationTest.class).start();
     }
 }

@@ -23,6 +23,7 @@ public class ServletApplicationInitializer extends DebbieApplicationFactory impl
     private BeanFactoryHandler beanFactoryHandler;
 
     public ServletApplicationInitializer() {
+        super(ServletApplicationInitializer.class);
         if (debbieApplication == null) {
             beanFactoryHandler = getBeanFactoryHandler();
             super.config();

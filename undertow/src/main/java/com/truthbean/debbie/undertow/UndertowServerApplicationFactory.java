@@ -78,6 +78,7 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
 
             @Override
             public void exit(String... args) {
+                beforeExit(beanFactoryHandler, args);
                 server.stop();
             }
         };

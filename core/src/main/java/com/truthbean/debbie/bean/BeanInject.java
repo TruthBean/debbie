@@ -21,4 +21,6 @@ public @interface BeanInject {
     String value() default "";
 
     boolean require() default true;
+
+    boolean noProxy() default false;
 }

@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.annotation;
 
-import com.truthbean.debbie.bean.BeanType;
-import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.*;
 
 import java.lang.annotation.*;
 
@@ -15,7 +14,11 @@ import java.lang.annotation.*;
 @BeanComponent
 public @interface SqlRepository {
 
+    @BeanAliceForValue
+    @BeanAliceFor(name = "value")
     String value() default "";
 
+    @BeanAliceForType
+    @BeanAliceFor(name = "type")
     BeanType type() default BeanType.NO_LIMIT;
 }

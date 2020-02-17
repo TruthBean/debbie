@@ -31,6 +31,7 @@ public class RouterInfo implements Cloneable {
     private List<ExecutableArgument> methodParams;
 
     private Class<?> routerClass;
+    private Object routerInstance;
 
     private List<RouterPathFragments> paths;
 
@@ -71,6 +72,14 @@ public class RouterInfo implements Cloneable {
 
     public void setRouterClass(Class<?> routerClass) {
         this.routerClass = routerClass;
+    }
+
+    public Object getRouterInstance() {
+        return routerInstance;
+    }
+
+    public void setRouterInstance(Object routerInstance) {
+        this.routerInstance = routerInstance;
     }
 
     public List<RouterPathFragments> getPaths() {
@@ -212,6 +221,7 @@ public class RouterInfo implements Cloneable {
             clone.methodParams = new ArrayList<>(methodParams);
         }
         clone.routerClass = routerClass;
+        clone.routerInstance = routerInstance;
 
         if (paths != null)
             clone.paths = new ArrayList<>(paths);

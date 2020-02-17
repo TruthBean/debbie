@@ -9,7 +9,9 @@ import java.util.UUID;
  * @author TruthBean
  * @since 0.0.1
  */
-public abstract class BaseServerProperties extends BaseProperties implements DebbieProperties {
+public abstract class BaseServerProperties<C extends AbstractServerConfiguration> extends BaseProperties
+        implements DebbieProperties<C> {
+
     //===========================================================================
     private static final String APPLICATION_NAME = "debbie.application.name";
 
@@ -18,9 +20,7 @@ public abstract class BaseServerProperties extends BaseProperties implements Deb
 
     //===========================================================================
 
-    public <P extends BaseServerProperties, C extends AbstractServerConfiguration> void loadAndSet
-            (P properties, C configuration) {
-
+    public <P extends BaseServerProperties<C>> void loadAndSet(P properties, C configuration) {
         String name = properties.getStringValue(APPLICATION_NAME, UUID.randomUUID().toString());
         int port = properties.getIntegerValue(SERVER_PORT, 8080);
         String host = properties.getStringValue(SERVER_HOST, "0.0.0.0");

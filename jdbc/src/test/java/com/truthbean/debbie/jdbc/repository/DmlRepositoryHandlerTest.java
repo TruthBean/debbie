@@ -26,7 +26,7 @@ public class DmlRepositoryHandlerTest {
 
     @BeforeAll
     public static void before() {
-        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory();
+        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory(DmlRepositoryHandlerTest.class);
         applicationFactory.config();
         applicationFactory.callStarter();
 

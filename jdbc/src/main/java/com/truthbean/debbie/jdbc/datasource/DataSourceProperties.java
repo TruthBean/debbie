@@ -3,7 +3,7 @@ package com.truthbean.debbie.jdbc.datasource;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
-import com.truthbean.debbie.properties.DebbieConfiguration;
+
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends BaseProperties implements DebbieProperties {
+public class DataSourceProperties extends BaseProperties implements DebbieProperties<DataSourceConfiguration> {
     private final DataSourceConfiguration configuration;
 
     //=================================================================================================================
@@ -58,6 +58,7 @@ public class DataSourceProperties extends BaseProperties implements DebbieProper
         configuration.setDriverProperties(driverProperties);
 
         var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
+        @SuppressWarnings("unchecked")
         Class<? extends DataSourceFactory> dataSourceFactoryClass =
                 (Class<? extends DataSourceFactory>) getClassValue(DATA_SOURCE_FACTORY, defaultClassName);
         configuration.setDataSourceFactoryClass(dataSourceFactoryClass);

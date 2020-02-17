@@ -13,6 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class StaticResourcesServlet extends HttpServlet {
     private final ServletConfiguration configuration;
     private final BeanFactoryHandler handler;

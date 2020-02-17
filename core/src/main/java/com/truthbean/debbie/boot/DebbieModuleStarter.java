@@ -16,6 +16,8 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
 
     int getOrder();
 
+    void release();
+
     @Override
     default int compareTo(DebbieModuleStarter o) {
         if (o != null) {

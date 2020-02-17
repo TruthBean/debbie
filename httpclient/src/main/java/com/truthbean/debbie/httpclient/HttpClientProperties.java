@@ -8,7 +8,7 @@ import com.truthbean.debbie.properties.DebbieProperties;
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientProperties extends BaseProperties implements DebbieProperties {
+public class HttpClientProperties extends BaseProperties implements DebbieProperties<HttpClientConfiguration> {
     private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
 
     //===========================================================================

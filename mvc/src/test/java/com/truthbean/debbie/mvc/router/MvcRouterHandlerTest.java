@@ -21,7 +21,7 @@ class MvcRouterHandlerTest {
 
     @BeforeEach
     public void before() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory();
+        DebbieApplicationFactory factory = new DebbieApplicationFactory(MvcRouterHandlerTest.class);
         factory.config();
         factory.callStarter();
         BeanInitialization initialization = factory.getBeanInitialization();

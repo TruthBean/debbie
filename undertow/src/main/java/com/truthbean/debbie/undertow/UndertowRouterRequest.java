@@ -341,7 +341,7 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public String getRemoteAddr() {
+    public String getRemoteAddress() {
         InetSocketAddress destinationAddress = exchange.getDestinationAddress();
         if (destinationAddress != null)
             return destinationAddress.toString();

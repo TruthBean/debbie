@@ -6,10 +6,13 @@ import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean
@@ -68,6 +71,9 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     }
 
     public Map<Integer, DebbieBeanInfo<?>> getConstructorBeanDependent() {
+        if (constructorBeanDependent == null) {
+            constructorBeanDependent = new HashMap<>();
+        }
         return constructorBeanDependent;
     }
 
@@ -118,29 +124,46 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         if (annotation != null) {
             Method[] methods = key.getMethods();
             Method valueMethod = null;
+            Method nameMethod = null;
             Method typeMethod = null;
             Method lazyMethod = null;
             for (Method method : methods) {
-                if ("value".equals(method.getName()) && method.getReturnType() == String.class) {
+                if ("value".equals(method.getName()) && method.getReturnType() == String.class
+                        && method.getAnnotation(BeanAliceForValue.class) != null) {
                     valueMethod = method;
                     continue;
                 }
-                if ("type".equals(method.getName()) && method.getReturnType() == BeanType.class) {
+                if ("name".equals(method.getName()) && method.getReturnType() == String.class
+                        && method.getAnnotation(BeanAliceForName.class) != null) {
+                    nameMethod = method;
+                    continue;
+                }
+                if ("type".equals(method.getName()) && method.getReturnType() == BeanType.class
+                    && method.getAnnotation(BeanAliceForType.class) != null) {
                     typeMethod = method;
                     continue;
                 }
-                if ("lazy".equals(method.getName()) && method.getReturnType() == BeanType.class) {
+                if ("lazy".equals(method.getName()) && method.getReturnType() == BeanType.class
+                    && method.getAnnotation(BeanAliceForLazy.class) != null) {
                     lazyMethod = method;
                 }
             }
 
-            if (valueMethod != null && typeMethod != null) {
-                beanName = ReflectionHelper.invokeMethod(value, valueMethod);
-                beanType = ReflectionHelper.invokeMethod(value, typeMethod);
-                lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);
-
-                if (beanName == null || beanName.isBlank()) {
+            if ((valueMethod != null || nameMethod != null) && typeMethod != null) {
+                if (valueMethod != null) {
+                    beanName = ReflectionHelper.invokeMethod(value, valueMethod);
+                }
+                if (!StringUtils.hasText(beanName) && nameMethod != null) {
+                    beanName = ReflectionHelper.invokeMethod(value, nameMethod);
+                }
+                if (StringUtils.isBlank(beanName)) {
                     beanName = getServiceName();
+                }
+
+                beanType = ReflectionHelper.invokeMethod(value, typeMethod);
+
+                if (lazyMethod != null) {
+                    lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);
                 }
 
                 return true;
@@ -177,6 +200,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             } else {
                 beanInterface = interfaces[0];
                 noInterface = false;
+                if (beanInterface == Serializable.class) {
+                    beanInterface = null;
+                    noInterface = true;
+                }
             }
         }
         return (Class<T>) beanInterface;
@@ -187,6 +214,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         if (name == null || name.isBlank()) {
             name = super.getClazz().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
+            beanName = name;
         }
         return name;
     }
@@ -211,19 +239,30 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         return bean;
     }
 
+    public Supplier<Bean> getBeanSupplier() {
+        return () -> bean;
+    }
+
+    public void consumer(Consumer<Bean> consumer) {
+        consumer.accept(bean);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DebbieBeanInfo)) return false;
         if (!super.equals(o)) return false;
         DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
-        boolean beanNameEmpty = beanName == null || beanName.isBlank() || beanInfo.beanName == null || beanInfo.beanName.isBlank();
+        String beanName = getServiceName();
+        String oBeanName = beanInfo.getServiceName();
+        boolean beanNameEmpty = beanName == null || beanName.isBlank() || oBeanName == null || oBeanName.isBlank();
         if (beanNameEmpty && super.equals(o)) return true;
-        return Objects.equals(beanName, beanInfo.beanName);
+        return Objects.equals(beanName, oBeanName);
     }
 
     @Override
     public int hashCode() {
+        String beanName = getServiceName();
         return Objects.hash(super.hashCode(), beanName);
     }
 

@@ -26,6 +26,8 @@ public class UndertowResponseHandler implements ResponseHandler {
 
     @Override
     public void handle(RouterResponse response) {
+        exchange.setStatusCode(response.getStatus().getStatus());
+
         Object responseData = response.getContent();
         MediaTypeInfo responseType = response.getResponseType();
 

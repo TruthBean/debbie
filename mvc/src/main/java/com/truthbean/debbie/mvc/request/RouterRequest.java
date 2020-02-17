@@ -104,5 +104,5 @@ public interface RouterRequest {
 
     void setCharacterEncoding(Charset charset);
 
-    String getRemoteAddr();
+    String getRemoteAddress();
 }

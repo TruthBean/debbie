@@ -15,6 +15,7 @@ import java.util.Set;
  */
 public class DataSourceConfigurationFactory {
 
+    @SuppressWarnings({"unchecked"})
     public static <Configuration extends DataSourceConfiguration> Configuration factory(
         DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler, Class<Configuration> configurationClass) {
         Set<Configuration> configurations = configurationFactory.getConfigurations(configurationClass, beanFactoryHandler);

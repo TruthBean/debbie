@@ -166,6 +166,7 @@ public class RepositoryHandler {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T queryOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
         List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         T result = null;
@@ -183,12 +184,11 @@ public class RepositoryHandler {
                     if (data.getJavaClass() == clazz) {
                         result = clazz.cast(data.getValue());
                     } else {
-                        Class type = clazz;
+                        Class<?> type = clazz;
                         if (TypeHelper.isRawBaseType(type)) {
                             type = TypeHelper.getWrapperClass(type);
                         }
                         return (T) DataTransformerFactory.transform(data.getValue(), type);
-                        // throw new ClassNotMatchedException(data.getJavaClass(), clazz);
                     }
                 }
             }
@@ -198,6 +198,10 @@ public class RepositoryHandler {
 
     private <T> T transformer(List<ColumnInfo> map, List<Field> declaredFields, Class<T> clazz) {
         T instance = ReflectionHelper.newInstance(clazz);
+        if (instance == null) {
+            throw new NullPointerException("Class(" + clazz + ") reflect to new instance null");
+        }
+        // todo 自定义map to T
         SqlColumn column;
         for (var field : declaredFields) {
             if (field.getAnnotation(JdbcTransient.class) != null)
@@ -213,7 +217,6 @@ public class RepositoryHandler {
             }
             for (var entry : map) {
                 if (columnName.equals(entry.getColumnName())) {
-                    assert instance != null;
                     ReflectionHelper.invokeSetMethod(instance, field, entry.getValue());
                     break;
                 }

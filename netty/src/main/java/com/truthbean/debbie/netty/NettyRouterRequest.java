@@ -10,7 +10,7 @@ import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.netty.session.SessionManager;
+import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.HttpContent;
@@ -112,7 +112,7 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     public void setParameters(HttpHeaders trailingHeaders) {
-        if (trailingHeaders.isEmpty()) {
+        if (!trailingHeaders.isEmpty()) {
             for (CharSequence name : trailingHeaders.names()) {
                 this.routerRequestCache.addParameters((String) name, trailingHeaders.getAll(name));
             }
@@ -410,7 +410,7 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
-    public String getRemoteAddr() {
+    public String getRemoteAddress() {
         return null;
     }
 

@@ -1,5 +1,7 @@
 package com.truthbean.debbie.io;
 
+import com.sun.net.httpserver.Headers;
+
 import java.util.Collection;
 
 /**
@@ -78,6 +80,8 @@ public enum MediaType {
     APPLICATION_MSWORD("application/msword"),
 
     APPLICATION_ZIP("application/zip"),
+    APPLICATION_GIT("application/git"),
+
 
     APPLICATION_X_RAR_COMPRESSED("application/x-rar-compressed"),
 
@@ -146,7 +150,7 @@ public enum MediaType {
 
     public static String RESPONSE_TYPE = "Response-Type";
 
-    public static String CONTENT_TYPE = "content-type";
+    public static String CONTENT_TYPE = "Content-Type";
 
     public static String RESPONSE_TYPE_WITH_APPLICATION_JSON = "Response-Type: application/json";
 
@@ -251,16 +255,6 @@ public enum MediaType {
     }
 
     public boolean isText() {
-        MediaTypeInfo info = info();
-        String type = info.type();
-        if ("text".equals(type)) {
-            return true;
-        }
-        if ("application".equals(type)){
-            String subtype = info.subtype();
-            return "json".equals(subtype) || "xml".equals(subtype) || "javascript".equals(subtype)
-                || "xhtml+xml".equals(subtype);
-        }
-        return false;
+        return info().isText();
     }
 }

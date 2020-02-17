@@ -19,7 +19,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
 
     public HttpClientBeanRegister(BeanFactoryHandler beanFactoryHandler) {
         super(beanFactoryHandler);
-        handler = new HttpClientFactory();
+        handler = new HttpClientFactory(beanFactoryHandler.getClassLoader());
         this.beanFactoryHandler = beanFactoryHandler;
         initialization = beanFactoryHandler.getBeanInitialization();
     }

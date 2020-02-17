@@ -7,7 +7,7 @@ import java.util.List;
 
 public class UserHttpClientTest {
 
-    private HttpClientFactory httpClientFactory = new HttpClientFactory();
+    private HttpClientFactory httpClientFactory = new HttpClientFactory(getClass().getClassLoader());
 
     private UserHttpClient userHttpClient;
 

@@ -15,6 +15,7 @@ import java.util.List;
  * @since 0.0.1
  */
 public class EntityResolver {
+    @SuppressWarnings("unchecked")
     public <E> EntityInfo<E> resolveEntity(E entity) {
         Class<E> entityClass = (Class<E>) entity.getClass();
         ClassInfo<E> classInfo = new ClassInfo<>(entityClass);

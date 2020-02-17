@@ -19,11 +19,20 @@ class SurnameServiceBeanTest {
         q.setId(27L);
         q.setBegin(new Timestamp(System.currentTimeMillis()));
         q.setOrigin("1");
-        q.setWebsite(new URL("https://www.zhu.org"));
-        q.setName("zhu");
+        q.setWebsite(new URL("https://www.qu.org"));
+        q.setName("屈");
         var b = surnameService.save(q);
         System.out.println(b);
         System.out.println(q);
+
+        var z = new Surname();
+        z.setBegin(new Timestamp(System.currentTimeMillis() - 24 * 60 * 60 * 1000));
+        z.setOrigin("");
+        z.setWebsite(new URL("https://www.zhao.org"));
+        z.setName("赵");
+        var bz = surnameService.save(z);
+        System.out.println(bz);
+        System.out.println(z);
     }
 
     @Test
@@ -33,12 +42,17 @@ class SurnameServiceBeanTest {
 
     @Test
     void selectAll(@BeanInject("surnameService") SurnameService surnameService) {
-        System.out.println(surnameService.selectAll());
+        System.out.println(surnameService.list());
     }
 
     @Test
     void doNothing(@BeanInject("surnameService") SurnameService surnameService) {
         surnameService.doNothing();
+    }
+
+    @Test
+    public void select(@BeanInject ApiService apiService) {
+        System.out.println(apiService.selectAll());
     }
 
 }

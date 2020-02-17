@@ -72,20 +72,25 @@ public final class StreamHelper {
     }
 
     private static List<JarEntry> getFilesInJar(URL url) {
-        List<JarEntry> filesInJar = new ArrayList<>();
         try {
             // 获取jar
             JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
-            // 从此jar包 得到一个枚举类
-            var entries = jar.entries();
-            // 同样的进行循环迭代
-            while (entries.hasMoreElements()) {
-                // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
-                var entry = entries.nextElement();
-                filesInJar.add(entry);
-            }
+            return getFilesInJar(jar);
         } catch (IOException e) {
-            LOGGER.error("", e);
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    private static List<JarEntry> getFilesInJar(JarFile jar) {
+        List<JarEntry> filesInJar = new ArrayList<>();
+        // 从此jar包 得到一个枚举类
+        var entries = jar.entries();
+        // 同样的进行循环迭代
+        while (entries.hasMoreElements()) {
+            // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
+            var entry = entries.nextElement();
+            filesInJar.add(entry);
         }
         return filesInJar;
     }
@@ -103,6 +108,24 @@ public final class StreamHelper {
                 }
             }
         }
+    }
+
+    public static List<Class<?>> getAllClassFromJar(URL url, ClassLoader classLoader) {
+        return getClassFromJarByPackageName("", url, "", classLoader);
+    }
+
+    public static List<Class<?>> getAllClassFromJar(JarFile jarFile, ClassLoader classLoader) {
+        return getClassFromJarByPackageName("", jarFile, "", classLoader);
+    }
+
+    public static List<Class<?>> getClassFromJarByPackageName(String packageName, JarFile jarFile, String packageDirName,
+                                                              ClassLoader classLoader) {
+        List<Class<?>> result = new ArrayList<>();
+        List<JarEntry> filesInJar = getFilesInJar(jarFile);
+        for (JarEntry entry : filesInJar) {
+            getClassesUnderPackageInJar(packageName, entry, packageDirName, classLoader, result);
+        }
+        return result;
     }
 
     public static List<Class<?>> getClassFromJarByPackageName(String packageName, URL url, String packageDirName,
@@ -140,7 +163,9 @@ public final class StreamHelper {
                     // 添加到classes
                     classes.add(classLoader.loadClass(packageName + '.' + className));
                 } catch (ClassNotFoundException e) {
-                    LOGGER.error("", e);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.error("", e);
+                    }
                 }
             }
         }

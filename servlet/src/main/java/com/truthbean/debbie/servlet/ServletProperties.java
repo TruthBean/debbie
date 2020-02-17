@@ -12,26 +12,26 @@ import com.truthbean.debbie.properties.DebbieProperties;
  * @since 0.0.1
  * Created on 2019/3/10 17:39.
  */
-public class ServletProperties extends MvcProperties implements DebbieProperties {
+public class ServletProperties extends MvcProperties {
 
     //========================================================================================
 
     //========================================================================================
 
     private static ServletConfiguration configuration;
-    public static ServletConfiguration toConfiguration() {
+    public static ServletConfiguration toConfiguration(ClassLoader classLoader) {
         if (configuration != null) {
             return configuration;
         }
 
-        configuration = new ServletConfiguration();
+        configuration = new ServletConfiguration(classLoader);
 
         final ServletProperties properties = new ServletProperties();
 
-        MvcConfiguration webConfiguration = MvcProperties.toConfiguration();
+        MvcConfiguration webConfiguration = MvcProperties.toConfiguration(classLoader);
         configuration.copyFrom(webConfiguration);
 
-        BeanScanConfiguration beanScanConfiguration = ClassesScanProperties.toConfiguration();
+        BeanScanConfiguration beanScanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
         configuration.copyFrom(beanScanConfiguration);
 
         return configuration;
@@ -39,6 +39,7 @@ public class ServletProperties extends MvcProperties implements DebbieProperties
 
     @Override
     public ServletConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
-        return toConfiguration();
+        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+        return toConfiguration(classLoader);
     }
 }

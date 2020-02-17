@@ -12,7 +12,7 @@ import com.truthbean.debbie.mvc.MvcProperties;
  * @since 0.0.1
  * Created on 2019/4/12 23:58.
  */
-public class UndertowProperties extends BaseServerProperties {
+public class UndertowProperties extends BaseServerProperties<UndertowConfiguration> {
     private UndertowConfiguration configuration;
 
     @Override
@@ -21,10 +21,12 @@ public class UndertowProperties extends BaseServerProperties {
             return configuration;
         }
 
-        configuration = new UndertowConfiguration();
+        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+        configuration = new UndertowConfiguration(classLoader);
 
-        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration();
-        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration();
+        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
+
+        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration(classLoader);
         configuration.copyFrom(mvcConfiguration);
         configuration.copyFrom(beanConfiguration);
 

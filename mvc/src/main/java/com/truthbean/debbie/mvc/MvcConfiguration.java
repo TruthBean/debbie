@@ -25,7 +25,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * dynamic router dispatcher mapping
      */
-    private String dispatcherMapping;
+    private String dispatcherMapping = "/**";
 
     /**
      * allow client change response type by request header "Response-Type"
@@ -55,18 +55,23 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
     private boolean enableCrsf = false;
 
+    private boolean enableSecurity = false;
+
     private String templateSuffix;
     private String templatePrefix;
 
     // charset
     private Charset charset;
 
+    @SuppressWarnings({"rawtypes"})
     private Class<? extends AbstractResponseContentHandler> responseContentHandler;
 
-    public MvcConfiguration() {
+    public MvcConfiguration(ClassLoader classLoader) {
+        super(classLoader);
     }
 
-    public MvcConfiguration(MvcConfiguration configuration) {
+    public MvcConfiguration(MvcConfiguration configuration, ClassLoader classLoader) {
+        super(classLoader);
         copyFrom(configuration);
     }
 
@@ -84,6 +89,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
         this.corsOrigins = configuration.corsOrigins;
         this.corsMethods = configuration.corsMethods;
         this.corsHeaders = configuration.corsHeaders;
+
+        this.enableSecurity = configuration.enableSecurity;
 
         this.charset = configuration.charset;
 
@@ -112,12 +119,20 @@ public class MvcConfiguration extends BeanScanConfiguration {
         return enableCors;
     }
 
+    public boolean isEnableSecurity() {
+        return enableSecurity;
+    }
+
     public boolean isEnableCrsf() {
         return enableCrsf;
     }
 
     protected void enableCors(boolean cors) {
         this.enableCors = cors;
+    }
+
+    protected void enableSecurity(boolean security) {
+        this.enableSecurity = security;
     }
 
     public List<String> getCorsOrigins() {
@@ -168,10 +183,12 @@ public class MvcConfiguration extends BeanScanConfiguration {
         this.charset = charset;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Class<? extends AbstractResponseContentHandler> getResponseContentHandler() {
         return responseContentHandler;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public void setResponseContentHandler(Class<? extends AbstractResponseContentHandler> responseContentHandler) {
         this.responseContentHandler = responseContentHandler;
     }
@@ -209,8 +226,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
         return allowClientResponseType;
     }
 
-    public static Builder builder() {
-        return new Builder(new MvcConfiguration());
+    public static Builder builder(ClassLoader classLoader) {
+        return new Builder(new MvcConfiguration(classLoader));
     }
 
     public static final class Builder {
@@ -259,6 +276,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
+        @SuppressWarnings({"rawtypes"})
         public Builder template(String suffix, String prefix, Class<? extends AbstractResponseContentHandler> responseContentHandler) {
             configuration.templateSuffix = suffix;
             configuration.templatePrefix = prefix;

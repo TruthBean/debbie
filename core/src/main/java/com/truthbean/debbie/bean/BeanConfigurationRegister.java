@@ -4,6 +4,7 @@ import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -16,36 +17,37 @@ public class BeanConfigurationRegister {
     public void register(Class<?>... classes) {
         if (classes != null) {
             for (Class<?> clazz : classes) {
-                register(clazz);
+                registerConfiguration(clazz);
             }
         }
     }
 
-    public void register(Set<Class<?>> classes) {
-        if (classes != null) {
+    public void register(Collection<Class<?>> classes) {
+        if (classes != null && !classes.isEmpty()) {
             for (Class<?> clazz : classes) {
-                register(clazz);
+                registerConfiguration(clazz);
             }
         }
     }
 
-    public void init(String... packageName) {
+    public void init(ClassLoader classLoader, String... packageName) {
         if (packageName != null) {
             for (String s : packageName) {
-                register(s);
+                register(s, classLoader);
             }
         }
     }
 
-    public void register(String packageName) {
-        var allClass = ReflectionHelper.getAllClassByPackageName(packageName);
+    public void register(String packageName, ClassLoader classLoader) {
+        var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
         if (!allClass.isEmpty()) {
-            allClass.forEach(this::register);
+            register(allClass);
         }
     }
 
-    public <C> void register(Class<C> beanConfigurationClass) {
-        if (beanConfigurationClass.getAnnotation(BeanConfiguration.class) != null) {
+    public <C> void registerConfiguration(Class<C> beanConfigurationClass) {
+        if (BeanRegisterCenter.support(beanConfigurationClass)
+                && beanConfigurationClass.getAnnotation(BeanConfiguration.class) != null) {
             ClassInfo<C> classInfo = new ClassInfo<>(beanConfigurationClass);
             C configuration = ReflectionHelper.newInstance(beanConfigurationClass);
             register(configuration, classInfo);
@@ -59,7 +61,6 @@ public class BeanConfigurationRegister {
         register(beanConfiguration, classInfo);
     }
 
-    // @SuppressWarnings("unchecked")
     private <Configuration> void register(Configuration configuration, ClassInfo<Configuration> classInfo) {
         List<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {

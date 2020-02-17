@@ -8,11 +8,15 @@ import java.util.List;
 @BeanComponent
 public class UserService {
 
-    @BeanInject
-    private HttpClientFactory httpClientFactory;
+    private final HttpClientFactory httpClientFactory;
 
-    @BeanInject
-    private UserHttpClient userHttpClient;
+    private final UserHttpClient userHttpClient;
+
+    public UserService(@BeanInject HttpClientFactory httpClientFactory, @BeanInject UserHttpClient userHttpClient) {
+        this.httpClientFactory = httpClientFactory;
+        this.userHttpClient = userHttpClient;
+    }
+
 
     public UserHttpClient getUserHttpClient() {
         return httpClientFactory.factory(UserHttpClient.class);

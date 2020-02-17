@@ -8,4 +8,7 @@ import com.truthbean.debbie.server.AbstractServerConfiguration;
  * Created on 2019/4/12 23:58.
  */
 public class UndertowConfiguration extends AbstractServerConfiguration {
+    protected UndertowConfiguration(ClassLoader classLoader) {
+        super(classLoader);
+    }
 }

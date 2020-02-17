@@ -1,5 +1,7 @@
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.JacksonUtils;
@@ -7,8 +9,11 @@ import com.truthbean.debbie.util.JacksonUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +29,57 @@ public class ExecutableArgumentHandler {
 
     public ExecutableArgument typeOf(Field field, int index) {
         ExecutableArgument invokedParameter = new ExecutableArgument();
-        invokedParameter.setType(field.getType());
+        invokedParameter.setType((Class<?>) field.getGenericType());
         invokedParameter.setName(field.getName());
         invokedParameter.setIndex(index);
         return invokedParameter;
+    }
+
+    public static List<ExecutableArgument> typeOf(Method method, BeanFactoryHandler beanFactoryHandler) {
+        List<ExecutableArgument> result = new ArrayList<>();
+
+        Parameter[] parameters = method.getParameters();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+
+        ExecutableArgument invokedParameter;
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            invokedParameter = new ExecutableArgument();
+            Class<?> type = parameterTypes[i];
+            invokedParameter.setType(type);
+            if (!parameter.isNamePresent()) {
+                String name = parameter.getName();
+                if (name.startsWith("arg")) {
+                    invokedParameter.setIndex(Integer.parseInt(name.split("arg")[1]));
+                } else {
+                    invokedParameter.setName(name);
+                }
+            }
+
+            BeanInject beanInject = parameter.getAnnotation(BeanInject.class);
+            if (beanInject != null) {
+                var name = beanInject.value();
+                if (name.isBlank()) {
+                    name = beanInject.name();
+                }
+
+                Object value;
+                if (!name.isBlank()) {
+                    invokedParameter.setName(name);
+
+                    value = beanFactoryHandler.factory(name);
+                } else {
+                    value = beanFactoryHandler.factory(type);
+                }
+                invokedParameter.setValue(value);
+            }
+
+            invokedParameter.setAnnotations(parameter.getAnnotations());
+
+            result.add(invokedParameter);
+        }
+        Collections.sort(result);
+        return result;
     }
 
     public void handleFiled(Map<String, List> map,
@@ -197,7 +249,7 @@ public class ExecutableArgumentHandler {
 
     public static ExecutableArgument typeOf(Parameter parameter) {
         ExecutableArgument invokedParameter = new ExecutableArgument();
-        invokedParameter.setType(parameter.getType());
+        invokedParameter.setType((Class<?>) parameter.getParameterizedType());
         String name = parameter.getName();
         if (name.startsWith("arg")) {
             invokedParameter.setIndex(Integer.valueOf(name.split("arg")[1]));

@@ -5,7 +5,11 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-public interface MethodProxyHandler<A extends Annotation> extends Comparable {
+/**
+ * @author truthbean
+ * @since 0.0.1
+ */
+public interface MethodProxyHandler<A extends Annotation> extends Comparable<MethodProxyHandler> {
 
     default void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
     }
@@ -36,16 +40,13 @@ public interface MethodProxyHandler<A extends Annotation> extends Comparable {
 
     void after();
 
-    void whenExceptionCatched(Throwable e) throws Throwable;
+    void catchException(Throwable e) throws Throwable;
 
     void finallyRun();
 
     @Override
-    default int compareTo(Object o) {
-        if (o instanceof MethodProxyHandler) {
-            int order = ((MethodProxyHandler) o).getOrder();
-            return Integer.compare(order, getOrder());
-        }
-        return 0;
+    default int compareTo(MethodProxyHandler o) {
+        int order = o.getOrder();
+        return Integer.compare(order, getOrder());
     }
 }

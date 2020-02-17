@@ -3,7 +3,48 @@ package com.truthbean.debbie.mvc.request;
 import com.truthbean.debbie.util.ArrayUtils;
 import com.truthbean.debbie.util.StringUtils;
 
+import java.util.Enumeration;
+import java.util.Set;
+
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RequestUtils {
+
+    public static String getCurrentRequestIp() {
+        return getClientIp(RequestHolder.currentRequest());
+    }
+
+    /**
+     * Gets request header.
+     *
+     * @param header http header name
+     * @return http header of null
+     */
+    public static String getHeaderIgnoreCase(String header) {
+        RouterRequest request = RequestHolder.currentRequest();
+        return getHeaderIgnoreCase(request, header);
+    }
+
+    /**
+     * 忽略大小写获得请求header中的信息
+     *
+     * @param request 请求对象{@link RouterRequest}
+     * @param nameIgnoreCase 忽略大小写头信息的KEY
+     * @return header值
+     */
+    public final static String getHeaderIgnoreCase(RouterRequest request, String nameIgnoreCase) {
+        HttpHeader httpHeader = request.getHeader();
+        Set<String> names = httpHeader.getHeaders().keySet();
+        for (String name : names) {
+            if (name != null && name.equalsIgnoreCase(nameIgnoreCase)) {
+                return httpHeader.getHeader(name);
+            }
+        }
+        return null;
+    }
+
     /**
      * 获取客户端IP
      *
@@ -22,13 +63,13 @@ public class RequestUtils {
      * @param otherHeaderNames 其他自定义头文件，通常在Http服务器（例如Nginx）中配置
      * @return IP地址
      */
-    public static String getClientIP(RouterRequest request, String... otherHeaderNames) {
+    public static String getClientIp(RouterRequest request, String... otherHeaderNames) {
         String[] headers = { "X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR" };
         if (otherHeaderNames != null && otherHeaderNames.length > 0) {
             headers = ArrayUtils.addAll(headers, otherHeaderNames);
         }
 
-        return getClientIPByHeader(request, headers);
+        return getClientIpByHeader(request, headers);
     }
 
     /**
@@ -44,7 +85,7 @@ public class RequestUtils {
      * @return IP地址
      * @since 0.0.2
      */
-    public static String getClientIPByHeader(RouterRequest request, String... headerNames) {
+    public static String getClientIpByHeader(RouterRequest request, String... headerNames) {
         String ip;
         for (String header : headerNames) {
             ip = request.getHeader().getHeader(header);
@@ -53,7 +94,7 @@ public class RequestUtils {
             }
         }
 
-        ip = request.getRemoteAddr();
+        ip = request.getRemoteAddress();
         return getMultistageReverseProxyIp(ip);
     }
 

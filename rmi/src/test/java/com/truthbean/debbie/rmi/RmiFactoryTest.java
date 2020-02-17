@@ -7,12 +7,12 @@ public class RmiFactoryTest {
 
     @Test
     public void test() {
-        var application = DebbieApplicationFactory.factory();
+        var application = DebbieApplicationFactory.create(RmiFactoryTest.class);
         application.start();
     }
 
     public static void main(String[] args) {
-        var application = DebbieApplicationFactory.factory();
+        var application = DebbieApplicationFactory.create(RmiFactoryTest.class);
         application.start();
     }
 }

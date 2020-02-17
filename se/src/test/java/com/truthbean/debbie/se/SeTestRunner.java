@@ -4,7 +4,7 @@ import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.task.DebbieTask;
 
-@BeanComponent
+@BeanComponent(lazy = false)
 public class SeTestRunner {
 
     @BeanInject

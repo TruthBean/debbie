@@ -20,7 +20,6 @@ public @interface BodyParameter {
 
     /**
      * same as name
-     * @since 0.0.2
      * @return name
      */
     String value() default "";
@@ -29,5 +28,5 @@ public @interface BodyParameter {
 
     boolean require() default true;
 
-    MediaType bodyType() default MediaType.ANY;
+    MediaType type() default MediaType.ANY;
 }

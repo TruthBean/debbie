@@ -56,35 +56,32 @@ public class BaseProperties {
                 else {
                     LOGGER.warn(applicationUrl + " not found in classpath.");
                 }
-                try {
-                    // read via file
-                    File file = new File(applicationUrl);
-                    if (file.exists()) {
-                        LOGGER.debug("application.properties url: " + file.getAbsolutePath());
-                        InputStream inputStream;
-                        try {
-                            inputStream = new FileInputStream(file);
-                            var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                            PROPERTIES.load(reader);
-                        } catch (IOException e) {
-                            LOGGER.error("load properties error", e);
-                        }
-                    } else {
-                        // read via network
-                        url = new URL(applicationUrl);
-                        LOGGER.debug("application.properties url: " + url);
-                        InputStream inputStream;
-                        try {
+                // read via file
+                File file = new File(applicationUrl);
+                if (file.exists()) {
+                    LOGGER.debug("application.properties url: " + file.getAbsolutePath());
+                    InputStream inputStream;
+                    try {
+                        inputStream = new FileInputStream(file);
+                        var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                        PROPERTIES.load(reader);
+                    } catch (IOException e) {
+                        LOGGER.error("load properties error", e);
+                    }
+                } else {
+                    // read via network
+                    InputStream inputStream;
+                    try {
+                        if (!applicationUrl.equals(Constants.APPLICATION_PROPERTIES)) {
+                            url = new URL(applicationUrl);
+                            LOGGER.debug("application.properties url: " + url);
                             inputStream = url.openStream();
                             var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                             PROPERTIES.load(reader);
-                        } catch (IOException e) {
-                            LOGGER.error("load properties error", e);
                         }
+                    } catch (IOException e) {
+                        LOGGER.error("load properties error", e);
                     }
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
                 }
             } else {
                 LOGGER.debug("application.properties url: " + url);

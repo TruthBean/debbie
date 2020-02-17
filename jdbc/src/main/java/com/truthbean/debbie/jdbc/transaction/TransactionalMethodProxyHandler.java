@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
  */
 public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcTransactional> {
 
-    private final TransactionInfo transactionInfo = new TransactionInfo();
+    private final TransactionInfo transactionInfo;
 
     private JdbcTransactional jdbcTransactional;
     private JdbcTransactional classJdbcTransactional;
@@ -25,6 +25,10 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     private BeanFactoryHandler beanFactoryHandler;
     private boolean autoCommit;
+
+    public TransactionalMethodProxyHandler() {
+        this.transactionInfo = new TransactionInfo();
+    }
 
     @Override
     public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
@@ -89,7 +93,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
-    public void whenExceptionCatched(Throwable e) throws Throwable {
+    public void catchException(Throwable e) throws Throwable {
         LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
         if (!autoCommit) {
             if (transactionInfo.isForceCommit()) {

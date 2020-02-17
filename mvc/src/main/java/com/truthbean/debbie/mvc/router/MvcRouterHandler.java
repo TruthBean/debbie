@@ -4,6 +4,7 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.debbie.net.uri.UriPathFragment;
 import com.truthbean.debbie.net.uri.UriUtils;
@@ -17,6 +18,7 @@ import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -131,6 +133,21 @@ public class MvcRouterHandler {
             result.setRequest(routerRequest);
             LOGGER.debug("matched router info: " + result.toString());
             return result;
+        }
+    }
+
+    private static void filterOverloadMethod(Set<RouterInfo> routerInfoSet) {
+        for (RouterInfo routerInfo : routerInfoSet) {
+            routerInfo.getMethod();
+        }
+        var routerArray = routerInfoSet.toArray(new RouterInfo[0]);
+        for (int i = 0; i < routerInfoSet.size(); i++) {
+            var routerI = routerArray[i];
+            Method methodI = routerI.getMethod();
+            for (int j = i; j < routerInfoSet.size(); j++) {
+                var routerJ = routerArray[i];
+                Method methodJ = routerI.getMethod();
+            }
         }
     }
 
@@ -288,7 +305,7 @@ public class MvcRouterHandler {
         // if has no matched, then match variable path
         List<RouterPathFragments> paths = routerInfo.getPaths();
         for (var pattern : paths) {
-            if (pattern.getPattern().matcher(url).find()) {
+            if ((pattern.hasVariable() || pattern.isDynamic()) && pattern.matchUrl(url)) {
                 Map<String, List<String>> requestPathAttributes = new HashMap<>();
                 for (UriPathFragment pathFragment : pattern.getPathFragments()) {
                     if (pathFragment.hasVariable()) {
@@ -326,6 +343,7 @@ public class MvcRouterHandler {
 
     public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryHandler handler) {
         RouterResponse routerResponse = routerInfo.getResponse();
+        routerResponse.setStatus(HttpStatus.OK);
 
         routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
 
@@ -339,7 +357,7 @@ public class MvcRouterHandler {
             RouterInvoker invoker = new RouterInvoker(routerInfo);
             invoker.action(routerResponse, handler);
             return routerResponse;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);
             responseValue = exception.getErrorInfo();

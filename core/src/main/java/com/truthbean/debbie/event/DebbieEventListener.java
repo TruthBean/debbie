@@ -2,7 +2,11 @@ package com.truthbean.debbie.event;
 
 import java.util.EventListener;
 
-public interface DebbieEventListener<E extends DebbieEvent> extends EventListener {
+/**
+ * @author TruthBean
+ * @since 0.0.2
+ */
+public interface DebbieEventListener<E extends AbstractDebbieEvent> extends EventListener {
 
     /**
      * Handle an application event.

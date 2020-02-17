@@ -5,7 +5,6 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
  * @author TruthBean
  * @since 0.0.2
  */
+@SuppressWarnings({"unchecked"})
 public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
     private BeanFactoryHandler beanFactoryHandler;

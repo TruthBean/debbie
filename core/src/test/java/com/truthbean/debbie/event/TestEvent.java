@@ -1,8 +1,16 @@
 package com.truthbean.debbie.event;
 
-public class TestEvent extends DebbieEvent {
+import com.truthbean.debbie.bean.BeanInject;
+
+@DebbieEvent("test")
+public class TestEvent extends AbstractDebbieEvent {
 
     private String event;
+
+    public TestEvent(@BeanInject TestEventListener eventListener) {
+        super(eventListener);
+        this.event = "test";
+    }
 
     /**
      * Constructs a prototypical Event.

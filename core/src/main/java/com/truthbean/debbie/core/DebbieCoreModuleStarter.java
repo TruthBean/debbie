@@ -48,6 +48,10 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
         beanFactoryHandler.refreshBeans();
     }
 
+    @Override
+    public void release() {
+    }
+
     private void registerTransformer(BeanInitialization beanInitialization) {
         beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Long.class, String.class);
         beanInitialization.registerDataTransformer(new DefaultTextTransformer(), Object.class, String.class);
@@ -69,6 +73,5 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
         beanInitialization.registerDataTransformer(new SetStringTransformer());
         beanInitialization.registerDataTransformer(new ClassTransformer(), Class.class, String.class);
         beanInitialization.registerDataTransformer(new ClassInstanceTransformer(), Object.class, String.class);
-
     }
 }

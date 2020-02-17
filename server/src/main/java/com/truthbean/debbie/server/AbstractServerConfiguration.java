@@ -14,7 +14,8 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     private String host = "localhost";
     private boolean web = true;
 
-    protected AbstractServerConfiguration() {
+    protected AbstractServerConfiguration(ClassLoader classLoader) {
+        super(classLoader);
     }
 
     public String getName() {
@@ -31,6 +32,7 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     }
 
     protected AbstractServerConfiguration port(int port) {
+        // TODO: check port between -1 to 65535
         this.port = port;
         return this;
     }

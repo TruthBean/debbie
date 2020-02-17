@@ -1,5 +1,9 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.data.transformer.NoDataTransformerMatchedException;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.RequestParameterInfo;
 import com.truthbean.debbie.mvc.router.RouterAnnotationInfo;
 import com.truthbean.debbie.proxy.AbstractMethodExecutor;
@@ -8,6 +12,11 @@ import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.router.RouterPathSplicer;
+import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.TypeHelper;
+import com.truthbean.debbie.util.JacksonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -22,15 +31,15 @@ import java.util.*;
 public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
     private HttpClientConfiguration configuration;
-    private HttpClientAction httpClientAction;
+    private final HttpClientAction httpClientAction;
 
-    private List<HttpClientRequest> requests = new ArrayList<>();
+    private final List<HttpClientRequest> requests = new ArrayList<>();
 
-    public HttpClientExecutor(Class<T> interfaceType, Method method, Object configuration) {
+    public HttpClientExecutor(final Class<T> interfaceType, final Method method, final Object configuration) {
         super(interfaceType, method, configuration);
 
         String[] routerBaseUrl = new String[0];
-        HttpClientRouter httpClientRouter = interfaceType.getAnnotation(HttpClientRouter.class);
+        final HttpClientRouter httpClientRouter = interfaceType.getAnnotation(HttpClientRouter.class);
         if (httpClientRouter != null) {
             routerBaseUrl = httpClientRouter.baseUrl();
         }
@@ -41,7 +50,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             this.configuration = new HttpClientConfiguration();
         }
 
-        RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
+        final RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
         if (router == null) {
             throw new IllegalArgumentException(method.getName() + " have no Router annotation ");
         }
@@ -54,24 +63,25 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             urls = RouterPathSplicer.splicePaths(router);
         }
 
-        var routerMethod = router.method();
-        for (String url : urls) {
-            for (HttpMethod httpMethod : routerMethod) {
-                var request = new HttpClientRequest();
+        final var routerMethod = router.method();
+        for (final String url : urls) {
+            for (final HttpMethod httpMethod : routerMethod) {
+                final var request = new HttpClientRequest();
                 request.setMethod(httpMethod);
                 request.setUrl(url);
                 request.setContentType(router.requestType().info());
                 request.setResponseType(router.responseType().info());
 
-                var parameters = method.getParameters();
+                final var parameters = method.getParameters();
                 if (parameters != null) {
                     for (int i = 0; i < parameters.length; i++) {
-                        var parameter = parameters[i];
-                        var invokedParameter = new ExecutableArgument();
+                        final var parameter = parameters[i];
+                        final Class<?>[] parameterTypes = method.getParameterTypes();
+                        final var invokedParameter = new ExecutableArgument();
 
-                        RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
+                        final RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
                         if (requestParameter != null) {
-                            var type = parameter.getType();
+                            final var type = parameterTypes[i];
                             var name = requestParameter.value();
                             if (name.isBlank()) {
                                 name = requestParameter.name();
@@ -85,33 +95,55 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             invokedParameter.setType(type);
                         }
 
-                        request.setInvokedParameter(invokedParameter);
+                        request.addInvokedParameter(invokedParameter);
                     }
                 }
+                request.sortInvokedParameters();
                 requests.add(request);
             }
         }
     }
 
+    private void setParameterValue(final Object... args) {
+        for (final var request : requests) {
+            for (int i = 0; i < args.length; i++) {
+                final var parameter = request.getInvokedParameter(i);
+                final var arg = args[i];
+                if (parameter != null && parameter.getType().isInstance(arg)) {
+                    parameter.setValue(arg);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public Object execute(Object object, Object... args) {
-        List<Object> result = new ArrayList<>();
-        for (var request : requests) {
-            var parameter = request.getInvokedParameter();
+    public <T> T execute(final Object object, final Class<T> returnType, final Object... args) {
+        final List<HttpClientResponse> result = new ArrayList<>();
+        MediaTypeInfo responseType = MediaType.TEXT_ANY_UTF8.info();
+
+        setParameterValue(args);
+
+        for (final var request : requests) {
+            responseType = request.getResponseType();
+            if (responseType.isAny()) {
+                responseType = MediaType.TEXT_ANY_UTF8.info();
+            }
+
             if (args == null) {
-                result.add(httpClientAction.action(request));
+                result.add(httpClientAction.action(request, responseType));
                 continue;
             }
-            for (int i = 0; i < args.length; i++) {
-                var arg = args[i];
-                if (parameter.getIndex() != i) {
-                    continue;
-                }
 
-                RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
+            final var parameters = request.getInvokedParameters();
+            for (final ExecutableArgument parameter : parameters) {
+                final var arg = parameter.getValue();
+                if (arg == null) continue;
+
+                final RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
                 if (requestParameter != null) {
-                    var type = requestParameter.paramType();
-                    var header = request.getHeader();
+                    final var type = requestParameter.paramType();
+                    final var header = request.getHeader();
                     if (type == RequestParameterType.HEAD) {
                         var headerName = requestParameter.value();
                         if (headerName.isBlank()) {
@@ -131,7 +163,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         if (cookieName.isBlank()) {
                             cookieName = requestParameter.name();
                         }
-                        var cookie = new HttpCookie(cookieName, arg.toString());
+                        final var cookie = new HttpCookie(cookieName, arg.toString());
                         request.addCookie(cookie);
                     } else if (type == RequestParameterType.QUERY) {
                         var queryName = requestParameter.value();
@@ -141,11 +173,11 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         if (arg instanceof String) {
                             request.addQueries(queryName, List.of((String) arg));
                         } else if (arg instanceof List) {
-                            header.addHeader(queryName, (List<String>) arg);
+                            request.addQueries(queryName, (List<String>) arg);
                         } else if (arg instanceof Map) {
                             request.addQueries((Map<String, List<String>>) arg);
                         } else {
-                            header.addHeader(queryName, List.of(arg.toString()));
+                            request.addQueries(queryName, List.of(arg.toString()));
                         }
                     } else if (type == RequestParameterType.PARAM) {
                         var paramName = requestParameter.value();
@@ -167,13 +199,74 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         } else if (arg instanceof String) {
                             request.setTextBody((String) arg);
                         } else {
-                            request.setTextBody(arg.toString());
+                            final MediaType mediaType = requestParameter.bodyType();
+                            if (mediaType.isSame(MediaType.APPLICATION_JSON_UTF8)) {
+                                request.setTextBody(JacksonUtils.toJson(arg));
+                            } else if (mediaType.isSame(MediaType.APPLICATION_XML_UTF8)) {
+                                request.setTextBody(JacksonUtils.toXml(arg));
+                            } else {
+                                try {
+                                    request.setTextBody(DataTransformerFactory.transform(arg, String.class));
+                                } catch (final Exception e) {
+                                    request.setTextBody(arg.toString());
+                                }
+                            }
                         }
                     }
                 }
             }
-            result.add(httpClientAction.action(request));
+
+            result.add(httpClientAction.action(request, responseType));
         }
-        return result;
+        return getResult(result, returnType, responseType);
     }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> T getSingleResult(final HttpClientResponse response, Class<T> returnType, final MediaTypeInfo responseType) {
+        if (response != null) {
+            final Object o = response.getBody();
+            if (o instanceof String) {
+                final String str = (String) o;
+                if (responseType.isSameMediaType(MediaType.APPLICATION_JSON_UTF8)) {
+                    return JacksonUtils.jsonToBean(str, returnType);
+                }
+                if (responseType.isSameMediaType(MediaType.APPLICATION_XML_UTF8)) {
+                    return JacksonUtils.xmlToBean(str, returnType);
+                }
+                if (TypeHelper.isRawBaseType(returnType)) {
+                    returnType = (Class<T>) TypeHelper.getWrapperClass(returnType);
+                }
+                return DataTransformerFactory.transform(str, returnType);
+            } else if (o instanceof InputStream) {
+                return (T) o;
+            } else {
+                throw new IllegalArgumentException("not support " + responseType + " yet! ");
+            }
+        } else {
+            LOGGER.warn("response is null");
+            return null;
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> T getResult(final List<HttpClientResponse> responseList, final Class<T> returnType, final MediaTypeInfo responseType) {
+        if (returnType == null || returnType == Void.class || responseList.isEmpty()) {
+            return null;
+        }
+
+        if (responseList.size() == 1) {
+            final HttpClientResponse response = responseList.get(0);
+            return getSingleResult(response, returnType, responseType);
+        } else if (Iterable.class.isAssignableFrom(returnType) || returnType == Object.class) {
+            final List<T> result = new ArrayList<>();
+            for (final HttpClientResponse response : responseList) {
+                result.add(getSingleResult(response, returnType, responseType));
+            }
+            return (T) result;
+        } else {
+            throw new IllegalArgumentException("not support " + responseType + " yet! ");
+        }
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientExecutor.class);
 }

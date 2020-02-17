@@ -14,7 +14,7 @@ import java.util.Objects;
  * @since 0.0.1
  * Created on 2019/3/10 14:36.
  */
-public class TomcatProperties extends BaseServerProperties {
+public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> {
     //===========================================================================
     private static final String TOMCAT_WEBAPP = "debbie.server.tomcat.webapp";
     //===========================================================================
@@ -27,12 +27,16 @@ public class TomcatProperties extends BaseServerProperties {
             return configuration;
         }
 
+        var classLoader = beanFactoryHandler.getClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoaderUtils.getDefaultClassLoader();
+        }
+
         TomcatProperties properties = new TomcatProperties();
-        configuration = new TomcatConfiguration();
+        configuration = new TomcatConfiguration(classLoader);
 
         properties.loadAndSet(properties, configuration);
 
-        ClassLoader classLoader = ClassLoaderUtils.getDefaultClassLoader();
         String userDir;
         URL userDirUrl = classLoader.getResource("");
         if (userDirUrl != null) {

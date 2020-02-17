@@ -41,8 +41,9 @@ public class InterfaceProxy<T> implements InvocationHandler {
         } catch (Throwable t) {
             throw ReflectionExceptionUtils.unwrapThrowable(t);
         }
-        final AbstractMethodExecutor mapperMethod = cachedMethodExecutor(method);
-        return mapperMethod.execute(object, args);
+        Class<?> returnType = method.getReturnType();
+        final AbstractMethodExecutor interfaceMethod = cachedMethodExecutor(method);
+        return interfaceMethod.execute(object, returnType, args);
     }
 
     private AbstractMethodExecutor cachedMethodExecutor(Method method) {

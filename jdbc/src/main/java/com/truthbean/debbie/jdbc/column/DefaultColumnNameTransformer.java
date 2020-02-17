@@ -1,5 +1,9 @@
 package com.truthbean.debbie.jdbc.column;
 
+/**
+ * @author truthbean
+ * @since 0.0.1
+ */
 public class DefaultColumnNameTransformer implements ColumnNameTransformer {
     @Override
     public String columnNameToPropertyName(String columnName) {

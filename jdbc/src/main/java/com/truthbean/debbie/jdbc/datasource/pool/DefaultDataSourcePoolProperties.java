@@ -10,7 +10,7 @@ import com.truthbean.debbie.properties.DebbieProperties;
  * @since 0.0.1
  * Created on 2018-03-26 16:41
  */
-public class DefaultDataSourcePoolProperties extends DataSourceProperties implements DebbieProperties {
+public class DefaultDataSourcePoolProperties extends DataSourceProperties {
     private final boolean unpool;
 
     //===========================================================================

@@ -17,7 +17,6 @@ public class ClassInfo<C> implements Serializable {
     private Class<C> clazz;
     private Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
-    @SuppressWarnings("rawtypes")
     private Constructor<C>[] constructors;
 
     private List<Field> fields;
@@ -36,11 +35,11 @@ public class ClassInfo<C> implements Serializable {
     private void getClassInfo() {
         Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
 
-        if (annotations != null && !annotations.isEmpty()) {
+        if (!annotations.isEmpty()) {
             Set<Annotation> annotationsCopy = new HashSet<>(annotations);
             for (Annotation annotation : annotationsCopy) {
                 Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
-                if (annotationInAnnotation != null && !annotationInAnnotation.isEmpty()) {
+                if (!annotationInAnnotation.isEmpty()) {
                     for (Annotation ann : annotationInAnnotation) {
                         Class<? extends Annotation> annotationType = ann.annotationType();
                         if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
@@ -53,7 +52,7 @@ public class ClassInfo<C> implements Serializable {
             }
         }
 
-        if (annotations != null && !annotations.isEmpty()) {
+        if (!annotations.isEmpty()) {
             for (Annotation annotation : annotations) {
                 this.classAnnotations.put(annotation.annotationType(), annotation);
             }
@@ -90,9 +89,11 @@ public class ClassInfo<C> implements Serializable {
         return classAnnotations;
     }
 
-    public Annotation getClassAnnotation(Class<? extends Annotation> annotationClass) {
+    @SuppressWarnings("unchecked")
+    public <T extends Annotation> T getClassAnnotation(Class<T> annotationClass) {
         if (classAnnotations != null && !classAnnotations.isEmpty()) {
-            return classAnnotations.get(annotationClass);
+            Annotation annotation = classAnnotations.get(annotationClass);
+            return (T) annotation;
         }
         return null;
     }
@@ -120,7 +121,7 @@ public class ClassInfo<C> implements Serializable {
         if (!(o instanceof ClassInfo)) {
             return false;
         }
-        ClassInfo classInfo = (ClassInfo) o;
+        ClassInfo<?> classInfo = (ClassInfo<?>) o;
         return clazz.getName().equals(classInfo.getClazz().getName());
     }
 

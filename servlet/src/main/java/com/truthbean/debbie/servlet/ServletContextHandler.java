@@ -2,10 +2,7 @@ package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.mvc.filter.CharacterEncodingFilter;
-import com.truthbean.debbie.mvc.filter.CorsFilter;
-import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
-import com.truthbean.debbie.mvc.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.filter.*;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.servlet.filter.RouterFilterWrapper;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
@@ -26,11 +23,15 @@ public class ServletContextHandler {
     private final BeanFactoryHandler beanFactoryHandler;
     private final BeanInitialization beanInitialization;
 
+    private final ClassLoader classLoader;
+
     public ServletContextHandler(ServletContext servletContext, BeanFactoryHandler handler) {
         setServletConfiguration();
 
         beanInitialization = handler.getBeanInitialization();
         this.beanFactoryHandler = handler;
+
+        this.classLoader = this.beanFactoryHandler.getClassLoader();
 
         handleServletContext(servletContext);
     }
@@ -40,9 +41,9 @@ public class ServletContextHandler {
     private void setServletConfiguration() {
         if (ServletProperties.isPropertiesEmpty()) {
             // TODO 提供properties无法加载的方案
-
+            servletConfiguration = new ServletConfiguration(classLoader);
         } else {
-            servletConfiguration = ServletProperties.toConfiguration();
+            servletConfiguration = ServletProperties.toConfiguration(classLoader);
         }
     }
 
@@ -96,6 +97,13 @@ public class ServletContextHandler {
         if (servletConfiguration.isEnableCrsf()) {
             var csrfFilter = new RouterFilterWrapper(new CsrfFilter().setMvcConfiguration(servletConfiguration));
             servletContext.addFilter("csrfFilter", csrfFilter)
+                    .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
+        }
+
+        // security
+        if (servletConfiguration.isEnableSecurity()) {
+            var securityFilter = new RouterFilterWrapper(new SecurityFilter().setMvcConfiguration(servletConfiguration));
+            servletContext.addFilter("securityFilter", securityFilter)
                     .addMappingForUrlPatterns(dispatcherTypes, true, "/*");
         }
 

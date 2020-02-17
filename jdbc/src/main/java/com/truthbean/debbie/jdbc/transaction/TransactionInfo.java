@@ -7,10 +7,7 @@ import java.io.Closeable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -26,7 +23,8 @@ public class TransactionInfo implements Closeable {
     private boolean forceCommit;
     private Class<? extends Throwable> rollbackFor;
 
-    private final Map<String, Object> resources = new LinkedHashMap<>();
+    private final Map<Object, Object> resources = new LinkedHashMap<>();
+    private final List<ResourceHolder> resourceHolders = new LinkedList<>();
 
     public TransactionInfo() {
         this.id = UUID.randomUUID().toString();
@@ -72,16 +70,40 @@ public class TransactionInfo implements Closeable {
         this.rollbackFor = rollbackFor;
     }
 
-    public void bindResource(String key, Object value) {
+    public void bindResource(Object key, Object value) {
         resources.put(key, value);
+    }
+
+    public void bindResources(Map<Object, Object> resources) {
+        if (resources != null && !resources.isEmpty())
+            this.resources.putAll(resources);
     }
 
     public void clearResource() {
         resources.clear();
     }
 
-    public Object getResource(String key) {
+    public Object getResource(Object key) {
         return resources.get(key);
+    }
+
+    public void registerResourceHolder(ResourceHolder resourceHolder) {
+        if (resourceHolder != null)
+            resourceHolders.add(resourceHolder);
+    }
+
+    public void registerResourceHolders(List<ResourceHolder> resourceHolders) {
+        if (resourceHolders != null && !resourceHolders.isEmpty()) {
+            this.resourceHolders.addAll(resourceHolders);
+        }
+    }
+
+    public void releaseResourceHolder(ResourceHolder resourceHolder) {
+        resourceHolders.remove(resourceHolder);
+    }
+
+    public void clearResourceHolders() {
+        resourceHolders.clear();
     }
 
     public Connection setAutoCommit(boolean autoCommit) {
@@ -111,7 +133,23 @@ public class TransactionInfo implements Closeable {
         return this.connection;
     }
 
+    public void prepare() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.prepare();
+        }
+    }
+
+    private void beforeCommit() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.beforeCommit();
+        }
+    }
+
     public void commit() {
+        // before
+        beforeCommit();
+
+        // commit
         if (connection == null) {
             LOGGER.error("method (" + method + ") not bind connection is null. ");
             return;
@@ -125,9 +163,27 @@ public class TransactionInfo implements Closeable {
         } catch (SQLException e) {
             LOGGER.error("commit error for " + e.getMessage());
         }
+
+        // after
+        afterCommit();
+    }
+
+    private void afterCommit() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.afterCommit();
+        }
+    }
+
+    private void beforeRollback() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.beforeRollback();
+        }
     }
 
     public void rollback() {
+        // before
+        beforeRollback();
+
         if (connection == null) {
             LOGGER.error("method (" + method + ") not bind connection is null. ");
             return;
@@ -141,11 +197,27 @@ public class TransactionInfo implements Closeable {
         } catch (SQLException e) {
             LOGGER.error("rollback error for " + e.getMessage());
         }
+
+        // after
+        afterRollback();
+    }
+
+    private void afterRollback() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.afterRollback();
+        }
+    }
+
+    private void beforeClose() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.beforeClose();
+        }
     }
 
     @Override
     public void close() {
-        resources.clear();
+        beforeClose();
+
         if (connection == null) {
             LOGGER.error("method (" + method + ") not bind connection is null. ");
             return;
@@ -159,6 +231,18 @@ public class TransactionInfo implements Closeable {
             }
         } catch (SQLException e) {
             LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
+        }
+
+        afterClose();
+
+        // clear
+        resources.clear();
+        resourceHolders.clear();
+    }
+
+    private void afterClose() {
+        for (ResourceHolder resourceHolder : resourceHolders) {
+            resourceHolder.afterClose();
         }
     }
 

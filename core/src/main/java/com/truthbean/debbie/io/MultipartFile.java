@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class MultipartFile {
     private String fileName;
 
-    private MediaType contentType;
+    private MediaTypeInfo contentType;
 
     private byte[] content;
     private InputStream inputStream;
@@ -28,12 +28,16 @@ public class MultipartFile {
         this.fileName = fileName;
     }
 
-    public MediaType getContentType() {
+    public MediaTypeInfo getContentType() {
         return contentType;
     }
 
-    public void setContentType(MediaType contentType) {
+    public void setContentType(MediaTypeInfo contentType) {
         this.contentType = contentType;
+    }
+
+    public void setContentType(MediaType contentType) {
+        this.contentType = contentType.info();
     }
 
     public byte[] getContent() {

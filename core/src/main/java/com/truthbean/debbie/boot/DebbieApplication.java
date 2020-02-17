@@ -32,8 +32,8 @@ public abstract class DebbieApplication {
         start(beforeStartTime, args);
     }
 
-    protected void beforeExit(BeanFactoryHandler beanFactoryHandler) {
-
+    protected void beforeExit(BeanFactoryHandler handler, String... args) {
+        handler.release(args);
     }
 
     /**

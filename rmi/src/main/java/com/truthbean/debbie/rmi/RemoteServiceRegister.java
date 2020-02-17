@@ -44,7 +44,7 @@ public class RemoteServiceRegister {
         registry = register(false, rmiBindAddress, rmiBindPort);
     }
 
-    public Registry register(boolean rmiRegistrySSL, String rmiBindAddress, int registryPort) {
+    public Registry register(boolean rmiRegistrySsl, String rmiBindAddress, int registryPort) {
 
         // Prevent an attacker guessing the RMI object ID
         System.setProperty("java.rmi.server.randomIDs", "true");
@@ -56,7 +56,7 @@ public class RemoteServiceRegister {
         RMIServerSocketFactory serverSsf = null;
 
         // Configure registry socket factories
-        if (rmiRegistrySSL) {
+        if (rmiRegistrySsl) {
             /*registryCsf = new SslRMIClientSocketFactory();
             if (rmiBindAddress == null) {
                 registrySsf = new SslRMIServerSocketFactory(sslContext,
@@ -103,6 +103,7 @@ public class RemoteServiceRegister {
         bind(registry, serviceName, service);
     }
 
+    @SuppressWarnings("unchecked")
     public <S, SI extends S> void bind(Class<S> serviceClass) {
         try {
             DebbieBeanInfo<S> beanInfo = handler.getBeanInfo(serviceClass);

@@ -11,24 +11,28 @@ import java.util.Map;
  */
 public class HttpClientFactory {
 
-    private final Map<Class<?>, InterfaceProxyFactory<?>> knownMappers = new HashMap<>();
+    private final Map<Class<?>, InterfaceProxyFactory<?>> knownInterfaces = new HashMap<>();
 
-    private HttpClientConfiguration httpClientConfiguration;
-    public HttpClientFactory() {
+    private final HttpClientConfiguration httpClientConfiguration;
+    private final ClassLoader classLoader;
+
+    public HttpClientFactory(ClassLoader classLoader) {
         this.httpClientConfiguration = HttpClientProperties.toConfiguration();
+        this.classLoader = classLoader;
     }
 
+    @SuppressWarnings("unchecked")
     public <HttpClientBean> HttpClientBean factory(Class<HttpClientBean> beanClass) {
-        InterfaceProxyFactory<?> interfaceProxyFactory = knownMappers.get(beanClass);
+        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.get(beanClass);
         if (interfaceProxyFactory == null) {
-            interfaceProxyFactory = new InterfaceProxyFactory<>(beanClass, httpClientConfiguration);
-            knownMappers.put(beanClass, interfaceProxyFactory);
+            interfaceProxyFactory = new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader);
+            knownInterfaces.put(beanClass, interfaceProxyFactory);
         }
 
         return  (HttpClientBean) interfaceProxyFactory.newInstance(this, HttpClientExecutor.class);
     }
 
     public void destroy() {
-        knownMappers.clear();
+        knownInterfaces.clear();
     }
 }

@@ -4,6 +4,10 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class NettyModuleStarter implements DebbieModuleStarter {
     @Override
     public void registerBean(BeanFactoryHandler beanFactoryHandler) {
@@ -19,5 +23,10 @@ public class NettyModuleStarter implements DebbieModuleStarter {
     @Override
     public int getOrder() {
         return 33;
+    }
+
+    @Override
+    public void release() {
+
     }
 }

@@ -25,6 +25,12 @@ class NetWorkUtilsTest {
     }
 
     @Test
+    void getLocalIpv6Address() {
+        InetAddress localAddress = NetWorkUtils.getLocalIpv6Address();
+        printLocalAddress(localAddress);
+    }
+
+    @Test
     void getLocalHost() {
         String localHost = NetWorkUtils.getLocalHost();
         System.out.println(localHost);

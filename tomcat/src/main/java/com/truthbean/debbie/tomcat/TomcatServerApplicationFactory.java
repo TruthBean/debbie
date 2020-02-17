@@ -140,6 +140,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
 
             @Override
             public void exit(String... args) {
+                beforeExit(beanFactoryHandler, args);
                 try {
                     server.stop();
                     server.destroy();

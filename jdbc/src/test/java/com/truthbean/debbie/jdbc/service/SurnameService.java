@@ -3,9 +3,10 @@ package com.truthbean.debbie.jdbc.service;
 import com.truthbean.debbie.jdbc.entity.Surname;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-public interface SurnameService {
+public interface SurnameService extends EmptyService<Surname, Long> {
 
     /**
      *  test force commit and rollbackFor is not instanceOf this exception
@@ -16,7 +17,15 @@ public interface SurnameService {
 
     Optional<Surname> selectById(Long id);
 
-    List<Surname> selectAll();
+    List<Surname> list();
+
+    Optional<List<Surname>> getOptional();
+
+    Map<String, List<Surname>> getMap();
+
+    Optional<Map<String, List<Surname>>> emptyMap();
+
+    Optional<List<Surname>> getByKey(String key);
 
     void doNothing();
 }

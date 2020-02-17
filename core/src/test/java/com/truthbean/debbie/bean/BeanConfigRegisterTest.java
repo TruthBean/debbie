@@ -1,6 +1,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.bean.inter.*;
+import com.truthbean.debbie.bean.lifecycle.LifecycleBeanTest;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
@@ -65,5 +66,10 @@ public class BeanConfigRegisterTest {
         System.out.println(demoBeanComponent.getUuid());
         System.out.println(demoBeanComponent.getDemo1().getUuid());
         System.out.println(demoBeanComponent.getDemo2().getUuid());
+    }
+
+    @Test
+    public void lifecycle(@BeanInject LifecycleBeanTest test) {
+
     }
 }

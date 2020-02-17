@@ -2,6 +2,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - AioApplicationTest",
+            "request": "launch",
+            "mainClass": "com.truthbean.debbie.aio.AioApplicationTest"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - TestClient",
             "request": "launch",
             "mainClass": "com.truthbean.debbie.rmi.TestClient"

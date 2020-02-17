@@ -28,7 +28,7 @@ public final class RouterErrorResponseHandler {
         return error(httpRequest, data);
     }
 
-    public static RouterInfo exception(RouterRequest httpRequest, Exception e) {
+    public static RouterInfo exception(RouterRequest httpRequest, Throwable e) {
         ResponseEntity<Object> data = ResponseHelper.error(e.getMessage());
         Map<String, Object> value = new HashMap<>();
         value.put("uri", httpRequest.getUrl());
@@ -44,11 +44,11 @@ public final class RouterErrorResponseHandler {
         RouterInfo error = new RouterInfo();
 
         RouterResponse routerResponse = new RouterResponse();
-        if (httpRequest.getResponseType().toMediaType() == MediaType.APPLICATION_XML) {
+        if (httpRequest.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
             routerResponse.setResponseType(httpRequest.getResponseType());
             error.setErrorInfo(JacksonUtils.toXml(data));
         } else {
-            routerResponse.setResponseType(MediaType.APPLICATION_JSON);
+            routerResponse.setResponseType(MediaType.APPLICATION_JSON_UTF8);
             error.setErrorInfo(JacksonUtils.toJson(data));
         }
         error.setResponse(routerResponse);

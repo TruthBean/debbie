@@ -3,6 +3,10 @@ package com.truthbean.debbie.rmi;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RemoteServiceProxy<Service> extends UnicastRemoteObject implements RemoteService<Service> {
 
     protected RemoteServiceProxy() throws RemoteException {

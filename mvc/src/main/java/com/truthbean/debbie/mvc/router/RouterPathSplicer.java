@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 public class RouterPathSplicer {
 
     private static final String VARIABLE_REGEX = "\\{[^/]+?\\}";
+    private static final Pattern BLACK_PATTERN = Pattern.compile("[\\w]*");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
 
     private static List<String> resolvePath(RouterAnnotationInfo router) {
@@ -197,7 +198,7 @@ public class RouterPathSplicer {
                         regex = regex.replace(group, pattern);
                     } else {
                         uriPathVariable.setName(group.substring(1, group.length() - 1));
-                        uriPathVariable.setPattern(Pattern.compile("[\\w]*"));
+                        uriPathVariable.setPattern(BLACK_PATTERN);
                         regex = regex.replace(group, "[\\w]*");
                     }
                     pathFragment.addPathVariable(uriPathVariable, new ArrayList<>());
@@ -255,5 +256,12 @@ public class RouterPathSplicer {
             throw new RuntimeException("router value or pathRegex cannot be empty");
         }
         return newPaths;
+    }
+
+    public static String replaceDispatcherMapping(String dispatcherMapping, String path) {
+        if ("/**".equals(dispatcherMapping)) {
+            return "/" + path;
+        }
+        return dispatcherMapping.replace("**", path);
     }
 }

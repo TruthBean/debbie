@@ -1,25 +1,27 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.net.uri.QueryStringEncoder;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLParameters;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * @author TruthBean
@@ -29,17 +31,17 @@ public class HttpClientAction extends HttpHandler {
 
     private static final HttpClient.Builder HTTP_CLIENT_BUILDER = HttpClient.newBuilder();
 
-    private HttpClient httpClient;
-    private HttpClientConfiguration configuration;
+    private final HttpClient httpClient;
+    private final HttpClientConfiguration configuration;
 
-    public HttpClientAction(HttpClientConfiguration configuration) {
+    public HttpClientAction(final HttpClientConfiguration configuration) {
         super(configuration);
         this.configuration = configuration;
         this.httpClient = createHttpClient();
     }
 
     protected HttpClient createHttpClient() {
-        HttpClient.Builder builder = HTTP_CLIENT_BUILDER;
+        final HttpClient.Builder builder = HTTP_CLIENT_BUILDER;
         if (configuration.useProxy()) {
             builder.proxy(createProxySelector());
         }
@@ -47,25 +49,27 @@ public class HttpClientAction extends HttpHandler {
             builder.authenticator(basicAuth());
         }
         if (configuration.isInsecure()) {
-            builder.sslContext(createSSLContext());
+            builder.sslContext(createSslContext());
             System.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
         }
         return builder.build();
     }
 
-    protected <T> HttpResponse<T> getResponse(CompletableFuture<HttpResponse<T>> future) {
-        HttpResponse<T> response = null;
+    @SuppressWarnings("rawtypes")
+    protected HttpResponse getResponse(final CompletableFuture<HttpResponse> future) {
+        HttpResponse response = null;
         try {
             response = future.get(configuration.getResponseTimeout(), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("response error. ", e);
         }
         return response;
     }
 
-    protected <T> HttpResponse<T> actionWithRetryWhenFail(CompletableFuture<HttpResponse<T>> future) {
+    @SuppressWarnings("rawtypes")
+    protected HttpResponse actionWithRetryWhenFail(CompletableFuture<HttpResponse> future) {
         int tryCount = 0;
-        HttpResponse<T> response = null;
+        HttpResponse response = null;
         while ((response == null) && tryCount < configuration.getRetryTime()) {
             LOGGER.debug("request send " + tryCount + " time");
             tryCount++;
@@ -75,7 +79,7 @@ public class HttpClientAction extends HttpHandler {
             if (response != null) {
                 try {
                     LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     LOGGER.error("", e);
                 }
             }
@@ -83,13 +87,14 @@ public class HttpClientAction extends HttpHandler {
         return response;
     }
 
-    public Map<String, String> action(RouterRequest request) {
-        long startTime = System.nanoTime();
+    @SuppressWarnings("rawtypes")
+    public HttpClientResponse action(final RouterRequest request, final MediaTypeInfo responseType) {
+        final long startTime = System.nanoTime();
         LOGGER.debug(OPERATION_NAME + "开始通信: " + request);
 
-        var url = request.getUrl();
-        var encoder = new QueryStringEncoder(url);
-        var queries = request.getQueries();
+        final var url = request.getUrl();
+        final var encoder = new QueryStringEncoder(url);
+        final var queries = request.getQueries();
         if (queries != null && !queries.isEmpty()) {
             queries.forEach((key, value) -> {
                 if (value != null && !value.isEmpty()) {
@@ -98,23 +103,27 @@ public class HttpClientAction extends HttpHandler {
             });
         }
 
-        URI uri = null;
+        URI uri;
         try {
             uri = encoder.toUri();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        } catch (final URISyntaxException e) {
+            throw new IllegalArgumentException(e);
         }
-        var builder = HttpRequest.newBuilder(uri);
+        LOGGER.trace("request uri: " + uri);
+        if (uri == null) {
+            throw new IllegalArgumentException("uri is null");
+        }
+        final var builder = HttpRequest.newBuilder(uri);
 
-        var header = request.getHeader();
+        final var header = request.getHeader();
         if (header != null && !header.isEmpty()) {
-            var headers = header.getHeaders();
+            final var headers = header.getHeaders();
             headers.forEach((key, value) -> builder.header(key, String.join(";", value)));
         }
 
-        var cookies = request.getCookies();
+        final var cookies = request.getCookies();
         if (cookies != null && !cookies.isEmpty()) {
-            var cookie = buildCookies(cookies);
+            final var cookie = buildCookies(cookies);
             LOGGER.debug("request Cookie: " + cookie);
             builder.header("Cookie", cookie);
         }
@@ -126,12 +135,12 @@ public class HttpClientAction extends HttpHandler {
 
         builder.header("Content-Type", contentType.toString());
 
-        var xWwwFormUrlencodedBody = new StringBuilder();
-        var parameters = request.getParameters();
+        final var xWwwFormUrlencodedBody = new StringBuilder();
+        final var parameters = request.getParameters();
         if (parameters != null && !parameters.isEmpty()) {
             parameters.forEach((key, value) -> {
                 if (value != null && !value.isEmpty()) {
-                    for (var it: value) {
+                    for (final var it: value) {
                         xWwwFormUrlencodedBody.append(key).append("=").append(it).append("&");
                     }
                 }
@@ -143,43 +152,87 @@ public class HttpClientAction extends HttpHandler {
 
         if (contentType.toMediaType() == MediaType.APPLICATION_FORM_URLENCODED) {
             // form 表单
-            var body = HttpRequest.BodyPublishers.ofString(xWwwFormUrlencodedBody.toString());
-            var httpRequest = builder.method(request.getMethod().name(), body).build();
-            return action(httpRequest, startTime);
+            final var body = HttpRequest.BodyPublishers.ofString(xWwwFormUrlencodedBody.toString());
+            final var httpRequest = builder.method(request.getMethod().name(), body).build();
+            return action(httpRequest, startTime, responseType);
         } else if (contentType.toMediaType() == MediaType.MULTIPART_FORM_DATA) {
             // multipart
-            var multipart = ofMimeMultipartData(parameters, UUID.randomUUID().toString());
-            var httpRequest = builder.method(request.getMethod().name(), multipart).build();
-            return action(httpRequest, startTime);
+            final var multipart = ofMimeMultipartData(parameters, UUID.randomUUID().toString());
+            final var httpRequest = builder.method(request.getMethod().name(), multipart).build();
+            return action(httpRequest, startTime, responseType);
         } else {
             if (request.getInputStreamBody() != null) {
-                var body = HttpRequest.BodyPublishers.ofInputStream(request::getInputStreamBody);
-                var httpRequest = builder.method(request.getMethod().name(), body).build();
-                return action(httpRequest, startTime);
+                final var body = HttpRequest.BodyPublishers.ofInputStream(request::getInputStreamBody);
+                final var httpRequest = builder.method(request.getMethod().name(), body).build();
+                return action(httpRequest, startTime, responseType);
             } else if (request.getTextBody() != null) {
-                var body = HttpRequest.BodyPublishers.ofString(request.getTextBody());
-                var httpRequest = builder.method(request.getMethod().name(), body).build();
-                return action(httpRequest, startTime);
+                final var body = HttpRequest.BodyPublishers.ofString(request.getTextBody());
+                final var httpRequest = builder.method(request.getMethod().name(), body).build();
+                return action(httpRequest, startTime, responseType);
             } else if (request.getFileBody() != null) {
                 HttpRequest.BodyPublisher body = null;
                 try {
                     body = HttpRequest.BodyPublishers.ofFile(request.getFileBody().toPath());
-                } catch (FileNotFoundException e) {
+                } catch (final FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                var httpRequest = builder.method(request.getMethod().name(), body).build();
-                return action(httpRequest, startTime);
+                final var httpRequest = builder.method(request.getMethod().name(), body).build();
+                return action(httpRequest, startTime, responseType);
             } else {
-                var httpRequest = builder.method(request.getMethod().name(), null).build();
-                return action(httpRequest, startTime);
+                final var httpRequest = builder.method(request.getMethod().name(), HttpRequest.BodyPublishers.noBody()).build();
+                return action(httpRequest, startTime, responseType);
             }
         }
-
     }
 
-    protected Map<String, String> action(HttpRequest httpRequest, long startTime) {
-        Map<String, String> result = null;
-        CompletableFuture<HttpResponse<String>> future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+    public void buildRequest(final HttpRequest.Builder builder, final HttpMethod httpMethod, final HttpRequest.BodyPublisher bodyPublisher) {
+        switch (httpMethod) {
+            case GET:
+                builder.GET();
+                break;
+            case POST:
+                builder.POST(bodyPublisher);
+                break;
+            case PUT:
+                builder.PUT(bodyPublisher);
+                break;
+            case DELETE:
+                builder.DELETE();
+                break;
+            default:
+                builder.method(httpMethod.name(), bodyPublisher);
+                break;
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private <T> CompletableFuture sendAsync(final HttpRequest httpRequest, final Class<T> type) {
+        CompletableFuture future = null;
+        if (type == String.class) {
+            future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+        }
+        if (type == byte[].class) {
+            future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
+        }
+        if (type == Stream.class) {
+            future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines());
+        }
+        if (type == InputStream.class) {
+            future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        }
+        // TODO: 2019-11-23 more type
+        return future;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected HttpClientResponse action(final HttpRequest httpRequest, final long startTime, final MediaTypeInfo mediaType) {
+        HttpClientResponse result = null;
+        CompletableFuture<HttpResponse> future;
+        if (mediaType.isText()) {
+            future = sendAsync(httpRequest, String.class);
+        } else {
+            future = sendAsync(httpRequest, InputStream.class);
+        }
         HttpResponse<String> response;
         if (configuration.retry()) {
             response = actionWithRetryWhenFail(future);
@@ -188,25 +241,27 @@ public class HttpClientAction extends HttpHandler {
         }
 
         if (response != null) {
-            result = new HashMap<>();
-            LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
-            LOGGER.debug(OPERATION_NAME + "通讯完成，http 状态：" + HttpStatus.valueOf(response.statusCode()));
-            result.put("code", String.valueOf(response.statusCode()));
-            if (response.body() != null) {
-                String responseBody = response.body();
-                if (responseBody != null) {
-                    try {
-                        HttpHeaders responseHeaders = response.headers();
-                        LOGGER.debug(
-                                "whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
-                        result.put("body", responseBody);
-                    } catch (Exception e) {
-                        LOGGER.error("通讯成功，解析返回值异常", e);
-                    }
-                    LOGGER.trace(OPERATION_NAME + "返回内容：" + result);
-                } else {
-                    LOGGER.error("通讯成功，返回内容为空");
+            result = new HttpClientResponse();
+
+            final int code = response.statusCode();
+            LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + code + "，http 状态：" + HttpStatus.valueOf(code));
+
+            result.setCode(code);
+            result.setSslSession(response.sslSession().orElse(null));
+            result.setVersion(response.version());
+
+            final HttpHeaders responseHeaders = response.headers();
+            result.setHeaders(responseHeaders.map());
+            LOGGER.debug("whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
+
+            final Object responseBody = response.body();
+            if (responseBody != null) {
+                try {
+                    result.setBody(responseBody);
+                } catch (final Exception e) {
+                    LOGGER.error("通讯成功，解析返回值异常", e);
                 }
+                LOGGER.trace(OPERATION_NAME + "返回内容：" + result);
             } else {
                 LOGGER.error("通讯异常");
             }
@@ -214,7 +269,7 @@ public class HttpClientAction extends HttpHandler {
             LOGGER.error("通讯失败");
         }
 
-        long endTime = System.nanoTime();
+        final long endTime = System.nanoTime();
         LOGGER.debug(OPERATION_NAME + "共计耗时:" + ((endTime - startTime) / 1000000.0) + "ms");
         return result;
     }

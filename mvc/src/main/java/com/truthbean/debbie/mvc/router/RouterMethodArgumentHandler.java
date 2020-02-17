@@ -16,8 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -123,6 +122,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     if (parameters.getBody() != null) {
                                 /*handleObjectFiled(parameters.getBody(), requestParam.requestType(), newInstance,
                                         fields.get(i), parameter);*/
+                                // todo
                     }
 
                     Map<String, List> headers = parameters.getHeaders();
@@ -136,6 +136,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
                     if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
                         // handleFiled(sessionAttributes,newInstance, fields.get(i), parameter);
+                        // todo
                     }
                 }
             }
@@ -164,7 +165,10 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             requestParameterResolver.setRequestType(requestType);
             result = requestParameterResolver.resolveArgument(invokedParameter, parameters, dataValidateFactory);
         } else if (resolver != null) {
-            if ("com.truthbean.debbie.jdbc.domain.PageableRouterMethodArgumentResolver".equals(resolver.getClass().getName())) {
+            String resolverClassName = resolver.getClass().getName();
+            if ("com.truthbean.debbie.jdbc.domain.PageableHandlerMethodArgumentResolver".equals(resolverClassName) ||
+                    "com.truthbean.debbie.jdbc.domain.PageableRouterMethodArgumentResolver".equals(resolverClassName) ||
+                    "com.truthbean.debbie.jdbc.domain.SortHandlerMethodArgumentResolver".equals(resolverClassName)) {
                 result = resolver.resolveArgument(invokedParameter, parameters.getQueries(), dataValidateFactory);
             } else {
                 result = resolver.resolveArgument(invokedParameter, parameters, dataValidateFactory);
@@ -224,6 +228,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         doHandleParam(parameters, invokedParameter, requestType);
     }
 
+    @SuppressWarnings("rawtypes")
     public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field,
                               ExecutableArgument invokedParameter, MediaType requestType) {
         Map<String, List> mixValues = parameters.getMixValues();
@@ -300,13 +305,18 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         }
     }
 
-    public static List<ExecutableArgument> typeOf(Parameter[] parameters) {
+    public static List<ExecutableArgument> typeOf(Method method, Class<?> declaringClass) {
         List<ExecutableArgument> result = new ArrayList<>();
 
+        Parameter[] parameters = method.getParameters();
+        Class<?>[] parameterTypes = ReflectionHelper.getMethodActualTypes(method, declaringClass);
+
         ExecutableArgument invokedParameter;
-        for (Parameter parameter : parameters) {
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
             invokedParameter = new ExecutableArgument();
-            invokedParameter.setType(parameter.getType());
+            Class<?> parameterizedType = parameterTypes[i];
+            invokedParameter.setType(parameterizedType);
             if (!parameter.isNamePresent()) {
                 String name = parameter.getName();
                 if (name.startsWith("arg")) {

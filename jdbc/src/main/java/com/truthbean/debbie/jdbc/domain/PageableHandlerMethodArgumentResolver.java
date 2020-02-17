@@ -83,7 +83,7 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
      * Returns whether the given {@link Pageable} is the fallback one.
      *
      * @param pageable can be {@literal null}.
-     * @return
+     * @return bool
      * @since 1.9
      */
     public boolean isFallbackPageable(PageRequest pageable) {
@@ -197,6 +197,8 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
         return PageRequest.class.equals(parameter.getType());
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
     public boolean resolveArgument(ExecutableArgument executableArgument, Object originValues, DataValidateFactory validateFactory) {
         Map<String, List> map = (Map<String, List>) originValues;
         PageRequest defaultOrFallback = getDefaultFromAnnotationOrFallback(executableArgument);

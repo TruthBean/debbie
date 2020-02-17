@@ -1,31 +1,40 @@
 package com.truthbean.debbie.event;
 
-import java.util.EventObject;
+import com.truthbean.debbie.bean.*;
 
-public abstract class DebbieEvent extends EventObject {
+import java.lang.annotation.*;
 
-    /**
-     * System time when the event happened
-     */
-    private final long timestamp;
-
-
-    /**
-     * Create a new DebbieEvent.
-     *
-     * @param source the object on which the event initially occurred (never {@code null})
-     */
-    public DebbieEvent(Object source) {
-        super(source);
-        this.timestamp = System.currentTimeMillis();
-    }
-
+/**
+ * @author truthbean/Rogar·Q
+ * @since 0.0.2
+ */
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@BeanComponent
+public @interface DebbieEvent {
 
     /**
-     * Return the system time in milliseconds when the event happened.
+     * event bean name
+     * @return router bean name
      */
-    public final long getTimestamp() {
-        return this.timestamp;
-    }
+    @BeanAliceForValue
+    @BeanAliceFor(name = "value")
+    String value() default "";
 
+    /**
+     * event bean name
+     * @return router bean name
+     */
+    @BeanAliceForName
+    @BeanAliceFor(name = "name")
+    String name() default "";
+
+    /**
+     * router always be singleton
+     * @return BeanType
+     */
+    @BeanAliceForType
+    @BeanAliceFor(name = "type")
+    BeanType type() default BeanType.SINGLETON;
 }

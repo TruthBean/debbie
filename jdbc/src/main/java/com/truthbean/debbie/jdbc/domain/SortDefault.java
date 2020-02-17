@@ -20,17 +20,17 @@ import java.lang.annotation.Target;
 public @interface SortDefault {
 
     /**
-     * Alias for {@link #sort()} to make a declaration configuring fields only more concise.
+     * @return Alias for {@link #sort()} to make a declaration configuring fields only more concise.
      */
     String[] value() default {};
 
     /**
-     * The properties to sort by by default. If unset, no sorting will be applied at all.
+     * @return The properties to sort by by default. If unset, no sorting will be applied at all.
      */
     String[] sort() default {};
 
     /**
-     * The direction to sort by. Defaults to {@link Sort.Direction#ASC}.
+     * @return The direction to sort by. Defaults to {@link Sort.Direction#ASC}.
      */
     Sort.Direction direction() default Sort.Direction.ASC;
 
@@ -43,10 +43,10 @@ public @interface SortDefault {
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.PARAMETER)
-    public @interface SortDefaults {
+    @interface SortDefaults {
 
         /**
-         * The individual {@link SortDefault} declarations to be sorted by.
+         * @return The individual {@link SortDefault} declarations to be sorted by.
          */
         SortDefault[] value();
     }

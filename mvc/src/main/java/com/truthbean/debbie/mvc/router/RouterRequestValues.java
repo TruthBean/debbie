@@ -1,13 +1,11 @@
 package com.truthbean.debbie.mvc.router;
 
-
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 
 import java.io.InputStream;
 import java.net.HttpCookie;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -16,12 +14,15 @@ import java.util.*;
  * Created on 2019/3/16 08:33.
  */
 public class RouterRequestValues {
+    @SuppressWarnings({"rawtypes"})
     private Map<String, List> pathAttributes;
     private Map<String, List<String>> matrixAttributes;
 
     private Map<String, List<String>> queries;
+    @SuppressWarnings({"rawtypes"})
     private Map<String, List> params;
     private Map<String, List<String>> headers;
+    @SuppressWarnings({"rawtypes"})
     private Map<String, List> cookieAttributes;
     private Map<String, Object> sessionAttributes;
     private Map<String, Object> innerAttributes;
@@ -32,6 +33,7 @@ public class RouterRequestValues {
     private RouterRequest routerRequest;
     private RouterResponse routerResponse;
 
+    @SuppressWarnings({"rawtypes"})
     private final Map<String, List> mixValues = new HashMap<>();
 
     public RouterRequestValues(RouterRequest routerRequest, RouterResponse routerResponse) {
@@ -41,6 +43,7 @@ public class RouterRequestValues {
         this.routerResponse = routerResponse;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getQueries() {
         if (queries == null) {
             queries = new HashMap<>();
@@ -51,6 +54,7 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(queries);
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getMatrixAttributes() {
         if (matrixAttributes == null) {
             matrixAttributes = new HashMap<>();
@@ -73,6 +77,7 @@ public class RouterRequestValues {
         return routerResponse;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getParams() {
         if (params == null) {
             params = routerRequest.getParameters();
@@ -80,6 +85,7 @@ public class RouterRequestValues {
         return params;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getHeaders() {
         if (headers == null) {
             headers = new HashMap<>();
@@ -90,6 +96,7 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(headers);
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getCookieAttributes() {
         if (cookieAttributes == null) {
             cookieAttributes = new HashMap<>();
@@ -100,6 +107,7 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(cookieAttributes);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setCookieAttributes(List<HttpCookie> cookies) {
         for (int i = 0; i < cookies.size(); i++) {
             HttpCookie iCookie = cookies.get(i);
@@ -146,6 +154,7 @@ public class RouterRequestValues {
         return textBody;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getPathAttributes() {
         if (pathAttributes == null) {
             pathAttributes = new HashMap<>();
@@ -202,6 +211,7 @@ public class RouterRequestValues {
         }
     }
 
+    @SuppressWarnings({"rawtypes"})
     public Map<String, List> getMixValues() {
         if (mixValues.isEmpty()) {
             setMixValues();

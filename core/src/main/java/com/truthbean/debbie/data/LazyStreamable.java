@@ -11,10 +11,12 @@ import java.util.stream.Stream;
 final class LazyStreamable<T> implements Streamable<T> {
     private final Supplier<? extends Stream<T>> stream;
 
+    @Override
     public Iterator<T> iterator() {
         return this.stream().iterator();
     }
 
+    @Override
     public Stream<T> stream() {
         return this.stream.get();
     }
@@ -44,6 +46,7 @@ final class LazyStreamable<T> implements Streamable<T> {
         return Objects.hash(stream);
     }
 
+    @Override
     public String toString() {
         return "LazyStreamable:{stream:" + this.getStream() + "}";
     }

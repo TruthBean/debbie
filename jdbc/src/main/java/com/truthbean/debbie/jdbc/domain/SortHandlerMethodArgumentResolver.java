@@ -80,6 +80,7 @@ public class SortHandlerMethodArgumentResolver implements ExecutableArgumentReso
         return true;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     Sort getSort(ExecutableArgument parameter, Object originValues, DataValidateFactory validateFactory) {
         Map<String, List> map = (Map<String, List>) originValues;
 

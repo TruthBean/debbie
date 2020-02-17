@@ -52,24 +52,17 @@ public class HttpHandlerFilter implements HttpHandler {
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
         RouterFilter routerFilter = beanFactoryHandler.factory(routerFilterType);
 
+        if (routerFilter.notFilter(routerRequest)) {
+            handleServerExchangeRequest(exchange);
+            return;
+        }
+
         boolean filter = false;
 
         for (String s : rawUrlPattern) {
             if (s.equals(url)) {
                 filter = true;
-                if (routerFilter.preRouter(routerRequest, routerResponse)) {
-                    if (next.getClass() == DispatcherHttpHandler.class) {
-                        ((DispatcherHttpHandler) next).setRequest(request);
-                        next.handleRequest(exchange);
-                        routerFilter.postRouter(routerRequest, routerResponse);
-                        return;
-                    } else {
-                        next.handleRequest(exchange);
-                    }
-                } else {
-                    UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
-                    handler.handle(routerResponse);
-                    routerFilter.postRouter(routerRequest, routerResponse);
+                if (handleFilter(routerFilter, routerRequest, routerResponse, exchange)) {
                     return;
                 }
                 break;
@@ -80,19 +73,7 @@ public class HttpHandlerFilter implements HttpHandler {
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
                 filter = true;
-                if (routerFilter.preRouter(routerRequest, routerResponse)) {
-                    if (next.getClass() == DispatcherHttpHandler.class) {
-                        ((DispatcherHttpHandler) next).setRequest(request);
-                        next.handleRequest(exchange);
-                        routerFilter.postRouter(routerRequest, routerResponse);
-                        return;
-                    } else {
-                        next.handleRequest(exchange);
-                    }
-                } else {
-                    UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
-                    handler.handle(routerResponse);
-                    routerFilter.postRouter(routerRequest, routerResponse);
+                if (handleFilter(routerFilter, routerRequest, routerResponse, exchange)) {
                     return;
                 }
                 break;
@@ -100,12 +81,38 @@ public class HttpHandlerFilter implements HttpHandler {
         }
 
         if (!filter) {
+            handleServerExchangeRequest(exchange);
+        }
+    }
+
+    private void handleServerExchangeRequest(final HttpServerExchange exchange) throws Exception {
+        if (next.getClass() == DispatcherHttpHandler.class) {
+            ((DispatcherHttpHandler) next).setRequest(request);
+            next.handleRequest(exchange);
+        } else {
+            next.handleRequest(exchange);
+        }
+    }
+
+    private boolean handleFilter(final RouterFilter routerFilter,
+                                 final UndertowRouterRequest routerRequest, final UndertowRouterResponse routerResponse,
+                                 final HttpServerExchange exchange) throws Exception {
+        if (routerFilter.preRouter(routerRequest, routerResponse)) {
             if (next.getClass() == DispatcherHttpHandler.class) {
                 ((DispatcherHttpHandler) next).setRequest(request);
                 next.handleRequest(exchange);
+                routerFilter.postRouter(routerRequest, routerResponse);
+                return true;
             } else {
                 next.handleRequest(exchange);
             }
+        } else {
+            UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
+            handler.handle(routerResponse);
+            routerFilter.postRouter(routerRequest, routerResponse);
+            return true;
         }
+
+        return false;
     }
 }

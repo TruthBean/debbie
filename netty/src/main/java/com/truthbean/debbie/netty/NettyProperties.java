@@ -12,7 +12,7 @@ import com.truthbean.debbie.mvc.MvcProperties;
  * @since 0.0.1
  * Created on 2019/4/30 22:37.
  */
-public class NettyProperties extends BaseServerProperties {
+public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
 
     private NettyConfiguration configuration;
 
@@ -22,10 +22,12 @@ public class NettyProperties extends BaseServerProperties {
             return configuration;
         }
 
-        configuration = new NettyConfiguration();
+        var classLoader = beanFactoryHandler.getClassLoader();
 
-        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration();
-        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration();
+        configuration = new NettyConfiguration(classLoader);
+
+        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
+        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration(classLoader);
         configuration.copyFrom(mvcConfiguration);
         configuration.copyFrom(beanConfiguration);
 

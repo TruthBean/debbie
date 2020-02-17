@@ -13,7 +13,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2019/05/17 22:46.
  */
-public class HikariProperties extends DataSourceProperties implements DebbieProperties {
+public class HikariProperties extends DataSourceProperties implements DebbieProperties<DataSourceConfiguration> {
     private HikariConfiguration configuration;
 
     //=================================================================================================================
@@ -30,7 +30,7 @@ public class HikariProperties extends DataSourceProperties implements DebbieProp
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public DataSourceConfiguration toConfiguration(final BeanFactoryHandler beanFactoryHandler) {
         if (configuration != null) {
             return configuration;
         }
@@ -38,7 +38,7 @@ public class HikariProperties extends DataSourceProperties implements DebbieProp
         beanFactoryHandler.refreshBeans();
         configuration = beanFactoryHandler.factory(HikariConfiguration.class);
 
-        Map<String, String> matchedKey = getMatchedKey(HIKARI_X_KEY_PREFIX);
+        final Map<String, String> matchedKey = getMatchedKey(HIKARI_X_KEY_PREFIX);
         matchedKey.forEach((key, value) -> {
             var k = key.substring(HIKARI_X_KEY_PREFIX_LENGTH);
             k = StringUtils.snakeCaseToCamelCaseTo(k);

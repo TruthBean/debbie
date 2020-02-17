@@ -49,6 +49,8 @@ public class DefaultRouterRequest implements RouterRequest {
 
     private Charset charset;
 
+    String remoteAddress;
+
     @Override
     public String getId() {
         return id;
@@ -110,6 +112,7 @@ public class DefaultRouterRequest implements RouterRequest {
         this.matrix = matrix;
     }
 
+    @Override
     public void setPathAttributes(Map<String, List<String>> pathAttributes) {
         this.pathAttributes = pathAttributes;
     }
@@ -121,6 +124,10 @@ public class DefaultRouterRequest implements RouterRequest {
 
     public void setHeaders(Map<String, List<String>> headers) {
         this.header.addHeaders(headers);
+    }
+
+    public void addHeader(String key, String value) {
+        this.header.addHeader(key, value);
     }
 
     @Override
@@ -199,6 +206,7 @@ public class DefaultRouterRequest implements RouterRequest {
         this.parameters.put(name, value);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void addParameter(String name, Object value) {
         if (this.parameters == null) {
             this.parameters = new HashMap<>();
@@ -359,8 +367,12 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     @Override
-    public String getRemoteAddr() {
-        return null;
+    public String getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    public void setRemoteAddress(String remoteAddress) {
+        this.remoteAddress = remoteAddress;
     }
 
     @Override

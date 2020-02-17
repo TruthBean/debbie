@@ -97,10 +97,10 @@ public class BeanInitialization {
         }
     }
 
-    public void init(String... packageName) {
+    public void init(ClassLoader classLoader, String... packageName) {
         if (packageName != null) {
             for (String s : packageName) {
-                BeanRegisterCenter.register(s);
+                BeanRegisterCenter.register(s, classLoader);
             }
         }
     }
@@ -154,7 +154,7 @@ public class BeanInitialization {
         Collection<DebbieBeanInfo<?>> registerRawBeans = BeanRegisterCenter.getRegisterRawBeans();
         if (!registerRawBeans.isEmpty()) {
             for (DebbieBeanInfo<?> registerRawBean : registerRawBeans) {
-                if (registerRawBean.getBean() != null) {
+                if (registerRawBean.getBean() != null || registerRawBean.getBeanFactory() != null) {
                     result.add(registerRawBean);
                 }
             }

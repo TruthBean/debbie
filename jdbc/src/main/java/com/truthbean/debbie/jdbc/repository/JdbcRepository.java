@@ -5,9 +5,7 @@ import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 
 import java.sql.Connection;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -18,6 +16,21 @@ public class JdbcRepository<Entity, Id> extends DmlRepositoryHandler<Entity, Id>
     public boolean deleteById(Id id) {
         Connection connection = getConnection();
         return super.deleteById(connection, id);
+    }
+
+    public boolean deleteByColumn(String columnName, Object value) {
+        Connection connection = getConnection();
+        return super.deleteByColumn(connection, columnName, value);
+    }
+
+    public int deleteByIdIn(List<Id> ids) {
+        Connection connection = getConnection();
+        return super.deleteByIdIn(connection, ids);
+    }
+
+    public <C> int deleteByColumnIn(String columnName, List<C> values) {
+        Connection connection = getConnection();
+        return super.deleteByColumnIn(connection, columnName, values);
     }
 
     public int delete(Entity condition, boolean withConditionNull) {
@@ -53,6 +66,18 @@ public class JdbcRepository<Entity, Id> extends DmlRepositoryHandler<Entity, Id>
     public <S extends Entity> S save(S entity) {
         Connection connection = getConnection();
         return super.save(connection, entity);
+    }
+
+    public Entity findByColumn(String columnName, Object value) {
+        Connection connection = getConnection();
+        String whereSql = columnName + " = ?";
+        return super.selectOne(connection, whereSql, value);
+    }
+
+    public List<Entity> findListByColumn(String columnName, Object value) {
+        Connection connection = getConnection();
+        String whereSql = columnName + " = ?";
+        return super.selectList(connection, whereSql, value);
     }
 
     public Entity findOne(Entity condition, boolean withConditionNull) {
@@ -111,6 +136,19 @@ public class JdbcRepository<Entity, Id> extends DmlRepositoryHandler<Entity, Id>
     public List<Entity> findAll() {
         Connection connection = getConnection();
         return super.selectAll(connection);
+    }
+
+    public List<Entity> findAllById(Iterable<Id> ids) {
+        if (!ids.iterator().hasNext()) {
+            return Collections.emptyList();
+        }
+
+        List<Entity> result = new ArrayList<>();
+        Connection connection = getConnection();
+        for (Id id : ids) {
+            result.add(super.selectById(connection, id));
+        }
+        return result;
     }
 
     public Long count(Entity condition, boolean withConditionNull) {

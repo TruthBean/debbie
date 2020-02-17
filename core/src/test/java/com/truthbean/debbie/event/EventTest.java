@@ -2,6 +2,7 @@ package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -24,8 +25,9 @@ public class EventTest {
     @Test
     public void testEventListenerBeans() {
         long start = System.currentTimeMillis();
-        DebbieApplicationFactory factory = new DebbieApplicationFactory();
-        factory.config();
+        ClassLoader classLoader = ClassLoaderUtils.getClassLoader(EventTest.class);
+        DebbieApplicationFactory factory = new DebbieApplicationFactory(classLoader);
+        factory.config(EventTest.class);
         factory.callStarter();
 
         BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();

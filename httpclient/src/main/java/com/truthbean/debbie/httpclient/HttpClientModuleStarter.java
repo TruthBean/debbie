@@ -32,4 +32,9 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
     public int getOrder() {
         return 21;
     }
+
+    @Override
+    public void release() {
+
+    }
 }

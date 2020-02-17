@@ -23,6 +23,7 @@ public class RouterFilterHandler {
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
         routerFilter = handler.factory(routerFilterType);
+        routerFilter.setMvcConfiguration(this.filterInfo.getConfiguration());
     }
 
     public Boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {

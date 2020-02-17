@@ -8,6 +8,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RmiClientFactory {
 
     private Registry registry;
@@ -55,6 +59,7 @@ public class RmiClientFactory {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     public <S> S lookup(String name) {
         if (exits(name)) {
             try {

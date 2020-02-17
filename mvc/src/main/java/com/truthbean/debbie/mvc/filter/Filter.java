@@ -1,7 +1,6 @@
 package com.truthbean.debbie.mvc.filter;
 
-import com.truthbean.debbie.bean.BeanComponent;
-import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.*;
 
 import java.lang.annotation.*;
 
@@ -15,8 +14,12 @@ import java.lang.annotation.*;
 @BeanComponent
 public @interface Filter {
 
+    @BeanAliceForName
+    @BeanAliceFor(name = "name")
     String name() default "";
 
+    @BeanAliceForType
+    @BeanAliceFor(name = "type")
     BeanType type() default BeanType.SINGLETON;
 
     String[] value() default {};

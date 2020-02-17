@@ -1,6 +1,7 @@
 package com.truthbean.debbie.util;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author TruthBean
@@ -8,7 +9,13 @@ import java.util.*;
  * Created on 2018-03-11 11:03
  */
 public final class StringUtils {
+    private static final Pattern CHINESE = Pattern.compile("^[\\u4e00-\\u9fa5]*$");
+
     private StringUtils() {
+    }
+
+    public static boolean isChinese(String text) {
+        return CHINESE.matcher(text).find();
     }
 
     /**
@@ -74,6 +81,10 @@ public final class StringUtils {
         return str != null && !str.isEmpty();
     }
 
+    public static boolean isNotBlank(final CharSequence cs) {
+        return !isBlank(cs);
+    }
+
     public static boolean isBlank(CharSequence cs) {
         int strLen;
         if (cs != null && (strLen = cs.length()) != 0) {
@@ -87,6 +98,51 @@ public final class StringUtils {
         } else {
             return true;
         }
+    }
+
+    /**
+     * Check whether the given {@code CharSequence} contains actual <em>text</em>.
+     * &lt;p&gt;More specifically, this method returns {@code true} if the
+     * {@code CharSequence} is not {@code null}, its length is greater than
+     * 0, and it contains at least one non-whitespace character.
+     * &lt;p&gt;&lt;pre class="code"&gt;
+     * StringUtils.hasText(null) = false
+     * StringUtils.hasText("") = false
+     * StringUtils.hasText(" ") = false
+     * StringUtils.hasText("12345") = true
+     * StringUtils.hasText(" 12345 ") = true
+     * &lt;/pre&gt;
+     * @param str the {@code CharSequence} to check (may be {@code null})
+     * @return {@code true} if the {@code CharSequence} is not {@code null},
+     * its length is greater than 0, and it does not contain whitespace only
+     * @see Character#isWhitespace
+     */
+    public static boolean hasText(CharSequence str) {
+        return (str != null && str.length() > 0 && containsText(str));
+    }
+
+    /**
+     * Check whether the given {@code String} contains actual <em>text</em>.
+     * <p>More specifically, this method returns {@code true} if the
+     * {@code String} is not {@code null}, its length is greater than 0,
+     * and it contains at least one non-whitespace character.
+     * @param str the {@code String} to check (may be {@code null})
+     * @return {@code true} if the {@code String} is not {@code null}, its
+     * length is greater than 0, and it does not contain whitespace only
+     * @see #hasText(CharSequence)
+     */
+    public static boolean hasText(String str) {
+        return (str != null && !str.isEmpty() && containsText(str));
+    }
+
+    private static boolean containsText(CharSequence str) {
+        int strLen = str.length();
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String trim(String str) {
@@ -119,6 +175,81 @@ public final class StringUtils {
         return stringBuilder.toString();
     }
 
+    /**
+     * 去掉指定后缀
+     *
+     * @param str 字符串
+     * @param suffix 后缀
+     * @return 切掉后的字符串，若后缀不是 suffix， 返回原字符串
+     */
+    public static String removeSuffix(CharSequence str, CharSequence suffix) {
+        if (isEmpty(str) || isEmpty(suffix)) {
+            return str == null ? null : "";
+        }
+
+        final String str2 = str.toString();
+        if (str2.endsWith(suffix.toString())) {
+            return substring(str2, 0,str2.length() - suffix.length());
+        }
+        return str2;
+    }
+
+    public static String substring(final String str, int start) {
+        if (str == null) {
+            return null;
+        }
+
+        // handle negatives, which means last n characters
+        if (start < 0) {
+            // remember start is negative
+            start = str.length() + start;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+        if (start > str.length()) {
+            return "";
+        }
+
+        return str.substring(start);
+    }
+
+    public static String substring(final String str, int start, int end) {
+        if (str == null) {
+            return null;
+        }
+
+        // handle negatives
+        if (end < 0) {
+            // remember end is negative
+            end = str.length() + end;
+        }
+        if (start < 0) {
+            // remember start is negative
+            start = str.length() + start;
+        }
+
+        // check length next
+        if (end > str.length()) {
+            end = str.length();
+        }
+
+        // if start is greater than end, return ""
+        if (start > end) {
+            return "";
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+        if (end < 0) {
+            end = 0;
+        }
+
+        return str.substring(start, end);
+    }
+
     public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
 
         if (str == null) {
@@ -143,7 +274,25 @@ public final class StringUtils {
         return (collection != null ? collection.toArray(new String[0]) : new String[0]);
     }
 
+    /**
+     * Test if the given {@code String} starts with the specified prefix,
+     * ignoring upper/lower case.
+     * @param str the {@code String} to check
+     * @param prefix the prefix to look for
+     * @see java.lang.String#startsWith
+     * @return boolean
+     */
+    public static boolean startsWithIgnoreCase(String str, String prefix) {
+        return (str != null && prefix != null && str.length() >= prefix.length() &&
+                str.regionMatches(true, 0, prefix, 0, prefix.length()));
+    }
+
     // ===============================================================================================================
+
+    @SuppressWarnings("unchecked")
+    public static <T> String joining(final T... elements) {
+        return joining(elements, "");
+    }
 
     public static <T> String joining(List<T> list) {
         return joining(list, ",");

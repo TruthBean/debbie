@@ -1,6 +1,6 @@
 package com.truthbean.debbie.event;
 
-public class Test2Event extends DebbieEvent {
+public class Test2Event extends AbstractDebbieEvent {
 
     private int event;
 

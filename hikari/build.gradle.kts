@@ -1,8 +1,8 @@
 dependencies {
-    compile(project(":debbie-jdbc"))
+    implementation(project(":debbie-jdbc"))
 
     val hikariVersion: String by project
-    compile("com.zaxxer:HikariCP:$hikariVersion") {
+    implementation("com.zaxxer:HikariCP:$hikariVersion") {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
 
@@ -17,7 +17,7 @@ dependencies {
     testImplementation("mysql:mysql-connector-java:$mysqlVersion")
     
     val mariadbVersion: String by project
-    testCompile("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
+    testImplementation("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
 
-    testCompile(project(":debbie-test"))
+    testImplementation(project(":debbie-test"))
 }

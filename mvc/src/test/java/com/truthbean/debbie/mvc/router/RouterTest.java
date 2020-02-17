@@ -3,15 +3,16 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Router
-public class RouterTest {
+public class RouterTest extends AbstractRouterTest<ArrayList> {
 
     @Router(urlPatterns = "/{hehe}")
     public String testPathAttribute0(
             @RequestParameter(name = "hehe", paramType = RequestParameterType.PATH, require = false, defaultValue = "0")
-                    List<String> id) {
+                    ArrayList id) {
         return "<html><head><title>" + id + "</title></head><body><p>this is a path attribute test</p></body></html>";
     }
 

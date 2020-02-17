@@ -79,12 +79,35 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
+    public int deleteByIdIn(Connection connection, List<ID> ids) throws TransactionException {
+        var primaryKey = entityInfo.getPrimaryKey();
+        return deleteByColumnIn(connection, primaryKey.getColumnName(), ids);
+    }
+
+    public <C> int deleteByColumnIn(Connection connection, String columnName, List<C> values) throws TransactionException {
+        if (values == null || values.size() == 0) return 0;
+        int length = values.size();
+        if (length == 1) return deleteByColumn(connection, columnName, values.get(0)) ? 1 : 0;
+
+        var entityInfo = getEntityInfo();
+        var table = entityInfo.getTable();
+        String sql = DynamicSqlBuilder.sql().delete().from(table).where().in(columnName, length).builder();
+        return super.update(connection, sql, values.toArray());
+    }
+
     public boolean deleteById(Connection connection, ID id) throws TransactionException {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
         String sql = DynamicSqlBuilder.sql().delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
         return super.update(connection, sql, id) > 0L;
+    }
+
+    public boolean deleteByColumn(Connection connection, String columnName, Object value) throws TransactionException {
+        var entityInfo = getEntityInfo();
+        var table = entityInfo.getTable();
+        String sql = DynamicSqlBuilder.sql().delete().from(table).where().eq(columnName, "?").builder();
+        return super.update(connection, sql, value) > 0L;
     }
 
     protected <T> ConditionAndValue resolveCondition(T condition, boolean withNull) {
@@ -174,8 +197,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sql = DynamicSqlBuilder.sql().insert().extra(table).leftParenthesis()
             .joinWith(",", columnNames).rightParenthesis().values(signs).builder();
         var primaryKey = entityInfo.getPrimaryKey();
-        var generatedKeys = primaryKey.getPrimaryKeyType() != null;
-        return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+        if (primaryKey != null) {
+            var generatedKeys = primaryKey.getPrimaryKeyType() != null;
+            return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+        }
+        return (ID) super.insert(connection, sql, false, null, columnValues.toArray());
     }
 
     public int insert(Connection connection, Collection<E> entities, boolean withNull) throws TransactionException {
@@ -282,6 +308,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql.builder(), args);
     }
 
+    @SuppressWarnings("unchecked")
     public <S extends E> S save(Connection connection, S entity) {
         var entityInfo = entityResolver.resolveEntity(entity);
         ColumnInfo primaryKey = entityInfo.getPrimaryKey();

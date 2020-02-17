@@ -18,4 +18,10 @@ public class EventBeanTest {
         long end = System.currentTimeMillis();
         System.out.println(end - start1);
     }
+
+    @Test
+    public void testEventListener(@BeanInject TestEventListener eventListener,
+                                  @BeanInject("test") TestEvent testEvent) {
+        eventListener.onEvent(testEvent);
+    }
 }

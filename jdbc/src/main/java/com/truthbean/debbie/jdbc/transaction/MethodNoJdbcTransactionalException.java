@@ -1,5 +1,9 @@
 package com.truthbean.debbie.jdbc.transaction;
 
+/**
+ * @author truthbean
+ * @since 0.0.1
+ */
 public class MethodNoJdbcTransactionalException extends RuntimeException {
 
     public MethodNoJdbcTransactionalException() {

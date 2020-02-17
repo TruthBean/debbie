@@ -6,6 +6,10 @@ import com.truthbean.debbie.reflection.ExecutableArgument;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 
+/**
+ * @author truthbean
+ * @since 0.0.2
+ */
 public class RequestParameterInfo {
 
     private String name;
@@ -39,7 +43,7 @@ public class RequestParameterInfo {
         this.paramType = RequestParameterType.BODY;
         this.defaultValue = parameter.defaultValue();
         this.require = parameter.require();
-        this.bodyType = parameter.bodyType();
+        this.bodyType = parameter.type();
     }
 
     public RequestParameterInfo(CookieParameter parameter) {

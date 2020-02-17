@@ -51,6 +51,7 @@ public final class PropertiesHelper {
     /**
      * get property value
      *
+     * @param filename properties file name
      * @param key key
      * @return string
      */
@@ -61,6 +62,7 @@ public final class PropertiesHelper {
     /**
      * get raw property value
      *
+     * @param filename properties file name
      * @param key key
      * @return string
      */
@@ -94,8 +96,9 @@ public final class PropertiesHelper {
     /**
      * get property bool value
      *
-     * @param key
-     * @return
+     * @param filename properties file name
+     * @param key property key
+     * @return property bool value
      */
     public static boolean getBoolProperty(String filename, String key) {
         String valueStr = getProperty(filename, key, null);
@@ -133,9 +136,9 @@ public final class PropertiesHelper {
     /**
      * replace property
      *
-     * @param expression
-     * @param params
-     * @return
+     * @param expression properties value contains, like a.b.c=a-${user.dir}
+     * @param params the properties
+     * @return the real property value
      */
     public static String replaceProperty(String expression, Properties params) {
         if (expression == null || expression.length() == 0 || !expression.contains("$")) {
