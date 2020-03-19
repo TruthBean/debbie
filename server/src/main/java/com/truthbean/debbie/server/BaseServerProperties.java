@@ -18,6 +18,8 @@ public abstract class BaseServerProperties<C extends AbstractServerConfiguration
     private static final String SERVER_PORT = "debbie.server.port";
     private static final String SERVER_HOST = "debbie.server.host";
 
+    private static final String SERVER_HEADER = "debbie.server.server-header";
+
     //===========================================================================
 
     public <P extends BaseServerProperties<C>> void loadAndSet(P properties, C configuration) {

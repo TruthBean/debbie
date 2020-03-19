@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class RouterPathSplicer {
 
     private static final String VARIABLE_REGEX = "\\{[^/]+?\\}";
-    private static final Pattern BLACK_PATTERN = Pattern.compile("[\\w]*");
+    private static final Pattern BLACK_PATTERN = Pattern.compile("[A-Za-z0-9_.]+");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
 
     private static List<String> resolvePath(RouterAnnotationInfo router) {
@@ -199,7 +199,7 @@ public class RouterPathSplicer {
                     } else {
                         uriPathVariable.setName(group.substring(1, group.length() - 1));
                         uriPathVariable.setPattern(BLACK_PATTERN);
-                        regex = regex.replace(group, "[\\w]*");
+                        regex = regex.replace(group, "[A-Za-z0-9_.]+");
                     }
                     pathFragment.addPathVariable(uriPathVariable, new ArrayList<>());
                 }

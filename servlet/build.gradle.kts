@@ -7,11 +7,7 @@ dependencies {
     val jstlVersion: String by project
     compileOnly("jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jstlVersion")
 
-    implementation("org.glassfish.web:javax.servlet.jsp.jstl:$jstlVersion") {
-        exclude(group = "javax.servlet", module = "servlet-api")
-        exclude(group = "javax.servlet.jsp", module = "jsp-api")
-        exclude(group = "javax.servlet.jsp.jstl", module = "jstl-api")
-    }
+    implementation("org.apache.taglibs:taglibs-standard-jstlel:$jstlVersion")
 
     val fileuploadVersion: String by project
     implementation("commons-fileupload:commons-fileupload:$fileuploadVersion") {

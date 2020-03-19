@@ -1,6 +1,9 @@
 package com.truthbean.debbie.util;
 
+import java.sql.Array;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -10,12 +13,18 @@ import java.util.regex.Pattern;
  */
 public final class StringUtils {
     private static final Pattern CHINESE = Pattern.compile("^[\\u4e00-\\u9fa5]*$");
+    private static final Pattern PATTERN = Pattern.compile("[0-9]*");
 
     private StringUtils() {
     }
 
     public static boolean isChinese(String text) {
         return CHINESE.matcher(text).find();
+    }
+
+    public static boolean isNumeric(String str) {
+        Matcher isNum = PATTERN.matcher(str);
+        return isNum.matches();
     }
 
     /**
@@ -449,5 +458,81 @@ public final class StringUtils {
         char[] target = new char[j];
         System.arraycopy(newChars, 0, target, 0, j);
         return new String(target);
+    }
+
+    /**
+     * If the {@code obj} is an array, toString() method of {@link Arrays} is called. Otherwise
+     * {@link Object#toString()} is called. Returns "null" if {@code obj} is <code>null</code>.
+     *
+     * @param obj
+     *          An object. May be an array or <code>null</code>.
+     * @return String representation of the {@code obj}.
+     */
+    public static String toString(Object obj) {
+        if (obj == null) {
+            return "null";
+        }
+        final Class<?> clazz = obj.getClass();
+        if (!clazz.isArray()) {
+            return obj.toString();
+        }
+        final Class<?> componentType = obj.getClass().getComponentType();
+        if (long.class.equals(componentType)) {
+            return Arrays.toString((long[]) obj);
+        } else if (int.class.equals(componentType)) {
+            return Arrays.toString((int[]) obj);
+        } else if (short.class.equals(componentType)) {
+            return Arrays.toString((short[]) obj);
+        } else if (char.class.equals(componentType)) {
+            return Arrays.toString((char[]) obj);
+        } else if (byte.class.equals(componentType)) {
+            return Arrays.toString((byte[]) obj);
+        } else if (boolean.class.equals(componentType)) {
+            return Arrays.toString((boolean[]) obj);
+        } else if (float.class.equals(componentType)) {
+            return Arrays.toString((float[]) obj);
+        } else if (double.class.equals(componentType)) {
+            return Arrays.toString((double[]) obj);
+        } else {
+            return Arrays.toString((Object[]) obj);
+        }
+    }
+
+    public static String objectValueString(Object value) {
+        if (value instanceof Array) {
+            try {
+                return toString(((Array) value).getArray());
+            } catch (SQLException e) {
+                return value.toString();
+            }
+        }
+        return value.toString();
+    }
+
+    public static String getParameterValueString(Object[] args) {
+        if (args == null || args.length == 0) {
+            return null;
+        }
+        List<Object> typeList = new ArrayList<>(args.length);
+        for (Object value : args) {
+            if (value == null) {
+                typeList.add("null");
+            } else {
+                typeList.add(StringUtils.objectValueString(value) + "(" + value.getClass().getSimpleName() + ")");
+            }
+        }
+        final String parameters = typeList.toString();
+        return parameters.substring(1, parameters.length() - 1);
+    }
+
+    public static Collection<String> split(String raw, String split) {
+        List<String> result = new ArrayList<>();
+        if(raw.contains(split)) {
+            String[] strs = raw.split(split);
+            result.addAll(Arrays.asList(strs));
+        } else {
+            result.add(raw);
+        }
+        return result;
     }
 }

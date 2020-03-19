@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
-import com.truthbean.debbie.data.transformer.ClassInstanceTransformer;
 import com.truthbean.debbie.data.transformer.ClassTransformer;
 import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
 import com.truthbean.debbie.data.transformer.date.DefaultTimeTransformer;
+import com.truthbean.debbie.data.transformer.jdbc.BlobToByteArrayTransformer;
+import com.truthbean.debbie.data.transformer.jdbc.BlobToStringTransformer;
 import com.truthbean.debbie.data.transformer.numeric.BigDecimalToLongTransformer;
 import com.truthbean.debbie.data.transformer.numeric.IntegerToBooleanTransformer;
 import com.truthbean.debbie.data.transformer.numeric.LongToIntegerTransformer;
@@ -19,6 +20,7 @@ import com.truthbean.debbie.properties.PropertiesConfigurationRegister;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.sql.Blob;
 
 /**
  * @author truthbean
@@ -53,8 +55,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     private void registerTransformer(BeanInitialization beanInitialization) {
+
         beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Long.class, String.class);
-        beanInitialization.registerDataTransformer(new DefaultTextTransformer(), Object.class, String.class);
         beanInitialization.registerDataTransformer(new JsonNodeTransformer(), JsonNode.class, String.class);
         beanInitialization.registerDataTransformer(new UrlTransformer(), URL.class, String.class);
 
@@ -72,6 +74,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
         beanInitialization.registerDataTransformer(new SetStringTransformer());
         beanInitialization.registerDataTransformer(new ClassTransformer(), Class.class, String.class);
-        beanInitialization.registerDataTransformer(new ClassInstanceTransformer(), Object.class, String.class);
+
+        beanInitialization.registerDataTransformer(new BlobToStringTransformer(), Blob.class, String.class);
+        beanInitialization.registerDataTransformer(new BlobToByteArrayTransformer(), Blob.class, byte[].class);
     }
 }

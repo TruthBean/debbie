@@ -4,6 +4,7 @@ import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.MultipartFile;
+import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.net.uri.QueryStringDecoder;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
@@ -36,6 +37,11 @@ public class ServletRouterRequest extends DefaultRouterRequest {
 
     public ServletRouterRequest(HttpServletRequest httpServletRequest) {
         this(UUID.randomUUID().toString(), httpServletRequest);
+    }
+
+    private ServletRouterRequest(RouterRequest routerRequest, HttpServletRequest request) {
+        this.request = request;
+        super.copy(routerRequest);
     }
 
     private ServletRouterRequest(String id, HttpServletRequest httpServletRequest) {
@@ -276,6 +282,6 @@ public class ServletRouterRequest extends DefaultRouterRequest {
 
     @Override
     public ServletRouterRequest copy() {
-        return new ServletRouterRequest(super.getId(), request);
+        return new ServletRouterRequest(super.copy(), request);
     }
 }

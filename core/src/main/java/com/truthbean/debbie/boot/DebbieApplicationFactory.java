@@ -4,6 +4,7 @@ import com.truthbean.debbie.bean.BeanConfigurationRegister;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.DebbieConfigurationCenter;
+import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.event.AbstractDebbieStartedEventListener;
 import com.truthbean.debbie.event.DebbieStartedEvent;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,14 +44,28 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     private AbstractApplicationFactory loadApplication() {
         var classLoader = ClassLoaderUtils.getClassLoader(DebbieApplicationFactory.class);
-        AbstractApplicationFactory factory = null;
+        AbstractApplicationFactory result = null;
+        AbstractApplicationFactory mockApplicationFactory = null;
         try {
-            factory = SpiLoader.loadProvider(AbstractApplicationFactory.class, classLoader);
-            LOGGER.debug("ApplicationFactory( " + factory.getClass() + " ) loaded. ");
+            Collection<AbstractApplicationFactory> factories = SpiLoader.loadProviders(AbstractApplicationFactory.class, classLoader);
+            for (AbstractApplicationFactory factory : factories) {
+                var factoryClass = factory.getClass().getName();
+                if ("com.truthbean.debbie.test.MockApplicationFactory".equals(factoryClass)) {
+                    mockApplicationFactory = factory;
+                    continue;
+                } else {
+                    result = factory;
+                    break;
+                }
+            }
+            if (result == null && mockApplicationFactory != null) {
+                result = mockApplicationFactory;
+            }
+            LOGGER.debug("ApplicationFactory( " + result.getClass() + " ) loaded. ");
         } catch (Exception e) {
             LOGGER.error("", e);
         }
-        return factory;
+        return result;
     }
 
     public void config() {
@@ -81,6 +97,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         BeanConfigurationRegister register = new BeanConfigurationRegister();
         register.register(targetClasses);
         super.refreshBeans();
+        // transformer
+        DataTransformerFactory.register(targetClasses);
         // event
         EventListenerBeanRegister eventListenerBeanRegister = new EventListenerBeanRegister(this);
         eventListenerBeanRegister.register();
@@ -129,10 +147,10 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         super.release(args);
     }
 
-    public DebbieApplication factoryApplication() {
+    public DebbieApplication factoryApplication(ClassLoader classLoader) {
         LOGGER.debug("create debbieApplication ...");
         DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
-        return loadApplication().factory(configurationFactory, this);
+        return loadApplication().factory(configurationFactory, this, classLoader);
     }
 
     public BeanFactoryHandler getBeanFactoryHandler() {
@@ -151,7 +169,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         debbieApplicationFactory = new DebbieApplicationFactory(classLoader);
         debbieApplicationFactory.config(applicationClass);
         debbieApplicationFactory.callStarter();
-        debbieApplication = debbieApplicationFactory.factoryApplication();
+        debbieApplication = debbieApplicationFactory.factoryApplication(classLoader);
         debbieApplication.setBeforeStartTime(beforeStartTime);
         return debbieApplication;
     }
@@ -178,7 +196,8 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
         config(applicationClass);
         callStarter();
-        debbieApplication = factoryApplication();
+        ClassLoader classLoader = ClassLoaderUtils.getClassLoader(applicationClass);
+        debbieApplication = factoryApplication(classLoader);
         debbieApplication.setBeforeStartTime(beforeStartTime);
         return debbieApplication;
     }

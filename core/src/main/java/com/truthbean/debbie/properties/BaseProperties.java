@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -248,7 +249,7 @@ public class BaseProperties {
             try {
                 result = Double.parseDouble(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to int error", e);
+                LOGGER.error(value + " to double error", e);
                 result = defaultValue;
             }
         }
@@ -280,6 +281,22 @@ public class BaseProperties {
             return value.split(split);
         }
         return null;
+    }
+
+    public Charset getCharsetValue(String key, Charset defaultCharset) {
+        var value = getValue(key);
+        Charset result;
+        if (value == null) {
+            result = defaultCharset;
+        } else {
+            try {
+                result = Charset.forName(value);
+            } catch (Exception e) {
+                LOGGER.error(value + " to Charset error", e);
+                result = defaultCharset;
+            }
+        }
+        return result;
     }
 
     public Map<String, String> getMapValue(String key, String keyValueSplit, String split) {

@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class AioServerApplicationFactory extends AbstractWebServerApplicationFactory {
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, beanFactoryHandler);
         var beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);

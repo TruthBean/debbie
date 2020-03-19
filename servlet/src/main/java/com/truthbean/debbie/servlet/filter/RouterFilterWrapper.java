@@ -3,6 +3,7 @@ package com.truthbean.debbie.servlet.filter;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
@@ -65,6 +66,10 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
         } else {
             this.postRouter(routerRequest, routerResponse);
             var handler = new ServletResponseHandler(routerRequest.getHttpServletRequest(), routerResponse.getResponse());
+            if (routerResponse.getStatus() == null) {
+                // 默认请求成功
+                routerResponse.setStatus(HttpStatus.OK);
+            }
             handler.handle(routerResponse);
         }
     }

@@ -361,6 +361,57 @@ public class DefaultRouterRequest implements RouterRequest {
         return clone;
     }
 
+    public RouterRequest copy(RouterRequest request) {
+        this.id = request.getId();
+        this.method = request.getMethod();
+        this.url = request.getUrl();
+        this.inputStreamBody = request.getInputStreamBody();
+        this.contentType = request.getContentType();
+        this.responseType = request.getResponseType();
+        this.textBody = request.getTextBody();
+        this.fileBody = request.getFileBody();
+
+        var pathAttributes = request.getPathAttributes();
+        if (pathAttributes == null || pathAttributes.isEmpty()) {
+            this.pathAttributes = new HashMap<>();
+        } else {
+            this.pathAttributes = new HashMap<>(request.getPathAttributes());
+        }
+
+        var matrix = request.getMatrix();
+        if (matrix == null || matrix.isEmpty()) {
+            this.matrix = new HashMap<>();
+        } else {
+            this.matrix = new HashMap<>(request.getMatrix());
+        }
+
+        this.header = request.getHeader().copy();
+
+        var cookies = request.getCookies();
+        if (cookies == null || cookies.isEmpty()) {
+            this.cookies = new ArrayList<>();
+        } else {
+            this.cookies = new ArrayList<>(request.getCookies());
+        }
+
+        this.session = session;
+
+        var parameters = request.getParameters();
+        if (parameters == null) {
+            this.parameters = new HashMap<>();
+        } else {
+            this.parameters = new HashMap<>(request.getParameters());
+        }
+
+        var queries = request.getQueries();
+        if (queries == null || queries.isEmpty()) {
+            this.queries = new HashMap<>();
+        } else {
+            this.queries = new HashMap<>(request.getQueries());
+        }
+        return this;
+    }
+
     @Override
     public void setCharacterEncoding(Charset charset) {
         this.charset = charset;

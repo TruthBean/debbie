@@ -14,6 +14,8 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     private String host = "localhost";
     private boolean web = true;
 
+    private String serverHeader;
+
     protected AbstractServerConfiguration(ClassLoader classLoader) {
         super(classLoader);
     }
@@ -53,6 +55,15 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     protected AbstractServerConfiguration host(String host) {
         this.host = host;
         return this;
+    }
+
+    protected AbstractServerConfiguration serverHeader(String serverHeader) {
+        this.serverHeader = serverHeader;
+        return this;
+    }
+
+    public String getServerHeader() {
+        return serverHeader;
     }
 
     public void check() {

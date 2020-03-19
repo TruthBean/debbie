@@ -51,10 +51,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
         var entityClass = classInfo.getClazz();
-        var table = sqlEntity.table();
-        if (table.isBlank()) {
-            table = entityClass.getSimpleName().toLowerCase();
-        }
+        var table = EntityResolver.getTableName(sqlEntity, entityClass);
         entityInfo.setTable(table);
         entityInfo.setCharset(sqlEntity.charset());
         entityInfo.setEngine(sqlEntity.engine());

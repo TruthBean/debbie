@@ -1,6 +1,7 @@
 package com.truthbean.debbie.servlet.response;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -41,6 +42,9 @@ public class ServletResponseHandler implements ResponseHandler {
         if (!cookies.isEmpty()) {
             cookies.forEach(cookie -> response.addCookie(new ServletRouterCookie(cookie).getCookie()));
         }
+
+        var responseType = routerResponse.getResponseType();
+
         if (any == null) {
             LOGGER.debug("response is null");
         } else if (AbstractTemplateView.isTemplateView(any)) {
@@ -59,17 +63,20 @@ public class ServletResponseHandler implements ResponseHandler {
             jspView.transfer();
         } else if (any instanceof byte[]) {
             // response.reset();
-            response.setContentType(MediaType.APPLICATION_OCTET_STREAM.getValue());
+            if (responseType == null || responseType.isAny()) {
+                response.setContentType(MediaType.APPLICATION_OCTET_STREAM.getValue());
+            }
             response.setContentLength(((byte[]) any).length);
             try (var outputStream = response.getOutputStream()) {
                 outputStream.write((byte[]) any);
+                outputStream.flush();
             } catch (IOException e) {
                 LOGGER.error(" ", e);
             }
         } else {
             try {
                 // response.reset();
-                response.setContentType(routerResponse.getResponseType().toString());
+                response.setContentType(responseType.toString());
                 response.getWriter().println(any);
             } catch (IOException e) {
                 e.printStackTrace();

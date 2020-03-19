@@ -35,7 +35,8 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         NettyConfiguration configuration = factory.factory(NettyConfiguration.class, beanFactoryHandler);
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);

@@ -17,7 +17,8 @@ public class NoWebApplicationFactory extends AbstractApplicationFactory {
     private final Logger logger = LoggerFactory.getLogger(NoWebApplicationFactory.class);
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         return new DebbieApplication() {
             private volatile DebbieTaskFactory taskFactory;
             @Override

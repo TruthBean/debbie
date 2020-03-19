@@ -1,6 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
@@ -11,14 +12,13 @@ import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * handle repository of curd
@@ -30,9 +30,18 @@ import java.util.List;
 public class RepositoryHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryHandler.class);
 
+    private void loggerSqlAndParameters(String sql, Object[][] args) {
+        LOGGER.debug("Preparing >>> " + sql);
+        LOGGER.debug("Parameters >>> " + Arrays.deepToString(args));
+    }
+
+    private void loggerSqlAndParameters(String sql, Object[] args) {
+        LOGGER.debug("Preparing >>> " + sql);
+        LOGGER.debug("Parameters >>> " + StringUtils.getParameterValueString(args));
+    }
+
     public int[] batch(Connection connection, String sql, Object[][] args) throws TransactionException {
-        LOGGER.debug(" >>>>>>>>>>>> " + sql);
-        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+        loggerSqlAndParameters(sql, args);
 
         PreparedStatement preparedStatement = null;
         int[] rows;
@@ -65,8 +74,7 @@ public class RepositoryHandler {
     public <K> K insert(Connection connection, String sql, boolean generatedKeys, Class<K> keyClass, Object... args)
             throws TransactionException {
 
-        LOGGER.debug(" >>>>>>>>>>>> " + sql);
-        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+        loggerSqlAndParameters(sql, args);
 
         K id = null;
         PreparedStatement preparedStatement = null;
@@ -93,7 +101,7 @@ public class RepositoryHandler {
                     id = ColumnTypeHandler.getColumnValue(resultSet, 1, keyClass.getName());
                 }
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | ClassNotFoundException ex) {
             throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(resultSet, preparedStatement);
@@ -102,8 +110,7 @@ public class RepositoryHandler {
     }
 
     public int update(Connection connection, String sql, Object... args) throws TransactionException {
-        LOGGER.debug(" >>>>>>>>>>>> " + sql);
-        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+        loggerSqlAndParameters(sql, args);
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -124,8 +131,7 @@ public class RepositoryHandler {
     }
 
     public ResultSet executeQuery(Connection connection, String sql, Object... args) {
-        LOGGER.debug(" >>>>>>>>>>>> " + sql);
-        LOGGER.debug(" >>>>>>>>>>>> " + Arrays.deepToString(args));
+        loggerSqlAndParameters(sql, args);
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -158,11 +164,32 @@ public class RepositoryHandler {
                     ColumnInfo data = map.get(0);
                     if (data.getJavaClass() == clazz) {
                         result.add(clazz.cast(data.getValue()));
+                    } else {
+                        Class<?> type = clazz;
+                        if (TypeHelper.isRawBaseType(type)) {
+                            type = TypeHelper.getWrapperClass(type);
+                        }
+                        T t = (T) DataTransformerFactory.transform(data.getValue(), clazz);
+                        result.add(t);
                     }
                 }
             }
         }
 
+        return result;
+    }
+
+    public List<Map<String, Object>> queryMap(Connection connection, String selectSql, Object... args) {
+        List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
+        List<Map<String, Object>> result = new ArrayList<>();
+        Map<String, Object> map;
+        for (List<ColumnInfo> columnInfos : selectResult) {
+            map = new HashMap<>();
+            for (ColumnInfo columnInfo : columnInfos) {
+                map.put(columnInfo.getColumnName(), columnInfo.getValue());
+            }
+            result.add(map);
+        }
         return result;
     }
 
@@ -192,6 +219,8 @@ public class RepositoryHandler {
                     }
                 }
             }
+        } else {
+            throw new MoreRowException("Expect one row, but it has" + selectResult.size() + "rows.");
         }
         return result;
     }
@@ -208,16 +237,17 @@ public class RepositoryHandler {
                 continue;
 
             column = field.getAnnotation(SqlColumn.class);
-            var columnName = "";
-            if (column != null) {
-                columnName = column.name();
-            }
-            if (columnName.isBlank()) {
-                columnName = field.getName();
-            }
+            var columnName = EntityResolver.getColumnName(column, field.getName());
             for (var entry : map) {
                 if (columnName.equals(entry.getColumnName())) {
-                    ReflectionHelper.invokeSetMethod(instance, field, entry.getValue());
+                    Class<?> type = field.getType();
+                    Class javaClass = entry.getJavaClass();
+                    Object value = entry.getValue();
+                    // todo check
+                    if (javaClass != type) {
+                        value = DataTransformerFactory.transform(entry.getValue(), type);
+                    }
+                    ReflectionHelper.invokeSetMethod(instance, field, value);
                     break;
                 }
             }

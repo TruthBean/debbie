@@ -1,6 +1,10 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.httpclient.form.FileFormDataParam;
+import com.truthbean.debbie.httpclient.form.FormDataParamName;
+import com.truthbean.debbie.httpclient.form.TextFromDataParam;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import org.slf4j.Logger;
@@ -9,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
@@ -42,7 +46,7 @@ public class HttpConnectionHandler extends HttpHandler {
                       MediaType contentType, byte[] body) {
         HttpURLConnection connection = prepare(url, HttpMethod.GET, cookies, headers, contentType, body);
         if (connection != null) {
-            return action(connection);
+            return getResponse(connection);
         }
         return null;
     }
@@ -55,14 +59,131 @@ public class HttpConnectionHandler extends HttpHandler {
                       MediaType contentType, byte[] body) {
         HttpURLConnection connection = prepare(url, HttpMethod.POST, cookies, headers, contentType, body);
         if (connection != null) {
-            return action(connection);
+            return getResponse(connection);
         }
         return null;
+    }
+
+    public String form(String url, List<FormDataParamName> params) {
+        HttpURLConnection connection = prepare(url, HttpMethod.POST);
+        if (connection == null) {
+            return null;
+        }
+
+        // Just generate some unique random value.
+        String boundary = Long.toHexString(System.currentTimeMillis());
+        String contentType = "multipart/form-data; boundary=" + boundary;
+        // Line separator required by multipart/form-data.
+        String CRLF = "\n";
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", contentType);
+
+        // params
+        if (params != null && !params.isEmpty()) {
+            PrintWriter writer = null;
+            try {
+                OutputStream output = connection.getOutputStream();
+                // true = autoFlush, important!
+                writer = new PrintWriter(new OutputStreamWriter(output), true);
+
+                for (FormDataParamName param : params) {
+                    if (param instanceof TextFromDataParam) {
+                        var text = (TextFromDataParam) param;
+                        // normal param
+                        writer.append("--" + boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data;name=\"" + text.getName() + "\"").append(CRLF);
+
+                        String charset = text.getCharset();
+                        if (charset != null) {
+                            writer.append("Content-Type: text/plain; charset=" + charset).append(CRLF);
+                        } else {
+                            writer.append("Content-Type: text/plain").append(CRLF);
+                        }
+                        writer.append(CRLF);
+                        writer.append(text.getValue()).append(CRLF).flush();
+                    } else if (param instanceof FileFormDataParam) {
+                        var file = (FileFormDataParam) param;
+                        var binaryFile = file.getFile();
+                        var mediaType = file.getFileType();
+                        if (mediaType == null || mediaType.isAny()) {
+                            String typeFromName = URLConnection.guessContentTypeFromName(binaryFile.getName());
+                            mediaType = MediaTypeInfo.parse(typeFromName);
+                        }
+                        var charset = mediaType.charset(Charset.defaultCharset());
+                        writer.append("--" + boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data; name=\"" + file.getName() + "\"; filename=\"" + binaryFile.getName() + "\"")
+                                .append(CRLF);
+                        writer.append("Content-Type: " + mediaType.toString()).append(CRLF);
+                        if (mediaType.isText()) {
+                            // text file
+                            BufferedReader reader = null;
+                            try {
+                                reader = new BufferedReader(new InputStreamReader(new FileInputStream(binaryFile), charset));
+                                for (String line; (line = reader.readLine()) != null;) {
+                                    writer.append(line).append(CRLF);
+                                }
+                            } finally {
+                                if (reader != null)
+                                    try { reader.close(); }
+                                    catch (IOException logOrIgnore) {}
+                            }
+                        } else {
+                            // binaryFile file
+                            writer.append("Content-Transfer-Encoding: binary").append(CRLF);
+                            writer.append(CRLF).flush();
+                            InputStream input = null;
+                            try {
+                                input = new FileInputStream(binaryFile);
+                                byte[] buffer = new byte[1024];
+                                for (int length = 0; (length = input.read(buffer)) > 0;) {
+                                    output.write(buffer, 0, length);
+                                }
+                                // Important! Output cannot be closed.
+                                // Close of writer will close output as well.
+                                output.flush();
+                            } finally {
+                                if (input != null)
+                                    try { input.close(); }
+                                    catch (IOException logOrIgnore) {}
+                            }
+                        }
+                        writer.flush();
+                    }
+                }
+
+                // CRLF is important! It indicates end of binary boundary.
+                writer.append(CRLF).flush();
+                // End of multipart/form-data.
+                writer.append("--" + boundary + "--").append(CRLF).flush();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (writer != null) writer.close();
+            }
+        }
+
+        return getResponse(connection);
+    }
+
+    private HttpURLConnection prepare(String url, HttpMethod method) {
+        String nullStr = null;
+        return prepare(url, method, null, null, nullStr, null);
     }
 
     private HttpURLConnection prepare(String url, HttpMethod method,
                                       List<HttpCookie> cookies, Map<String, String> headers,
                                       MediaType contentType, byte[] body) {
+        String contentTypeValue = null;
+        if (contentType != null) {
+            contentTypeValue = contentType.getValue();
+        }
+        return prepare(url, method, cookies, headers, contentTypeValue, body);
+    }
+
+    private HttpURLConnection prepare(String url, HttpMethod method,
+                                      List<HttpCookie> cookies, Map<String, String> headers,
+                                      String contentType, byte[] body) {
         LOGGER.info("connect to: " + url);
         try {
             HttpURLConnection connection;
@@ -73,7 +194,7 @@ public class HttpConnectionHandler extends HttpHandler {
             }
             connection.setRequestMethod(method.name());
             if (contentType != null) {
-                connection.setRequestProperty("Content-Type", contentType.getValue());
+                connection.setRequestProperty("Content-Type", contentType);
             }
             if (cookies != null && !cookies.isEmpty()) {
                 var cookie = buildCookies(cookies);
@@ -101,7 +222,7 @@ public class HttpConnectionHandler extends HttpHandler {
         return null;
     }
 
-    protected String action(HttpURLConnection connection) {
+    protected String getResponse(HttpURLConnection connection) {
         int status;
         try {
             status = connection.getResponseCode();
@@ -146,6 +267,7 @@ public class HttpConnectionHandler extends HttpHandler {
 
             var configuration = getConfiguration();
             if (configuration.useProxy()) {
+                LOGGER.trace("user proxy");
                 urlConnection = url.openConnection(createProxy());
             } else {
                 urlConnection = url.openConnection();

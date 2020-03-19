@@ -17,7 +17,8 @@ public class MockApplicationFactory extends AbstractApplicationFactory {
     private final Logger logger = LoggerFactory.getLogger(MockApplicationFactory.class);
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         return new DebbieApplication() {
             @Override
             protected void start(long beforeStartTime, String... args) {

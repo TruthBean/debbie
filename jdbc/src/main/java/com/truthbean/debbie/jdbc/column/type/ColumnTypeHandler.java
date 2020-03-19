@@ -17,7 +17,7 @@ public class ColumnTypeHandler {
     public static String getType(String dataType, int precision, int scale) {
         dataType = dataType.toLowerCase();
         if (dataType.contains("char")) {
-            dataType = "String";
+            dataType = JdbcTypeConstants.STRING;
         } else if (dataType.contains("int")) {
             dataType = "int";
         } else if (dataType.contains("float")) {
@@ -26,22 +26,22 @@ public class ColumnTypeHandler {
             dataType = "double";
         } else if (dataType.contains("number")) {
             if (scale > 0) {
-                dataType = "BigDecimal";
+                dataType = JdbcTypeConstants.BIG_INTEGER;
             } else if (precision > 6) {
                 dataType = "long";
             } else {
-                dataType = "integer";
+                dataType = JdbcTypeConstants.INTEGER;
             }
         } else if (dataType.contains("decimal")) {
-            dataType = "BigDecimal";
+            dataType = JdbcTypeConstants.BIG_DECIMAL;
         } else if (dataType.contains("date")) {
-            dataType = "Date";
+            dataType = JdbcTypeConstants.DATE;
         } else if (dataType.contains("time")) {
-            dataType = "Timestamp";
+            dataType = JdbcTypeConstants.TIMESTAMP;
         } else if (dataType.contains("clob")) {
-            dataType = "Clob";
+            dataType = JdbcTypeConstants.CLOB;
         } else if (dataType.contains("blob")) {
-            dataType = "Blob";
+            dataType = JdbcTypeConstants.BLOB;
         } else {
             dataType = "Object";
         }
@@ -127,16 +127,12 @@ public class ColumnTypeHandler {
         }
     }
 
-    public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName) throws SQLException {
-        try {
-            var classLoader = ClassLoaderUtils.getClassLoader(ColumnTypeHandler.class);
-            @SuppressWarnings("unchecked")
-            Class<T> columnClass = (Class<T>) classLoader.loadClass(columnClassName);
-            return getColumnValue(resultSet, index, columnClass, columnClassName);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName)
+            throws SQLException, ClassNotFoundException {
+        var classLoader = ClassLoaderUtils.getClassLoader(ColumnTypeHandler.class);
+        @SuppressWarnings("unchecked")
+        Class<T> columnClass = (Class<T>) classLoader.loadClass(columnClassName);
+        return getColumnValue(resultSet, index, columnClass, columnClassName);
     }
 
     public static JDBCType explain(Class<?> type) {

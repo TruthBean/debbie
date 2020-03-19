@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.column;
 
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
@@ -68,10 +69,16 @@ public class JdbcColumnResolver {
                     columnInfo.setColumnType(columnTypeName);
                     try {
                         columnInfo.setJavaClass(Class.forName(columnClassName));
+                        columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, columnClassName));
                     } catch (ClassNotFoundException e) {
                         LOGGER.error(columnClassName + " has no class defined ");
+                        try {
+                            columnInfo.setJavaClass(Class.forName(type));
+                            columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, type));
+                        } catch (ClassNotFoundException ex) {
+                            LOGGER.error(type + " has no class defined ", e);
+                        }
                     }
-                    columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, columnClassName));
 
                     // columnInfo.setColumnComment(comment);
                     columnInfo.setPrecision(precision);
@@ -123,12 +130,9 @@ public class JdbcColumnResolver {
         SqlColumn sqlColumn = field.getAnnotation(SqlColumn.class);
         if (sqlColumn != null) {
             if (sqlColumn.id()) {
-                var columnName = sqlColumn.name();
-                if (!columnName.isBlank()) {
-                    columnInfo.setColumnName(columnName);
-                } else {
-                    columnInfo.setColumnName(field.getName());
-                }
+                var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
+                columnInfo.setColumnName(columnName);
+
                 columnInfo.setNullable(false);
                 if (field.getType() == UUID.class) {
                     columnInfo.setCharMaxLength(64);
@@ -139,12 +143,9 @@ public class JdbcColumnResolver {
                 columnInfo.setPrimaryKey(true);
                 columnInfo.setPrimaryKeyType(sqlColumn.primaryKey());
             } else {
-                var columnName = sqlColumn.name();
-                if (!columnName.isBlank()) {
-                    columnInfo.setColumnName(columnName);
-                } else {
-                    columnInfo.setColumnName(field.getName());
-                }
+                var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
+                columnInfo.setColumnName(columnName);
+
                 columnInfo.setNullable(sqlColumn.nullable());
                 columnInfo.setUnique(sqlColumn.unique());
                 columnInfo.setCharMaxLength(sqlColumn.charMaxLength());

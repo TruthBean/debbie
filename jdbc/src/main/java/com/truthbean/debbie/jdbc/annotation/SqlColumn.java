@@ -23,6 +23,11 @@ public @interface SqlColumn {
     /**
      * @return column name
      */
+    String value() default "";
+
+    /**
+     * @return column name
+     */
     String name() default "";
 
     boolean nullable() default true;

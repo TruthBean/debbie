@@ -3,6 +3,7 @@ package com.truthbean.debbie.util;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 

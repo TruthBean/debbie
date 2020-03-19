@@ -107,6 +107,18 @@ public final class TypeHelper {
         return boolean.class == clazz || double.class == clazz || float.class == clazz || int.class == clazz || long.class == clazz || short.class == clazz || char.class == clazz || byte.class == clazz;
     }
 
+    public static boolean isSameType(Class<?> aType, Class<?> bType) {
+        return (isInt(aType) && isInt(bType)
+                || (isShort(aType) && isShort(bType))
+                || (isLong(aType) && isLong(bType))
+                || (isFloat(aType)) && isFloat(bType)
+                || (isDouble(aType) && isDouble(bType))
+                || (isBoolean(aType) && isBoolean(bType))
+                || (isChar(aType) && isChar(bType))
+                || (isByte(aType)) && isByte(bType)
+                || (aType == bType));
+    }
+
     public static boolean isArrayType(Class<?> clazz) {
         return clazz == Set.class || clazz == Map.class || clazz == List.class;
     }

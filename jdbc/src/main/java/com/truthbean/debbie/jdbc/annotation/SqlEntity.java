@@ -14,6 +14,12 @@ public @interface SqlEntity {
      * table name
      * @return table name
      */
+    String value() default "";
+
+    /**
+     * table name
+     * @return table name
+     */
     String table() default "";
 
     String engine() default "InnoDB";

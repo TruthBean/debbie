@@ -28,10 +28,11 @@ class MvcRouterHandlerBeanTest {
 
     @Test
     void matchRouterPath() {
-        var url = "/id/hello";
-        // var url = "/id/hello2";
+        // var url = "/id/hello";
+        var url = "/id/hello2.do";
         // var url = "/11-20";
-        // var url = "/he/he/11-20";
+        // var url = "/he/he/11o-20";
+        // 00var url = "/hehehehehehe";
         DefaultRouterRequest routerRequest = new DefaultRouterRequest();
         routerRequest.setUrl(url);
         routerRequest.setPathAttributes(new HashMap<>());
@@ -39,7 +40,9 @@ class MvcRouterHandlerBeanTest {
         Set<RouterInfo> routerInfos = MvcRouterHandler.matchRouterPath(url, set, routerRequest);
         System.out.println("----------------------------------------------------------------------");
         for (RouterInfo routerInfo : routerInfos) {
+            System.out.println();
             System.out.println(routerInfo);
+            System.out.println(routerInfo.getMethod());
             routerInfo.getRequest().getPathAttributes().forEach((key, value) -> {
                 System.out.println(key + ":");
                 System.out.println(value);

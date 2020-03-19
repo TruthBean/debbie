@@ -48,6 +48,7 @@ dependencyManagement {
             exclude("javax.servlet.jsp:jsp-api")
             exclude("javax.servlet.jsp.jstl:jstl-api")
         }
+        dependency("org.apache.taglibs:taglibs-standard-jstlel:$jstlVersion")
 
         val fileuploadVersion: String by project
         dependency("commons-fileupload:commons-fileupload:$fileuploadVersion") {
@@ -67,7 +68,9 @@ dependencyManagement {
 
         // netty
         val nettyVersion: String by project
-        dependency("io.netty:netty-all:$nettyVersion")
+        dependency("io.netty:netty-codec-http2:$nettyVersion")
+        dependency("io.netty:netty-transport-native-epoll:$nettyVersion")
+        dependency("io.netty:netty-transport-native-kqueue:$nettyVersion")
 
         // debbie
         val projectVersion: String by project

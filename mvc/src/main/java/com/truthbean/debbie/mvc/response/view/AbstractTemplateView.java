@@ -22,6 +22,12 @@ public abstract class AbstractTemplateView extends AbstractView {
         data.put(name, value);
     }
 
+    public void setAttributes(Map<String, Object> attributes) {
+        if (attributes != null && !attributes.isEmpty()) {
+            data.putAll(attributes);
+        }
+    }
+
     public void setRouterSession(RouterSession routerSession) {
         this.routerSession = routerSession;
     }

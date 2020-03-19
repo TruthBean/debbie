@@ -536,7 +536,7 @@ public class ReflectionHelper {
                 declaredMethod.setAccessible(true);
             }
             return declaredMethod.invoke(target, parameters);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
@@ -556,7 +556,7 @@ public class ReflectionHelper {
                 declaredMethod.setAccessible(true);
             }
             return declaredMethod.invoke(target, parameters);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
@@ -582,7 +582,7 @@ public class ReflectionHelper {
             } else {
                 return (T) method.invoke(target, parameters);
             }
-        } catch (IllegalAccessException | InvocationTargetException | ClassCastException e) {
+        } catch (IllegalAccessException | InvocationTargetException | ClassCastException | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             Throwable throwable = Objects.requireNonNullElse(cause, e);
             LOGGER.error("invokeMethod error. \n", throwable);

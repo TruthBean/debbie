@@ -257,4 +257,8 @@ public enum MediaType {
     public boolean isText() {
         return info().isText();
     }
+
+    public boolean isAny() {
+        return this.equals(ANY);
+    }
 }

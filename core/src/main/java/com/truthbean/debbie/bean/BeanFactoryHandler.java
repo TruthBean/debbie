@@ -530,6 +530,7 @@ public class BeanFactoryHandler {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getBeanByInitMethod(Method initMethod, BeanFactoryHandler handler) {
         if (Modifier.isStatic(initMethod.getModifiers())) {
             Parameter[] parameters = initMethod.getParameters();

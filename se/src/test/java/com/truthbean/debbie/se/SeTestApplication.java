@@ -2,7 +2,6 @@ package com.truthbean.debbie.se;
 
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.boot.DebbieBootApplication;
-import com.truthbean.debbie.task.EnableDebbieTask;
 
 /**
  * @author truthbean/Rogar·Q

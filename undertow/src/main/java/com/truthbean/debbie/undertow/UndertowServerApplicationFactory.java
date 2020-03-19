@@ -35,7 +35,8 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, beanFactoryHandler);
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);

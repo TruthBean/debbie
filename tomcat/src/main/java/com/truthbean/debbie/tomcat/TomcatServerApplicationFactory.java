@@ -6,17 +6,29 @@ import com.truthbean.debbie.io.PathUtils;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
+import com.truthbean.debbie.util.StringUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.loader.ParallelWebappClassLoader;
+import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
+import org.apache.coyote.AbstractProtocol;
+import org.apache.tomcat.JarScanFilter;
+import org.apache.tomcat.JarScanner;
+import org.apache.tomcat.util.modeler.Registry;
+import org.apache.tomcat.util.scan.StandardJarScanFilter;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -69,14 +81,44 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         return webappDir;
     }
 
-    private void config(TomcatConfiguration configuration) {
+    private void customizeConnector(TomcatConfiguration configuration, Connector connector) {
+        int port = Math.max(configuration.getPort(), 0);
+        connector.setPort(port);
+        if (StringUtils.hasText(configuration.getServerHeader())) {
+            connector.setAttribute("server", configuration.getServerHeader());
+        }
+        if (connector.getProtocolHandler() instanceof AbstractProtocol) {
+            if (StringUtils.hasText(configuration.getHost())) {
+                var abstractProtocol = (AbstractProtocol<?>) connector.getProtocolHandler();
+                try {
+                    abstractProtocol.setAddress(InetAddress.getByName(configuration.getHost()));
+                } catch (UnknownHostException e) {
+                    LOGGER.error("tomcat connector bind address error. ", e);
+                }
+            }
+        }
+
+        if (configuration.getUriEncoding() != null) {
+            connector.setURIEncoding(configuration.getUriEncoding().name());
+        }
+        // Don't bind to the socket prematurely if ApplicationContext is slow to start
+        connector.setProperty("bindOnInit", "false");
+        // TODO ssl
+    }
+
+    private void config(TomcatConfiguration configuration, ClassLoader classLoader) {
+        if (configuration.isDisableMBeanRegistry()) {
+            Registry.disableRegistry();
+        }
         server.setPort(configuration.getPort());
         server.setHostname(configuration.getHost());
 
-        /*Connector connector = new Connector("HTTP/1.1");
-        connector.setPort(configuration.getPort());
-        connector.setAsyncTimeout(60000);
-        server.setConnector(connector);*/
+        Connector connector = new Connector(configuration.getConnectorProtocol());
+        connector.setThrowOnFailure(true);
+        server.getService().addConnector(connector);
+        customizeConnector(configuration, connector);
+        server.setConnector(connector);
+        server.getHost().setAutoDeploy(configuration.isAutoDeploy());
 
         try {
             Path tempPath = Files.createTempDirectory("tomcat-base-dir");
@@ -87,11 +129,22 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
 
         String webappDir = configWebappDir(configuration);
         StandardContext ctx = (StandardContext) server.addWebapp("", webappDir);
-        ctx.setParentClassLoader(getClass().getClassLoader());
 
+        StandardJarScanFilter filter = new StandardJarScanFilter();
+        filter.setTldSkip(TldSkipPatterns.tldSkipPatterns());
+        StandardJarScanner jarScanner = (StandardJarScanner) ctx.getJarScanner();
+        jarScanner.setJarScanFilter(filter);
+        // jarScanner.setScanManifest(false);
+
+        // disables Tomcat's reflective reference clearing to avoid reflective access warnings on Java 9 and later JVMs.
+        ctx.setClearReferencesObjectStreamClassCaches(false);
+        ctx.setClearReferencesRmiTargets(false);
+        ctx.setClearReferencesThreadLocals(false);
+
+        ctx.setParentClassLoader(classLoader);
         try {
             String path;
-            var resource = ClassLoaderUtils.getClassLoader(TomcatServerApplicationFactory.class).getResource("/");
+            var resource = classLoader.getResource("/");
             LOGGER.debug("resource: " + resource);
             if (resource == null) {
                 path = new File("").getAbsolutePath();
@@ -115,14 +168,16 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler) {
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+                                     ClassLoader classLoader) {
         TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, beanFactoryHandler);
-        config(configuration);
+        config(configuration, classLoader);
         return tomcatApplication(configuration, beanFactoryHandler);
     }
 
     private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
         return new DebbieApplication() {
+            private boolean exited = false;
             @Override
             public void start(long beforeStartTime, String... args) {
                 try {
@@ -140,12 +195,15 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
 
             @Override
             public void exit(String... args) {
+                if (exited) return;
                 beforeExit(beanFactoryHandler, args);
                 try {
                     server.stop();
                     server.destroy();
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat stop error", e);
+                } finally {
+                    exited = true;
                 }
             }
         };

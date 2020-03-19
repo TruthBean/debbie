@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.entity;
 
+import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
@@ -52,12 +53,37 @@ public class EntityResolver {
 
     public static String getTableName(ClassInfo classInfo) {
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
+        if (sqlEntity == null) {
+            throw new SqlEntityNullException(classInfo.getClazz().getName() + " has no @SqlEntity !");
+        }
         var entityClass = classInfo.getClazz();
-        var table = sqlEntity.table();
+        return getTableName(sqlEntity, entityClass);
+    }
+
+    public static String getTableName(SqlEntity entity, Class<?> entityType) {
+        var table = entity.value();
         if (table.isBlank()) {
-            table = entityClass.getSimpleName().toLowerCase();
+            table = entity.table();
+        }
+        if (table.isBlank()) {
+            table = entityType.getSimpleName().toLowerCase();
         }
         return table;
+    }
+
+    public static String getColumnName(SqlColumn column, String fieldName) {
+        if (column == null) {
+            // 没有SqlColumn默认使用field
+            return fieldName;
+        }
+        var columnName = column.value();
+        if (columnName.isBlank()) {
+            columnName = column.name();
+        }
+        if (columnName.isBlank()) {
+            columnName = fieldName;
+        }
+        return columnName;
     }
 
     public static List<ColumnInfo> resolveClassInfo(ClassInfo<?> classInfo) {

@@ -13,7 +13,8 @@ public class JspHandler extends AbstractTemplateViewHandler {
 
     @Override
     public Object transform(Object o) {
-        return null;
+        // do nothing
+        return o;
     }
 
     @Override

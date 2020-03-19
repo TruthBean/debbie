@@ -45,7 +45,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private Class<E> getEntityClass() {
+    protected Class<E> getEntityClass() {
         if (entityClass == null) {
             try {
                 var types = ReflectionHelper.getActualTypes(getClass());

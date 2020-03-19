@@ -2,6 +2,8 @@ package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.server.AbstractServerConfiguration;
 
+import java.nio.charset.Charset;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -26,11 +28,51 @@ public class TomcatConfiguration extends AbstractServerConfiguration {
 
     private String webappDir;
 
+    private boolean disableMBeanRegistry;
+
+    private boolean autoDeploy;
+
+    private String connectorProtocol;
+
+    private Charset uriEncoding;
+
     public String getWebappDir() {
         return webappDir;
     }
 
     public void setWebappDir(String webappDir) {
         this.webappDir = webappDir;
+    }
+
+    public boolean isDisableMBeanRegistry() {
+        return disableMBeanRegistry;
+    }
+
+    public void setDisableMBeanRegistry(boolean disableMBeanRegistry) {
+        this.disableMBeanRegistry = disableMBeanRegistry;
+    }
+
+    public boolean isAutoDeploy() {
+        return autoDeploy;
+    }
+
+    public void setAutoDeploy(boolean autoDeploy) {
+        this.autoDeploy = autoDeploy;
+    }
+
+    public String getConnectorProtocol() {
+        return connectorProtocol;
+    }
+
+    public void setConnectorProtocol(String connectorProtocol) {
+        this.connectorProtocol = connectorProtocol;
+    }
+
+    public Charset getUriEncoding() {
+        return uriEncoding;
+    }
+
+    public void setUriEncoding(Charset uriEncoding) {
+        this.uriEncoding = uriEncoding;
     }
 }

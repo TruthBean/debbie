@@ -3,6 +3,8 @@ package com.truthbean.debbie.data.transformer.text;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.util.JacksonUtils;
 
+import java.util.Map;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -13,6 +15,9 @@ public class XmlTransformer<T> implements DataTransformer<T, String> {
     private Class<T> clazz;
     public XmlTransformer(Class<T> clazz) {
         this.clazz = clazz;
+    }
+    public XmlTransformer() {
+        clazz = (Class<T>) Map.class;
     }
 
     @Override

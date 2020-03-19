@@ -1,9 +1,13 @@
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.httpclient.form.FileFormDataParam;
+import com.truthbean.debbie.httpclient.seaweedfs.DirAssignResponse;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.net.HttpCookie;
 import java.util.List;
 
@@ -38,5 +42,28 @@ public class HttpConnectionHandlerTest {
                 "}";
         var response = httpClientHandler.post("http://192.168.1.206:8080/login", body, MediaType.APPLICATION_JSON_UTF8);
         System.out.println(response);
+    }
+
+    /*@Test
+    public void testUploadFile() {
+        var url = "http://localhost:12005/file/upload";
+        httpClientHandler.post()
+    }*/
+
+    @Test
+    public void testSeaweedfsDirAssign() {
+        var seaWeedFSUrl = "http://172.17.246.85:9333";
+        var dirAssign = seaWeedFSUrl + "/dir/assign";
+        String response = httpClientHandler.get(dirAssign);
+        System.out.println(response);
+
+        DirAssignResponse assign = JacksonUtils.jsonToBean(response, DirAssignResponse.class);
+        String url = "http://" + assign.getPublicUrl() + "/" + assign.getFid();
+        FileFormDataParam param = new FileFormDataParam();
+        param.setName("file");
+        param.setFile(new File("C:\\Users\\truth\\Pictures\\20170317174809_cb992f78-2fbb-4717-a59b-51ab6a3cb26d.jpg"));
+
+        String form = httpClientHandler.form(url, List.of(param));
+        System.out.println(form);
     }
 }

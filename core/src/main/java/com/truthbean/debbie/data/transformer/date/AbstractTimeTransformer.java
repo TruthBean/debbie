@@ -4,13 +4,14 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/16 15:37.
  */
-public abstract class AbstractTimeTransformer implements DataTransformer<Long, String> {
+public abstract class AbstractTimeTransformer implements DataTransformer<Date, String> {
     /**
      * date time format, eg 'YYYY-MM-DD HH:mm:SS'
      */
@@ -31,11 +32,11 @@ public abstract class AbstractTimeTransformer implements DataTransformer<Long, S
     }
 
     @Override
-    public String transform(Long milliseconds) {
-        if (milliseconds == null || dateTimePattern == null) {
+    public String transform(Date date) {
+        if (date == null || dateTimePattern == null) {
             return null;
         }
-        return dateTimeFormatter.format(Instant.ofEpochMilli(milliseconds));
+        return dateTimeFormatter.format(Instant.ofEpochMilli(date.getTime()));
     }
 
     /**
@@ -44,7 +45,7 @@ public abstract class AbstractTimeTransformer implements DataTransformer<Long, S
      * @return milliseconds
      */
     @Override
-    public Long reverse(String string) {
-        return dateTimeFormatter.parse(string, Instant::from).toEpochMilli();
+    public Date reverse(String string) {
+        return new Date(dateTimeFormatter.parse(string, Instant::from).toEpochMilli());
     }
 }
