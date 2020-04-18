@@ -71,7 +71,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         var proxyClassName = proxy.getClass().getName();
         Class<?> targetClass = target.getClass();
-        LOGGER.debug(proxyClassName + " proxy " + targetClass.getName());
+        LOGGER.trace(proxyClassName + " proxy " + targetClass.getName());
         Method targetMethod;
         Class<?>[] parameterClass = method.getParameterTypes();
         try {

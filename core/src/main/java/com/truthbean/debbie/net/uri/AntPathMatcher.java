@@ -3,11 +3,7 @@ package com.truthbean.debbie.net.uri;
 import com.truthbean.debbie.util.Assert;
 import com.truthbean.debbie.util.StringUtils;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

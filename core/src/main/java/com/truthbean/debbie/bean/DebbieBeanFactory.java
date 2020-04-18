@@ -21,17 +21,27 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
         this.beanInfo = beanInfo;
     }
 
+    @Override
     public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
         this.beanFactoryHandler = beanFactoryHandler;
     }
 
+    private boolean canNew() {
+        BeanType beanType = beanInfo.getBeanType();
+        return beanType == BeanType.NO_LIMIT || (beanType == BeanType.SINGLETON && beanInfo.getBean() == null);
+    }
+
     @Override
     public Bean getBean() {
-        var beanBeanInvoker = new BeanInvoker<>(getBeanType(), beanFactoryHandler);
-        var bean = beanBeanInvoker.getBean();
-        var classInfo = beanBeanInvoker.getBeanInfo();
-        beanFactoryHandler.resolveDependentBean(bean, classInfo);
-        return bean;
+        if (canNew()) {
+            var beanBeanInvoker = new BeanInvoker<>(getBeanType(), beanFactoryHandler);
+            var bean = beanBeanInvoker.getBean();
+            var classInfo = beanBeanInvoker.getBeanInfo();
+            beanFactoryHandler.resolveDependentBean(bean, classInfo);
+            beanInfo.setBean(bean);
+            return bean;
+        }
+        return beanInfo.getBean();
     }
 
     @Override
@@ -46,6 +56,6 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
 
     @Override
     public void destroy() {
-        beanFactoryHandler.destroy(beanInfo);
+        // do nothing
     }
 }

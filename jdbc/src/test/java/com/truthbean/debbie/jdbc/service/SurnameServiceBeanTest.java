@@ -42,7 +42,8 @@ class SurnameServiceBeanTest {
 
     @Test
     void selectAll(@BeanInject("surnameService") SurnameService surnameService) {
-        System.out.println(surnameService.list());
+        System.out.println("---------------------");
+        System.out.println(surnameService.selectById(1L));
     }
 
     @Test

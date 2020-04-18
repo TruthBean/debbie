@@ -1,6 +1,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
@@ -38,17 +39,39 @@ public class BeanFactoryHandler {
     private final MethodProxyHandlerRegister methodProxyHandlerRegister;
 
     private final ClassLoader classLoader;
+    private final ResourceResolver resourceResolver;
+
+    private Class<?> injectType;
+
+    private static final Object object = new Object();
 
     protected BeanFactoryHandler(ClassLoader classLoader) {
-        beanInitialization = BeanInitialization.getInstance();
-        configurationFactory = new DebbieConfigurationFactory(this);
-        methodProxyHandlerRegister = new MethodProxyHandlerRegister();
+        synchronized (object) {
+            resourceResolver = new ResourceResolver();
+            beanInitialization = BeanInitialization.getInstance(classLoader, resourceResolver);
+            configurationFactory = new DebbieConfigurationFactory(this);
+            methodProxyHandlerRegister = new MethodProxyHandlerRegister();
 
-        this.classLoader = classLoader;
+            this.classLoader = classLoader;
+
+            try {
+                this.injectType = Class.forName("javax.inject.Inject");
+            } catch (ClassNotFoundException e) {
+                LOGGER.info("class javax.inject.Inject not found");
+            }
+        }
     }
 
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    public ResourceResolver getResourceResolver() {
+        return resourceResolver;
+    }
+
+    public Class<?> getInjectType() {
+        return injectType;
     }
 
     public BeanInitialization getBeanInitialization() {
@@ -116,9 +139,26 @@ public class BeanFactoryHandler {
     }
 
     public void release(String... args) {
+        // must do nothing
+    }
+
+    private synchronized void destroyBeans(Collection<DebbieBeanInfo<?>> beans) {
+        if (beans != null && !beans.isEmpty()) {
+            for (DebbieBeanInfo<?> bean : beans) {
+                LOGGER.trace("release bean " + bean.getBeanClass());
+                bean.release();
+            }
+        }
+    }
+
+    protected void releaseBeans() {
+        destroyBeans(beanServiceInfoSet);
+        destroyBeans(singletonBeanInvokerMap.keySet());
         beanServiceInfoSet.clear();
         singletonBeanInvokerMap.clear();
         beanInitialization.reset();
+        resourceResolver.cleanResources();
+        LOGGER.info("release all bean.");
     }
 
     private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, Set<DebbieBeanInfo<?>> beanInfoSet) {
@@ -226,7 +266,7 @@ public class BeanFactoryHandler {
         return null;
     }
 
-    <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
+    public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
         try {
             return getBeanInfo(serviceName, type, require, beanServiceInfoSet);
         } catch (Exception e) {
@@ -366,6 +406,7 @@ public class BeanFactoryHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void resolveFieldValue(Object object, Field field, String keyPrefix) {
         var propertyInject = field.getAnnotation(PropertyInject.class);
         if (propertyInject != null) {
@@ -375,6 +416,13 @@ public class BeanFactoryHandler {
         var beanInject = field.getAnnotation(BeanInject.class);
         if (beanInject != null) {
             resolveFieldDependentBean(object, field, beanInject);
+        } else {
+            Class injectClass = getInjectType();
+            if (injectClass == null) return;
+            Object inject = field.getAnnotation(injectClass);
+            if (inject != null) {
+                resolveFieldDependentBean(null, object, field, inject);
+            }
         }
     }
 
@@ -451,6 +499,19 @@ public class BeanFactoryHandler {
         }
     }
 
+    private void resolveFieldDependentBean(String name, Object object, Field field, Object inject) {
+        if (name == null || name.isBlank()) {
+            name = field.getName();
+        }
+        LOGGER.trace("resolve field dependent bean(" + field.getType() + ") by name : " + name);
+        var value = factory(name, field.getType(), true);
+        if (value != null) {
+            ReflectionHelper.setField(object, field, value);
+        } else {
+            throw new NoBeanException("no bean " + name + " found .");
+        }
+    }
+
     private void resolveFieldDependentBean(Object object, Field field, BeanInject beanInject) {
         LOGGER.trace("resolve field dependent bean(" + field.getType() + ") by type ");
         String name = beanInject.name();
@@ -488,14 +549,6 @@ public class BeanFactoryHandler {
                     }
                 }
             }
-        } else {
-            // todo if inject is exist
-            /*try {
-                Class injectClass = Class.forName("javax.inject.Inject");
-                var inject = parameter.getAnnotation(injectClass);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }*/
         }
         throw new NoBeanException("no bean " + parameter.getName() + " found .");
     }
@@ -583,8 +636,8 @@ public class BeanFactoryHandler {
             if (beanInfo.getConstructorBeanDependent().isEmpty() || beanInfo.isConstructorBeanDependentHasValue()) {
                 beanInvoker.createBeanByConstructorDependent();
                 bean = beanInvoker.getBean();
-                beanInfo = beanInvoker.getBeanInfo();
                 if (bean != null) {
+                    beanInfo = beanInvoker.getBeanInfo();
                     beanInfo.setBean(bean);
                     beanInfo.setHasVirtualValue(false);
                 }
@@ -593,8 +646,8 @@ public class BeanFactoryHandler {
         if (bean == null) {
             beanInvoker.createBeanByConstructorDependent();
             bean = beanInvoker.getBean();
-            beanInfo = beanInvoker.getBeanInfo();
             if (bean != null) {
+                beanInfo = beanInvoker.getBeanInfo();
                 beanInfo.setBean(bean);
                 if (beanInfo.isHasVirtualValue()) {
                     beanInfo.setHasVirtualValue(false);

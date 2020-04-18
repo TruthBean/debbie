@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author TruthBean
@@ -41,6 +42,10 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
+        RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
+        RouterFilterManager.registerCorsFilter(configuration, "/**");
+        RouterFilterManager.registerCsrfFilter(configuration, "/**");
+        RouterFilterManager.registerSecurityFilter(configuration, "/**");
 
         SessionManager sessionManager = new InMemorySessionManager(configuration.getName());
         SessionCookieConfig sessionConfig = new SessionCookieConfig();
@@ -54,7 +59,7 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         HttpHandler next = new DispatcherHttpHandler(configuration, beanFactoryHandler);
         for (RouterFilterInfo filter : filters) {
-            next = new HttpHandlerFilter(next, filter, beanFactoryHandler);
+            next = new HttpHandlerFilter(next, filter, beanFactoryHandler, configuration);
         }
 
         // set as next handler your root handler
@@ -68,19 +73,23 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
                 .setHandler(sessionAttachmentHandler).build();
 
         return new DebbieApplication() {
+            private final AtomicBoolean running = new AtomicBoolean(false);
             @Override
             public void start(long beforeStartTime, String... args) {
                 server.start();
                 this.beforeStart(LOGGER, beanFactoryHandler);
                 printlnWebUrl(LOGGER, configuration.getPort());
+                running.set(true);
                 LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
             }
 
             @Override
             public void exit(String... args) {
-                beforeExit(beanFactoryHandler, args);
-                server.stop();
+                if (running.getAndSet(false)) {
+                    beforeExit(beanFactoryHandler, args);
+                    server.stop();
+                }
             }
         };
     }

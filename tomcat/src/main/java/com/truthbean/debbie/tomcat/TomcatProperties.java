@@ -1,15 +1,13 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.server.BaseServerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 /**
  * @author TruthBean
@@ -28,6 +26,9 @@ public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> 
     private static final String AUTO_DEPLOY = "debbie.server.tomcat.autoDeploy";
     private static final String TOMCAT_CONNECTOR_PROTOCOL = "debbie.server.tomcat.connector.protocol";
     private static final String TOMCAT_URI_ENCODING = "debbie.server.tomcat.uri-encoding";
+
+    private static final String TOMCAT_RESOURCES_CACHING_ALLOWED = "debbie.server.tomcat.resources.caching-allowed";
+    private static final String TOMCAT_RESOURCES_MAX_CACHE = "debbie.server.tomcat.resources.max-cache";
     //===========================================================================
 
     private TomcatConfiguration configuration;
@@ -69,6 +70,9 @@ public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> 
 
         configuration.setConnectorProtocol(properties.getStringValue(TOMCAT_CONNECTOR_PROTOCOL, DEFAULT_PROTOCOL));
         configuration.setUriEncoding(properties.getCharsetValue(TOMCAT_URI_ENCODING, StandardCharsets.UTF_8));
+
+        configuration.setCachingAllowed(properties.getBooleanValue(TOMCAT_RESOURCES_CACHING_ALLOWED, true));
+        configuration.setCacheMaxSize(properties.getIntegerValue(TOMCAT_RESOURCES_MAX_CACHE, 102400));
 
         return configuration;
     }

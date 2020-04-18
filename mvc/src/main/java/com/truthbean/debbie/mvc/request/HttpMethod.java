@@ -95,7 +95,7 @@ public enum HttpMethod {
      * @since 0.0.2
      */
     public static HttpMethod resolve(String method) {
-        return (method != null ? mappings.get(method) : null);
+        return (method != null ? mappings.get(method.toUpperCase()) : null);
     }
 
 

@@ -1,9 +1,9 @@
 dependencies {
-    implementation(project(":debbie-mvc"))
-    implementation(project(":debbie-server"))
+    api(project(":debbie-mvc"))
+    api(project(":debbie-server"))
 
     val undertowVersion: String by project
-    implementation("io.undertow:undertow-core:$undertowVersion")
+    api("io.undertow:undertow-core:$undertowVersion")
 
     testImplementation(project(":debbie-test"))
 

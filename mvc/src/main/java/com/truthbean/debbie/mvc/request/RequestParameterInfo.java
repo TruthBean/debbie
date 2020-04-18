@@ -12,19 +12,19 @@ import java.lang.reflect.Parameter;
  */
 public class RequestParameterInfo {
 
-    private String name;
+    private final String name;
 
-    private String value;
+    private final String value;
 
-    private RequestParameterType paramType;
+    private final RequestParameterType paramType;
 
-    private String defaultValue;
+    private final String defaultValue;
 
-    private boolean require;
+    private final boolean require;
 
-    private MediaType bodyType;
+    private final MediaType bodyType;
 
-    private Annotation annotation;
+    private final Annotation annotation;
 
     public RequestParameterInfo(RequestParameter parameter) {
         this.annotation = parameter;

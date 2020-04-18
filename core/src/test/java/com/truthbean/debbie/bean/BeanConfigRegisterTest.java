@@ -69,7 +69,8 @@ public class BeanConfigRegisterTest {
     }
 
     @Test
-    public void lifecycle(@BeanInject LifecycleBeanTest test) {
-
+    public void lifecycle(@BeanInject LifecycleBeanTest test, @BeanInject InjectTest injectTest) {
+        System.out.println(injectTest);
     }
+
 }

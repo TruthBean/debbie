@@ -24,16 +24,13 @@ public class ResponseCompletionHandler {
 
     private final BeanFactoryHandler beanFactoryHandler;
     private final AioServerConfiguration configuration;
-    private final RouterInfo matchedRouter;
+    private final RouterRequest routerRequest;
 
     public ResponseCompletionHandler(BeanFactoryHandler beanFactoryHandler, RouterRequest routerRequest,
                                      AioServerConfiguration configuration) {
         this.beanFactoryHandler = beanFactoryHandler;
         this.configuration = configuration;
-        this.matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
-        logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        logger.trace(routerRequest.toString());
-        logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        this.routerRequest = routerRequest;
     }
 
     private void writeChannel(AsynchronousSocketChannel channel, MediaTypeInfo responseType, Object result) {
@@ -91,9 +88,17 @@ public class ResponseCompletionHandler {
     }
 
     void handle(AsynchronousSocketChannel channel) {
+        logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        logger.trace(routerRequest.toString());
+        logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         logger.debug("--> handle response");
+        RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
         RouterResponse routerResponse = MvcRouterHandler.handleRouter(matchedRouter, this.beanFactoryHandler);
-        writeChannel(channel, routerResponse.getResponseType(), routerResponse.getContent());
+        MediaTypeInfo responseType = routerResponse.getResponseType();
+        if (responseType == null) {
+            responseType = matchedRouter.getDefaultResponseType();
+        }
+        writeChannel(channel, responseType, routerResponse.getContent());
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ResponseCompletionHandler.class);

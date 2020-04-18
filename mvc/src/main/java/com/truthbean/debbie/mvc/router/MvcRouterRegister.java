@@ -4,18 +4,19 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.BodyParameter;
+import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.response.ResponseContentHandlerFactory;
+import com.truthbean.debbie.mvc.response.ResponseTypeException;
+import com.truthbean.debbie.mvc.response.RouterResponse;
+import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.debbie.watcher.WatcherType;
-import com.truthbean.debbie.mvc.MvcConfiguration;
-import com.truthbean.debbie.mvc.request.RequestParameter;
-import com.truthbean.debbie.mvc.request.RequestParameterType;
-import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
-import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +92,7 @@ public class MvcRouterRegister {
                         response.setHandler(ResponseContentHandlerProviderEnum.getByResponseType(response.getResponseType().toMediaType()));
                     } else {
                         if (!webConfiguration.isAllowClientResponseType()) {
-                            throw new RuntimeException("responseType cannot be MediaType.ANY. Or config default response type. Or allow client response type.");
+                            throw new ResponseTypeException("\n" + method + "\n responseType cannot be MediaType.ANY. Or config default response type. Or allow client response type.");
                         } else {
                             response.setResponseType(MediaType.ANY);
                             var handlerFactory = new ResponseContentHandlerFactory(beanFactoryHandler);

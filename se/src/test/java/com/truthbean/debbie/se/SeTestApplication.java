@@ -13,5 +13,6 @@ public class SeTestApplication {
     public static void main(String[] args) {
         var application = DebbieApplicationFactory.create(NoWebApplicationFactoryTest.class);
         application.start(args);
+        application.exit(args);
     }
 }

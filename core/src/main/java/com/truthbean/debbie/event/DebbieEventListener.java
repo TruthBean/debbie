@@ -8,6 +8,10 @@ import java.util.EventListener;
  */
 public interface DebbieEventListener<E extends AbstractDebbieEvent> extends EventListener {
 
+    default boolean async() {
+        return false;
+    }
+
     /**
      * Handle an application event.
      *

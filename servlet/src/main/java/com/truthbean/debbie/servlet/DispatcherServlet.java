@@ -91,7 +91,8 @@ public class DispatcherServlet extends HttpServlet {
 
             // handle response
             ServletResponseHandler handler = new ServletResponseHandler(req, resp);
-            handler.handle(response);
+            handler.changeResponseWithoutContent(response);
+            handler.handle(response, routerInfo.getDefaultResponseType());
         }
     }
 

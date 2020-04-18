@@ -18,10 +18,7 @@ public class DebbieBootApplicationResolverTest {
 
     @BeforeEach
     void setUp() {
-        ClassLoader classLoader = DebbieBootApplicationResolverTest.class.getClassLoader();
-        factory = new DebbieApplicationFactory(classLoader);
-        factory.config(DebbieBootApplicationResolverTest.class);
-        factory.callStarter();
+        factory = DebbieApplicationFactory.configure(DebbieBootApplicationResolverTest.class);
     }
 
     @AfterEach

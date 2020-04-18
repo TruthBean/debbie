@@ -1,6 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.transaction.TransactionCallable;
+import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ public class RepositoryCallback {
     private static <R> TransactionInfo getTransaction(TransactionCallable<R> action) {
         var transactionInfo = action.getTransaction();
         if (transactionInfo == null) {
-            throw new RuntimeException("ConnectionBinder did not bind connection yet !");
+            throw new TransactionException("ConnectionBinder did not bind connection yet !");
         }
         return transactionInfo;
     }

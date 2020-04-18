@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
@@ -11,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author TruthBean/Rogar·Q

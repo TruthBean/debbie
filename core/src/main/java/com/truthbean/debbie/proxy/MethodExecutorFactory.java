@@ -1,5 +1,8 @@
 package com.truthbean.debbie.proxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -15,9 +18,11 @@ public class MethodExecutorFactory {
             var constructor = executorClass.getConstructor(Class.class, Method.class, Object.class);
             return constructor.newInstance(interfaceType, method, configuration);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
 
         return null;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodExecutorFactory.class);
 }

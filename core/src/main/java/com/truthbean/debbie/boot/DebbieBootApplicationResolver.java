@@ -1,8 +1,12 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * @author truthbean/Rogar·Q
@@ -16,7 +20,8 @@ class DebbieBootApplicationResolver {
         this.beanFactoryHandler = beanFactoryHandler;
     }
 
-    void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration) {
+    void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
+                                  ResourceResolver resourceResolver) {
         LOGGER.debug("applicationClass: " + applicationClass);
         if (applicationClass == null) return;
 
@@ -38,11 +43,32 @@ class DebbieBootApplicationResolver {
             String[] excludePackages = scan.excludePackages();
             configuration.addScanExcludePackages(excludePackages);
 
-            if (configuration.getTargetClasses().isEmpty()) {
+            Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
+            if (targetClasses.isEmpty()) {
                 configuration.addScanBasePackages(applicationClass.getPackageName());
             }
 
             DebbieConfigurationCenter.addConfiguration(configuration);
+        } else {
+            Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
+            if (targetClasses.isEmpty()) {
+                ClassLoader classLoader = this.beanFactoryHandler.getClassLoader();
+                var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
+                if (allClass != null && !allClass.isEmpty()) {
+                    boolean hasDebbieBootApplication = false;
+                    for (Class<?> clazz : allClass) {
+                        DebbieBootApplication bootApplication = clazz.getAnnotation(DebbieBootApplication.class);
+                        if (bootApplication != null) {
+                            hasDebbieBootApplication = true;
+                            resolverApplicationClass(clazz, configuration, resourceResolver);
+                            break;
+                        }
+                    }
+                    if (!hasDebbieBootApplication) {
+                        LOGGER.warn("No class annotated @DebbieBootApplication ");
+                    }
+                }
+            }
         }
     }
 

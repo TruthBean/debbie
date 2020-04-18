@@ -1,11 +1,13 @@
 package com.truthbean.debbie.jdbc.column;
 
-import com.truthbean.debbie.jdbc.entity.EntityResolver;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
+import com.truthbean.debbie.jdbc.datasource.DriverConnection;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.repository.DynamicSqlBuilder;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,14 +99,16 @@ public class JdbcColumnResolver {
         return columnLists;
     }
 
-    public static List<ColumnInfo> resolveColumns(Connection connection, String tableName,
-                                                      ColumnNameTransformer columnNameTransformer) {
+    public static List<ColumnInfo> resolveColumns(DriverConnection driverConnection, String tableName,
+                                                  ColumnNameTransformer columnNameTransformer) {
         List<ColumnInfo> columnList = new ArrayList<>();
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
         try {
-            var sql = DynamicSqlBuilder.sql().selectAll().from(tableName).builder();
+            Connection connection = driverConnection.getConnection();
+            DataSourceDriverName driverName = driverConnection.getDriverName();
+            var sql = DynamicSqlBuilder.sql(driverName).selectAll().from(tableName).builder();
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
 

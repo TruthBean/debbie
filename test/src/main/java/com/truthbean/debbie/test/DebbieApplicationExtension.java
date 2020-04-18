@@ -5,8 +5,6 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.proxy.JdkDynamicProxy;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
-
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
@@ -22,7 +20,8 @@ import java.util.Optional;
  * @author truthbean
  * @since 0.0.2
  */
-public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback {
+public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver,
+        BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class);
 
@@ -32,14 +31,14 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
-        logger.debug("supportsParameter....");
+        logger.trace("supportsParameter....");
         return parameterContext.isAnnotated(BeanInject.class);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
-        logger.debug("resolveParameter....");
+        logger.trace("resolveParameter....");
         return getDebbieBean(parameterContext.getParameter(), extensionContext);
     }
 
@@ -103,6 +102,21 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
                         }
 
                         ReflectionHelper.setField(o, field, result);
+                    } else {
+                        Class injectClass = beanFactoryHandler.getInjectType();
+                        if (injectClass == null) return;
+                        Object inject = field.getAnnotation(injectClass);
+                        if (inject != null) {
+                            Class<?> type = field.getType();
+
+                            Object result = beanFactoryHandler.factory(type);
+
+                            if (!type.isInstance(result)) {
+                                result = JdkDynamicProxy.getRealValue(result);
+                            }
+
+                            ReflectionHelper.setField(o, field, result);
+                        }
                     }
                 }
             }
@@ -132,9 +146,8 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         if (testClass.isPresent()) {
             applicationClass = testClass.get();
         }
-        ClassLoader classLoader = ClassLoaderUtils.getClassLoader(applicationClass);
-        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory(classLoader);
-        DebbieApplication debbieApplication = applicationFactory.createApplication(applicationClass);
+        DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(applicationClass);
+        DebbieApplication debbieApplication = applicationFactory.postCreateApplication();
         debbieApplication.start();
         BeanFactoryHandler beanFactoryHandler = applicationFactory.getBeanFactoryHandler();
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);

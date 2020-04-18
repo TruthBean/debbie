@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(":debbie-core"))
+    api(project(":debbie-core"))
 
     testImplementation(project(":debbie-test"))
 

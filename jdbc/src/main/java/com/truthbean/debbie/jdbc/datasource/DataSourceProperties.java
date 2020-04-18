@@ -1,10 +1,10 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
-
+import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +35,45 @@ public class DataSourceProperties extends BaseProperties implements DebbieProper
     public DataSourceProperties() {
         configuration = new DataSourceConfiguration();
 
-        String driverName = getStringValue(DRIVER_NAME_KEY, "com.mysql.jdbc.Driver");
-        configuration.setDriverName(driverName);
-
         String url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
         configuration.setUrl(url);
+
+        String driverName = getValue(DRIVER_NAME_KEY);
+        if (StringUtils.hasText(driverName)) {
+            DataSourceDriverName custom = DataSourceDriverName.custom;
+            custom.setDriverName(driverName);
+            configuration.setDriverName(custom);
+        } else if (url.startsWith("jdbc:mysql")) {
+            configuration.setDriverName(DataSourceDriverName.mysql);
+        } else if (url.startsWith("jdbc:oracle")) {
+            configuration.setDriverName(DataSourceDriverName.oracle);
+        } else if (url.startsWith("jdbc:db2")) {
+            configuration.setDriverName(DataSourceDriverName.db2);
+        } else if (url.startsWith("jdbc:sybase")) {
+            configuration.setDriverName(DataSourceDriverName.sybase);
+        } else if (url.startsWith("jdbc:mckoi")) {
+            configuration.setDriverName(DataSourceDriverName.mckoi);
+        } else if (url.startsWith("jdbc:h2")) {
+            configuration.setDriverName(DataSourceDriverName.h2);
+        } else if (url.startsWith("jdbc:ingres")) {
+            configuration.setDriverName(DataSourceDriverName.ingres);
+        } else if (url.startsWith("jdbc:sqlite")) {
+            configuration.setDriverName(DataSourceDriverName.sqlite);
+        } else if (url.startsWith("jdbc:hsqldb")) {
+            configuration.setDriverName(DataSourceDriverName.hsqldb);
+        } else if (url.startsWith("jdbc:postgresql")) {
+            configuration.setDriverName(DataSourceDriverName.postgresql);
+        } else if (url.startsWith("jdbc:jtds")) {
+            configuration.setDriverName(DataSourceDriverName.jtds);
+        } else if (url.startsWith("jdbc:microsoft")) {
+            configuration.setDriverName(DataSourceDriverName.sqlserver);
+        } else if (url.startsWith("jdbc:log4jdbc")) {
+            configuration.setDriverName(DataSourceDriverName.log4jdbc);
+        } else if (url.startsWith("jdbc:derby")) {
+            configuration.setDriverName(DataSourceDriverName.derby);
+        } else if (url.startsWith("jdbc:mariadb")) {
+            configuration.setDriverName(DataSourceDriverName.mariadb);
+        }
 
         String user = getStringValue(USER_KEY, "root");
         configuration.setUser(user);

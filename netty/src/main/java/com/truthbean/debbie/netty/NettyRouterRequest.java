@@ -3,13 +3,13 @@ package com.truthbean.debbie.netty;
 import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.net.uri.UriComposition;
-import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.net.uri.UriComposition;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -40,14 +40,14 @@ import java.util.*;
  */
 public class NettyRouterRequest implements RouterRequest {
 
-    private String host;
-    private int port;
-    private String id;
+    private final String host;
+    private final int port;
+    private final String id;
     private final ThreadLocal<io.netty.handler.codec.http.HttpRequest> httpRequest;
 
     private final DefaultRouterRequest routerRequestCache;
 
-    private SessionManager sessionManager;
+    private final SessionManager sessionManager;
 
     private Charset charset;
 

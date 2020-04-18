@@ -1,7 +1,7 @@
 package com.truthbean.debbie.proxy.interfaces;
 
-import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.debbie.proxy.MethodProxy;
+import com.truthbean.debbie.proxy.MethodProxyHandler;
 
 public class TargetProxyHandler implements MethodProxyHandler<MethodProxy> {
 

@@ -1,10 +1,13 @@
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 
@@ -15,6 +18,7 @@ import javax.sql.DataSource;
  */
 public class HikariDataSourceFactory implements DataSourceFactory {
     private HikariDataSource hikariDataSource;
+    private DataSourceDriverName driverName;
 
     @Override
     public DataSourceFactory factory(DataSource dataSource) {
@@ -29,8 +33,10 @@ public class HikariDataSourceFactory implements DataSourceFactory {
         if (configuration instanceof HikariConfiguration) {
             HikariConfiguration hikariConfiguration = (HikariConfiguration) configuration;
             HikariConfig config = hikariConfiguration.getHikariConfig();
-            if (hikariConfiguration.getDriverClassName() == null) {
-                config.setDriverClassName(configuration.getDriverName());
+            DataSourceDriverName driverName = configuration.getDriverName();
+            if (hikariConfiguration.getDriverClassName() == null && driverName != null) {
+                this.driverName = driverName;
+                config.setDriverClassName(driverName.getDriverName());
             }
             if (hikariConfiguration.getJdbcUrl() == null) {
                 config.setJdbcUrl(configuration.getUrl());
@@ -61,7 +67,19 @@ public class HikariDataSourceFactory implements DataSourceFactory {
     }
 
     @Override
+    public DataSourceDriverName getDriverName() {
+        return driverName;
+    }
+
+    @Override
     public void destroy() {
         hikariDataSource.close();
     }
+
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(HikariDataSourceFactory.class);
 }

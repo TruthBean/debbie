@@ -20,13 +20,13 @@ import java.util.Set;
 @HandlesTypes(value = {Watcher.class})
 public class ServletApplicationInitializer extends DebbieApplicationFactory implements ServletContainerInitializer {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryHandler beanFactoryHandler;
 
     public ServletApplicationInitializer() {
         super(ServletApplicationInitializer.class);
         if (debbieApplication == null) {
             beanFactoryHandler = getBeanFactoryHandler();
-            super.config();
+            super.config(ServletApplicationInitializer.class);
             super.callStarter();
         } else {
             beanFactoryHandler = debbieApplicationFactory;

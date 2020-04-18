@@ -82,7 +82,7 @@ public class TargetTest {
 
             bytecodeProxy.code();
         } catch (NotFoundException | CannotCompileException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.truthbean.debbie.reflection;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import java.util.Map;
  * Created on 2018-03-09 13:51
  */
 public class ExecutableArgument implements Comparable<ExecutableArgument>, Cloneable {
-    private Class<?> type;
+    private Type type;
     private Object value;
     private int index;
     private String name;
@@ -42,11 +43,15 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
         this.annotations.put(annotation.annotationType(), annotation);
     }
 
-    public Class<?> getType() {
+    public Type getType() {
         return type;
     }
 
-    public void setType(Class<?> type) {
+    public Class<?> getRawType() {
+        return TypeHelper.getClass(type);
+    }
+
+    public void setType(Type type) {
         this.type = type;
     }
 
@@ -116,7 +121,6 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
         try {
             parameter = (ExecutableArgument) super.clone();
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
             parameter = new ExecutableArgument();
         }
         parameter.type = type;

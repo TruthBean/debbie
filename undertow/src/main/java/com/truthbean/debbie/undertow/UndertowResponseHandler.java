@@ -1,11 +1,14 @@
 package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.nio.ByteBuffer;
@@ -25,12 +28,7 @@ public class UndertowResponseHandler implements ResponseHandler {
     }
 
     @Override
-    public void handle(RouterResponse response) {
-        exchange.setStatusCode(response.getStatus().getStatus());
-
-        Object responseData = response.getContent();
-        MediaTypeInfo responseType = response.getResponseType();
-
+    public void changeResponseWithoutContent(RouterResponse response) {
         Map<String, String> headers = response.getHeaders();
         if (!headers.isEmpty()) {
             headers.forEach((key, value) -> exchange.getResponseHeaders().put(new HttpString(key), value));
@@ -40,6 +38,30 @@ public class UndertowResponseHandler implements ResponseHandler {
         if (!cookies.isEmpty()) {
             cookies.forEach(cookie -> exchange.setResponseCookie(new UndertowRouterCookie(cookie).getCookie()));
         }
+        var responseType = response.getResponseType();
+        if (responseType != null) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, responseType.toString());
+        }
+        try {
+            Map<String, Object> modelAttributes = response.getModelAttributes();
+            if (modelAttributes != null && !modelAttributes.isEmpty()) {
+                // todo set model and attributes
+            }
+        } catch (Exception e) {
+            LOGGER.error("request.setAttribute error", e);
+        }
+    }
+
+    @Override
+    public void handle(RouterResponse response, MediaTypeInfo defaultResponseType) {
+        HttpStatus status = response.getStatus();
+        if (status == null) {
+            status = HttpStatus.OK;
+        }
+        exchange.setStatusCode(status.getStatus());
+
+        Object responseData = response.getContent();
+        MediaTypeInfo responseType = response.getResponseType();
 
         var sender = exchange.getResponseSender();
         if (responseData instanceof ByteBuffer) {
@@ -49,7 +71,11 @@ public class UndertowResponseHandler implements ResponseHandler {
             sender.send(ByteBuffer.wrap((byte[]) responseData));
         } else {
             // 404
+            exchange.setStatusCode(HttpStatus.NOT_FOUND.getStatus());
             // Response Headers
+            if (responseType == null) {
+                responseType = defaultResponseType;
+            }
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, responseType.toString());
             // Response Sender
             if (responseData != null) {
@@ -59,4 +85,6 @@ public class UndertowResponseHandler implements ResponseHandler {
             }
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UndertowResponseHandler.class);
 }

@@ -1,11 +1,13 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
+import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
+import com.truthbean.debbie.reflection.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,33 +22,46 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
-    public int createDatabase(Connection connection, String database) throws TransactionException {
-        String sql = DynamicSqlBuilder.sql().create().database(database).builder();
+    public int createDatabase(DriverConnection driverConnection, String database) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        String sql = DynamicSqlBuilder.sql(driverName).create().database(database).builder();
         return super.update(connection, sql);
     }
 
-    public List<String> showDatabases(Connection connection) {
-        String sql = DynamicSqlBuilder.sql().show().databases().builder();
+    public List<String> showDatabases(DriverConnection driverConnection) {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        String sql = DynamicSqlBuilder.sql(driverName).show().databases().builder();
         return super.query(connection, sql, String.class);
     }
 
-    public int dropDatabase(Connection connection, String database) throws TransactionException {
-        String sql = DynamicSqlBuilder.sql().drop().database(database).builder();
+    public int dropDatabase(DriverConnection driverConnection, String database) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        String sql = DynamicSqlBuilder.sql(driverName).drop().database(database).builder();
         return super.update(connection, sql);
     }
 
-    public int userDatabase(Connection connection, String database) throws TransactionException {
-        var use = DynamicSqlBuilder.sql().use(database).builder();
+    public int useDatabase(DriverConnection driverConnection, String database) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        var use = DynamicSqlBuilder.sql(driverName).use(database).builder();
         LOGGER.debug(use);
         return super.update(connection, use);
     }
 
-    public List<String> showTables(Connection connection) {
-        String sql = DynamicSqlBuilder.sql().show().tables().builder();
+    public List<String> showTables(DriverConnection driverConnection) {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        String sql = DynamicSqlBuilder.sql(driverName).show().tables().builder();
         return super.query(connection, sql, String.class);
     }
 
-    public <E> void createTable(Connection connection, Class<E> entity) throws TransactionException {
+    public <E> void createTable(DriverConnection driverConnection, Class<E> entity) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+
         ClassInfo<E> classInfo = new ClassInfo<>(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
@@ -58,12 +73,15 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
         var columns = EntityResolver.resolveClassInfo(classInfo);
         entityInfo.setColumnInfoList(columns);
-        createTable(connection, entityInfo);
+        createTable(driverConnection, entityInfo);
     }
 
-    public <E> void createTable(Connection connection, EntityInfo<E> entityInfo) throws TransactionException {
+    public <E> void createTable(DriverConnection driverConnection, EntityInfo<E> entityInfo) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+
         var columns = entityInfo.getColumnInfoList();
-        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql().create()
+        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql(driverName).create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
@@ -137,8 +155,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public void dropTable(Connection connection, String table) throws TransactionException {
-        String sql = DynamicSqlBuilder.sql().drop().tableIfExists(table, true).builder();
+    public void dropTable(DriverConnection driverConnection, String table) throws TransactionException {
+        Connection connection = driverConnection.getConnection();
+        DataSourceDriverName driverName = driverConnection.getDriverName();
+        String sql = DynamicSqlBuilder.sql(driverName).drop().tableIfExists(table, true).builder();
         super.update(connection, sql);
     }
 

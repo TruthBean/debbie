@@ -44,7 +44,11 @@ public class DefaultEventMulticaster implements DebbieEventMulticaster {
         for (DebbieEventListener listener : listeners) {
             if (listener instanceof GenericEventListener) {
                 if (((GenericEventListener) listener).supportsSourceType(event.getClass())) {
-                    listener.onEvent(event);
+                    if (!listener.async())
+                        listener.onEvent(event);
+                    else {
+                        // todo
+                    }
                 }
             }
         }

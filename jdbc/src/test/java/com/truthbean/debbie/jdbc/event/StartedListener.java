@@ -3,7 +3,6 @@ package com.truthbean.debbie.jdbc.event;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.event.AbstractDebbieStartedEventListener;
 import com.truthbean.debbie.event.DebbieStartedEvent;
-import com.truthbean.debbie.event.EventBeanListener;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.service.SurnameService;
 import org.slf4j.Logger;
@@ -16,7 +15,7 @@ import java.util.List;
  * @since 0.0.2
  * Created on 2020-01-19 18:43.
  */
-@EventBeanListener
+// @EventBeanListener
 public class StartedListener extends AbstractDebbieStartedEventListener {
 
     @BeanInject

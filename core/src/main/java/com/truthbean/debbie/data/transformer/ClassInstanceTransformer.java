@@ -2,6 +2,8 @@ package com.truthbean.debbie.data.transformer;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author truthbean
@@ -20,8 +22,10 @@ public class ClassInstanceTransformer implements DataTransformer<Object, String>
         try {
             clazz = defaultClassLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
         return ReflectionHelper.newInstance(clazz);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(ClassInstanceTransformer.class);
 }

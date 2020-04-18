@@ -4,21 +4,21 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
-import com.truthbean.debbie.mvc.response.HttpStatus;
-import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
-import com.truthbean.debbie.net.uri.UriPathFragment;
-import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.ErrorResponseCallback;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.RouterErrorResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
+import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
+import com.truthbean.debbie.net.uri.UriPathFragment;
+import com.truthbean.debbie.net.uri.UriUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -132,15 +132,16 @@ public class MvcRouterHandler {
 
         if (result == null) {
             LOGGER.warn("router uri(" + url + ") not found!");
-            return RouterErrorResponseHandler.resourceNotFound(routerRequest);
+            result = RouterErrorResponseHandler.resourceNotFound(routerRequest);
         } else {
             result.setRequest(routerRequest);
             LOGGER.debug("matched router info: " + result.toString());
-            return result;
         }
+        result.setDefaultResponseTypes(configuration.getDefaultResponseTypes());
+        return result;
     }
 
-    private static void filterOverloadMethod(Set<RouterInfo> routerInfoSet) {
+    /*private static void filterOverloadMethod(Set<RouterInfo> routerInfoSet) {
         for (RouterInfo routerInfo : routerInfoSet) {
             routerInfo.getMethod();
         }
@@ -153,7 +154,7 @@ public class MvcRouterHandler {
                 Method methodJ = routerI.getMethod();
             }
         }
-    }
+    }*/
 
     public static Set<RouterInfo> matchRouterPath(String url, Set<RouterInfo> routerInfos, RouterRequest routerRequest) {
         Set<RouterInfo> result = new HashSet<>();
@@ -347,27 +348,28 @@ public class MvcRouterHandler {
 
     public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryHandler handler) {
         RouterResponse routerResponse = routerInfo.getResponse();
-        routerResponse.setStatus(HttpStatus.OK);
 
-        routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
-
-        Object responseValue;
-        if (routerInfo.getErrorInfo() != null) {
-            responseValue = routerInfo.getErrorInfo();
-            routerResponse.setContent(responseValue);
-            return routerResponse;
+        var beanInfo = handler.getBeanInfo(null, ErrorResponseCallback.class, false);
+        ErrorResponseCallback callback = null;
+        if (beanInfo != null) {
+            callback = handler.factory(beanInfo);
+        }
+        if (routerResponse.isError()) {
+            return RouterErrorResponseHandler.handleError(routerInfo, callback);
         }
         try {
+            HttpStatus status = routerResponse.getStatus();
+            if (status == null)
+                routerResponse.setStatus(HttpStatus.OK);
+
+            routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
             RouterInvoker invoker = new RouterInvoker(routerInfo);
             invoker.action(routerResponse, handler);
             return routerResponse;
         } catch (Throwable e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);
-            responseValue = exception.getErrorInfo();
+            return RouterErrorResponseHandler.handleError(routerInfo, callback);
         }
-
-        routerResponse.setContent(responseValue);
-        return routerResponse;
     }
 }

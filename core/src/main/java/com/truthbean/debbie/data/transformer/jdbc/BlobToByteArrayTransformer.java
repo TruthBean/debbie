@@ -1,6 +1,8 @@
 package com.truthbean.debbie.data.transformer.jdbc;
 
 import com.truthbean.debbie.data.transformer.DataTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -16,7 +18,7 @@ public class BlobToByteArrayTransformer implements DataTransformer<Blob, byte[]>
         try {
             return blob.getBytes(1L, (int) blob.length());
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -25,4 +27,6 @@ public class BlobToByteArrayTransformer implements DataTransformer<Blob, byte[]>
     public Blob reverse(byte[] bytes) {
         return null;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlobToByteArrayTransformer.class);
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created on 2019/05/25 12:08.
  */
 public class SimpleSessionManager implements SessionManager {
-    private Map<String, RouterSession> sessionMap;
+    private final Map<String, RouterSession> sessionMap;
 
     public SimpleSessionManager() {
         this.sessionMap = new ConcurrentHashMap<>();

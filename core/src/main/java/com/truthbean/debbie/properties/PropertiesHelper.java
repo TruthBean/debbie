@@ -40,7 +40,7 @@ public final class PropertiesHelper {
     public static Properties getPropertiesWithRealValue(String filename) {
         Properties properties = loadProperties(filename, false, false, StandardCharsets.UTF_8);
         for (Object key : properties.keySet()) {
-            String realValue = replaceProperty(properties.getProperty((String) key, null), properties);
+            String realValue = replaceProperty(properties.getProperty((String) key), properties);
             System.setProperty((String) key, realValue);
             properties.put(key, realValue);
         }
@@ -108,7 +108,7 @@ public final class PropertiesHelper {
     public static String getProperty(String filename, String key, String defaultValue) {
         if (PROPERTIES_CACHE.containsKey(filename)) {
             Properties properties = PROPERTIES_CACHE.get(filename);
-            if (properties.contains(key)) {
+            if (properties.containsKey(key)) {
                 return properties.getProperty(key);
             } else {
                 return defaultValue;

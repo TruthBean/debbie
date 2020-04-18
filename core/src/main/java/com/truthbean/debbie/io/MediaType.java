@@ -1,7 +1,5 @@
 package com.truthbean.debbie.io;
 
-import com.sun.net.httpserver.Headers;
-
 import java.util.Collection;
 
 /**

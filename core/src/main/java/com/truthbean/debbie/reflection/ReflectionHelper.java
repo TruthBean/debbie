@@ -1,6 +1,8 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.StringUtils;
@@ -42,7 +44,7 @@ public class ReflectionHelper {
         try {
             return (T) newInstance(classLoader.loadClass(className));
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -115,7 +117,7 @@ public class ReflectionHelper {
      * @param declaringClass 方法所在的（子）类
      * @return 方法参数类型
      */
-    public static Class<?>[] getMethodActualTypes(Method method, Class<?> declaringClass) {
+    public static Type[] getMethodActualTypes(Method method, Class<?> declaringClass) {
         // 类的泛型
         Map<String, Type> typeParameters = getActualTypeMap(declaringClass);
 
@@ -125,11 +127,11 @@ public class ReflectionHelper {
 
         Type[] genericParameterTypes = method.getGenericParameterTypes();
 
-        Class<?>[] parameterTypes = new Class<?>[parameterCount];
+        Type[] parameterTypes = new Type[parameterCount];
 
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
-            parameterTypes[i] = parameter.getType();
+            parameterTypes[i] = parameter.getParameterizedType();
         }
 
         if (typeParameters != null && typeParameters.size() > 0) {
@@ -151,7 +153,7 @@ public class ReflectionHelper {
                     var type = nameTypeEntry.getValue();
 
                     if (genericParameterTypeName.equals(name)) {
-                        parameterTypes[i] = (Class<?>) type;
+                        parameterTypes[i] = type;
                     }
                 }
             }
@@ -469,9 +471,9 @@ public class ReflectionHelper {
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.error(fieldName + " set method not found. \n", Objects.requireNonNullElse(cause, e));
+                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", Objects.requireNonNullElse(cause, e));
             } else {
-                LOGGER.error(fieldName + " set method not found. \n", e.getMessage());
+                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", e.getMessage());
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
@@ -491,7 +493,7 @@ public class ReflectionHelper {
             }
             field.set(target, value);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 
@@ -503,7 +505,7 @@ public class ReflectionHelper {
             }
             field.set(target, value);
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 
@@ -514,7 +516,7 @@ public class ReflectionHelper {
             }
             return field.get(target);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -817,7 +819,6 @@ public class ReflectionHelper {
      * @return class list
      */
     public static List<Class<?>> getAllClassByResources(String resources, ClassLoader classLoader) {
-
         // 第一个class类的集合
         List<Class<?>> classes = new ArrayList<>();
         // 是否循环迭代
@@ -842,7 +843,7 @@ public class ReflectionHelper {
                     var filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
                     // 以文件的方式扫描整个包下的文件 并添加到集合中
                     findAndAddClassesInPackageByFile(classLoader, "", filePath, recursive, classes);
-                } else if ("jar".equals(protocol)) {
+                } else if ("jar".equals(protocol) || "war".equals(protocol)) {
                     var tmp = StreamHelper.getClassFromJarByPackageName("", url, "", classLoader);
                     classes.addAll(tmp);
                 }
@@ -859,11 +860,34 @@ public class ReflectionHelper {
      *
      * @param packageName package name
      * @param classLoader class loader
+     * @param resourceResolver resource resolver
+     * @return class list
+     */
+    public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader,
+                                                          ResourceResolver resourceResolver) {
+        LOGGER.trace("packageName: " + packageName);
+        var packageDirName = packageName.replace('.', '/');
+        if (!packageName.endsWith("**")) {
+            packageDirName = packageDirName + "/**";
+        }
+        Set<String> resources = resourceResolver.getMatchedResources(packageDirName);
+        return ResourcesHandler.getClassesByResources(resources, classLoader);
+    }
+
+    /**
+     * 从包package中获取所有的Class
+     *
+     * @param packageName package name
+     * @param classLoader class loader
      * @return class list
      */
     public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader) {
+        LOGGER.trace("packageName: " + packageName);
+        var packageDirName = packageName.replace('.', '/');
+        List<String> resources = ResourcesHandler.getAllClassPathResources(packageDirName, classLoader);
+        return ResourcesHandler.getClassesByResources(resources, classLoader);
 
-        // 第一个class类的集合
+        /*// 第一个class类的集合
         List<Class<?>> classes = new ArrayList<>();
         // 是否循环迭代
         var recursive = true;
@@ -898,7 +922,7 @@ public class ReflectionHelper {
             LOGGER.error("", e);
         }
 
-        return classes;
+        return classes;*/
     }
 
     /**
@@ -938,7 +962,7 @@ public class ReflectionHelper {
                     try {
                         String newPackageName = packageName + "." + className;
                         if (StringUtils.isBlank(packageName)) {
-                            newPackageName = packageName + '.' + className;
+                            newPackageName = className;
                         }
                         // 添加到集合中去
                         classes.add(classLoader.loadClass(newPackageName));

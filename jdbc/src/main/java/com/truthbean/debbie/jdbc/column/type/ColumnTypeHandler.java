@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.column.type;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 
 import java.io.InputStream;
@@ -204,7 +205,8 @@ public class ColumnTypeHandler {
         }
     }
 
-    public static void setSqlArgValue(PreparedStatement preparedStatement, int index, Object arg) throws SQLException {
+    public static void setSqlArgValue(DataSourceDriverName driverName, PreparedStatement preparedStatement, int index,
+                                      Object arg) throws SQLException {
         if (arg == null) {
             preparedStatement.setObject(index, null);
             return;
@@ -301,7 +303,10 @@ public class ColumnTypeHandler {
                 break;
 
             case JdbcTypeConstants.URL:
-                preparedStatement.setURL(index, (URL) arg);
+                if (driverName != DataSourceDriverName.sqlite)
+                    preparedStatement.setURL(index, (URL) arg);
+                else
+                    preparedStatement.setString(index, ((URL) arg).toString());
                 break;
 
             default:

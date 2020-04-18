@@ -9,24 +9,14 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  * @since 0.0.2
  */
 public class NettyModuleStarter implements DebbieModuleStarter {
-    @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(NettyProperties.class);
-    }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(NettyProperties.class, NettyConfiguration.class);
     }
 
     @Override
     public int getOrder() {
         return 33;
-    }
-
-    @Override
-    public void release() {
-
     }
 }

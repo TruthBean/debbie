@@ -2,10 +2,10 @@ package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.data.validate.DataValidateFactory;
 import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.mvc.router.RouterMethodArgumentHandler;
 import com.truthbean.debbie.mvc.router.RouterRequestValues;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.reflection.TypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
         switch (requestParameter.paramType()) {
             case MIX:
                 Map<String, List> mixValues = parameters.getMixValues();
-                handler.handleParam(mixValues, parameter);
+                handler.handleParam(mixValues, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -61,7 +61,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case QUERY:
-                handler.handleParam(parameters.getQueries(), parameter);
+                handler.handleParam(parameters.getQueries(), parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -70,7 +70,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case PATH:
-                handler.handleParam(parameters.getPathAttributes(), parameter);
+                handler.handleParam(parameters.getPathAttributes(), parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -80,7 +80,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 break;
             case MATRIX:
                 Map<String, List> matrix = parameters.getMatrixAttributes();
-                handler.handleParam(matrix, parameter);
+                handler.handleParam(matrix, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -90,7 +90,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 break;
             case PARAM:
                 Map<String, List> params = parameters.getParams();
-                handler.handleParam(params, parameter);
+                handler.handleParam(params, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -116,7 +116,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 break;
             case HEAD:
                 Map<String, List> headers = parameters.getHeaders();
-                handler.handleParam(headers, parameter);
+                handler.handleParam(headers, parameter, true);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -126,7 +126,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 break;
             case COOKIE:
                 Map<String, List> cookieAttributes = parameters.getCookieAttributes();
-                handler.handleParam(cookieAttributes, parameter);
+                handler.handleParam(cookieAttributes, parameter, true);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;

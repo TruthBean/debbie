@@ -7,7 +7,7 @@ import java.util.UUID;
 @BeanComponent
 public class TmpRepository {
 
-    private String tmp;
+    private final String tmp;
 
     public TmpRepository() {
         tmp = UUID.randomUUID().toString();

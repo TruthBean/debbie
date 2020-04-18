@@ -3,8 +3,6 @@ package com.truthbean.debbie.reflection;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * @author TruthBean/Rogar·Q
  * @since Created on 2019-12-03 16:41

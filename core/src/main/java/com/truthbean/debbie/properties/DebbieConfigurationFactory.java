@@ -3,7 +3,9 @@ package com.truthbean.debbie.properties;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.DebbieConfigurationCenter;
+import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,19 +20,25 @@ import java.util.Set;
  */
 public class DebbieConfigurationFactory {
 
-    private Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
+    private final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
     private final BeanFactoryHandler factoryHandler;
+    private final SingletonBeanRegister singletonBeanRegister;
 
     public DebbieConfigurationFactory(BeanFactoryHandler beanFactoryHandler) {
         this.factoryHandler = beanFactoryHandler;
+        this.singletonBeanRegister = new SingletonBeanRegister(beanFactoryHandler);
     }
 
-    public void register(Class<? extends DebbieProperties> propertiesClass) {
-        DebbieProperties properties = ReflectionHelper.newInstance(propertiesClass);
-        DebbieConfiguration debbieConfiguration = properties.toConfiguration(factoryHandler);
-        configurations.put(propertiesClass, debbieConfiguration);
-        DebbieConfigurationCenter.addConfiguration(debbieConfiguration);
+    @SuppressWarnings("unchecked")
+    public <P extends DebbieProperties, C extends DebbieConfiguration>
+    void register(Class<P> propertiesClass, Class<C> configurationClass) {
+        DebbieProperties<C> properties = (DebbieProperties<C>) ReflectionHelper.newInstance(propertiesClass);
+        C configuration = properties.toConfiguration(factoryHandler);
+        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
+        this.singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
+        configurations.put(propertiesClass, configuration);
+        DebbieConfigurationCenter.addConfiguration(configuration);
     }
 
     @SuppressWarnings("unchecked")
@@ -112,7 +120,11 @@ public class DebbieConfigurationFactory {
     }
 
     public void reset() {
+        configurations.forEach((properties, configurations) -> {
+            configurations.reset();
+        });
         configurations.clear();
+        BaseProperties.reset();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieConfigurationFactory.class);

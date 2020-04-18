@@ -1,12 +1,15 @@
 package com.truthbean.debbie.io;
 
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +51,7 @@ public final class StreamHelper {
                 reader.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return result;
     }
@@ -56,7 +59,7 @@ public final class StreamHelper {
     public static List<String> readFileInJar(URL url) {
         List<String> result = new ArrayList<>();
         try {
-            InputStream inputStream = url.openConnection().getInputStream();
+            InputStream inputStream = getInputStream(url);
             BufferedReader bufferedReader = toBufferedReader(inputStream);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -71,18 +74,44 @@ public final class StreamHelper {
         return result;
     }
 
-    private static List<JarEntry> getFilesInJar(URL url) {
+    /**
+     * Opens an InputStream for the given URL.
+     * <p>It sets the {@code useCaches} flag to {@code false},
+     * mainly to avoid jar file locking on Windows.
+     * @param url the given URL
+     * @see java.net.URL#openConnection()
+     * @see java.net.URLConnection#setUseCaches(boolean)
+     * @see java.net.URLConnection#getInputStream()
+     * @throws IOException
+     */
+    public static InputStream getInputStream(URL url) throws IOException {
+        URLConnection con = url.openConnection();
+        UriUtils.useCachesIfNecessary(con);
         try {
-            // 获取jar
-            JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
-            return getFilesInJar(jar);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return con.getInputStream();
+        } catch (IOException ex) {
+            // Close the HTTP connection (if applicable).
+            if (con instanceof HttpURLConnection) {
+                ((HttpURLConnection) con).disconnect();
+            }
+            throw ex;
+        }
+    }
+
+    public static List<JarEntry> getFilesInJar(URL url) {
+        if (UriUtils.isJarURL(url)) {
+            try {
+                // 获取jar
+                JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
+                return getFilesInJar(jar);
+            } catch (IOException e) {
+                LOGGER.error("", e);
+            }
         }
         return new ArrayList<>();
     }
 
-    private static List<JarEntry> getFilesInJar(JarFile jar) {
+    public static List<JarEntry> getFilesInJar(JarFile jar) {
         List<JarEntry> filesInJar = new ArrayList<>();
         // 从此jar包 得到一个枚举类
         var entries = jar.entries();
@@ -95,8 +124,8 @@ public final class StreamHelper {
         return filesInJar;
     }
 
-    private static void readFileInJar(String innerPath, String filePartPath, ClassLoader classLoader,
-                                      List<String> result) throws IOException {
+    public static void readFileInJar(String innerPath, String filePartPath, ClassLoader classLoader,
+                                     List<String> result) throws IOException {
         if (innerPath.endsWith(filePartPath)) {
             InputStream inputStream = classLoader.getResourceAsStream(innerPath);
             assert inputStream != null;
@@ -139,12 +168,15 @@ public final class StreamHelper {
     }
 
     private static void getClassesUnderPackageInJar(String packageName, JarEntry entry, String packageDirName,
-                                                              ClassLoader classLoader, List<Class<?>> classes) {
+                                                    ClassLoader classLoader, List<Class<?>> classes) {
         var name = entry.getName();
         // 如果是以/开头的
         if (name.charAt(0) == '/') {
             // 获取后面的字符串
             name = name.substring(1);
+        }
+        if (name.startsWith("META-INF") || "module-info.class".equals(name) || "package-info.class".equals(name)) {
+            return;
         }
         // 如果前半部分和定义的包名相同
         if (name.startsWith(packageDirName)) {
@@ -162,7 +194,7 @@ public final class StreamHelper {
                 try {
                     // 添加到classes
                     classes.add(classLoader.loadClass(packageName + '.' + className));
-                } catch (ClassNotFoundException e) {
+                } catch (NoClassDefFoundError | ClassNotFoundException e) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.error("", e);
                     }
@@ -185,7 +217,7 @@ public final class StreamHelper {
      * This method buffers the input internally, so there is no need to use a
      * <code>BufferedInputStream</code>.
      *
-     * @param input  the <code>InputStream</code> to read from
+     * @param input the <code>InputStream</code> to read from
      * @return the requested byte array
      * @throws NullPointerException if the input is null
      */
@@ -194,7 +226,7 @@ public final class StreamHelper {
         try {
             copy(input, output);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return output.toByteArray();
     }
@@ -204,7 +236,7 @@ public final class StreamHelper {
         try {
             copy(inputStream, output);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return output;
     }
@@ -225,10 +257,10 @@ public final class StreamHelper {
      * use the <code>copyLarge(InputStream, OutputStream)</code> method.
      *
      * @param input  the <code>InputStream</code> to read from
-     * @param output  the <code>OutputStream</code> to write to
+     * @param output the <code>OutputStream</code> to write to
      * @return the number of bytes copied, or -1 if &gt; Integer.MAX_VALUE
      * @throws NullPointerException if the input or output is null
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @since 1.1
      */
     public static int copy(InputStream input, OutputStream output) throws IOException {
@@ -249,10 +281,10 @@ public final class StreamHelper {
      * The buffer size is given by {@link #DEFAULT_BUFFER_SIZE}.
      *
      * @param input  the <code>InputStream</code> to read from
-     * @param output  the <code>OutputStream</code> to write to
+     * @param output the <code>OutputStream</code> to write to
      * @return the number of bytes copied
      * @throws NullPointerException if the input or output is null
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @since 1.3
      */
     public static long copyLarge(InputStream input, OutputStream output) throws IOException {
@@ -268,11 +300,11 @@ public final class StreamHelper {
      * <p>
      *
      * @param input  the <code>InputStream</code> to read from
-     * @param output  the <code>OutputStream</code> to write to
+     * @param output the <code>OutputStream</code> to write to
      * @param buffer the buffer to use for the copy
      * @return the number of bytes copied
      * @throws NullPointerException if the input or output is null
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
     public static long copyLarge(InputStream input, OutputStream output, byte[] buffer) throws IOException {
@@ -293,11 +325,11 @@ public final class StreamHelper {
      * <p>
      *
      * @param input  the <code>Reader</code> to read from
-     * @param output  the <code>Writer</code> to write to
+     * @param output the <code>Writer</code> to write to
      * @param buffer the buffer to be used for the copy
      * @return the number of characters copied
      * @throws NullPointerException if the input or output is null
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
     public static long copyLarge(Reader input, Writer output, char[] buffer) throws IOException {
@@ -319,10 +351,10 @@ public final class StreamHelper {
      * The buffer size is given by {@link #DEFAULT_BUFFER_SIZE}.
      *
      * @param input  the <code>Reader</code> to read from
-     * @param output  the <code>Writer</code> to write to
+     * @param output the <code>Writer</code> to write to
      * @return the number of characters copied
      * @throws NullPointerException if the input or output is null
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @since 1.3
      */
     public static long copyLarge(Reader input, Writer output) throws IOException {
@@ -379,7 +411,8 @@ public final class StreamHelper {
     /**
      * Copy the contents of the given Reader to the given Writer.
      * Closes both when done.
-     * @param in the Reader to copy from
+     *
+     * @param in  the Reader to copy from
      * @param out the Writer to copy to
      * @return the number of characters copied
      * @throws IOException in case of I/O errors

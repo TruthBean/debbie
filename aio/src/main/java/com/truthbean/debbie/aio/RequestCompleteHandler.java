@@ -33,7 +33,7 @@ public class RequestCompleteHandler {
             SocketAddress remoteAddress = channel.getRemoteAddress();
             return completed(read.get(), readByteBuffer, remoteAddress);
         } catch (InterruptedException | ExecutionException | IOException e) {
-            e.printStackTrace();
+            LOG.error("", e);
         }
         return null;
     }

@@ -1,11 +1,12 @@
 package com.truthbean.debbie.jdbc.entity;
 
-import com.truthbean.debbie.jdbc.annotation.SqlColumn;
-import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
+import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
+import com.truthbean.debbie.reflection.ClassInfo;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -17,12 +18,13 @@ import java.util.List;
  */
 public class EntityResolver {
     @SuppressWarnings("unchecked")
-    public <E> EntityInfo<E> resolveEntity(E entity) {
+    public <E> EntityInfo<E> resolveEntity(DataSourceDriverName driverName, E entity) {
         Class<E> entityClass = (Class<E>) entity.getClass();
         ClassInfo<E> classInfo = new ClassInfo<>(entityClass);
         var table = getTableName(classInfo);
         var columns = resolveClassInfoAndValue(classInfo, entity);
         var entityInfo = new EntityInfo<E>();
+        entityInfo.setDriverName(driverName);
         entityInfo.setTable(table);
         entityInfo.setColumnInfoList(columns);
         for (var column: columns) {

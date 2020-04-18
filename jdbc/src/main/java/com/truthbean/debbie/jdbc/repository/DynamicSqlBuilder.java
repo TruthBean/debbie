@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.util.StringUtils;
 
 import java.util.ArrayList;
@@ -14,9 +15,14 @@ import java.util.List;
  */
 public class DynamicSqlBuilder {
     private StringBuilder dynamicSql = new StringBuilder();
+    private final DataSourceDriverName driverName;
 
-    public static DynamicSqlBuilder sql() {
-        return new DynamicSqlBuilder();
+    private DynamicSqlBuilder(DataSourceDriverName driverName) {
+        this.driverName = driverName;
+    }
+
+    public static DynamicSqlBuilder sql(DataSourceDriverName driverName) {
+        return new DynamicSqlBuilder(driverName);
     }
 
     public DynamicSqlBuilder show() {
@@ -46,7 +52,7 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder database(String database) {
-        dynamicSql.append(" DATABASE ").append(database).append(" ");
+        dynamicSql.append("DATABASE ").append(database).append(" ");
         return this;
     }
 
@@ -84,12 +90,12 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder leftParenthesis() {
-        dynamicSql.append(" ( ");
+        dynamicSql.append("( ");
         return this;
     }
 
     public DynamicSqlBuilder rightParenthesis() {
-        dynamicSql.append(" ) ");
+        dynamicSql.append(" )");
         return this;
     }
 
@@ -99,7 +105,8 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder comment(String comment) {
-        dynamicSql.append(" COMMENT '").append(comment).append("' ");
+        if (driverName != DataSourceDriverName.sqlite)
+            dynamicSql.append(" COMMENT '").append(comment).append("' ");
         return this;
     }
 
@@ -114,7 +121,10 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder autoIncrement() {
-        dynamicSql.append(" AUTO_INCREMENT ");
+        if (driverName == DataSourceDriverName.sqlite) {
+            dynamicSql.append(" AUTOINCREMENT ");
+        } else
+            dynamicSql.append(" AUTO_INCREMENT ");
         return this;
     }
 
@@ -124,12 +134,14 @@ public class DynamicSqlBuilder {
     }
 
     public DynamicSqlBuilder engine(String engine) {
-        dynamicSql.append(" ENGINE=").append(engine).append(" ");
+        if (driverName != DataSourceDriverName.sqlite)
+            dynamicSql.append(" ENGINE=").append(engine).append(" ");
         return this;
     }
 
     public DynamicSqlBuilder defaultCharset(String charset) {
-        dynamicSql.append(" DEFAULT CHARSET=").append(charset).append(" ");
+        if (driverName != DataSourceDriverName.sqlite)
+            dynamicSql.append(" DEFAULT CHARSET=").append(charset).append(" ");
         return this;
     }
 

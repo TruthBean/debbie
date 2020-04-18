@@ -1,7 +1,11 @@
 package com.truthbean.debbie.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
@@ -49,6 +53,14 @@ public class MultipartFile {
             inputStream = new ByteArrayInputStream(content);
         }
         return inputStream;
+    }
+
+    public void transferTo(File dest) throws IOException {
+        StreamHelper.copy(getInputStream(), Files.newOutputStream(dest.toPath()));
+    }
+
+    public void transferTo(Path dest) throws IOException {
+        StreamHelper.copy(getInputStream(), Files.newOutputStream(dest));
     }
 
     public void setContent(byte[] content) {

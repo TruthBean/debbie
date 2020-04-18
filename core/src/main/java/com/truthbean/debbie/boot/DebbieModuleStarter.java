@@ -10,13 +10,23 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  */
 public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
 
-    void registerBean(BeanFactoryHandler beanFactoryHandler);
+    default void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
+        // do nothing
+    }
 
-    void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler);
+    default void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        // do nothing
+    }
+
+    default void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        // do nothing
+    }
 
     int getOrder();
 
-    void release();
+    default void release(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        // do nothing
+    }
 
     @Override
     default int compareTo(DebbieModuleStarter o) {
@@ -26,5 +36,9 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
             return Integer.compare(x, y);
         }
         return -1;
+    }
+
+    default String toStr() {
+        return getClass().getName() + "@" + Integer.toHexString(hashCode()) + " | order : " + getOrder();
     }
 }

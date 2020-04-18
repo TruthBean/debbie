@@ -14,9 +14,7 @@ public class RouterInvokerTest {
 
     @Test
     public void testRouterInvoke() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(RouterInvokerTest.class);
-        factory.config();
-        factory.callStarter();
+        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(RouterInvokerTest.class);
         BeanInitialization initialization = factory.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
         factory.refreshBeans();

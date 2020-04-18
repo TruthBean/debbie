@@ -20,8 +20,7 @@ public class EventBeanTest {
     }
 
     @Test
-    public void testEventListener(@BeanInject TestEventListener eventListener,
-                                  @BeanInject("test") TestEvent testEvent) {
-        eventListener.onEvent(testEvent);
+    public void testEventListener(@BeanInject DebbieEventPublisher debbieEventPublisher, @BeanInject("test") TestEvent testEvent) {
+        debbieEventPublisher.publishEvent(testEvent);
     }
 }

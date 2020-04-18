@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(":debbie-mvc"))
+    api(project(":debbie-mvc"))
 
     val servletVersion: String by project
     compileOnly("jakarta.servlet:jakarta.servlet-api:$servletVersion")

@@ -1,13 +1,14 @@
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.io.StreamHelper;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.net.MalformedURLException;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -26,8 +27,23 @@ public class ReflectionHelperTest {
         Class<?>[] classes = clazz.getClasses();
         System.out.println(classes);
         ClassLoader classLoader = clazz.getClassLoader();
-        List<Class<?>> classList = ReflectionHelper.getAllClassByResources(".", classLoader);
-        System.out.println(classList);
+        var resource = "com/truthbean";
+        List<String> resources = ResourcesHandler.getAllClassPathResources(resource, classLoader);
+        List<Class<?>> classList = ResourcesHandler.getClassesByResources(resources, classLoader);
+        System.out.println(classList.size());
+        for (Class<?> aClass : classList) {
+            System.out.println(aClass);
+        }
+
+        System.out.println("------------------------------------");
+        ResourceResolver resourceResolver = new ResourceResolver();
+        resources = ResourcesHandler.getAllClassPathResources("", classLoader);
+        resourceResolver.addResource(resources);
+        classList = ReflectionHelper.getAllClassByPackageName("com.truthbean", classLoader, resourceResolver);
+        System.out.println(classList.size());
+        for (Class<?> aClass : classList) {
+            System.out.println(aClass);
+        }
     }
 
     @Test
@@ -50,8 +66,8 @@ public class ReflectionHelperTest {
         // Method[] declaredMethods = clazz.getMethods();
         for (Method declaredMethod : declaredMethods) {
             System.out.println(declaredMethod.getName() + "-----------------------------------------");
-            Class<?>[] methodActualTypes = ReflectionHelper.getMethodActualTypes(declaredMethod, clazz);
-            for (Class<?> methodActualType : methodActualTypes) {
+            Type[] methodActualTypes = ReflectionHelper.getMethodActualTypes(declaredMethod, clazz);
+            for (Type methodActualType : methodActualTypes) {
                 System.out.println(methodActualType);
             }
 

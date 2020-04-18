@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author TruthBean
@@ -13,6 +16,15 @@ import java.util.*;
  * @since 2019-03-30 17:06
  */
 class JacksonUtilsTest {
+
+    public static void main(String[] args) {
+        JacksonTargetA a = new JacksonTarget();
+        a.setName("hello");
+        System.out.println(JacksonUtils.toJson(a));
+        var json = "{\"b_name\":\"hello\"}";
+        var targetA = JacksonUtils.jsonToBean(json, JacksonTarget.class, JacksonTargetA.class);
+        System.out.println(targetA.getName());
+    }
 
     @Test
     void toXml() {

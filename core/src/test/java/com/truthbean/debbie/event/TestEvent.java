@@ -18,10 +18,10 @@ public class TestEvent extends AbstractDebbieEvent {
      * @param source the object on which the Event initially occurred
      * @throws IllegalArgumentException if source is null
      */
-    public TestEvent(Object source, String event) {
+    /*public TestEvent(Object source, String event) {
         super(source);
         this.event = event;
-    }
+    }*/
 
     public String getEvent() {
         return event;

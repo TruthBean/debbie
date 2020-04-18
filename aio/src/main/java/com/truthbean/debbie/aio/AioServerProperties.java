@@ -16,10 +16,10 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
 
     private AioServerConfiguration configuration = null;
 
-    //===========================================================================
+    // ===========================================================================
     private static final String HTTP_VERSION = "debbie.server.aio.http.version";
     private static final String SERVER_MESSAGE = "debbie.server.aio.message";
-    //===========================================================================
+    // ===========================================================================
 
     @Override
     public AioServerConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {

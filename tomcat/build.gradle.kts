@@ -1,11 +1,11 @@
 dependencies {
-    implementation(project(":debbie-servlet"))
-    implementation(project(":debbie-server"))
+    api(project(":debbie-servlet"))
+    api(project(":debbie-server"))
 
     val tomcatVersion: String by project
-    implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")
-    implementation("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion")
-    implementation("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
+    api("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")
+    api("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion")
+    api("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
 
     testImplementation(project(":debbie-test"))
     

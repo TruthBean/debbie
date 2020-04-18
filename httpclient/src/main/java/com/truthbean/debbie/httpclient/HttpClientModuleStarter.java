@@ -13,16 +13,14 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        beanInitialization.addAnnotationRegister(new HttpClientRouterRegister());
-
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(HttpClientProperties.class);
+    public void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
+        beanInitialization.addAnnotationRegister(new HttpClientRouterRegister(beanInitialization));
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(HttpClientProperties.class, HttpClientConfiguration.class);
+
         HttpClientBeanRegister register = new HttpClientBeanRegister(beanFactoryHandler);
         register.registerHttpClient();
         register.registerHttpClientFactory();
@@ -31,10 +29,5 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
     @Override
     public int getOrder() {
         return 21;
-    }
-
-    @Override
-    public void release() {
-
     }
 }

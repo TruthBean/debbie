@@ -3,9 +3,9 @@ package com.truthbean.debbie.httpclient;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.net.uri.QueryStringEncoder;
-import com.truthbean.debbie.mvc.request.RouterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

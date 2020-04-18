@@ -1,5 +1,6 @@
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ public class NettyApplicationTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplicationFactory.create(NettyApplicationTest.class).start();
+        DebbieApplication application = DebbieApplicationFactory.create(NettyApplicationTest.class);
+        application.start(args);
+        application.exit(args);
     }
 }

@@ -3,6 +3,8 @@ package com.truthbean.debbie.core;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.data.transformer.ClassTransformer;
 import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
@@ -13,9 +15,12 @@ import com.truthbean.debbie.data.transformer.numeric.BigDecimalToLongTransformer
 import com.truthbean.debbie.data.transformer.numeric.IntegerToBooleanTransformer;
 import com.truthbean.debbie.data.transformer.numeric.LongToIntegerTransformer;
 import com.truthbean.debbie.data.transformer.text.*;
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfigurationRegister;
+import com.truthbean.debbie.task.DebbieTaskConfigurer;
+import com.truthbean.debbie.task.ThreadPooledExecutor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,15 +39,22 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+    public void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
+        DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
+        ResourceResolver resourceResolver = beanFactoryHandler.getResourceResolver();
+        beanInfo.setBean(resourceResolver);
+        beanInfo.setBeanName("resourceResolver");
+        beanInitialization.initSingletonBean(beanInfo);
 
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(ClassesScanProperties.class);
-
-        beanInitialization.addAnnotationRegister(new PropertiesConfigurationRegister());
+        beanInitialization.addAnnotationRegister(new PropertiesConfigurationRegister(beanInitialization));
 
         registerTransformer(beanInitialization);
+    }
+
+    @Override
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(ClassesScanProperties.class, BeanScanConfiguration.class);
+        new DebbieTaskConfigurer().configure(beanFactoryHandler);
     }
 
     @Override
@@ -51,7 +63,11 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release() {
+    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.reset();
+
+        ThreadPooledExecutor executor = beanFactoryHandler.factory("threadPooledExecutor");
+        executor.destroy();
     }
 
     private void registerTransformer(BeanInitialization beanInitialization) {

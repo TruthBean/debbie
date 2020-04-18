@@ -2,11 +2,11 @@ package com.truthbean.debbie.hikari;
 
 import com.truthbean.debbie.data.transformer.text.BooleanTransformer;
 import com.truthbean.debbie.data.transformer.text.LongTransformer;
-import com.truthbean.debbie.properties.PropertiesConfiguration;
-import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import com.truthbean.debbie.properties.PropertiesConfiguration;
+import com.truthbean.debbie.properties.PropertyInject;
 import com.zaxxer.hikari.HikariConfig;
 
 import javax.sql.DataSource;

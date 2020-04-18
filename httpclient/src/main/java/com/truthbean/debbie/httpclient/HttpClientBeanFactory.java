@@ -1,6 +1,7 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanFactoryHandler;
 
 /**
  * @author TruthBean
@@ -8,12 +9,18 @@ import com.truthbean.debbie.bean.BeanFactory;
  */
 public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpClientBean> {
 
-    private Class<HttpClientBean> httpClientBeanClass;
-    private HttpClientFactory httpClientFactory;
+    private final Class<HttpClientBean> httpClientBeanClass;
+    private final HttpClientFactory httpClientFactory;
+    private BeanFactoryHandler beanFactoryHandler;
 
     public HttpClientBeanFactory(Class<HttpClientBean> httpClientBeanClass, HttpClientFactory httpClientFactory) {
         this.httpClientBeanClass = httpClientBeanClass;
         this.httpClientFactory = httpClientFactory;
+    }
+
+    @Override
+    public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
+        this.beanFactoryHandler = beanFactoryHandler;
     }
 
     @Override
@@ -35,4 +42,5 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     public void destroy() {
         httpClientFactory.destroy();
     }
+
 }

@@ -1,6 +1,6 @@
 dependencies {
-    implementation(project(":debbie-mvc"))
-    implementation(project(":debbie-server"))
+    api(project(":debbie-mvc"))
+    api(project(":debbie-server"))
 
     testImplementation(project(":debbie-test"))
 

@@ -28,12 +28,13 @@ public class CsrfFilter implements RouterFilter {
         logger.debug("crsfToken in header: " + csrfTokenInHeader);
         String csrfTokenInParams = (String) request.getParameter("_CSRF_TOKEN");
         logger.debug("crsfToken in hidden form: " + csrfTokenInParams);
-        return configuration.isEnableCrsf();
+        // return configuration.isEnableCrsf();
+        return true;
     }
 
     @Override
-    public void postRouter(RouterRequest request, RouterResponse response) {
-
+    public Boolean postRouter(RouterRequest request, RouterResponse response) {
+        return false;
     }
 
     private final Logger logger = LoggerFactory.getLogger(CsrfFilter.class);

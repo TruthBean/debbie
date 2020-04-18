@@ -9,62 +9,6 @@ for microservice
 
 ## construction
 
-
-## dependence
-#### core: 
-    org.slf4j:slf4j-api:1.7.26
-    com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8
-
-#### jdbc:
-    com.truthbean.debbie:debbie-core:current
-    org.slf4j:slf4j-api:1.7.26
-
-#### mvc:
-    com.truthbean.debbie:debbie-core:current
-    org.slf4j:slf4j-api:1.7.26
-
-#### servlet: 
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-mvc:current
-
-    jakarta.servlet:jakarta.servlet-api:4.0.2
-    jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:1.2.4
-    org.glassfish.web:javax.servlet.jsp.jstl:1.2.4
-    commons-fileupload:commons-fileupload:1.4
-    
-#### httpclient:
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-mvc:current
-
-#### zaxxer:
-    com.truthbean.debbie:debbie-jdbc:current
-    com.zaxxer:HikariCP:3.3.1
-    
-#### server:
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-mvc:current
-    
-#### tomcat:
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-servlet:current
-    com.truthbean.debbie:debbie-server:current
-    
-    org.apache.tomcat.embed:tomcat-embed-core:9.0.21
-    org.apache.tomcat.embed:tomcat-embed-jasper:9.0.21
-    org.apache.tomcat.embed:tomcat-embed-el:9.0.21
-    
-#### undertow:
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-server:current
-    
-    io.undertow:undertow-core:2.0.22.Final
-    
-#### netty:
-    org.slf4j:slf4j-api:1.7.26
-    com.truthbean.debbie:debbie-server:current
-    
-    io.netty:netty-all:4.1.36.Final
-
 ### package引用规范
 尽量使用compileOnly，不要给开发者带来额外的包引用负担
 
@@ -74,47 +18,7 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 @PropertyInject 标识的 field，通过setter方法来 注入的
 
 ## maven
-
-### server
-```xml
-<dependency>
-    <groupId>com.truthbean.debbie</groupId>
-    <artifactId>debbie-undertow</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
-```
-
-```xml
-<dependency>
-    <groupId>com.truthbean.debbie</groupId>
-    <artifactId>debbie-netty</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
-```
-
-```xml
-<dependency>
-    <groupId>com.truthbean.debbie</groupId>
-    <artifactId>debbie-tomcat</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
-```
-
-### jdbc
-```xml
-<dependency>
-    <groupId>com.truthbean.debbie</groupId>
-    <artifactId>debbie-jdbc</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
-```
-```xml
-<dependency>
-    <groupId>com.truthbean.debbie</groupId>
-    <artifactId>debbie-hikari</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
-```
+[0.0.1-RELEASE package](./versions/0.0.1-RELEASE.md)
 
 ## 目标
 --------

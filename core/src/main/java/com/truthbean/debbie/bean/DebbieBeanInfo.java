@@ -10,7 +10,9 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -36,6 +38,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
     public DebbieBeanInfo(Class<Bean> beanClass) {
         super(beanClass);
         Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
+        if (classAnnotations == null || classAnnotations.isEmpty())
+            return;
 
         for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
             Class<? extends Annotation> key = entry.getKey();
@@ -280,6 +284,19 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
             beanInfo.setBeanType(beanType);
 
         return beanInfo;
+    }
+
+    public void release() {
+        if (beanFactory != null) {
+            beanFactory.destroy();
+        } else {
+            Class<Bean> beanClass = getClazz();
+            if (BeanClosure.class.isAssignableFrom(beanClass) && !DebbieBeanFactory.class.isAssignableFrom(beanClass)) {
+                if (bean != null) {
+                    ((BeanClosure) bean).destroy();
+                }
+            }
+        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);

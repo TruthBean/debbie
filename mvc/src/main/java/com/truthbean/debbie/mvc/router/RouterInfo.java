@@ -1,19 +1,20 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.MultipartFile;
-import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,8 +24,6 @@ import java.util.Objects;
  * Created on 2018-01-07 23:21
  */
 public class RouterInfo implements Cloneable {
-
-    private String errorInfo;
 
     private Method method;
 
@@ -41,14 +40,7 @@ public class RouterInfo implements Cloneable {
     private RouterRequest request;
 
     private RouterResponse response;
-
-    public String getErrorInfo() {
-        return errorInfo;
-    }
-
-    public void setErrorInfo(String errorInfo) {
-        this.errorInfo = errorInfo;
-    }
+    private Collection<MediaTypeInfo> defaultResponseTypes;
 
     public Method getMethod() {
         return method;
@@ -122,6 +114,25 @@ public class RouterInfo implements Cloneable {
         this.request = request;
     }
 
+    public Collection<MediaTypeInfo> getDefaultResponseTypes() {
+        return defaultResponseTypes;
+    }
+
+    public void setDefaultResponseTypes(Collection<MediaTypeInfo> defaultResponseTypes) {
+        this.defaultResponseTypes = defaultResponseTypes;
+    }
+
+    public boolean hasDefaultResponseType() {
+        return this.defaultResponseTypes != null && !this.defaultResponseTypes.isEmpty();
+    }
+
+    public MediaTypeInfo getDefaultResponseType() {
+        if (hasDefaultResponseType()) {
+            return this.defaultResponseTypes.iterator().next();
+        }
+        return MediaType.ANY.info();
+    }
+
     public RouterInfo() {
     }
 
@@ -134,7 +145,7 @@ public class RouterInfo implements Cloneable {
             if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
                 baseTypeMethodParams.add(param);
             } else {
-                List<Field> fields = ReflectionHelper.getDeclaredFields(param.getType());
+                List<Field> fields = ReflectionHelper.getDeclaredFields(param.getRawType());
                 int i = 0;
                 while (i < fields.size()) {
                     baseTypeMethodParams.add(handler.typeOf(fields.get(i), i++));
@@ -215,7 +226,6 @@ public class RouterInfo implements Cloneable {
     @Override
     public RouterInfo clone() {
         RouterInfo clone = new RouterInfo();
-        clone.errorInfo = errorInfo;
         clone.method = method;
         if (methodParams != null) {
             clone.methodParams = new ArrayList<>(methodParams);
@@ -236,6 +246,10 @@ public class RouterInfo implements Cloneable {
         clone.requestType = requestType;
         if (request != null) {
             clone.request = request.copy();
+        }
+
+        if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {
+            clone.defaultResponseTypes = new ArrayList<>(defaultResponseTypes);
         }
         return clone;
     }
@@ -312,13 +326,12 @@ public class RouterInfo implements Cloneable {
 
     public RouterJsonInfo toJsonInfo() {
         var jsonInfo = new RouterJsonInfo();
-        jsonInfo.errorInfo = errorInfo;
         jsonInfo.method = method.toString();
 
         if (methodParams != null) {
             jsonInfo.methodParams = new ArrayList<>();
             for (ExecutableArgument methodParam : methodParams) {
-                jsonInfo.methodParams.add(methodParam.getType().getName());
+                jsonInfo.methodParams.add(methodParam.getType().getTypeName());
             }
         }
 

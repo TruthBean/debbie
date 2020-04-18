@@ -2,7 +2,10 @@ package com.truthbean.debbie.proxy;
 
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.io.File;
 import java.io.FileOutputStream;

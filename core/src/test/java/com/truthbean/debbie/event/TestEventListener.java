@@ -1,20 +1,16 @@
 package com.truthbean.debbie.event;
 
+import com.truthbean.debbie.bean.BeanComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@EventBeanListener
-public class TestEventListener implements GenericEventListener<TestEvent> {
+@BeanComponent
+public class TestEventListener {
 
-    @Override
-    public void onEvent(TestEvent event) {
+    @EventMethodListener
+    public void onTestEvent(TestEvent event) {
         LOGGER.debug("do event.....");
         LOGGER.debug(event.getEvent());
-    }
-
-    @Override
-    public boolean supportsSourceType(Class<?> sourceType) {
-        return sourceType == TestEvent.class;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestEventListener.class);

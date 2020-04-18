@@ -1,5 +1,6 @@
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
@@ -18,15 +19,15 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<String> scanExcludePackages;
     private final Set<Class<?>> scanExcludeClasses;
 
-    public final ClassLoader classLoader;
+    public ClassLoader classLoader;
 
-    /*public BeanScanConfiguration() {
+    public BeanScanConfiguration() {
         this.scanClasses = new HashSet<>();
 
         this.scanBasePackages = new HashSet<>();
         this.scanExcludePackages = new HashSet<>();
         this.scanExcludeClasses = new HashSet<>();
-    }*/
+    }
 
     public BeanScanConfiguration(ClassLoader classLoader) {
         this.scanClasses = new HashSet<>();
@@ -38,9 +39,13 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.classLoader = classLoader;
     }
 
-    /*public void setClassLoader(ClassLoader classLoader) {
+    public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
-    }*/
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
 
     public Set<Class<?>> getScanClasses() {
         return scanClasses;
@@ -120,14 +125,18 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
     }
 
-    public Set<Class<?>> getTargetClasses() {
+    public Set<Class<?>> getTargetClasses(ResourceResolver resourceResolver) {
         Set<Class<?>> classes = new HashSet<>();
         if (!scanClasses.isEmpty()) {
             classes.addAll(scanClasses);
         }
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+                List<Class<?>> classList;
+                if (resourceResolver != null)
+                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+                else
+                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.addAll(classList);
             });
         }
@@ -137,7 +146,11 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         if (!scanExcludePackages.isEmpty()) {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+                List<Class<?>> classList;
+                if (resourceResolver != null)
+                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+                else
+                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.removeAll(classList);
             });
         }
@@ -149,5 +162,6 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanBasePackages.clear();
         this.scanExcludePackages.clear();
         this.scanExcludeClasses.clear();
+        this.classLoader = null;
     }
 }

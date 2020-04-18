@@ -3,9 +3,12 @@ package com.truthbean.debbie.reflection;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.NumericUtils;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
@@ -99,8 +102,12 @@ public final class TypeHelper {
         return clazz == Object.class;
     }
 
-    public static boolean isBaseType(Class<?> clazz) {
-        return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+    public static boolean isBaseType(java.lang.reflect.Type type) {
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+        }
+        return false;
     }
 
     public static boolean isRawBaseType(Class<?> clazz) {
@@ -121,6 +128,17 @@ public final class TypeHelper {
 
     public static boolean isArrayType(Class<?> clazz) {
         return clazz == Set.class || clazz == Map.class || clazz == List.class;
+    }
+
+    public static boolean isArrayType(java.lang.reflect.Type type) {
+        if (type instanceof Class) {
+            Class clazz = (Class) type;
+            return clazz == Set.class || clazz == Map.class || clazz == List.class;
+        } else if (type instanceof ParameterizedType) {
+            java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
+            return rawType == Set.class || rawType == Map.class || rawType == List.class;
+        }
+        return false;
     }
 
     public static boolean isAbstractOrInterface(Class<?> type) {
@@ -154,10 +172,104 @@ public final class TypeHelper {
         }
     }
 
+    public static Object valueOf(java.lang.reflect.Type type, Object value) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            java.lang.reflect.Type rawType = parameterizedType.getRawType();
+            java.lang.reflect.Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            if (rawType == List.class) {
+                List result = new ArrayList<>();
+                java.lang.reflect.Type typeArgument = actualTypeArguments[0];
+                if (value == null)
+                    return result;
+                if (value instanceof List) {
+                    for (Object object : (List) value) {
+                        if (object instanceof String) {
+                            String str = (String) object;
+                            // todo 需要改良这里的硬编码
+                            if (str.contains(",")) {
+                                String[] split = str.split(",");
+                                if (split != null && split.length > 0) {
+                                    for (String s : split) {
+                                        Object o = valueOf((Class<?>) typeArgument, s);
+                                        if (o != null)
+                                            result.add(o);
+                                    }
+                                }
+                            } else if (str.contains(";")) {
+                                String[] split = str.split(";");
+                                if (split != null && split.length > 0) {
+                                    for (String s : split) {
+                                        Object o = valueOf((Class<?>) typeArgument, s);
+                                        if (o != null)
+                                            result.add(o);
+                                    }
+                                }
+                            } else {
+                                Object o = valueOf((Class<?>) typeArgument, str);
+                                if (o != null)
+                                    result.add(o);
+                            }
+                        } else if (object.getClass() == typeArgument) {
+                            result.add(((Class)typeArgument).cast(object));
+                        } else if (isOrValueOf((Class)typeArgument, value)) {
+                            result.add(valueOf(((Class)typeArgument), object));
+                        } else {
+                            result.add(((Class)typeArgument).cast(object));
+                        }
+                    }
+                } else if (typeArgument instanceof Class) {
+                    // todo transform
+                    if (value instanceof String) {
+                        String str = (String) value;
+                        // todo 需要改良这里的硬编码
+                        if (str.contains(",")) {
+                            String[] split = str.split(",");
+                            if (split != null && split.length > 0) {
+                                for (String s : split) {
+                                    Object o = valueOf((Class<?>) typeArgument, s);
+                                    if (o != null)
+                                        result.add(o);
+                                }
+                            }
+                        } else if (str.contains(";")) {
+                            String[] split = str.split(";");
+                            if (split != null && split.length > 0) {
+                                for (String s : split) {
+                                    Object o = valueOf((Class<?>) typeArgument, s);
+                                    if (o != null)
+                                        result.add(o);
+                                }
+                            }
+                        } else {
+                            Object o = valueOf((Class<?>) typeArgument, str);
+                            if (o != null)
+                                result.add(o);
+                        }
+                    }
+                }
+                return result;
+            }
+        } else if (type instanceof Class) {
+            if (value instanceof List) {
+                return valueOf((Class) type, (List) value);
+            } else if (isOrValueOf((Class)type, value)) {
+                return valueOf(((Class)type), value);
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> List<T> valueOf(Class<T> clazz, @SuppressWarnings("rawtypes") List values) {
         if (clazz == List.class) {
-            return (List<T>) values;
+            java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(values.getClass());
+            java.lang.reflect.Type[] typeActualTypes = ReflectionHelper.getActualTypes(clazz);
+            if (valueActualTypes[0] == typeActualTypes[0]) {
+                return (List<T>) values;
+            } else {
+                return null;
+            }
         }
         List<T> result = new ArrayList<>();
         for (Object object : values) {
@@ -188,7 +300,7 @@ public final class TypeHelper {
             try {
                 return (T) Integer.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -197,7 +309,7 @@ public final class TypeHelper {
             try {
                 return (T) Short.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -206,7 +318,7 @@ public final class TypeHelper {
             try {
                 return (T) Long.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -215,7 +327,7 @@ public final class TypeHelper {
             try {
                 return (T) Float.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -224,7 +336,7 @@ public final class TypeHelper {
             try {
                 return (T) Double.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -233,7 +345,7 @@ public final class TypeHelper {
             try {
                 return (T) Boolean.valueOf(value);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -242,7 +354,7 @@ public final class TypeHelper {
             try {
                 return (T) Byte.valueOf(value);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -252,7 +364,7 @@ public final class TypeHelper {
             try {
                 return (T) Character.valueOf(value.charAt(0));
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -268,7 +380,7 @@ public final class TypeHelper {
             try {
                 return ((Integer) value).intValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -277,7 +389,7 @@ public final class TypeHelper {
             try {
                 return ((Short) value).shortValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -286,7 +398,7 @@ public final class TypeHelper {
             try {
                 return ((Long) value).longValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -295,7 +407,7 @@ public final class TypeHelper {
             try {
                 return ((Float) value).floatValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -304,7 +416,7 @@ public final class TypeHelper {
             try {
                 return ((Double) value).doubleValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -313,7 +425,7 @@ public final class TypeHelper {
             try {
                 return ((Boolean) value).booleanValue();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -322,7 +434,7 @@ public final class TypeHelper {
             try {
                 return ((Byte) value).byteValue();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
@@ -331,19 +443,66 @@ public final class TypeHelper {
             try {
                 return ((Character) value).charValue();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
                 return null;
             }
         }
         return null;
     }
 
-    public static boolean isOrValueOf(Class<?> clazz, @SuppressWarnings("rawtypes") List target) {
+    public static boolean isSameList(Class<?> actualTypes, @SuppressWarnings("rawtypes") List value) {
+        if (value == null && value.isEmpty()) return true;
+
         boolean result = true;
-        if (clazz == List.class) {
-            return true;
+        java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
+        for (Object object : value) {
+            if (object instanceof String) {
+                String str = (String) object;
+                // todo 需要改良这里的硬编码
+                if (str.contains(",")) {
+                    String[] split = str.split(",");
+                    if (split != null && split.length > 0) {
+                        for (String s : split) {
+                            if (result) {
+                                result = isOrValueOf(actualTypes, s);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else if (str.contains(";")) {
+                    String[] split = str.split(";");
+                    if (split != null && split.length > 0) {
+                        for (String s : split) {
+                            if (result) {
+                                result = isOrValueOf(actualTypes, s);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    if (result) {
+                        result = isOrValueOf(actualTypes, str);
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                if (result) {
+                    result = isOrValueOf(actualTypes, object);
+                } else {
+                    break;
+                }
+            }
         }
-        for (Object object : target) {
+        return result;
+    }
+
+    public static boolean isOrValueOf(Class<?> clazz, @SuppressWarnings("rawtypes") List value) {
+        if (value == null) return true;
+        boolean result = true;
+        for (Object object : value) {
             if (result) {
                 result = isOrValueOf(clazz, object);
             } else {
@@ -351,6 +510,52 @@ public final class TypeHelper {
             }
         }
         return result;
+    }
+
+    public static boolean isOrValueOf(java.lang.reflect.Type type, Object value) {
+        boolean result = false;
+        if (type instanceof Class) {
+            Class clazz = (Class) type;
+            if (value instanceof List) {
+                return isOrValueOf(clazz, (List) value);
+            } else if (value instanceof String) {
+                if (type == List.class) {
+                    java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(clazz);
+                    return isSameList((Class<?>) valueActualTypes[0], (List) value);
+                } else {
+                    return isOrValueOf(clazz, (String) value);
+                }
+            }
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            java.lang.reflect.Type rawType = parameterizedType.getRawType();
+            java.lang.reflect.Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            if (rawType == List.class) {
+                if (value instanceof List) {
+                    java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
+                    if (actualTypeArguments[0] == valueActualTypes[0]) {
+                        return true;
+                    } else
+                        return isSameList((Class<?>) actualTypeArguments[0], (List) value);
+                } else {
+                    return isOrValueOf((Class<?>) rawType, (List) value);
+                }
+            } else if (rawType instanceof Class && value instanceof String) {
+                return isOrValueOf((Class<?>) rawType, (String) value);
+            }
+        }
+        return result;
+    }
+
+    public static Class<?> getClass(java.lang.reflect.Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            java.lang.reflect.Type rawType = parameterizedType.getRawType();
+            return (Class<?>) rawType;
+        }
+        return null;
     }
 
     public static boolean isOrValueOf(Class<?> clazz, Object target) {
@@ -382,4 +587,6 @@ public final class TypeHelper {
         }
         return types;
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(TypeHelper.class);
 }

@@ -51,7 +51,7 @@ public interface Constants {
     int EOF = -1;
 
     char ZERO = '0';
-    char NINE = '0';
+    char NINE = '9';
     char LOWERCASE_A = 'a';
     char LOWERCASE_F = 'f';
     char UPPERCASE_A = 'A';

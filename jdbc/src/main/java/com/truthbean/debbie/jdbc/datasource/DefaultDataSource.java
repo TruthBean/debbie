@@ -26,7 +26,7 @@ public class DefaultDataSource implements DataSource {
         }
     }
 
-    private DataSourceConfiguration configuration;
+    private final DataSourceConfiguration configuration;
 
     public DefaultDataSource(DataSourceConfiguration configuration) {
         this.configuration = configuration;
@@ -61,19 +61,23 @@ public class DefaultDataSource implements DataSource {
     }
 
     private synchronized void initializeDriver() throws SQLException {
-        if (!REGISTERED_DRIVERS.containsKey(configuration.getDriverName())) {
+        DataSourceDriverName dataSourceDriverName = configuration.getDriverName();
+        if (dataSourceDriverName != null && !REGISTERED_DRIVERS.containsKey(dataSourceDriverName.getDriverName())) {
             Class<?> driverType;
             ClassLoader driverClassLoader = ClassLoaderUtils.getClassLoader(DataSource.class);
             try {
-                var driver = configuration.getDriverName();
-                if (driverClassLoader != null) {
-                    driverType = Class.forName(configuration.getDriverName(), true, driverClassLoader);
-                } else {
-                    driverType = ClassLoader.getSystemClassLoader().loadClass(driver);
+                var driver = dataSourceDriverName;
+                if (driver != null) {
+                    var driverName = driver.getDriverName();
+                    if (driverClassLoader != null) {
+                        driverType = Class.forName(driverName, true, driverClassLoader);
+                    } else {
+                        driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                    }
+                    Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
+                    DriverManager.registerDriver(driverInstance);
+                    REGISTERED_DRIVERS.put(driverName, driverInstance);
                 }
-                Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
-                DriverManager.registerDriver(driverInstance);
-                REGISTERED_DRIVERS.put(driver, driverInstance);
             } catch (Exception e) {
                 throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);
             }
@@ -86,7 +90,8 @@ public class DefaultDataSource implements DataSource {
             connection.setAutoCommit(autoCommit);
         }
         var defaultTransactionIsolationLevel = configuration.getDefaultTransactionIsolationLevel();
-        if (defaultTransactionIsolationLevel != null) {
+        var driverName = configuration.getDriverName();
+        if (driverName != DataSourceDriverName.sqlite && defaultTransactionIsolationLevel != null) {
             connection.setTransactionIsolation(defaultTransactionIsolationLevel.getLevel());
         }
     }

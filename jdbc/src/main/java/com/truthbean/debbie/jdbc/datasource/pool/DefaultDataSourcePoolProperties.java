@@ -3,7 +3,6 @@ package com.truthbean.debbie.jdbc.datasource.pool;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
-import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author TruthBean

@@ -8,9 +8,7 @@ import com.truthbean.debbie.util.JacksonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +27,13 @@ public class ExecutableArgumentHandler {
 
     public ExecutableArgument typeOf(Field field, int index) {
         ExecutableArgument invokedParameter = new ExecutableArgument();
-        invokedParameter.setType((Class<?>) field.getGenericType());
+        Type genericType = field.getGenericType();
+        if (genericType instanceof Class) {
+            invokedParameter.setType((Class<?>) genericType);
+        } else if (genericType instanceof ParameterizedType) {
+            Type rawType = ((ParameterizedType) field.getGenericType()).getRawType();
+            invokedParameter.setType((Class<?>) rawType);
+        }
         invokedParameter.setName(field.getName());
         invokedParameter.setIndex(index);
         return invokedParameter;
@@ -83,20 +87,21 @@ public class ExecutableArgumentHandler {
     }
 
     public void handleFiled(Map<String, List> map,
-                            Object newInstance, Field field, ExecutableArgument invokedParameter) {
+                            Object newInstance, Field field, ExecutableArgument invokedParameter,
+                            boolean ignoreCase) {
 
         if (map == null || map.isEmpty()) {
             return;
         }
         if (newInstance == null) {
-            handleParam(map, invokedParameter);
+            handleParam(map, invokedParameter, ignoreCase);
         } else {
             if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
-                handleParam(map, invokedParameter);
+                handleParam(map, invokedParameter, ignoreCase);
                 if (invokedParameter.getValue() != null) {
                     //set value to filed
                     ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
-                            invokedParameter.getType());
+                            invokedParameter.getRawType());
                 }
             }
         }
@@ -123,11 +128,17 @@ public class ExecutableArgumentHandler {
 
     }
 
-    public void handleParam(Map<String, List> map, ExecutableArgument invokedParameter) {
+    public void handleParam(Map<String, List> map, ExecutableArgument invokedParameter, boolean ignoreCase) {
         if (map != null && !map.isEmpty()) {
             for (Map.Entry<String, List> entry : map.entrySet()) {
-                boolean flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
-                        TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+                boolean flag;
+                if (ignoreCase) {
+                    flag = (invokedParameter.getName() == null || invokedParameter.getName().equalsIgnoreCase(entry.getKey())) &&
+                            TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+                } else {
+                    flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
+                            TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+                }
 
                 if (flag) {
                     Object value;
@@ -160,14 +171,15 @@ public class ExecutableArgumentHandler {
 
     public void handleStream(InputStream stream, MediaType type, ExecutableArgument invokedParameter) {
         Object value;
+        Class<?> clazz = TypeHelper.getClass(invokedParameter.getType());
         switch (type) {
             case APPLICATION_XML:
             case APPLICATION_XML_UTF8:
-                value = JacksonUtils.xmlStreamToBean(stream, invokedParameter.getType());
+                value = JacksonUtils.xmlStreamToBean(stream, clazz);
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
-                value = JacksonUtils.jsonStreamToBean(stream, invokedParameter.getType());
+                value = JacksonUtils.jsonStreamToBean(stream, clazz);
                 break;
             case TEXT_PLAIN_UTF8:
             case TEXT_CSS_UTF8:
@@ -200,14 +212,15 @@ public class ExecutableArgumentHandler {
 
     public void handleStream(String body, MediaType type, ExecutableArgument invokedParameter) {
         Object value;
+        Class<?> clazz = TypeHelper.getClass(invokedParameter.getType());
         switch (type) {
             case APPLICATION_XML:
             case APPLICATION_XML_UTF8:
-                value = JacksonUtils.xmlToBean(body, invokedParameter.getType());
+                value = JacksonUtils.xmlToBean(body, clazz);
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
-                value = JacksonUtils.jsonToBean(body, invokedParameter.getType());
+                value = JacksonUtils.jsonToBean(body, clazz);
                 break;
             // TODO MORE CASE
             default:

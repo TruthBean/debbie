@@ -2,10 +2,9 @@ package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
-import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
+import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.nio.charset.Charset;

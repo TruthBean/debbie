@@ -1,18 +1,16 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
-import com.truthbean.debbie.data.transformer.NoDataTransformerMatchedException;
+import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameterInfo;
+import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.router.RouterAnnotationInfo;
+import com.truthbean.debbie.mvc.router.RouterPathSplicer;
 import com.truthbean.debbie.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
-import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParameterType;
-import com.truthbean.debbie.mvc.router.RouterPathSplicer;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.JacksonUtils;
 import org.slf4j.Logger;
@@ -109,7 +107,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             for (int i = 0; i < args.length; i++) {
                 final var parameter = request.getInvokedParameter(i);
                 final var arg = args[i];
-                if (parameter != null && parameter.getType().isInstance(arg)) {
+                if (parameter != null && parameter.getRawType().isInstance(arg)) {
                     parameter.setValue(arg);
                 }
             }

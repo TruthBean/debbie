@@ -1,6 +1,7 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanClosure;
+import com.truthbean.debbie.task.ThreadPooledExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,13 @@ import java.util.Map;
  * @since 0.0.2
  */
 public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure {
-    private final Map<Class<? extends AbstractDebbieEvent>, DebbieEventListener> eventListenerMap = new LinkedHashMap<>();
+    private final Map<Class<? extends AbstractDebbieEvent>, DebbieEventListener> eventListenerMap;
+
+    private ThreadPooledExecutor executor;
+    public DefaultEventPublisher(ThreadPooledExecutor threadPooledExecutor) {
+        this.executor = threadPooledExecutor;
+        this.eventListenerMap = new LinkedHashMap<>();;
+    }
 
     public void addEventListener(Class<? extends AbstractDebbieEvent> eventType, DebbieEventListener<? extends AbstractDebbieEvent> listener) {
         eventListenerMap.put(eventType, listener);
@@ -20,11 +27,26 @@ public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure 
 
     @SuppressWarnings("unchecked")
     @Override
-    public void publishEvent(AbstractDebbieEvent event) {
+    public <E extends AbstractDebbieEvent> void publishEvent(E event) {
         long start = System.currentTimeMillis();
         for (var classDebbieEventListenerEntry : eventListenerMap.entrySet()) {
             if (event.getClass() == classDebbieEventListenerEntry.getKey()) {
-                classDebbieEventListenerEntry.getValue().onEvent(event);
+                DebbieEventListener eventListener = classDebbieEventListenerEntry.getValue();
+                if (!eventListener.async()) {
+                    eventListener.onEvent(event);
+                } else {
+                    try {
+                        executor.execute(() -> {
+                            try {
+                                eventListener.onEvent(event);
+                            } catch (Exception ex) {
+                                LOGGER.error("", ex);
+                            }
+                        });
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                    }
+                }
             }
         }
         long end = System.currentTimeMillis();

@@ -4,12 +4,12 @@ import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.MultipartFile;
-import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.net.uri.QueryStringDecoder;
-import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestBody;
+import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.net.uri.QueryStringDecoder;
+import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.servlet.ServletRouterCookie;
 import com.truthbean.debbie.servlet.ServletRouterSession;
 import org.apache.commons.fileupload.FileItem;
@@ -33,7 +33,7 @@ import java.util.*;
  */
 public class ServletRouterRequest extends DefaultRouterRequest {
 
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
 
     public ServletRouterRequest(HttpServletRequest httpServletRequest) {
         this(UUID.randomUUID().toString(), httpServletRequest);

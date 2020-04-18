@@ -5,9 +5,9 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
+import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -41,13 +41,17 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
+        RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
+        RouterFilterManager.registerCorsFilter(configuration, "/**");
+        RouterFilterManager.registerCsrfFilter(configuration, "/**");
+        RouterFilterManager.registerSecurityFilter(configuration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
         return new NettyDebbieApplication(configuration, sessionManager, beanFactoryHandler);
     }
 
     // (1)
-    private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private final EventLoopGroup bossGroup = new NioEventLoopGroup();
+    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private ChannelFuture channelFuture = null;
 
     private void run(NettyConfiguration configuration, SessionManager sessionManager,

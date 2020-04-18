@@ -19,9 +19,7 @@ class BeanConfigurationRegisterTest {
 
     @BeforeEach
     void setUp() {
-        factory = new DebbieApplicationFactory(BeanConfigurationRegisterTest.class);
-        factory.config(BeanConfigurationRegisterTest.class);
-        factory.callStarter();
+        factory = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
     }
 
     @AfterEach

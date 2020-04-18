@@ -12,9 +12,7 @@ public class MvcRouterRegisterTest {
 
     @Test
     public void testRegisterRouter() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(MvcRouterRegisterTest.class);
-        factory.config();
-        factory.callStarter();
+        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(MvcRouterRegisterTest.class);
         BeanInitialization initialization = factory.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
         factory.refreshBeans();

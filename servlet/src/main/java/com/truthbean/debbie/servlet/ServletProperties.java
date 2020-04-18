@@ -2,10 +2,9 @@ package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
-import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
-import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.properties.ClassesScanProperties;
 
 /**
  * @author TruthBean

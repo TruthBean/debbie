@@ -1,6 +1,5 @@
 package com.truthbean.debbie.httpclient.form;
 
-import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 
 import java.io.File;

@@ -86,7 +86,7 @@ public class ServerCompletionHandler implements CompletionHandler<AsynchronousSo
         try {
             attachment.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
     }
 

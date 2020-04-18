@@ -13,12 +13,24 @@ import java.util.Set;
  * @since 0.0.2
  */
 public class DebbieRmiServiceRegister implements AnnotationRegister<DebbieRmiService> {
+
+    private final BeanInitialization beanInitialization;
+
+    public DebbieRmiServiceRegister(BeanInitialization beanInitialization) {
+        this.beanInitialization = beanInitialization;
+    }
+
     @Override
     public void register() {
         register(DebbieRmiService.class);
     }
 
-    public Set<Class<?>> getRmiServiceMappers(BeanInitialization beanInitialization) {
+    @Override
+    public BeanInitialization getBeanInitialization() {
+        return beanInitialization;
+    }
+
+    public Set<Class<?>> getRmiServiceMappers() {
         Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
         Set<DebbieBeanInfo<?>> beanInfos = beanInitialization.getRegisteredRawBeans();
         for (DebbieBeanInfo<?> beanInfo : beanInfos) {

@@ -157,7 +157,7 @@ public class HttpConnectionHandler extends HttpHandler {
                 writer.append("--" + boundary + "--").append(CRLF).flush();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             } finally {
                 if (writer != null) writer.close();
             }
@@ -217,7 +217,7 @@ public class HttpConnectionHandler extends HttpHandler {
 
             return connection;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }

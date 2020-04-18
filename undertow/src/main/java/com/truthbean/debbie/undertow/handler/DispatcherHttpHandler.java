@@ -5,13 +5,12 @@ import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.undertow.UndertowConfiguration;
+import com.truthbean.debbie.undertow.UndertowResponseHandler;
 import com.truthbean.debbie.undertow.UndertowRouterRequest;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +25,8 @@ public class DispatcherHttpHandler implements HttpHandler {
     private AttachmentKey<UndertowRouterRequest> request;
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherHttpHandler.class);
 
-    private UndertowConfiguration configuration;
-    private BeanFactoryHandler beanFactoryHandler;
+    private final UndertowConfiguration configuration;
+    private final BeanFactoryHandler beanFactoryHandler;
 
     public DispatcherHttpHandler(final UndertowConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
         this.configuration = configuration;
@@ -45,11 +44,6 @@ public class DispatcherHttpHandler implements HttpHandler {
         }
 
         HeaderMap responseHeaders = exchange.getResponseHeaders();
-        var cors = this.configuration.getCors();
-        if (cors != null) {
-            cors.forEach((k, v) -> responseHeaders.add(new HttpString(k), v));
-        }
-
         return httpRequest;
     }
 
@@ -75,25 +69,9 @@ public class DispatcherHttpHandler implements HttpHandler {
             MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
 
             var response = routerInfo.getResponse();
-            Object responseData = response.getContent();
-
-            var sender = exchange.getResponseSender();
-            if (responseData instanceof ByteBuffer) {
-                sender.send((ByteBuffer) responseData);
-            }
-            if (responseData instanceof byte[]) {
-                sender.send(ByteBuffer.wrap((byte[]) responseData));
-            } else {
-                // 404
-                // Response Headers
-                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, response.getResponseType().toString());
-                // Response Sender
-                if (responseData != null) {
-                    sender.send(responseData.toString());
-                } else {
-                    sender.send("");
-                }
-            }
+            var responseHandler = new UndertowResponseHandler(exchange);
+            responseHandler.changeResponseWithoutContent(response);
+            responseHandler.handle(response, routerInfo.getDefaultResponseType());
         }
     }
 }

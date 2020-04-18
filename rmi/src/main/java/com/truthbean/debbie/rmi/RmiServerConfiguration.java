@@ -27,4 +27,9 @@ public class RmiServerConfiguration implements DebbieConfiguration {
     public void setRmiBindPort(int rmiBindPort) {
         this.rmiBindPort = rmiBindPort;
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

@@ -19,4 +19,7 @@ dependencies {
     testImplementation("org.javassist:javassist:$javassistVersion")
     val cglibVersion: String by project
     testImplementation("cglib:cglib:$cglibVersion")
+
+    val injectVersion: String by project
+    testImplementation("javax.inject:javax.inject:$injectVersion")
 }

@@ -12,16 +12,13 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 public class HikariModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+    public void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
         beanInitialization.init(HikariConfiguration.class);
-
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(HikariProperties.class);
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(HikariProperties.class, HikariConfiguration.class);
     }
 
     @Override
@@ -29,8 +26,4 @@ public class HikariModuleStarter implements DebbieModuleStarter {
         return 22;
     }
 
-    @Override
-    public void release() {
-
-    }
 }

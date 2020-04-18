@@ -9,9 +9,7 @@ class UserServiceTest {
     private static UserService userService;
 
     static {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(UserServiceTest.class);
-        factory.config();
-        factory.callStarter();
+        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(UserServiceTest.class);
 
         BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
         userService = beanFactoryHandler.factory(UserService.class);

@@ -25,15 +25,15 @@ public class CharacterEncodingFilter implements RouterFilter {
 
     @Override
     public boolean preRouter(RouterRequest request, RouterResponse response) {
-        LOGGER.debug("character encoding filter");
+        LOGGER.trace("set character encoding by filter");
         request.setCharacterEncoding(this.charset);
-        response.setCharacterEncoding(this.charset);
         return true;
     }
 
     @Override
-    public void postRouter(RouterRequest request, RouterResponse response) {
-
+    public Boolean postRouter(RouterRequest request, RouterResponse response) {
+        response.setCharacterEncoding(this.charset);
+        return false;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CharacterEncodingFilter.class);

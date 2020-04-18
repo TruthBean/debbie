@@ -1,5 +1,3 @@
-import org.gradle.wrapper.Install
-
 buildscript {
     repositories {
         mavenLocal()
@@ -67,6 +65,12 @@ subprojects {
             "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
             "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
             "testImplementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnit {
+            includeCategories("com/truthbean/debbie/**")
         }
     }
 

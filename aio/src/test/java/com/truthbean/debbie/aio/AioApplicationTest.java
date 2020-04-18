@@ -17,7 +17,9 @@ import java.util.concurrent.Callable;
 public class AioApplicationTest {
 
     public static void main(String[] args) {
-        DebbieApplicationFactory.create(AioApplicationTest.class).start();
+        var application = DebbieApplicationFactory.create(AioApplicationTest.class);
+        application.start(args);
+        application.exit(args);
     }
 
     @Test

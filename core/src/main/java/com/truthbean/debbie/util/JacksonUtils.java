@@ -252,7 +252,7 @@ public final class JacksonUtils {
             var node = xmlMapper.readTree(xml.getBytes());
             json = toJson(node);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return json;
     }
@@ -269,7 +269,7 @@ public final class JacksonUtils {
         try {
             xml = xmlMapper.writeValueAsString(object);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return xml;
     }
@@ -285,7 +285,7 @@ public final class JacksonUtils {
         try {
             node = xmlMapper.readTree(xml.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return node;
     }
@@ -329,7 +329,7 @@ public final class JacksonUtils {
             var node = yamlMapper.readTree(yaml.getBytes());
             json = toJson(node);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return json;
     }
@@ -346,7 +346,7 @@ public final class JacksonUtils {
         try {
             yaml = yamlMapper.writeValueAsString(object);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return yaml;
     }
@@ -362,7 +362,7 @@ public final class JacksonUtils {
         try {
             node = yamlMapper.readTree(yaml.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return node;
     }

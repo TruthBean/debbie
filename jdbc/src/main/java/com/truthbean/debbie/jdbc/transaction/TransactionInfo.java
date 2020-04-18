@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.transaction;
 
+import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class TransactionInfo implements Closeable {
 
     private Method method;
 
+    private DriverConnection driverConnection;
     private Connection connection;
 
     private boolean forceCommit;
@@ -50,8 +52,13 @@ public class TransactionInfo implements Closeable {
         return connection;
     }
 
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    public DriverConnection getDriverConnection() {
+        return driverConnection;
+    }
+
+    public void setConnection(DriverConnection driverConnection) {
+        this.driverConnection = driverConnection;
+        this.connection = driverConnection.getConnection();
     }
 
     public boolean isForceCommit() {

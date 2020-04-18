@@ -18,7 +18,11 @@ public class HttpHeader {
     }
 
     public List<String> getHeaders(String name) {
-        return headers.get(name);
+        var value =  headers.get(name);
+        if (value == null) {
+            return headers.get(name.toLowerCase());
+        }
+        return value;
     }
 
     public String getHeader(HttpHeaderName headerName) {
@@ -27,6 +31,9 @@ public class HttpHeader {
 
     public String getHeader(String name) {
         var values = headers.get(name);
+        if (values == null) {
+            values = headers.get(name.toLowerCase());
+        }
         if (values != null && !values.isEmpty()) {
             String value = values.get(0);
             if (value != null) return value;

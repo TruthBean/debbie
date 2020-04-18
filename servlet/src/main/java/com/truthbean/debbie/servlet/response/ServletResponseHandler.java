@@ -2,18 +2,24 @@ package com.truthbean.debbie.servlet.response;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.ResponseHandler;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.servlet.ServletRouterCookie;
 import com.truthbean.debbie.servlet.response.view.JspView;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean
@@ -21,8 +27,8 @@ import java.io.IOException;
  */
 public class ServletResponseHandler implements ResponseHandler {
 
-    private HttpServletRequest request;
-    private HttpServletResponse response;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
     public ServletResponseHandler(HttpServletRequest request, HttpServletResponse response) {
         this.request = request;
@@ -30,10 +36,7 @@ public class ServletResponseHandler implements ResponseHandler {
     }
 
     @Override
-    public void handle(RouterResponse routerResponse) {
-        response.setStatus(routerResponse.getStatus().getStatus());
-
-        var any = routerResponse.getContent();
+    public void changeResponseWithoutContent(RouterResponse routerResponse) {
         var headers = routerResponse.getHeaders();
         if (!headers.isEmpty()) {
             headers.forEach((key, value) -> response.setHeader(key, value));
@@ -42,7 +45,66 @@ public class ServletResponseHandler implements ResponseHandler {
         if (!cookies.isEmpty()) {
             cookies.forEach(cookie -> response.addCookie(new ServletRouterCookie(cookie).getCookie()));
         }
+        var responseType = routerResponse.getResponseType();
+        if (responseType != null) {
+            response.setContentType(responseType.toString());
+        }
+        try {
+            Map<String, Object> modelAttributes = routerResponse.getModelAttributes();
+            if (modelAttributes != null && !modelAttributes.isEmpty()) {
+                modelAttributes.forEach((key, value) -> {
+                    request.setAttribute(key, value);
+                });
+            }
+        } catch (Exception e) {
+            LOGGER.error("request.setAttribute error", e);
+        }
+    }
 
+    public void copyResponseWithoutContent() {
+        // head
+        Map<String, String> headers = new HashMap<>();
+        Collection<String> headerNames = response.getHeaderNames();
+        if (headerNames != null && !headerNames.isEmpty()) {
+            for (String name : headerNames) {
+                String header = response.getHeader(name);
+                headers.put(name, header);
+            }
+        }
+        // status
+        int status = response.getStatus();
+        // trailerFields
+        Supplier<Map<String, String>> trailerFields = response.getTrailerFields();
+        // characterEncoding
+        String characterEncoding = response.getCharacterEncoding();
+        // contentType
+        String contentType = response.getContentType();
+        // locale
+        Locale locale = response.getLocale();
+
+        response.reset();
+
+        if (!headers.isEmpty()) {
+            headers.forEach(response::addHeader);
+        }
+        response.setStatus(status);
+        if (trailerFields != null)
+            response.setTrailerFields(trailerFields);
+        response.setCharacterEncoding(characterEncoding);
+        response.setContentType(contentType);
+        response.setLocale(locale);
+    }
+
+    @Override
+    public void handle(RouterResponse routerResponse, MediaTypeInfo defaultResponseType) {
+        handle(routerResponse, defaultResponseType, true);
+    }
+
+    public void handle(RouterResponse routerResponse, MediaTypeInfo defaultResponseType, boolean reset) {
+        HttpStatus status = routerResponse.getStatus();
+        response.setStatus(status.getStatus());
+
+        var any = routerResponse.getContent();
         var responseType = routerResponse.getResponseType();
 
         if (any == null) {
@@ -61,8 +123,20 @@ public class ServletResponseHandler implements ResponseHandler {
                 jspView.setSuffix(routerResponse.getTemplateSuffix());
             }
             jspView.transfer();
-        } else if (any instanceof byte[]) {
-            // response.reset();
+        } else {
+            if (reset)
+                copyResponseWithoutContent();
+            setResponse(routerResponse, defaultResponseType);
+        }
+    }
+
+    public void setResponse(RouterResponse routerResponse, MediaTypeInfo defaultResponseType) {
+        var status = routerResponse.getStatus();
+        var any = routerResponse.getContent();
+        var responseType = routerResponse.getResponseType();
+
+        if (any instanceof byte[]) {
+            response.setStatus(routerResponse.getStatus().getStatus());
             if (responseType == null || responseType.isAny()) {
                 response.setContentType(MediaType.APPLICATION_OCTET_STREAM.getValue());
             }
@@ -75,11 +149,14 @@ public class ServletResponseHandler implements ResponseHandler {
             }
         } else {
             try {
-                // response.reset();
+                response.setStatus(routerResponse.getStatus().getStatus());
+                if (responseType == null) {
+                    responseType = defaultResponseType;
+                }
                 response.setContentType(responseType.toString());
-                response.getWriter().println(any);
+                response.getWriter().write(String.valueOf(any));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error(" ", e);
             }
         }
     }

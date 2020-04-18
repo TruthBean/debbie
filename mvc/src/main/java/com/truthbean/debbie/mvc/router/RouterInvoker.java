@@ -3,13 +3,14 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
+import com.truthbean.debbie.mvc.response.ResponseTypeException;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
+import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.NoViewRender;
-import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.mvc.response.provider.ResponseContentHandlerProviderEnum;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
+import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,12 @@ public class RouterInvoker {
             throw new NullPointerException("httpResponse is null");
         }
 
+        var method = routerInfo.getMethod();
+        if (method == null) {
+            // todo
+            return;
+        }
+
         var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
         var handler = new RouterMethodArgumentHandler();
@@ -50,7 +57,6 @@ public class RouterInvoker {
         var values = args.toArray();
 
         var type = routerInfo.getRouterClass();
-        var method = routerInfo.getMethod();
 
         var instance = routerInfo.getRouterInstance();
         if (instance == null) {
@@ -97,7 +103,7 @@ public class RouterInvoker {
             var provider = ResponseContentHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());
             var filter = provider.transform(methodResult);
             if (filter == null) {
-                throw new RuntimeException(methodResult.toString() + " to " + responseType.getValue() + " error");
+                throw new ResponseTypeException(methodResult.toString() + " to " + responseType.getValue() + " error");
             }
             LOGGER.debug(filter.toString());
             routerResponse.setContent(filter);

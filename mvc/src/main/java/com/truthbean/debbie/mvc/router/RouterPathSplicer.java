@@ -1,9 +1,9 @@
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import com.truthbean.debbie.net.uri.UriPathFragment;
 import com.truthbean.debbie.net.uri.UriPathVariable;
 import com.truthbean.debbie.net.uri.UriUtils;
-import com.truthbean.debbie.mvc.url.RouterPathFragments;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -146,10 +146,17 @@ public class RouterPathSplicer {
             for (String s : split) {
                 if ("".equals(s)) continue;
                 String[] values = targetUrl.split(s);
-                for (int i = 0; i < values.length; i++) {
+                List<String> list = new ArrayList<>();
+                if (values != null && values.length > 0) {
+                    for (String value : values) {
+                        if ("".equals(value)) continue;
+                        list.add(value);
+                    }
+                }
+                for (int i = 0; i < list.size(); i++) {
                     var uriPathVariableName = uriPathVariableNames.get(i);
                     if (uriPathVariableName == null) continue;
-                    var value = values[i];
+                    var value = list.get(i);
                     Pattern pattern = uriPathVariableName.getPattern();
                     if (pattern == null) continue;
                     if (pattern.matcher(value).matches()) {
@@ -253,7 +260,7 @@ public class RouterPathSplicer {
                 }
             });
         } else {
-            throw new RuntimeException("router value or pathRegex cannot be empty");
+            throw new RouterException("router value or pathRegex cannot be empty");
         }
         return newPaths;
     }

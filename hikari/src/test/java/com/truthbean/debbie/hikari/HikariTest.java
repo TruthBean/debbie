@@ -23,6 +23,7 @@ public class HikariTest {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.addDataSourceProperty("serverTimezone", "GMT+8");
 
         HikariDataSource ds = new HikariDataSource(config);
 
@@ -37,21 +38,18 @@ public class HikariTest {
 
     @Test
     public void testDataSource() {
-        var classLoader = HikariTest.class.getClassLoader();
-        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory(classLoader);
-        applicationFactory.config(HikariTest.class);
-        applicationFactory.callStarter();
-        DataSourceFactory factory = applicationFactory.factory("dataSourceFactory");
-        System.out.println(factory);
+        DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(HikariTest.class);
 
         try {
+            DataSourceFactory factory = applicationFactory.factory("dataSourceFactory");
+            System.out.println(factory);
             Connection connection = factory.getConnection();
             Thread.sleep(2000);
             connection.close();
-        } catch (SQLException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            factory.destroy();
+            applicationFactory.release();
         }
     }
 }

@@ -1,10 +1,10 @@
 package com.truthbean.debbie.hikari;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.properties.DebbieProperties;
-import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.Map;
 

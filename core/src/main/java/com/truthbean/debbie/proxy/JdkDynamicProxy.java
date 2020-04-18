@@ -29,9 +29,8 @@ public class JdkDynamicProxy<T, K extends T> {
 
         var proxyInstance = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
         var proxyClass = proxyInstance.getClass();
-        LOGGER.debug(targetInterface.getName());
-        LOGGER.debug(targetClass.getName());
-        LOGGER.debug(proxyClass.getName());
+
+        LOGGER.trace("proxy(" + proxyClass.getName() + ") interface(" + targetInterface.getName() + ") with class(" + targetClass.getName() + ")");
 
         T result;
 
@@ -44,7 +43,7 @@ public class JdkDynamicProxy<T, K extends T> {
         }
 
         // do after
-        LOGGER.debug("after proxy ....");
+        LOGGER.trace("after proxy ....");
 
         return result;
     }

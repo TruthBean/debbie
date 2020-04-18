@@ -5,7 +5,6 @@ import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
-import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,17 +12,13 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class MvcRouterHandlerTest {
 
     private MvcConfiguration mvcConfiguration;
 
     @BeforeEach
     public void before() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(MvcRouterHandlerTest.class);
-        factory.config();
-        factory.callStarter();
+        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(MvcRouterHandlerTest.class);
         BeanInitialization initialization = factory.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
         factory.refreshBeans();

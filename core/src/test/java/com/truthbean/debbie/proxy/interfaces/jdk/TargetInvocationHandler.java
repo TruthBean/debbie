@@ -1,7 +1,7 @@
 package com.truthbean.debbie.proxy.interfaces.jdk;
 
-import com.truthbean.debbie.proxy.interfaces.TargetProxyHandler;
 import com.truthbean.debbie.proxy.bean.TargetInterface;
+import com.truthbean.debbie.proxy.interfaces.TargetProxyHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

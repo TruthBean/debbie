@@ -2,6 +2,7 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory;
@@ -18,9 +19,7 @@ public class DdlRepositoryHandlerTest {
 
     @BeforeAll
     public static void before() {
-        DebbieApplicationFactory applicationFactory = new DebbieApplicationFactory(DdlRepositoryHandlerTest.class);
-        applicationFactory.config();
-        applicationFactory.callStarter();
+        var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
         BeanFactoryHandler beanFactoryHandler = applicationFactory.getBeanFactoryHandler();
         var config = DataSourceProperties.toConfiguration();
@@ -39,7 +38,7 @@ public class DdlRepositoryHandlerTest {
     public void testCreateDatabase() throws ExecutionException, InterruptedException {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
+            var connection = transaction.getDriverConnection();
             return ddlRepositoryHandler.createDatabase(connection, "hello");
         });
         System.out.println(r.get());
@@ -49,7 +48,7 @@ public class DdlRepositoryHandlerTest {
     public void testShowDatabases() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.action(transaction, () -> {
-            var connection = transaction.getConnection();
+            var connection = transaction.getDriverConnection();
             return ddlRepositoryHandler.showDatabases(connection);
         });
         System.out.println(r);
@@ -59,7 +58,7 @@ public class DdlRepositoryHandlerTest {
     public void testDropDatabase() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
+            var connection = transaction.getDriverConnection();
             return ddlRepositoryHandler.dropDatabase(connection, "hello");
         });
         System.out.println(r);
@@ -69,8 +68,8 @@ public class DdlRepositoryHandlerTest {
     public void testShowTables() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
-            ddlRepositoryHandler.userDatabase(connection, "mysql");
+            var connection = transaction.getDriverConnection();
+            ddlRepositoryHandler.useDatabase(connection, "mysql");
             return ddlRepositoryHandler.showTables(connection);
         });
         System.out.println(r);
@@ -80,12 +79,12 @@ public class DdlRepositoryHandlerTest {
     public void testCreateTable() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
-            ddlRepositoryHandler.userDatabase(connection, "test");
+            var connection = transaction.getDriverConnection();
+            // ddlRepositoryHandler.useDatabase(connection, "test");
             // beanInitialization.init(Surname.class);
             // beanFactoryHandler.refreshBeans();
             ddlRepositoryHandler.createTable(connection, Surname.class);
-            return ddlRepositoryHandler.showTables(connection);
+            return ""; // ddlRepositoryHandler.showTables(connection);
         });
         System.out.println(r);
     }
@@ -94,8 +93,8 @@ public class DdlRepositoryHandlerTest {
     public void dropTable() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
-            ddlRepositoryHandler.userDatabase(connection, "test");
+            var connection = transaction.getDriverConnection();
+            ddlRepositoryHandler.useDatabase(connection, "test");
             ddlRepositoryHandler.dropTable(connection, "surname");
             return ddlRepositoryHandler.showTables(connection);
         });

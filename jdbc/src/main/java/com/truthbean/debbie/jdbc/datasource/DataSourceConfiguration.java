@@ -1,7 +1,7 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
-    private String driverName;
+    private DataSourceDriverName driverName;
     private String url;
     private String user;
     private String password;
@@ -41,11 +41,11 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
         this.dataSourceFactoryClass = configuration.dataSourceFactoryClass;
     }
 
-    public String getDriverName() {
+    public DataSourceDriverName getDriverName() {
         return driverName;
     }
 
-    public void setDriverName(String driverName) {
+    public void setDriverName(DataSourceDriverName driverName) {
         this.driverName = driverName;
     }
 
@@ -114,5 +114,24 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
             clone = new DataSourceConfiguration(this);
         }
         return clone;
+    }
+
+    @Override
+    public void reset() {
+
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"driverName\":" + driverName +
+                ",\"url\":\"" + url + '\"' +
+                ",\"user\":\"" + user + '\"' +
+                ",\"password\":\"" + password + '\"' +
+                ",\"autoCommit\":" + autoCommit +
+                ",\"defaultTransactionIsolationLevel\":" + defaultTransactionIsolationLevel +
+                ",\"driverProperties\":" + driverProperties +
+                ",\"dataSourceFactoryClass\":" + dataSourceFactoryClass +
+                '}';
     }
 }

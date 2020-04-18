@@ -1,12 +1,9 @@
 package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean
@@ -17,42 +14,60 @@ public final class RouterErrorResponseHandler {
     private RouterErrorResponseHandler() {
     }
 
-    public static RouterInfo resourceNotFound(RouterRequest httpRequest) {
+    public static RouterInfo resourceNotFound(RouterRequest routerRequest) {
         ResponseEntity<Object> data = ResponseHelper.resourcesNotFound();
-        Map<String, String> value = new HashMap<>();
-        value.put("uri", httpRequest.getUrl());
-        value.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        value.put("method", httpRequest.getMethod().name());
+
+        var value = new ErrorResponseData();
+        value.setUri(routerRequest.getUrl());
+        value.setTimestamp(System.currentTimeMillis());
+        value.setMethod(routerRequest.getMethod().name());
         data.setData(value);
 
-        return error(httpRequest, data);
+        return error(routerRequest, data);
     }
 
-    public static RouterInfo exception(RouterRequest httpRequest, Throwable e) {
+    public static RouterInfo exception(RouterRequest routerRequest, Throwable e) {
         ResponseEntity<Object> data = ResponseHelper.error(e.getMessage());
-        Map<String, Object> value = new HashMap<>();
-        value.put("uri", httpRequest.getUrl());
-        value.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        value.put("exception", e);
-        value.put("method", httpRequest.getMethod().name());
+
+        var value = new ErrorResponseData();
+        value.setUri(routerRequest.getUrl());
+        value.setTimestamp(System.currentTimeMillis());
+        value.setException(e);
+        value.setMethod(routerRequest.getMethod().name());
         data.setData(value);
 
-        return error(httpRequest, data);
+        return error(routerRequest, data);
     }
 
-    public static RouterInfo error(RouterRequest httpRequest, ResponseEntity data) {
+    public static RouterInfo error(RouterRequest routerRequest, ResponseEntity data) {
         RouterInfo error = new RouterInfo();
+        error.setRequest(routerRequest);
 
         RouterResponse routerResponse = new RouterResponse();
-        if (httpRequest.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
-            routerResponse.setResponseType(httpRequest.getResponseType());
-            error.setErrorInfo(JacksonUtils.toXml(data));
-        } else {
-            routerResponse.setResponseType(MediaType.APPLICATION_JSON_UTF8);
-            error.setErrorInfo(JacksonUtils.toJson(data));
-        }
+        routerResponse.setError(true);
+        routerResponse.setContent(data);
         error.setResponse(routerResponse);
 
         return error;
+    }
+
+    public static RouterResponse handleError(RouterInfo error, ErrorResponseCallback callback) {
+        RouterRequest request = error.getRequest();
+        RouterResponse response = error.getResponse();
+        Object data = response.getContent();
+
+        if (callback == null) {
+            response.setStatus(HttpStatus.OK);
+            if (request.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
+                String xmlValue = JacksonUtils.toXml(data);
+                response.setResponseType(request.getResponseType());
+                response.setContent(xmlValue);
+            } else {
+                response.setResponseType(MediaType.APPLICATION_JSON_UTF8);
+                response.setContent(JacksonUtils.toJson(data));
+            }
+        } else
+            callback.callback(response);
+        return response;
     }
 }

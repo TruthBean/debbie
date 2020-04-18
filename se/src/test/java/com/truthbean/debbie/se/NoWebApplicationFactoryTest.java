@@ -9,9 +9,7 @@ class NoWebApplicationFactoryTest {
 
     @Test
     public void testConfig() {
-        DebbieApplicationFactory beanFactoryHandler = new DebbieApplicationFactory(NoWebApplicationFactoryTest.class);
-        beanFactoryHandler.config();
-        beanFactoryHandler.callStarter();
+        DebbieApplicationFactory beanFactoryHandler = DebbieApplicationFactory.configure(NoWebApplicationFactoryTest.class);
     }
 
     @Test

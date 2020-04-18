@@ -36,6 +36,9 @@ public class TomcatConfiguration extends AbstractServerConfiguration {
 
     private Charset uriEncoding;
 
+    private boolean cachingAllowed;
+    private Integer cacheMaxSize;
+
     public String getWebappDir() {
         return webappDir;
     }
@@ -74,5 +77,21 @@ public class TomcatConfiguration extends AbstractServerConfiguration {
 
     public void setUriEncoding(Charset uriEncoding) {
         this.uriEncoding = uriEncoding;
+    }
+
+    public boolean isCachingAllowed() {
+        return cachingAllowed;
+    }
+
+    public void setCachingAllowed(boolean cachingAllowed) {
+        this.cachingAllowed = cachingAllowed;
+    }
+
+    public Integer getCacheMaxSize() {
+        return cacheMaxSize;
+    }
+
+    public void setCacheMaxSize(Integer cacheMaxSize) {
+        this.cacheMaxSize = cacheMaxSize;
     }
 }

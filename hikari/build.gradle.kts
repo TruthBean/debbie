@@ -1,8 +1,8 @@
 dependencies {
-    implementation(project(":debbie-jdbc"))
+    api(project(":debbie-jdbc"))
 
     val hikariVersion: String by project
-    implementation("com.zaxxer:HikariCP:$hikariVersion") {
+    api("com.zaxxer:HikariCP:$hikariVersion") {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
 

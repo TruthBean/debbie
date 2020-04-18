@@ -1,5 +1,5 @@
 plugins {
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("io.spring.dependency-management") version "1.0.9.RELEASE"
 }
 dependencyManagement {
     dependencies {
@@ -7,10 +7,19 @@ dependencyManagement {
         val asmVersion: String by project
         dependency("org.ow2.asm:asm:$asmVersion")
         val jacksonVersion: String by project
+        dependency("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+        dependency("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+        dependency("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+        dependency("com.fasterxml.jackson.module:jackson-module-afterburner:$jacksonVersion")
+        val snakeyamlVersion: String by project
+        dependency("org.yaml:snakeyaml:$snakeyamlVersion")
         val slf4jVersion: String by project
         dependency("org.slf4j:slf4j-api:$slf4jVersion")
+
+        val injectVersion: String by project
+        dependency("javax.inject:javax.inject:$injectVersion")
 
         // core-test
         val jupiterVersion: String by project
@@ -33,6 +42,8 @@ dependencyManagement {
         dependency("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
         val postgresqlVersion: String by project
         dependency("org.postgresql:postgresql:$postgresqlVersion")
+        val sqliteVersion: String by project
+        dependency("org.xerial:sqlite-jdbc:$sqliteVersion")
 
         // hikari
         val hikariVersion: String by project

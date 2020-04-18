@@ -2,9 +2,10 @@ package com.truthbean.debbie.mvc.filter;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.mvc.MvcConfiguration;
+import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
+import com.truthbean.debbie.reflection.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +36,54 @@ public class RouterFilterManager {
         FILTERS.add(filterInfo);
     }
 
+    public static void registerCharacterEncodingFilter(MvcConfiguration configuration, String... urlPatterns) {
+        RouterFilterInfo info = new RouterFilterInfo();
+        info.setConfiguration(configuration);
+        info.setRouterFilterType(CharacterEncodingFilter.class);
+        info.setFilterInstance(new CharacterEncodingFilter().setMvcConfiguration(configuration));
+        info.setName("characterEncodingFilter");
+        info.setOrder(-5);
+        registerFilter(info, urlPatterns);
+    }
+
+    public static void registerCorsFilter(MvcConfiguration configuration, String... urlPatterns) {
+        RouterFilterInfo info = new RouterFilterInfo();
+        info.setConfiguration(configuration);
+        info.setRouterFilterType(CorsFilter.class);
+        info.setFilterInstance(new CorsFilter().setMvcConfiguration(configuration));
+        info.setName("corsFilter");
+        info.setOrder(-4);
+        registerFilter(info, urlPatterns);
+    }
+
+    public static void registerSecurityFilter(MvcConfiguration configuration, String... urlPatterns) {
+        RouterFilterInfo info = new RouterFilterInfo();
+        info.setConfiguration(configuration);
+        info.setRouterFilterType(SecurityFilter.class);
+        info.setFilterInstance(new SecurityFilter().setMvcConfiguration(configuration));
+        info.setName("securityFilter");
+        info.setOrder(-3);
+        registerFilter(info, urlPatterns);
+    }
+
+    public static void registerCsrfFilter(MvcConfiguration configuration, String... urlPatterns) {
+        RouterFilterInfo info = new RouterFilterInfo();
+        info.setConfiguration(configuration);
+        info.setRouterFilterType(CsrfFilter.class);
+        info.setFilterInstance(new CsrfFilter().setMvcConfiguration(configuration));
+        info.setName("csrfFilter");
+        info.setOrder(-2);
+        registerFilter(info, urlPatterns);
+    }
+
     @SuppressWarnings("unchecked")
     private static Set<DebbieBeanInfo<? extends RouterFilter>> change(Set<DebbieBeanInfo<?>> raw) {
         Set<DebbieBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
         if (raw != null && !raw.isEmpty()) {
             for (var beanInfo : raw) {
-                result.add((DebbieBeanInfo<? extends RouterFilter>) beanInfo);
+                Class<?> beanClass = beanInfo.getBeanClass();
+                if (RouterFilter.class.isAssignableFrom(beanClass))
+                    result.add((DebbieBeanInfo<? extends RouterFilter>) beanInfo);
             }
         }
         return result;

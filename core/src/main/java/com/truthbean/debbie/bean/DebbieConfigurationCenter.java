@@ -10,7 +10,7 @@ import java.util.Map;
  * @since 0.0.2
  */
 public class DebbieConfigurationCenter {
-    private static Map<Class<? extends DebbieConfiguration>, DebbieConfiguration> configurations = new HashMap<>();
+    private static final Map<Class<? extends DebbieConfiguration>, DebbieConfiguration> configurations = new HashMap<>();
 
     public static <C extends DebbieConfiguration> void addConfiguration(C configuration) {
         configurations.put(configuration.getClass(), configuration);

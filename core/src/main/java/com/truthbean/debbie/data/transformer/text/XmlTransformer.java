@@ -12,12 +12,14 @@ import java.util.Map;
  */
 public class XmlTransformer<T> implements DataTransformer<T, String> {
 
-    private Class<T> clazz;
-    public XmlTransformer(Class<T> clazz) {
-        this.clazz = clazz;
+    private final Class<T> type;
+
+    public XmlTransformer(Class<T> type) {
+        this.type = type;
     }
+
     public XmlTransformer() {
-        clazz = (Class<T>) Map.class;
+        type = (Class<T>) Map.class;
     }
 
     @Override
@@ -27,6 +29,6 @@ public class XmlTransformer<T> implements DataTransformer<T, String> {
 
     @Override
     public T reverse(String transformer) {
-        return JacksonUtils.xmlToBean(transformer, this.clazz);
+        return JacksonUtils.xmlToBean(transformer, this.type);
     }
 }

@@ -1,6 +1,5 @@
 package com.truthbean.debbie.data.transformer;
 
-import com.truthbean.debbie.data.transformer.date.DefaultTimeTransformer;
 import com.truthbean.debbie.data.transformer.text.DefaultTextTransformer;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -12,7 +11,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -36,7 +34,8 @@ public class DataTransformerFactory {
         var support = transformerClass != null && !transformerClass.isInterface()
                 && !transformerClass.isAnnotation() && !transformerClass.isEnum()
                 && !Modifier.isAbstract(transformerClass.getModifiers())
-                && DataTransformer.class.isAssignableFrom(transformerClass);
+                && DataTransformer.class.isAssignableFrom(transformerClass)
+                && transformerClass.getAnnotation(Transformer.class) != null;
         if (support) {
             ClassInfo<DT> classInfo = new ClassInfo<>(transformerClass);
             DT transformer = ReflectionHelper.newInstance(transformerClass);
@@ -49,6 +48,7 @@ public class DataTransformerFactory {
         cache.put(transformer, types);
     }
 
+    @SuppressWarnings("unchecked")
     public static <O, T> T transform(final O origin, final Class<T> target) {
         if (origin == null) return null;
         final Class<?> originType = origin.getClass();

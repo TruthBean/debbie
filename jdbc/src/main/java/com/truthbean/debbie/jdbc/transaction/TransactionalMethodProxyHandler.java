@@ -2,9 +2,12 @@ package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.datasource.DriverConnection;
+import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.proxy.MethodProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +67,15 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     public void before() {
         LOGGER.debug("running before method (" + transactionInfo.getMethod() + ") invoke ..");
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
+        DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, beanFactoryHandler);
+
         DataSourceFactory factory = beanInitialization.getRegisterBean(DataSourceFactory.class);
-        transactionInfo.setConnection(factory.getConnection());
+        DriverConnection driverConnection = new DriverConnection();
+        driverConnection.setDriverName(configuration.getDriverName());
+        driverConnection.setConnection(factory.getConnection());
+        transactionInfo.setConnection(driverConnection);
+
         if (jdbcTransactional == null && classJdbcTransactional == null) {
             throw new MethodNoJdbcTransactionalException();
         } else if (jdbcTransactional == null && !classJdbcTransactional.readonly()) {

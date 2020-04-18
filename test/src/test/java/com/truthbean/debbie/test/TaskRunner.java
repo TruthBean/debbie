@@ -11,7 +11,7 @@ import com.truthbean.debbie.task.DebbieTask;
 @BeanComponent(lazy = false, type = BeanType.SINGLETON)
 public class TaskRunner {
 
-    @DebbieTask
+    @DebbieTask(async = true)
     public void task() {
         var thread = new Thread(() -> {
             try {

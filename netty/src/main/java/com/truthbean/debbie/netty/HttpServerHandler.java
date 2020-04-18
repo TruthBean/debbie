@@ -4,17 +4,20 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
-import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.filter.RouterFilterHandler;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +156,10 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
             var filter = new RouterFilterHandler(filterInfo, beanFactoryHandler);
-            filter.postRouter(request, response);
+            Boolean router = filter.postRouter(request, response);
+            if (router != null && router == true) {
+                break;
+            }
         }
     }
 
@@ -180,6 +186,10 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             RouterSession session = routerRequest.getSession();
             if (session != null) {
                 response.headers().add(COOKIE, session.getId());
+            }
+
+            if (responseType == null) {
+                responseType = configuration.getDefaultContentType();
             }
 
             response.headers().set(CONTENT_TYPE, responseType.toString());

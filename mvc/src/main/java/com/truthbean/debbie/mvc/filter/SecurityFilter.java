@@ -14,6 +14,8 @@ public class SecurityFilter implements RouterFilter {
 
     private MvcConfiguration configuration;
 
+    private boolean attacked;
+
     @Override
     public SecurityFilter setMvcConfiguration(MvcConfiguration configuration) {
         this.configuration = configuration;
@@ -24,7 +26,7 @@ public class SecurityFilter implements RouterFilter {
     public boolean preRouter(RouterRequest request, RouterResponse response) {
         if (!this.configuration.isEnableSecurity()) return true;
         String userAgent = request.getHeader().getHeader("user-agent");
-        boolean attacked = userAgent != null && (
+        this.attacked = userAgent != null && (
                 userAgent.startsWith("$")
                         || userAgent.startsWith("Java") || userAgent.startsWith("Jakarta")
                 || userAgent.startsWith("Ruby")
@@ -54,8 +56,15 @@ public class SecurityFilter implements RouterFilter {
                 || "Poirot".equalsIgnoreCase(userAgent) || "searchbot admin@google.com".equalsIgnoreCase(userAgent)
                 || "sogou develop spider".equalsIgnoreCase(userAgent) || "WEP Search 00".equalsIgnoreCase(userAgent)
                 );
-        response.setStatus(HttpStatus.FORBIDDEN);
-        response.setContent("You are banned from this site.  Please contact via a \n" + "different client configuration if you believe that this is a mistake.");
-        return attacked;
+        return this.attacked;
+    }
+
+    @Override
+    public Boolean postRouter(RouterRequest request, RouterResponse response) {
+        if (this.attacked) {
+            response.setStatus(HttpStatus.FORBIDDEN);
+            response.setContent("You are banned from this site.  Please contact via a \n" + "different client configuration if you believe that this is a mistake.");
+        }
+        return this.attacked;
     }
 }

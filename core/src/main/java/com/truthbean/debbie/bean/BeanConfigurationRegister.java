@@ -1,18 +1,26 @@
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author TruthBean
  * @since 0.0.2
  */
 public class BeanConfigurationRegister {
+
+    public final ResourceResolver resourceResolver;
+    public final BeanRegisterCenter beanRegisterCenter;
+
+    public BeanConfigurationRegister(BeanRegisterCenter beanRegisterCenter, ResourceResolver resourceResolver) {
+        this.resourceResolver = resourceResolver;
+        this.beanRegisterCenter = beanRegisterCenter;
+    }
 
     public void register(Class<?>... classes) {
         if (classes != null) {
@@ -39,14 +47,14 @@ public class BeanConfigurationRegister {
     }
 
     public void register(String packageName, ClassLoader classLoader) {
-        var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+        var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
         if (!allClass.isEmpty()) {
             register(allClass);
         }
     }
 
     public <C> void registerConfiguration(Class<C> beanConfigurationClass) {
-        if (BeanRegisterCenter.support(beanConfigurationClass)
+        if (beanRegisterCenter.support(beanConfigurationClass)
                 && beanConfigurationClass.getAnnotation(BeanConfiguration.class) != null) {
             ClassInfo<C> classInfo = new ClassInfo<>(beanConfigurationClass);
             C configuration = ReflectionHelper.newInstance(beanConfigurationClass);
@@ -74,7 +82,7 @@ public class BeanConfigurationRegister {
                 beanInfo.setBeanName(name);
                 beanInfo.setBeanType(BeanType.SINGLETON);
                 beanInfo.setBean(ReflectionHelper.invokeMethod(configuration, method));
-                BeanRegisterCenter.register(beanInfo);
+                beanRegisterCenter.register(beanInfo);
             }
         }
     }

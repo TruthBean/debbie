@@ -14,15 +14,15 @@ import java.util.UUID;
  */
 public class SimpleRouterSession implements RouterSession {
 
-    private String id;
+    private final String id;
 
-    private Long createTime;
+    private final Long createTime;
 
     private Long lastAccessedTime;
 
     private Long maxInactiveInterval;
 
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     private boolean invalidate;
 

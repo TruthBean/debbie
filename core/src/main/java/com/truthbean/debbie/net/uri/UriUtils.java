@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -71,6 +72,19 @@ public final class UriUtils {
     private UriUtils() {
     }
 
+    /**
+     * Determine whether the given URL points to a resource in a jar file.
+     * i.e. has protocol "jar", "war, ""zip", "vfszip" or "wsjar".
+     * @param url the URL to check
+     * @return whether the URL has been identified as a JAR URL
+     */
+    public static boolean isJarURL(URL url) {
+        String protocol = url.getProtocol();
+        return (UriUtils.URL_PROTOCOL_JAR.equals(protocol) || UriUtils.URL_PROTOCOL_WAR.equals(protocol) ||
+                UriUtils.URL_PROTOCOL_ZIP.equals(protocol) || UriUtils.URL_PROTOCOL_VFSZIP.equals(protocol) ||
+                UriUtils.URL_PROTOCOL_WSJAR.equals(protocol));
+    }
+
     public static UriComposition resolveUrl(String url, Charset charset) {
         var encodedUrl = URLEncoder.encode(url, charset);
         try {
@@ -80,6 +94,16 @@ public final class UriUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Set the {@link URLConnection#setUseCaches "useCaches"} flag on the
+     * given connection, preferring {@code false} but leaving the
+     * flag at {@code true} for JNLP based resources.
+     * @param con the URLConnection to set the flag on
+     */
+    public static void useCachesIfNecessary(URLConnection con) {
+        con.setUseCaches(con.getClass().getSimpleName().startsWith("JNLP"));
     }
 
     public static UriComposition resolveUrl(URL url) {

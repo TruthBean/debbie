@@ -1,13 +1,7 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

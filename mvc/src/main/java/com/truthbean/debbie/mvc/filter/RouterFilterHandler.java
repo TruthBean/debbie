@@ -13,17 +13,20 @@ import java.util.regex.Pattern;
  * Created on 2019/05/25 15:57.
  */
 public class RouterFilterHandler {
-    private RouterFilterInfo filterInfo;
+    private final RouterFilterInfo filterInfo;
 
-    private RouterFilter routerFilter;
+    private final RouterFilter routerFilter;
 
 
     public RouterFilterHandler(RouterFilterInfo routerFilterInfo, BeanFactoryHandler handler) {
         this.filterInfo = routerFilterInfo;
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
-        routerFilter = handler.factory(routerFilterType);
+        RouterFilter routerFilter = filterInfo.getFilterInstance();
+        if (routerFilter == null)
+            routerFilter = handler.factory(routerFilterType);
         routerFilter.setMvcConfiguration(this.filterInfo.getConfiguration());
+        this.routerFilter = routerFilter;
     }
 
     public Boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
@@ -46,8 +49,8 @@ public class RouterFilterHandler {
         return null;
     }
 
-    public void postRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
-        routerFilter.postRouter(routerRequest, routerResponse);
+    public Boolean postRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
+        return routerFilter.postRouter(routerRequest, routerResponse);
     }
 
 }

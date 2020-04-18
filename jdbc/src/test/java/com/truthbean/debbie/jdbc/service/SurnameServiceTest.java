@@ -2,6 +2,7 @@ package com.truthbean.debbie.jdbc.service;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,7 @@ class SurnameServiceTest {
 
     @BeforeAll
     static void before() {
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(SurnameServiceTest.class);
-        factory.config();
-        factory.callStarter();
+        var factory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
         BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
         surnameService = beanFactoryHandler.factory("surnameService");

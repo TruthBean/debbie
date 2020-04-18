@@ -9,15 +9,10 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  * @since 0.0.2
  */
 public class UndertowModuleStarter implements DebbieModuleStarter {
-    @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(UndertowProperties.class);
-    }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(UndertowProperties.class, UndertowConfiguration.class);
     }
 
     @Override
@@ -25,8 +20,4 @@ public class UndertowModuleStarter implements DebbieModuleStarter {
         return 32;
     }
 
-    @Override
-    public void release() {
-
-    }
 }

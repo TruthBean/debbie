@@ -1,5 +1,8 @@
 package com.truthbean.debbie.jdbc.datasource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.sql.DataSource;
 
 /**
@@ -8,6 +11,7 @@ import javax.sql.DataSource;
  */
 public class DefaultDataSourceFactory implements DataSourceFactory {
     private DataSource dataSource;
+    private DataSourceDriverName driverName;
 
     @Override
     public DataSourceFactory factory(DataSource dataSource) {
@@ -18,6 +22,7 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     @Override
     public DataSourceFactory factory(DataSourceConfiguration configuration) {
         this.dataSource = new DefaultDataSource(configuration);
+        this.driverName = configuration.getDriverName();
         return this;
     }
 
@@ -25,4 +30,16 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     public DataSource getDataSource() {
         return dataSource;
     }
+
+    @Override
+    public DataSourceDriverName getDriverName() {
+        return driverName;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultDataSourceFactory.class);
 }

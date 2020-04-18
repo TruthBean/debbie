@@ -2,7 +2,6 @@ package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -11,12 +10,12 @@ public class EventTest {
     public void testEvent() {
         long start = System.currentTimeMillis();
         DebbieEventMulticaster eventMulticaster = new DefaultEventMulticaster();
-        eventMulticaster.addEventListener(new TestEventListener());
+        // eventMulticaster.addEventListener(new TestEventListener());
         eventMulticaster.addEventListener(new Test2EventListener());
 
         long start1 = System.currentTimeMillis();
-        TestEvent testEvent = new TestEvent(this, "test22222");
-        eventMulticaster.multicastEvent(testEvent);
+        // TestEvent testEvent = new TestEvent(this, "test22222");
+        // eventMulticaster.multicastEvent(testEvent);
         long end = System.currentTimeMillis();
         System.out.println(end - start1);
         System.out.println(end - start);
@@ -25,10 +24,7 @@ public class EventTest {
     @Test
     public void testEventListenerBeans() {
         long start = System.currentTimeMillis();
-        ClassLoader classLoader = ClassLoaderUtils.getClassLoader(EventTest.class);
-        DebbieApplicationFactory factory = new DebbieApplicationFactory(classLoader);
-        factory.config(EventTest.class);
-        factory.callStarter();
+        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(EventTest.class);
 
         BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
 

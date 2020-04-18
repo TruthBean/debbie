@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +28,7 @@ public class BaseProperties {
     /**
      * properties变量名称正则
      */
-    private static Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
 
     /**
      * properties
@@ -160,7 +159,7 @@ public class BaseProperties {
 
     public Map<String, String> getMatchedKey(String keyPrefix) {
         if (keyPrefix == null || keyPrefix.isBlank()) {
-            throw new RuntimeException("illegal keyPrefix");
+            throw new PropertiesException("illegal keyPrefix");
         }
         var properties = getProperties();
         Map<String, String> result = new HashMap<>();
@@ -174,7 +173,7 @@ public class BaseProperties {
 
     public String getValue(String key) {
         if (key == null || key.isBlank()) {
-            throw new RuntimeException("illegal key");
+            throw new PropertiesException("illegal key");
         }
         var properties = getProperties();
         String value = null;
@@ -275,7 +274,7 @@ public class BaseProperties {
     public String[] getStringArrayValue(String key, String split) {
         var value = getValue(key);
         if (split == null || split.isBlank()) {
-            throw new RuntimeException("illegal split");
+            throw new PropertiesException("illegal split");
         }
         if (value != null) {
             return value.split(split);
@@ -302,7 +301,7 @@ public class BaseProperties {
     public Map<String, String> getMapValue(String key, String keyValueSplit, String split) {
         var value = getValue(key);
         if (split == null || split.isBlank()) {
-            throw new RuntimeException("illegal split");
+            throw new PropertiesException("illegal split");
         }
         if (value != null) {
             String[] splitValue = value.split(split);
@@ -385,7 +384,7 @@ public class BaseProperties {
         return result;
     }
 
-    public void reset() {
+    public static void reset() {
         BaseProperties.PROPERTIES.clear();
     }
 

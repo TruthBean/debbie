@@ -10,24 +10,14 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  * Created on 2019-12-17 20:35
  */
 public class AioModuleStarter implements DebbieModuleStarter {
-    @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler) {
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        configurationFactory.register(AioServerProperties.class);
-    }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+        configurationFactory.register(AioServerProperties.class, AioServerConfiguration.class);
     }
 
     @Override
     public int getOrder() {
         return 35;
-    }
-
-    @Override
-    public void release() {
-
     }
 }

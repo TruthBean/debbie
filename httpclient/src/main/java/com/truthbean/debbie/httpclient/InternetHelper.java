@@ -1,0 +1,66 @@
+package com.truthbean.debbie.httpclient;
+
+import com.truthbean.debbie.net.NetWorkUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.regex.Matcher;
+
+/**
+ * @author truthbean/Rogar·Q
+ * @since 0.0.2
+ * Created on 2020-04-02 14:05.
+ */
+public class InternetHelper extends NetWorkUtils {
+
+    private final HttpConnectionHandler handler;
+
+    public InternetHelper(HttpClientConfiguration configuration) {
+        super();
+        this.handler = new HttpConnectionHandler(configuration);
+    }
+
+    /**
+     * @return 外网IP
+     */
+    public String getInternetIp() {
+        String remoteUrl = "http://icanhazip.com";
+        String ip = getInternetIp(remoteUrl);
+        if (ip != null) {
+            return ip;
+        }
+
+        remoteUrl = "http://ip.3322.net";
+        ip = getInternetIp(remoteUrl);
+        if (ip != null) {
+            return ip;
+        }
+
+        remoteUrl = "http://myip.dnsomatic.com";
+        ip = getInternetIp(remoteUrl);
+        if (ip != null) {
+            return ip;
+        }
+
+        return getLocalIpv4Address().getHostAddress();
+    }
+
+    private String getInternetIp(String remoteUrl) {
+        try {
+            String ip = this.handler.get(remoteUrl);
+            if (ip != null) {
+                LOGGER.trace("internet ip: " + ip);
+                Matcher matcher = IPV4_PATTERN.matcher(ip);
+                if (matcher.find()) {
+                    return matcher.group();
+                }
+            }
+            return null;
+        } catch (Throwable e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternetHelper.class);
+}

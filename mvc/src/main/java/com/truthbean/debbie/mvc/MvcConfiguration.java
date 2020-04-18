@@ -1,6 +1,7 @@
 package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -20,7 +21,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * static resources mapping
      */
-    private Map<String, String> staticResourcesMappingLocation = new HashMap<>();
+    private final Map<String, String> staticResourcesMappingLocation = new HashMap<>();
 
     /**
      * dynamic router dispatcher mapping
@@ -201,9 +202,13 @@ public class MvcConfiguration extends BeanScanConfiguration {
     public Map<String, String> getCors() {
         if (enableCors) {
             Map<String, String> map = new HashMap<>();
-            map.put("Access-Control-Allow-Origin", StringUtils.joining(corsOrigins));
-            map.put("Access-Control-Allow-Methods", StringUtils.joining(corsHeaders));
-            map.put("Access-Control-Allow-Headers", StringUtils.joining(corsMethods));
+            if (corsOrigins != null && !corsOrigins.isEmpty()) {
+                map.put("Access-Control-Allow-Origin", StringUtils.joining(corsOrigins));
+            }
+            if (corsHeaders != null && !corsHeaders.isEmpty())
+                map.put("Access-Control-Allow-Methods", StringUtils.joining(corsHeaders));
+            if (corsMethods != null && !corsMethods.isEmpty())
+                map.put("Access-Control-Allow-Headers", StringUtils.joining(corsMethods));
             return map;
         } else {
             return null;
@@ -220,6 +225,13 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
     public Set<MediaTypeInfo> getDefaultContentTypes() {
         return defaultContentTypes;
+    }
+
+    public MediaTypeInfo getDefaultContentType() {
+        if (this.defaultContentTypes != null && !this.defaultContentTypes.isEmpty())
+            return defaultContentTypes.iterator().next();
+        else
+            return MediaType.ANY.info();
     }
 
     public boolean isAllowClientResponseType() {
@@ -244,7 +256,6 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
         public Builder enableCors() {
             configuration.enableCors = true;
-            configuration.corsOrigins = Collections.singletonList("*");
             return this;
         }
 

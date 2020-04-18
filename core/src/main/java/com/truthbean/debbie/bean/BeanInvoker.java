@@ -7,7 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author TruthBean
@@ -16,16 +19,17 @@ import java.util.*;
  */
 public class BeanInvoker<Bean> {
     private final Class<Bean> beanClass;
-    private static final Map<String, Method> BEAN_METHODS = new HashMap<>();
+    private final DebbieBeanInfo<Bean> beanInfo;
+    private final Map<String, Method> beanMethods = new HashMap<>();
 
     private Method initMethod;
     private Bean bean;
-    private DebbieBeanInfo<Bean> beanInfo;
 
     public BeanInvoker(Class<Bean> beanClass, BeanFactoryHandler beanFactoryHandler) {
+        BeanInitialization initialization = beanFactoryHandler.getBeanInitialization();
         this.beanClass = beanClass;
-        var methods = BeanRegisterCenter.getBeanMethods(beanClass);
-        this.beanInfo = BeanRegisterCenter.getRegisterRawBean(beanClass);
+        var methods = initialization.getBeanMethods(beanClass);
+        this.beanInfo = initialization.getRegisterRawBean(beanClass);
 
         setMethods(methods);
         if (initMethod != null) {
@@ -55,7 +59,7 @@ public class BeanInvoker<Bean> {
 
     private void setMethods(List<Method> methods) {
         methods.forEach(method -> {
-            BEAN_METHODS.put(method.getName(), method);
+            beanMethods.put(method.getName(), method);
             if (method.getAnnotation(BeanInit.class) != null) {
                 initMethod = method;
             }
@@ -77,6 +81,7 @@ public class BeanInvoker<Bean> {
         this.getFieldsDependent(factoryHandler);
     }
 
+    @SuppressWarnings("unchecked")
     private void resolveConstructorDependent(BeanFactoryHandler beanFactoryHandler,
                                              Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
         try {
@@ -93,24 +98,45 @@ public class BeanInvoker<Bean> {
                     Object[] values = new Object[parameterCount];
                     Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent = new HashMap<>();
 
+                    boolean constructorInject = false;
+                    BeanInject beanInject = constructor.getAnnotation(BeanInject.class);
+                    if (beanInject != null) {
+                        constructorInject = true;
+                    } else {
+                        Class injectClass = beanFactoryHandler.getInjectType();
+                        if (injectClass != null) {
+                            Annotation inject = constructor.getAnnotation(injectClass);
+                            if (inject != null) {
+                                constructorInject = true;
+                            }
+                        }
+                    }
+
                     Parameter[] parameters = constructor.getParameters();
                     String[] names = new String[parameterCount];
                     for (int i = 0; i < parameterCount; i++) {
                         Parameter parameter = parameters[i];
+
+                        var type = parameter.getType();
+                        boolean required = false;
+                        String name = null;
                         BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                         if (annotation != null) {
-                            String name = annotation.name();
+                            name = annotation.name();
                             if (name.isBlank()) {
                                 name = annotation.value();
                             }
                             if (name.isBlank()) {
-                                names[i] = parameter.getType().getName();
+                                names[i] = type.getName();
                             } else {
                                 names[i] = name;
                             }
-                            // todo
-                            DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, parameter.getType(), annotation.require());
-                            if (beanInfo == null && annotation.require()) {
+                            required = annotation.require();
+                        }
+
+                        if (annotation != null || constructorInject) {
+                            DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, type, required);
+                            if (beanInfo == null && required) {
                                 throw new NoBeanException("no bean " + names[i] + " found .");
                             } else if (beanInfo != null) {
                                 boolean flag = singletonBeanInvokerMap.containsKey(beanInfo);
@@ -141,6 +167,8 @@ public class BeanInvoker<Bean> {
                     } else {
                         this.beanInfo.setConstructorBeanDependent(constructorBeanDependent);
                     }
+                } else {
+                    this.bean = constructor.newInstance();
                 }
             }
         } catch (Exception e) {
@@ -149,6 +177,7 @@ public class BeanInvoker<Bean> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     void getFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
         try {
             // find all field its has BeanInject or Inject annotation
@@ -185,6 +214,32 @@ public class BeanInvoker<Bean> {
                                 }
                             }
                         }
+                    } else {
+                        Class injectClass = beanFactoryHandler.getInjectType();
+                        if (injectClass == null) continue;
+                        Object inject = field.getAnnotation(injectClass);
+                        if (inject != null) {
+                            String name = fieldType.getName();
+                            var fieldValue = ReflectionHelper.getField(this.bean, field);
+                            if (fieldValue == null) {
+                                var beanInfo = beanFactoryHandler.getBeanInfo(name, fieldType, true);
+                                if (beanInfo == null) {
+                                    throw new NoBeanException("no bean " + name + " found .");
+                                } else {
+                                    var bean = beanInfo.getBean();
+                                    if (bean != null) {
+                                        if (fieldType.isInstance(bean)) {
+                                            ReflectionHelper.setField(this.bean, field, bean);
+                                        } else {
+                                            bean = JdkDynamicProxy.getRealValue(bean);
+                                            ReflectionHelper.setField(this.bean, field, bean);
+                                        }
+                                    } else {
+                                        map.put(field, beanInfo);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -199,34 +254,43 @@ public class BeanInvoker<Bean> {
 
     void createBeanByConstructorDependent() {
         Map<Integer, DebbieBeanInfo<?>> beanDependent = this.beanInfo.getConstructorBeanDependent();
-        Constructor<Bean> constructor = beanInfo.getConstructors()[0];
-        int parameterCount = constructor.getParameterCount();
-        Parameter[] parameters = constructor.getParameters();
+        Constructor<Bean>[] constructors = beanInfo.getConstructors();
+        if (constructors != null && constructors.length > 0) {
+            Constructor<Bean> constructor = constructors[0];
+            int parameterCount = constructor.getParameterCount();
+            Parameter[] parameters = constructor.getParameters();
 
-        Object[] values = new Object[parameterCount];
+            Object[] values = new Object[parameterCount];
 
-        for (int i = 0; i < parameterCount; i++) {
-            Parameter parameter = parameters[i];
-            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
-            if (annotation != null) {
-                var bean = beanDependent.get(i);
-                LOGGER.trace("resolve bean(" + beanClass.getName() + ") constructor dependent " + bean.getServiceName());
-                if (annotation.require() && !bean.isHasVirtualValue() && bean.getBean() == null) {
-                    throw new NoBeanException("bean " + bean.getServiceName() + " value is null .");
-                }
-                if (bean.getBean() != null) {
-                    values[i] = bean.getBean();
+            for (int i = 0; i < parameterCount; i++) {
+                Parameter parameter = parameters[i];
+                BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+                if (annotation != null) {
+                    var bean = beanDependent.get(i);
+                    String serviceName = bean.getServiceName();
+                    LOGGER.trace("resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
+                    Object beanValue = bean.getBean();
+                    if (annotation.require() && !bean.isHasVirtualValue() && beanValue == null) {
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
+                    }
+                    if (beanValue != null) {
+                        LOGGER.trace(serviceName + " hashCode: " + beanValue.hashCode());
+                        values[i] = beanValue;
+                    }
                 }
             }
-        }
-        try {
-            this.bean = constructor.newInstance(values);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-            LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
-            LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
+            try {
+                this.bean = constructor.newInstance(values);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+                LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
+                LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
+            }
+        }  else {
+            throw new BeanCreatedException("No Constructor can be visited in class(" + beanClass.getName() + ")");
         }
     }
 
+    @SuppressWarnings("unchecked")
     void resolveFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
         Map<Field, DebbieBeanInfo<?>> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
         try {
@@ -255,6 +319,27 @@ public class BeanInvoker<Bean> {
                                     ReflectionHelper.setField(this.bean, field, bean);
                                 } else if (annotation.require()) {
                                     throw new NoBeanException("bean " + getBeanInfo().getServiceName() + " field " + name + " required .");
+                                }
+                            }
+                        }
+                    } else {
+                        Class injectClass = beanFactoryHandler.getInjectType();
+                        if (injectClass == null) continue;
+                        Object inject = field.getAnnotation(injectClass);
+                        if (inject != null) {
+                            String name  = fieldType.getName();
+                            var fieldValue = ReflectionHelper.getField(this.bean, field);
+                            if (fieldValue == null) {
+                                DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(field);
+                                if (beanInfo == null) {
+                                    throw new NoBeanException("no bean " + name + " found .");
+                                } else {
+                                    var bean = beanFactoryHandler.factory(beanInfo);
+                                    if (bean != null) {
+                                        ReflectionHelper.setField(this.bean, field, bean);
+                                    } else {
+                                        throw new NoBeanException("bean " + getBeanInfo().getServiceName() + " field " + name + " required .");
+                                    }
                                 }
                             }
                         }
@@ -343,12 +428,12 @@ public class BeanInvoker<Bean> {
     }
 
     public Object invokeMethod(String methodName, Object[] parameters) {
-        var beanMethod = BEAN_METHODS.get(methodName);
+        var beanMethod = beanMethods.get(methodName);
         return invokeMethod(beanMethod, parameters);
     }
 
     public Object invokeMethod(Class<? extends Annotation> methodAnnotation, String methodName, Object[] parameters) {
-        var beanMethod = BEAN_METHODS.get(methodName);
+        var beanMethod = beanMethods.get(methodName);
         // TODO: 2019-11-30  methodAnnotation ???
         return invokeMethod(beanMethod, parameters);
     }

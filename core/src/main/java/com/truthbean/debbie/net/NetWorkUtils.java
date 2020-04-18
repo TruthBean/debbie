@@ -4,9 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * @author TruthBean
@@ -21,8 +22,11 @@ public class NetWorkUtils {
     public static final String ANY_IPV4 = "0.0.0.0";
     public static final String ANY_IPV6 = "0:0:0:0:0:0:0:0";
 
-    private static final Pattern IPV4_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-    private static final Pattern IPV6_PATTERN = Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
+    public static final Pattern IPV4_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
+    public static final Pattern IPV6_PATTERN = Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
+
+    protected NetWorkUtils() {
+    }
 
     public static boolean isValidIpv4Address(InetAddress address) {
         if (address == null || address.isLoopbackAddress() || address instanceof Inet6Address) {

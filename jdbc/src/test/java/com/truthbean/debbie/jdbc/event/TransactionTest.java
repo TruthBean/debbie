@@ -1,12 +1,8 @@
 package com.truthbean.debbie.jdbc.event;
 
-import com.truthbean.debbie.bean.BeanInit;
-import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.boot.DebbieBootApplication;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author truthbean/Rogar·Q

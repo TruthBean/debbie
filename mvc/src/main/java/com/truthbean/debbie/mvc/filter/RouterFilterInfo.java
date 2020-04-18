@@ -17,8 +17,8 @@ public class RouterFilterInfo implements Comparable<RouterFilterInfo> {
     private Class<? extends RouterFilter> routerFilterType;
     private MvcConfiguration configuration;
 
-    private List<String> rawUrlPattern;
-    private List<Pattern> urlPattern;
+    private final List<String> rawUrlPattern;
+    private final List<Pattern> urlPattern;
 
     private RouterFilter filterInstance;
 

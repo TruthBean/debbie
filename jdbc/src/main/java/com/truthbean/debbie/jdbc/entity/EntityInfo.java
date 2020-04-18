@@ -1,6 +1,7 @@
 package com.truthbean.debbie.jdbc.entity;
 
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 
 import java.util.List;
 
@@ -11,6 +12,8 @@ import java.util.List;
  */
 public class EntityInfo<E> {
     private Class<E> javaType;
+
+    private DataSourceDriverName driverName;
     private String table;
 
     private ColumnInfo primaryKey;
@@ -19,6 +22,14 @@ public class EntityInfo<E> {
 
     private String charset;
     private String engine;
+
+    public DataSourceDriverName getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(DataSourceDriverName driverName) {
+        this.driverName = driverName;
+    }
 
     public String getTable() {
         return table;

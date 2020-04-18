@@ -8,7 +8,6 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
-import com.truthbean.debbie.task.DebbieTaskStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,6 +35,10 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
         var beanInitialization = beanFactoryHandler.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
+        RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
+        RouterFilterManager.registerCorsFilter(configuration, "/**");
+        RouterFilterManager.registerCsrfFilter(configuration, "/**");
+        RouterFilterManager.registerSecurityFilter(configuration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
         try {
             return new AioServerApplication(beanFactoryHandler, configuration, sessionManager);
@@ -76,55 +78,57 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
             server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
         }
 
-        private Thread thread = Thread.currentThread();
-        private final Thread watcherThread = new Thread(() -> {
-            LOGGER.info("type 'ENTER' to finished server");
-            try {
-                System.in.read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, "Aio-Server-Watcher");
+        private volatile boolean running;
+        private ThreadGroup threadGroup = new ThreadGroup("aio-server-application");
+        private volatile Thread starterThread;
+        private volatile Thread destroyerThread;
 
         @Override
         protected void start(long beforeStartTime, String... args) {
-            thread = new Thread(this);
-            var taskStarter = new DebbieTaskStarter();
-            taskStarter.start(beanFactoryHandler);
+            starterThread = new Thread(threadGroup, this);
+            // starterThread.setDaemon(true);
             LOGGER.debug("aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             beforeStart(LOGGER, beanFactoryHandler);
             printlnWebUrl(LOGGER, configuration.getPort());
             LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-            thread.start();
+
+            destroyerThread = new Thread(threadGroup, this::exit);
+            starterThread.start();
         }
 
         @Override
         public void exit(String... args) {
-            beforeExit(beanFactoryHandler, args);
-            thread.interrupt();
-            watcherThread.interrupt();
+            LOGGER.debug("exit ...");
+            while (running) {
+                running = false;
+                beforeExit(beanFactoryHandler, args);
+                if (starterThread != null && !starterThread.isInterrupted()) {
+                    starterThread.interrupt();
+                }
+                if (destroyerThread != null && !destroyerThread.isInterrupted()) {
+                    destroyerThread.interrupt();
+                }
+            }
         }
 
         @Override
         public void run() {
             try {
+                LOGGER.debug("run .... ");
                 // 为服务端socket指定接收操作对象.accept原型是：
                 // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
                 // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
                 // 即是listener。另一个参数V，就是原型中的客户端socket
                 var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, beanFactoryHandler, server);
                 server.accept(server, mvcCompletionHandler);
+                running = true;
 
-                Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-                watcherThread.start();
+                Runtime.getRuntime().addShutdownHook(destroyerThread);
+
+                starterThread.join();
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
-        }
-
-        private void stop() {
-            thread.interrupt();
-            watcherThread.interrupt();
         }
     }
 

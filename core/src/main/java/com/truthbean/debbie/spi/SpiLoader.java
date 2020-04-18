@@ -83,7 +83,7 @@ public class SpiLoader {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
 
         return result;
@@ -110,7 +110,7 @@ public class SpiLoader {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
 
         return result;
@@ -125,7 +125,7 @@ public class SpiLoader {
             try {
                 propertiesClass = (Class<P>) classLoader.loadClass(split[0]);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
 
             Class<?> configClass = null;

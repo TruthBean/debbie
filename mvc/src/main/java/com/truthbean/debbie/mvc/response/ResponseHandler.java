@@ -10,7 +10,9 @@ import java.nio.ByteBuffer;
  */
 public interface ResponseHandler {
 
-    default void handle(RouterResponse response) {
+    void changeResponseWithoutContent(RouterResponse routerResponse);
+
+    default void handle(RouterResponse response, MediaTypeInfo defaultResponseType) {
 
         Object responseData = response.getContent();
         MediaTypeInfo responseType = response.getResponseType();
@@ -21,6 +23,9 @@ public interface ResponseHandler {
         if (responseData instanceof byte[]) {
             response.setContent(response);
         } else {
+            if (responseType == null) {
+                responseType = defaultResponseType;
+            }
             response.addHeader("Content-Type", responseType.toString());
             if (responseData != null) {
                 response.setContent(responseData.toString());

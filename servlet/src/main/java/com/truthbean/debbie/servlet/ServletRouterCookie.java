@@ -9,8 +9,8 @@ import java.net.HttpCookie;
  * Created on 2019/3/24 11:34.
  */
 public class ServletRouterCookie {
-    private HttpCookie httpCookie;
-    private Cookie cookie;
+    private final HttpCookie httpCookie;
+    private final Cookie cookie;
 
     public ServletRouterCookie(Cookie cookie) {
         this.cookie = cookie;

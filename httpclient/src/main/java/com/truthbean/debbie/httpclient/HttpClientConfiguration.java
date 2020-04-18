@@ -115,4 +115,9 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     public void setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

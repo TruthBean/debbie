@@ -2,9 +2,10 @@ package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanClosure;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+import org.slf4j.Logger;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -58,13 +59,21 @@ public interface DataSourceFactory extends BeanClosure {
      */
     DataSource getDataSource();
 
+    DataSourceDriverName getDriverName();
+
+    Logger getLogger();
+
     default TransactionInfo getTransaction() {
         try {
+            DataSourceDriverName driverName = getDriverName();
             TransactionInfo transactionInfo = new TransactionInfo();
-            transactionInfo.setConnection(getDataSource().getConnection());
+            DriverConnection connection = new DriverConnection();
+            connection.setConnection(getDataSource().getConnection());
+            connection.setDriverName(driverName);
+            transactionInfo.setConnection(connection);
             return transactionInfo;
         } catch (SQLException e) {
-            e.printStackTrace();
+            getLogger().error("", e);
         }
         return null;
     }
@@ -73,7 +82,7 @@ public interface DataSourceFactory extends BeanClosure {
         try {
             return getDataSource().getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            getLogger().error("", e);
         }
         return null;
     }

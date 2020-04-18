@@ -4,21 +4,17 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.io.PathUtils;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.util.StringUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.loader.ParallelWebappClassLoader;
-import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.coyote.AbstractProtocol;
-import org.apache.tomcat.JarScanFilter;
-import org.apache.tomcat.JarScanner;
+import org.apache.tomcat.util.descriptor.web.ErrorPage;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
 import org.apache.tomcat.util.scan.StandardJarScanner;
@@ -31,6 +27,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * @author TruthBean
@@ -54,7 +51,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         String webappDir = configuration.getWebappDir();
         var webappPath = new File(webappDir);
         if (!webappPath.exists()) {
-            final String userDir = PathUtils.getUserDir();
+            final String userDir = PathUtils.getUserDir(configuration.getClassLoader());
             if (userDir == null) {
                 try {
                     webappDir = Files.createTempDirectory("default-doc-base").toFile().getAbsolutePath();
@@ -106,7 +103,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         // TODO ssl
     }
 
-    private void config(TomcatConfiguration configuration, ClassLoader classLoader) {
+    private void config(TomcatConfiguration configuration, ClassLoader classLoader, List<ErrorPage> errorPages) {
         if (configuration.isDisableMBeanRegistry()) {
             Registry.disableRegistry();
         }
@@ -141,6 +138,12 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         ctx.setClearReferencesRmiTargets(false);
         ctx.setClearReferencesThreadLocals(false);
 
+        if (errorPages != null && !errorPages.isEmpty()) {
+            for (ErrorPage errorPage : errorPages) {
+                ctx.addErrorPage(errorPage);
+            }
+        }
+
         ctx.setParentClassLoader(classLoader);
         try {
             String path;
@@ -156,6 +159,8 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
             // Declare an alternative location for your "WEB-INF/classes" dir
             // Servlet 3.0 annotation will work
             WebResourceRoot resources = new StandardRoot(ctx);
+            resources.setCachingAllowed(configuration.isCachingAllowed());
+            resources.setCacheMaxSize(configuration.getCacheMaxSize());
             resources.addPreResources(new DirResourceSet(resources, "/WEB-INF/classes", path, "/"));
             ctx.setResources(resources);
         } catch (Exception e) {
@@ -163,7 +168,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         }
 
         server.setBaseDir(webappDir);
-        LOGGER.debug("webapp: " + webappDir);
+        LOGGER.info("webapp: " + webappDir);
         LOGGER.debug("tomcat config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
     }
 
@@ -171,13 +176,14 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
     public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
                                      ClassLoader classLoader) {
         TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, beanFactoryHandler);
-        config(configuration, classLoader);
+        List<ErrorPage> errorPages = beanFactoryHandler.getBeanList(ErrorPage.class);
+        config(configuration, classLoader, errorPages);
         return tomcatApplication(configuration, beanFactoryHandler);
     }
 
     private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
         return new DebbieApplication() {
-            private boolean exited = false;
+            private volatile boolean exited = false;
             @Override
             public void start(long beforeStartTime, String... args) {
                 try {
@@ -189,7 +195,11 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
                     LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
                 } catch (LifecycleException e) {
-                    LOGGER.error("tomcat start error", e);
+                    Throwable cause = e.getCause();
+                    if (cause == null) {
+                        cause = e;
+                    }
+                    LOGGER.error("tomcat start error", cause);
                 }
             }
 

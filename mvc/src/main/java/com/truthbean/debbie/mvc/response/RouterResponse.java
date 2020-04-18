@@ -34,6 +34,8 @@ public class RouterResponse implements Cloneable {
     private Charset charset;
     private HttpStatus status;
 
+    private boolean error;
+
     public boolean isRedirect() {
         return redirect;
     }
@@ -166,6 +168,14 @@ public class RouterResponse implements Cloneable {
         this.restResponseClass = restResponseClass;
     }
 
+    public boolean isError() {
+        return error;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
+    }
+
     public void copyFrom(RouterResponse response) {
         this.redirect = response.redirect;
         this.headers.putAll(response.headers);
@@ -183,6 +193,8 @@ public class RouterResponse implements Cloneable {
         this.restResponseClass = response.restResponseClass;
 
         this.status = response.status;
+
+        this.error = response.error;
     }
 
     @Override
@@ -205,6 +217,8 @@ public class RouterResponse implements Cloneable {
         response.templateSuffix = this.templateSuffix;
 
         response.status = this.status;
+
+        response.error = this.error;
 
         return response;
     }
