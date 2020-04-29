@@ -1,0 +1,90 @@
+package com.truthbean.debbie.reflection;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Objects;
+
+/**
+ * 解决override问题
+ * @author truthbean/Rogar·Q
+ * @since 0.0.2
+ * Created on 2020-04-26 19:03.
+ */
+public class MethodInfo {
+    private final Annotation[] annotations;
+    private final int modifiers;
+    private final String name;
+    private final Class<?> returnType;
+    private final Class<?>[] paramTypes;
+    private final Class<?>[] exceptionTypes;
+    private final Method method;
+    private final Class<?> declaringClass;
+
+    public MethodInfo(Method method) {
+        this.method = method;
+        this.annotations = method.getDeclaredAnnotations();
+        this.modifiers = method.getModifiers();
+        this.name = method.getName();
+        this.returnType = method.getReturnType();
+        this.paramTypes = method.getParameterTypes();
+        this.exceptionTypes = method.getExceptionTypes();
+
+        this.declaringClass = method.getDeclaringClass();
+    }
+
+    public Annotation[] getAnnotations() {
+        return annotations;
+    }
+
+    public int getModifiers() {
+        return modifiers;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Class<?> getReturnType() {
+        return returnType;
+    }
+
+    public Class<?> getReturnWrapperType() {
+        if (TypeHelper.isRawBaseType(returnType)) {
+            return TypeHelper.getWrapperClass(returnType);
+        }
+        return returnType;
+    }
+
+    public Class<?>[] getParamTypes() {
+        return paramTypes;
+    }
+
+    public boolean hasParams() {
+        return paramTypes != null && paramTypes.length > 0 && (paramTypes.length == 1 ? paramTypes[0] != null : false);
+    }
+
+    public Class<?>[] getExceptionTypes() {
+        return exceptionTypes;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MethodInfo that = (MethodInfo) o;
+        return Objects.equals(name, that.name) &&
+                Arrays.equals(paramTypes, that.paramTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(name);
+        result = 31 * result + Arrays.hashCode(paramTypes);
+        return result;
+    }
+}

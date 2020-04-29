@@ -2,6 +2,7 @@ package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -20,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author TruthBean
@@ -72,23 +72,20 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
                 // Default Handler
                 .setHandler(sessionAttachmentHandler).build();
 
-        return new DebbieApplication() {
-            private final AtomicBoolean running = new AtomicBoolean(false);
+        return new AbstractDebbieApplication(LOGGER, beanFactoryHandler) {
             @Override
             public void start(long beforeStartTime, String... args) {
                 server.start();
-                this.beforeStart(LOGGER, beanFactoryHandler);
                 printlnWebUrl(LOGGER, configuration.getPort());
-                running.set(true);
                 LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
             }
 
             @Override
-            public void exit(String... args) {
-                if (running.getAndSet(false)) {
-                    beforeExit(beanFactoryHandler, args);
-                    server.stop();
+            public void exit(long beforeStartTime, String... args) {
+                server.stop();
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                 }
             }
         };

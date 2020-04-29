@@ -18,6 +18,7 @@ public class XmlTransformer<T> implements DataTransformer<T, String> {
         this.type = type;
     }
 
+    @SuppressWarnings("unchecked")
     public XmlTransformer() {
         type = (Class<T>) Map.class;
     }

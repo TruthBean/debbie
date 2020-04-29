@@ -1,13 +1,16 @@
 package com.truthbean.debbie.proxy.interfaces;
 
 import com.truthbean.debbie.proxy.*;
+import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.bean.TargetImplement;
 import com.truthbean.debbie.proxy.bean.TargetInterface;
+
+import com.truthbean.debbie.proxy.bean.TargetObject;
 import com.truthbean.debbie.proxy.interfaces.cglib.TargetMethodInterceptor;
-import com.truthbean.debbie.proxy.interfaces.jdk.TargetInvocationHandler;
+import com.truthbean.debbie.proxy.interfaces.jdk.JdkInvocationHandler;
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import javassist.*;
+
 import net.sf.cglib.proxy.Enhancer;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
@@ -17,84 +20,73 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.Set;
 
 public class TargetTest {
 
     @Test
-    public void direct() throws Throwable {
+    public void direct() throws Exception {
         TargetProxyHandler interceptor = new TargetProxyHandler();
         List<MethodProxyHandler> list = List.of(interceptor);
-        TargetInterface target = new TargetImplement();
+        TargetObject target = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
 
-        var proxy = new BeanMethodProxy<>(target, list);
-        proxy.proxy("code", () -> {
-            target.code();
-            return null;
-        });
+        var proxy = new MethodProxyHandlerHandler(LOGGER);
+        proxy.setInterceptors(list);
+
+        MethodCallBack<Void> callBack = new MethodCallBack<Void>(target, "code", "java");
+
+        proxy.proxy(callBack);
     }
 
     @Test
     public void jdkProxy() {
         TargetInterface target = new TargetImplement();
-        TargetInvocationHandler handler = new TargetInvocationHandler(target);
-        TargetInterface proxy = (TargetInterface) Proxy.newProxyInstance(target.getClass().getClassLoader(), new Class[]{TargetInterface.class}, handler);
-        proxy.code();
+        JdkInvocationHandler<TargetInterface> handler = new JdkInvocationHandler<>(TargetInterface.class, target);
+        TargetInterface proxy = handler.newProxyInstance();
+        proxy.coding();
     }
 
     @Test
-    public void cglibProxy() {
+    public void cglibProxy() throws Exception {
         Enhancer enhancer = new Enhancer();
-        TargetInterface target = new TargetImplement();
-        enhancer.setCallback(new TargetMethodInterceptor(target));
-        enhancer.setInterfaces(new Class[]{TargetInterface.class});
-        TargetInterface proxy = (TargetInterface) enhancer.create();
-        proxy.code();
+        TargetObject target = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
+        enhancer.setCallback(new TargetMethodInterceptor(target, new TargetProxyHandler(), LOGGER));
+        // enhancer.setInterfaces(new Class[]{TargetInterface.class});
+        enhancer.setSuperclass(TargetObject.class);
+        TargetObject proxy = (TargetObject) enhancer.create();
+        proxy.code("c++");
     }
 
     @Test
-    public void javassistProxy() {
+    public void javassistProxy() throws Exception {
         TargetProxyHandler interceptor = new TargetProxyHandler();
-        TargetInterface target = new TargetImplement();
+        MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
+        handler.setInterceptors(List.of(interceptor));
 
-        try {
-            ClassPool classPool = new ClassPool(true);
-            CtClass proxyClass = classPool.makeClass(TargetInterface.class.getName() + "JavaassistProxy");
-            proxyClass.addInterface(classPool.get(TargetInterface.class.getName()));
-            proxyClass.addConstructor(CtNewConstructor.defaultConstructor(proxyClass));
+        TargetObject targetBean = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
+        JavassistProxy<TargetObject> javassistProxy = new JavassistProxy<>(TargetObject.class, handler, MethodProxy.class);
+        TargetObject proxy = javassistProxy.proxy(targetBean);
+        proxy.learn();
+        proxy.coding();
+        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++");
 
-            String targetClassName = TargetInterface.class.getName();
-            String interceptorClassName = TargetProxyHandler.class.getName();
-            proxyClass.addField(CtField.make("private " + targetClassName + " target;", proxyClass));
-            proxyClass.addField(CtField.make("private " + interceptorClassName + " interceptor;", proxyClass));
-
-            proxyClass.addMethod(CtNewMethod.make("public void code() { interceptor.before();\n\ntarget.code();\n\ninterceptor.after(); }", proxyClass));
-
-            proxyClass.addMethod(CtNewMethod.make("public void setTarget(" + targetClassName + " target) { this.target = target; }", proxyClass));
-            proxyClass.addMethod(CtNewMethod.make("public void setInterceptor(" + interceptorClassName + " interceptor) { this.interceptor = interceptor; }", proxyClass));
-
-            Class<?> proxy = proxyClass.toClass();
-            TargetInterface bytecodeProxy = (TargetInterface) ReflectionHelper.newInstance(proxy);
-            ReflectionHelper.invokeMethod(bytecodeProxy, "setTarget", new Object[]{target}, new Class<?>[]{TargetInterface.class});
-            ReflectionHelper.invokeMethod(bytecodeProxy, "setInterceptor", interceptor);
-
-            bytecodeProxy.code();
-        } catch (NotFoundException | CannotCompileException e) {
-            LOGGER.error("", e);
-        }
+        proxy.code("java");
     }
 
     @Test
     public void asmProxy() {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        String className = TargetInterface.class.getName() +  "AsmProxy";
+        String className = TargetInterface.class.getName() + "AsmProxy";
         String classPath = className.replace('.', '/');
 
         // proxy class interface
         String interfacePath = TargetInterface.class.getName().replace('.', '/');
-        classWriter.visit(Opcodes.V11, Opcodes.ACC_PUBLIC, classPath, null, "java/lang/Object", new String[] {interfacePath});
+        classWriter.visit(Opcodes.V11, Opcodes.ACC_PUBLIC, classPath, null, "java/lang/Object", new String[]{interfacePath});
 
         // classWriter.visit(Opcodes.V11, Opcodes.ACC_PUBLIC, classPath, null, "java/lang/Object", new String[]{interceptorPath});
 
@@ -157,19 +149,19 @@ public class TargetTest {
         classWriter.visitEnd();
         byte[] code = classWriter.toByteArray();
 
-        /*try {
+        try {
             byte[] data = classWriter.toByteArray();
-            File file = new File("V:\\person\\debbie\\core\\out\\test\\classes\\com\\truthbean\\debbie\\proxy\\TargetInterfaceTest.class");
+            File file = new File("I:\\DevOps\\java\\debbie\\core\\build\\classes\\java\\test\\com\\truthbean\\debbie\\proxy\\TargetInterfaceTest.class");
             FileOutputStream out = new FileOutputStream(file);
             out.write(data);
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
 
-        Class proxyClass = new ByteArrayClassLoader().getClass(className, code);
+        Class proxyClass = new ByteArrayClassLoader(TargetInterface.class.getClassLoader()).defineClass(className, code);
         System.out.println(proxyClass);
-        TargetInterface proxy = (TargetInterface) ReflectionHelper.newInstance (proxyClass);
+        TargetInterface proxy = (TargetInterface) ReflectionHelper.newInstance(proxyClass);
 
         TargetProxyHandler interceptor = new TargetProxyHandler();
         TargetInterface target = new TargetImplement();
@@ -181,17 +173,17 @@ public class TargetTest {
     }
 
     @Test
-    void testAsmProxy() {
-        TargetInterface targetBean = new TargetImplement();
+    void testAsmProxy() throws Exception {
+        TargetObject targetBean = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
+        // TargetInterface targetBean = new TargetImplement();
         TargetProxyHandler interceptor = new TargetProxyHandler();
-        MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler();
-        handler.setLogger(LOGGER);
+        MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
         handler.setInterceptors(List.of(interceptor));
 
-        AsmProxy<TargetInterface> asmProxy = new AsmProxy<>(TargetInterface.class, handler, MethodProxy.class);
-        TargetInterface proxy = asmProxy.proxy(targetBean);
+        AsmProxy<TargetObject> asmProxy = new AsmProxy<>(TargetObject.class, handler, MethodProxy.class);
+        TargetObject proxy = asmProxy.proxy(targetBean);
 
-        List<Method> proxyMethod = asmProxy.getProxyMethod();
+        Set<Method> proxyMethod = asmProxy.getProxyMethods();
         for (Method method : proxyMethod) {
             System.out.println(method.getName());
         }
@@ -199,7 +191,7 @@ public class TargetTest {
         proxy.learn();
         System.out.println("++++++++++++++++++++++++++++++++++++++++++++++");
 
-        proxy.code();
+        proxy.code("rust");
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TargetTest.class);

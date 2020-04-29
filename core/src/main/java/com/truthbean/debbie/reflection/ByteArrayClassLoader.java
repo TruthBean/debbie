@@ -1,11 +1,13 @@
 package com.truthbean.debbie.reflection;
 
-public class ByteArrayClassLoader extends ClassLoader {
-    public ByteArrayClassLoader() {
-        super(ByteArrayClassLoader.class.getClassLoader());
+import java.security.SecureClassLoader;
+
+public class ByteArrayClassLoader extends SecureClassLoader {
+    public ByteArrayClassLoader(ClassLoader superClassLoader) {
+        super(superClassLoader);
     }
 
-    public synchronized Class<?> getClass(String name, byte[] code) {
+    public Class<?> defineClass(String name, byte[] code) {
         if (name == null) {
             throw new IllegalArgumentException("");
         }

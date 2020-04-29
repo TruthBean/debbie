@@ -42,7 +42,7 @@ public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
         for (DebbieBeanInfo<?> taskBean : taskBeans) {
             Object task = beanFactoryHandler.factory(taskBean.getServiceName());
             LOGGER.trace("task bean " + taskBean.getBeanClass());
-            List<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
+            Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
             for (Method method : methods) {
                 DebbieTask annotation = method.getAnnotation(DebbieTask.class);
                 if (!annotation.async()) {

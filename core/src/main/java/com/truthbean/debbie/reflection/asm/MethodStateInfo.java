@@ -2,6 +2,7 @@ package com.truthbean.debbie.reflection.asm;
 
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
@@ -9,16 +10,14 @@ import java.lang.reflect.Modifier;
  * @since 0.0.1
  */
 public class MethodStateInfo extends AsmMethodInfo {
-    private int access;
     private Type[] argumentTypes;
     private int localOffset;
 
-    public int getAccess() {
-        return access;
+    public MethodStateInfo(Method method) {
+        super(method);
     }
 
     public void setAccess(int access) {
-        this.access = access;
         this.localOffset = Modifier.isStatic(access) ? 0 : 1;
     }
 

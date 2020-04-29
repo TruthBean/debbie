@@ -24,12 +24,13 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     private Target target;
 
-    private DebbieBeanInfo<Target> classInfo;
-    private ClassLoader classLoader;
+    private final DebbieBeanInfo<Target> classInfo;
+    private final ClassLoader classLoader;
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryHandler beanFactoryHandler;
 
     private final MethodProxyHandlerHandler handler;
+    private final MethodProxyResolver methodProxyResolver;
 
     public ProxyInvocationHandler(Class<Target> targetClass, BeanFactoryHandler beanFactoryHandler) {
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
@@ -42,8 +43,8 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             this.target = target;
         }
 
-        this.handler = new MethodProxyHandlerHandler();
-        this.handler.setLogger(LOGGER);
+        this.handler = new MethodProxyHandlerHandler(LOGGER);
+        this.methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, classInfo);
     }
 
     @SuppressWarnings("unchecked")
@@ -55,8 +56,8 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         classInfo = new DebbieBeanInfo<>(targetClass);
 
-        this.handler = new MethodProxyHandlerHandler();
-        this.handler.setLogger(LOGGER);
+        this.handler = new MethodProxyHandlerHandler(LOGGER);
+        this.methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, classInfo);
     }
 
     public Target getRealTarget() {
@@ -80,144 +81,13 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             LOGGER.warn(targetClass + " has no method(" + method.getName() + "). ");
             targetMethod = method;
         }
-        List<MethodProxyHandler> methodInterceptors = getMethodProxyHandler(targetMethod);
+        List<MethodProxyHandler> methodInterceptors = this.methodProxyResolver.getMethodProxyHandler(targetMethod);
         if (!methodInterceptors.isEmpty()) {
             methodInterceptors.sort(MethodProxyHandler::compareTo);
-
-            this.handler.setInterceptors(methodInterceptors);
-            var methodName = method.getName();
-
-            return this.handler.proxy(methodName, () -> null, () -> method.invoke(target, args));
         }
-
-        // no meothod proxy handler
-        return method.invoke(target, args);
-    }
-
-    private List<MethodProxyHandler> getMethodProxyHandler(Method method) {
-        List<MethodProxyHandler> methodProxyHandlers = new ArrayList<>();
-        MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
-        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
-        if (classListMap != null && !classListMap.isEmpty()) {
-            classListMap.forEach((key, value) -> {
-                getMethodProxyHandler(method, key, value, methodProxyHandlers);
-            });
-        }
-        return methodProxyHandlers;
-    }
-
-    @SuppressWarnings("unchecked")
-    private MethodProxyHandler getMethodProxyHandler(Method method, Annotation annotation) {
-        MethodProxy methodProxy = (MethodProxy) annotation;
-        var proxyHandler = methodProxy.proxyHandler();
-        MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
-        methodProxyHandler.setMethodAnnotation(methodProxy);
-        methodProxyHandler.setMethod(method);
-        methodProxyHandler.setOrder(methodProxy.order());
-        methodProxyHandler.setBeanFactoryHandler(beanFactoryHandler);
-        return methodProxyHandler;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addMethodProxyHandler(Method method, Class<? extends Annotation> annotationType,
-                                       List<Class<? extends MethodProxyHandler>> proxyHandlers,
-                                       Annotation annotation, List<MethodProxyHandler> methodProxyHandlers) {
-        MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
-        if (methodProxy != null) {
-            List<MethodProxyHandler> tmp = new ArrayList<>();
-            for (var proxyHandler : proxyHandlers) {
-                MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
-                handler.setOrder(methodProxy.order());
-                handler.setClassAnnotation(annotation);
-                handler.setBeanFactoryHandler(this.beanFactoryHandler);
-                handler.setMethod(method);
-                if (handler.exclusive()) {
-                    methodProxyHandlers.add(handler);
-                    tmp.clear();
-                    break;
-                } else {
-                    tmp.add(handler);
-                }
-            }
-            if (!tmp.isEmpty()) {
-                methodProxyHandlers.addAll(tmp);
-            }
-        }
-    }
-
-    private void getMethodProxyHandler(Method method, Class<? extends Annotation> annotationClass,
-                                       List<Class<? extends MethodProxyHandler>> proxyHandlers,
-                                       List<MethodProxyHandler> methodProxyHandlers) {
-        Annotation[] declaredAnnotations = method.getDeclaredAnnotations();
-        if (declaredAnnotations != null && declaredAnnotations.length > 0) {
-            for (Annotation annotation : declaredAnnotations) {
-                var annotationType = annotation.annotationType();
-                if (annotationType == MethodProxy.class) {
-                    methodProxyHandlers.add(getMethodProxyHandler(method, annotation));
-                } else if (annotationClass == annotationType) {
-                    addMethodProxyHandler(method, annotationType, proxyHandlers, annotation, methodProxyHandlers);
-                } else {
-                    var handler = getMethodProxyHandler(annotationType, annotation, method);
-                    if (handler != null) {
-                        methodProxyHandlers.add(handler);
-                    }
-                }
-            }
-        } else {
-            Annotation classAnnotation = classInfo.getClassAnnotation(annotationClass);
-            if (classAnnotation == null) {
-                classAnnotation = classInfo.getClassAnnotation(MethodProxy.class);
-                if (classAnnotation != null) {
-                    MethodProxy methodProxy;
-                    if (classAnnotation instanceof MethodProxy) {
-                        methodProxy = (MethodProxy) classAnnotation;
-                    } else {
-                        methodProxy = classAnnotation.annotationType().getAnnotation(MethodProxy.class);
-                    }
-                    var proxyHandler = methodProxy.proxyHandler();
-                    @SuppressWarnings("unchecked")
-                    MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
-                    methodProxyHandler.setOrder(methodProxy.order());
-                    methodProxyHandler.setClassAnnotation(methodProxy);
-                    methodProxyHandler.setMethod(method);
-                    methodProxyHandler.setBeanFactoryHandler(beanFactoryHandler);
-                    methodProxyHandlers.add(methodProxyHandler);
-                } else {
-                    Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
-                    if (classAnnotations != null && !classAnnotations.isEmpty()) {
-                        for (Map.Entry<Class<? extends Annotation>, Annotation> classAnnotationEntry : classAnnotations.entrySet()) {
-                            Annotation annotation = classAnnotationEntry.getValue();
-                            var annotationType = classAnnotationEntry.getKey();
-                            if (annotationClass == annotationType) {
-                                addMethodProxyHandler(method, annotationType, proxyHandlers, annotation, methodProxyHandlers);
-                            } else {
-                                var handler = getMethodProxyHandler(annotationType, annotation, method);
-                                if (handler != null) {
-                                    methodProxyHandlers.add(handler);
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                addMethodProxyHandler(method, annotationClass, proxyHandlers, classAnnotation, methodProxyHandlers);
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private MethodProxyHandler getMethodProxyHandler(Class<? extends Annotation> annotationType, Annotation value, Method method) {
-        MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
-        if (methodProxy != null) {
-            var proxyHandler = methodProxy.proxyHandler();
-            MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
-            handler.setOrder(methodProxy.order());
-            handler.setClassAnnotation(value);
-            handler.setBeanFactoryHandler(this.beanFactoryHandler);
-            handler.setMethod(method);
-            return handler;
-        }
-        return null;
+        this.handler.setInterceptors(methodInterceptors);
+        var methodName = method.getName();
+        return this.handler.proxy(methodName, () -> null, () -> method.invoke(target, args));
     }
 
 }

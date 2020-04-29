@@ -15,13 +15,14 @@ import java.util.*;
  */
 public class ClassInfo<C> implements Serializable {
     private Class<C> clazz;
-    private Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
+    private final Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
     private Constructor<C>[] constructors;
 
     private List<Field> fields;
 
-    private List<Method> methods;
+    private Set<Method> methods;
+    private final Map<Method, Set<Annotation>> methodAnnotationMap = new HashMap<>();
 
     private List<Type> actualTypes;
 
@@ -33,6 +34,21 @@ public class ClassInfo<C> implements Serializable {
 
     @SuppressWarnings("unchecked")
     private void getClassInfo() {
+        getClassAnnotationsMap();
+
+        fields = ReflectionHelper.getDeclaredFields(clazz);
+
+        this.constructors = (Constructor<C>[]) clazz.getConstructors();
+        this.methods = ReflectionHelper.getDeclaredMethods(clazz);
+        getMethodAnnotationMap();
+
+        Type[] actualTypes = ReflectionHelper.getActualTypes(clazz);
+        if (actualTypes != null) {
+            this.actualTypes = Arrays.asList(actualTypes);
+        }
+    }
+
+    private void getClassAnnotationsMap() {
         Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
 
         if (!annotations.isEmpty()) {
@@ -43,8 +59,10 @@ public class ClassInfo<C> implements Serializable {
                     for (Annotation ann : annotationInAnnotation) {
                         Class<? extends Annotation> annotationType = ann.annotationType();
                         if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
-                            !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
-                            !Documented.class.equals(annotationType)) {
+                                !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
+                                !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
+                                !FunctionalInterface.class.equals(annotationType) &&
+                                !SuppressWarnings.class.equals(annotationType)) {
                             annotations.add(ann);
                         }
                     }
@@ -57,15 +75,39 @@ public class ClassInfo<C> implements Serializable {
                 this.classAnnotations.put(annotation.annotationType(), annotation);
             }
         }
+    }
 
-        fields = ReflectionHelper.getDeclaredFields(clazz);
+    private void getMethodAnnotationMap() {
+        for (Method method : this.methods) {
+            Annotation[] annotations = method.getDeclaredAnnotations();
 
-        this.constructors = (Constructor<C>[]) clazz.getConstructors();
-        this.methods = ReflectionHelper.getDeclaredMethods(clazz);
-
-        Type[] actualTypes = ReflectionHelper.getActualTypes(clazz);
-        if (actualTypes != null) {
-            this.actualTypes = Arrays.asList(actualTypes);
+            if (annotations != null && annotations.length > 0) {
+                Set<Annotation> methodAnnotations = new HashSet<>();
+                for (Annotation annotation : annotations) {
+                    Class<? extends Annotation> type = annotation.annotationType();
+                    if (type == Override.class || type == SuppressWarnings.class || type == Deprecated.class
+                            || type == SafeVarargs.class) {
+                        continue;
+                    }
+                    methodAnnotations.add(annotation);
+                    Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(type);
+                    if (!annotationInAnnotation.isEmpty()) {
+                        for (Annotation ann : annotationInAnnotation) {
+                            Class<? extends Annotation> annotationType = ann.annotationType();
+                            if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
+                                    !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
+                                    !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
+                                    !FunctionalInterface.class.equals(annotationType) &&
+                                    !SuppressWarnings.class.equals(annotationType)) {
+                                methodAnnotations.add(ann);
+                            }
+                        }
+                    }
+                    if (!methodAnnotations.isEmpty()) {
+                        this.methodAnnotationMap.put(method, methodAnnotations);
+                    }
+                }
+            }
         }
     }
 
@@ -81,8 +123,12 @@ public class ClassInfo<C> implements Serializable {
         return actualTypes;
     }
 
-    public List<Method> getMethods() {
+    public Set<Method> getMethods() {
         return methods;
+    }
+
+    public Map<Method, Set<Annotation>> getMethodWithAnnotations() {
+        return methodAnnotationMap;
     }
 
     public Map<Class<? extends Annotation>, Annotation> getClassAnnotations() {
@@ -98,8 +144,8 @@ public class ClassInfo<C> implements Serializable {
         return null;
     }
 
-    public List<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
-        List<Method> methods = new ArrayList<>();
+    public Set<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
+        Set<Method> methods = new HashSet<>();
         for (Method method : this.methods) {
             Annotation annotation = method.getAnnotation(annotationType);
             if (annotation != null) {
@@ -132,5 +178,9 @@ public class ClassInfo<C> implements Serializable {
 
     public ClassInfo<C> copy() {
         return new ClassInfo<>(clazz);
+    }
+
+    public boolean isInterface() {
+        return clazz.isInterface();
     }
 }

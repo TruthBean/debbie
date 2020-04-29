@@ -1,6 +1,7 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.io.PathUtils;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
@@ -182,15 +183,13 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
     }
 
     private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
-        return new DebbieApplication() {
-            private volatile boolean exited = false;
+        return new AbstractDebbieApplication(LOGGER, beanFactoryHandler) {
             @Override
             public void start(long beforeStartTime, String... args) {
                 try {
                     server.init();
                     server.getConnector();
                     server.start();
-                    this.beforeStart(LOGGER, beanFactoryHandler);
                     printlnWebUrl(LOGGER, configuration.getPort());
                     LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
@@ -204,16 +203,16 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
             }
 
             @Override
-            public void exit(String... args) {
-                if (exited) return;
-                beforeExit(beanFactoryHandler, args);
+            public void exit(long beforeStartTime, String... args) {
                 try {
                     server.stop();
                     server.destroy();
                 } catch (LifecycleException e) {
                     LOGGER.error("tomcat stop error", e);
                 } finally {
-                    exited = true;
+                    if (LOGGER.isTraceEnabled()) {
+                        LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+                    }
                 }
             }
         };

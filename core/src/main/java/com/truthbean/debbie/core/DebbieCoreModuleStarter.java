@@ -19,6 +19,9 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfigurationRegister;
+import com.truthbean.debbie.proxy.DefaultMethodProxyHandler;
+import com.truthbean.debbie.proxy.MethodProxy;
+import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.task.ThreadPooledExecutor;
 
@@ -49,6 +52,9 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
         beanInitialization.addAnnotationRegister(new PropertiesConfigurationRegister(beanInitialization));
 
         registerTransformer(beanInitialization);
+
+        // MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
+        // methodProxyHandlerRegister.register(MethodProxy.class, DefaultMethodProxyHandler.class);
     }
 
     @Override

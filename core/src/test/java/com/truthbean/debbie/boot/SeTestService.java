@@ -1,4 +1,4 @@
-package com.truthbean.debbie.se;
+package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanComponent;
 import org.slf4j.Logger;
@@ -10,7 +10,7 @@ import java.util.UUID;
 public class SeTestService {
 
     public String getUuid() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             /*try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {

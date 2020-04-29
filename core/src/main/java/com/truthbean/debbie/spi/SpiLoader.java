@@ -29,18 +29,30 @@ public class SpiLoader {
     }
 
     public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader) {
+        S service = loadProvider(serviceClass, classLoader, null);
+        if (service == null) {
+            throw new NoServiceProviderException(serviceClass.getName());
+        }
+        return service;
+    }
+
+    public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader, S defaultService) {
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         Iterator<S> search = serviceLoader.iterator();
         if (search.hasNext()) {
             return search.next();
         } else {
-            throw new NoServiceProviderException(serviceClass.getName());
+            return defaultService;
         }
     }
 
     public static <S> Set<S> loadProviders(Class<S> serviceClass) {
-        Set<S> result = new HashSet<>();
         var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
+        return loadProviders(serviceClass, classLoader);
+    }
+
+    public static <S> Set<S> loadProviderSet(Class<S> serviceClass, ClassLoader classLoader) {
+        Set<S> result = new HashSet<>();
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         for (S s : serviceLoader) {
             result.add(s);
@@ -49,11 +61,7 @@ public class SpiLoader {
     }
 
     public static <S> Set<S> loadProviders(Class<S> serviceClass, ClassLoader classLoader) {
-        Set<S> result = new HashSet<>();
-        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
-        for (S s : serviceLoader) {
-            result.add(s);
-        }
+        Set<S> result = loadProviderSet(serviceClass, classLoader);
         if (result.isEmpty()) {
             throw new NoServiceProviderException(serviceClass.getName());
         }

@@ -90,6 +90,7 @@ public class DataTransformerFactory {
         return target.cast(origin);
     }
 
+    @SuppressWarnings("unchecked")
     private static <O, T> T transformWithCache(final O origin, final Class<?> originType, final Class<T> target) {
         Map<DataTransformer<?,?>, Type[]> cache = DataTransformerFactory.cache;
         for (Map.Entry<DataTransformer<?,?>, Type[]> entry : cache.entrySet()) {

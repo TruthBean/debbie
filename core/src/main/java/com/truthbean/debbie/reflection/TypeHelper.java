@@ -2,6 +2,7 @@ package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.NumericUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,6 +154,35 @@ public final class TypeHelper {
             }
         }
         return false;
+    }
+
+    public static int getAccessByModifiers(int modifier) {
+        if (Modifier.isPublic(modifier)) {
+            return Opcodes.ACC_PUBLIC;
+        } else if (Modifier.isProtected(modifier)) {
+            return  Opcodes.ACC_PROTECTED;
+        } else if (Modifier.isPrivate(modifier)) {
+            return  Opcodes.ACC_PRIVATE;
+        } else if (Modifier.isStatic(modifier)) {
+            return  Opcodes.ACC_STATIC;
+        } else if (Modifier.isFinal(modifier)) {
+            return  Opcodes.ACC_FINAL;
+        } else if (Modifier.isSynchronized(modifier)) {
+            return Opcodes.ACC_SYNCHRONIZED;
+        }
+        return 0;
+    }
+
+    public static String[] getExceptions(Class<?>[] exceptionTypes) {
+        if (exceptionTypes != null && exceptionTypes.length > 0) {
+            String[] exceptions = new String[exceptionTypes.length];
+            for (int i = 0; i < exceptionTypes.length; i++) {
+                Class<?> exceptionType = exceptionTypes[i];
+                exceptions[i] = exceptionType.getName().replace(".", "/");
+            }
+            return exceptions;
+        }
+        return null;
     }
 
     public static boolean isOrValueOf(Class<?> clazz, String target) {

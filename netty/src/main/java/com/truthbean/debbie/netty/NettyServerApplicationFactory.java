@@ -2,6 +2,7 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -46,7 +47,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         RouterFilterManager.registerCsrfFilter(configuration, "/**");
         RouterFilterManager.registerSecurityFilter(configuration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
-        return new NettyDebbieApplication(configuration, sessionManager, beanFactoryHandler);
+        return new NettyDebbieApplication(configuration, sessionManager, beanFactoryHandler, LOGGER);
     }
 
     // (1)
@@ -75,9 +76,8 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
             ChannelFuture channelFuture = b.bind(configuration.getPort()).sync();
             LOGGER.debug("netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
-            debbieApplication.beforeStart(LOGGER, beanFactoryHandler);
             LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+            // Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
             // Wait until the server socket is closed.
             // In this example, this does not happen, but you can do that to gracefully
@@ -117,22 +117,18 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         }
     }
 
-    private class NettyDebbieApplication extends DebbieApplication {
+    private class NettyDebbieApplication extends AbstractDebbieApplication {
 
         private final NettyConfiguration configuration;
         private final SessionManager sessionManager;
         private final BeanFactoryHandler beanFactoryHandler;
 
         NettyDebbieApplication(NettyConfiguration configuration, SessionManager sessionManage,
-                               BeanFactoryHandler beanFactoryHandler) {
+                               BeanFactoryHandler beanFactoryHandler, Logger logger) {
+            super(logger, beanFactoryHandler);
             this.configuration = configuration;
             this.sessionManager = sessionManage;
             this.beanFactoryHandler = beanFactoryHandler;
-        }
-
-        @Override
-        public void beforeStart(Logger logger, BeanFactoryHandler beanFactoryHandler) {
-            super.beforeStart(logger, beanFactoryHandler);
         }
 
         @Override
@@ -141,9 +137,11 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         }
 
         @Override
-        public void exit(String... args) {
-            beforeExit(beanFactoryHandler, args);
+        public void exit(long beforeStartTime, String... args) {
             shutdown();
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+            }
         }
     }
 

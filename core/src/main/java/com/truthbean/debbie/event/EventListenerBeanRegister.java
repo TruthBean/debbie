@@ -49,7 +49,7 @@ public class EventListenerBeanRegister {
             for (DebbieBeanInfo debbieBeanInfo : beanInfoList) {
                 Class<?> beanType = debbieBeanInfo.getBeanClass();
                 Object bean = beanFactoryHandler.factory(beanType);
-                List<Method> methods = debbieBeanInfo.getMethods();
+                Set<Method> methods = debbieBeanInfo.getMethods();
                 for (Method method : methods) {
                     EventMethodListener annotation = method.getAnnotation(EventMethodListener.class);
                     if (annotation != null) {

@@ -157,6 +157,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         return Collections.unmodifiableSet(classes);
     }
 
+    @Override
     public void reset() {
         this.scanClasses.clear();
         this.scanBasePackages.clear();

@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -57,7 +54,7 @@ public class BeanInvoker<Bean> {
             this.bean = beanFactoryHandler.getBeanByFactory(beanInfo);
     }
 
-    private void setMethods(List<Method> methods) {
+    private void setMethods(Set<Method> methods) {
         methods.forEach(method -> {
             beanMethods.put(method.getName(), method);
             if (method.getAnnotation(BeanInit.class) != null) {

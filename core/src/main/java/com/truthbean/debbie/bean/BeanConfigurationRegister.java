@@ -7,6 +7,7 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -70,7 +71,7 @@ public class BeanConfigurationRegister {
     }
 
     private <Configuration> void register(Configuration configuration, ClassInfo<Configuration> classInfo) {
-        List<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
+        Set<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {
             for (Method method : annotationMethod) {
                 DebbieBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());

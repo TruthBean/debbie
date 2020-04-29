@@ -3,7 +3,9 @@ package com.truthbean.debbie.bean.inter;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.proxy.MethodProxy;
 
+import java.util.Random;
 import java.util.UUID;
 
 @BeanComponent(type = BeanType.NO_LIMIT)
@@ -20,6 +22,7 @@ public class DemoBeanComponent {
         this.demo1 = demo1;
     }
 
+    @MethodProxy(order = 31)
     public String getUuid() {
         return uuid;
     }
@@ -34,14 +37,19 @@ public class DemoBeanComponent {
 
     @BeanComponent(name = "demo", type = BeanType.NO_LIMIT)
     public static class Demo2 {
-        private final String uuid;
+        private boolean id;
 
         public Demo2() {
-            uuid = UUID.randomUUID().toString();
         }
 
-        public String getUuid() {
-            return uuid;
+        @MethodProxy(order = 32)
+        public boolean getUuid() {
+            return id;
+        }
+
+        @MethodProxy(order = 32)
+        public void setId(boolean id, int a) {
+            this.id = id;
         }
     }
 }

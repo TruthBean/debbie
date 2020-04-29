@@ -7,5 +7,9 @@ public interface TargetInterface {
     @MethodProxy(order = 1)
     void code();
 
+    default void coding() {
+        System.out.println("coding");
+    }
+
     void learn();
 }

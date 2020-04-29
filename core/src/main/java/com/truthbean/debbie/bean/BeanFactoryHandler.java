@@ -6,8 +6,8 @@ import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertyInject;
-import com.truthbean.debbie.proxy.JdkDynamicProxy;
-import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
+import com.truthbean.debbie.proxy.*;
+import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
@@ -145,7 +145,7 @@ public class BeanFactoryHandler {
     private synchronized void destroyBeans(Collection<DebbieBeanInfo<?>> beans) {
         if (beans != null && !beans.isEmpty()) {
             for (DebbieBeanInfo<?> bean : beans) {
-                LOGGER.trace("release bean " + bean.getBeanClass());
+                LOGGER.trace("release bean " + bean.getBeanClass() + " with name " + bean.getServiceName());
                 bean.release();
             }
         }
@@ -270,7 +270,7 @@ public class BeanFactoryHandler {
         try {
             return getBeanInfo(serviceName, type, require, beanServiceInfoSet);
         } catch (Exception e) {
-            LOGGER.debug(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -298,12 +298,32 @@ public class BeanFactoryHandler {
         return factory(serviceName, null, true);
     }
 
+    public <T> T factoryByProxy(DebbieBeanInfo<T> beanInfo) {
+        return beanInfo.getBean();
+        /*MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
+        Map<Method, Set<Annotation>> methodWithAnnotations = beanInfo.getMethodWithAnnotations();
+        if (methodWithAnnotations == null || methodWithAnnotations.isEmpty()) {
+            return beanInfo.getBean();
+        }
+        MethodProxyResolver methodProxyResolver = new MethodProxyResolver(this, beanInfo);
+        methodWithAnnotations.forEach((method, annotations) -> {
+            List<MethodProxyHandler> methodProxyHandler = methodProxyResolver.getMethodProxyHandler(method, annotations);
+            handler.addInterceptors(methodProxyHandler);
+        });
+        if (!handler.hasInterceptor()) {
+            return beanInfo.getBean();
+        }
+
+        AsmProxy<T> asmProxy = new AsmProxy<>((Class<T>) beanInfo.getBeanClass(), handler, MethodProxy.class);
+        return asmProxy.proxy(() -> beanInfo.getBean());*/
+    }
+
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {
         if (beanInfo.getBeanType() == BeanType.SINGLETON) {
             resolveFieldBeans(beanInfo);
             var bean = beanInfo.getBean();
             if (bean != null) {
-                return bean;
+                return factoryByProxy(beanInfo);
             }
         }
         var beanFactory = beanInfo.getBeanFactory();
@@ -325,7 +345,7 @@ public class BeanFactoryHandler {
         if (beanInterface == null) {
             factoryNoLimit(beanInfo);
             resolveFieldBeans(beanInfo);
-            return beanInfo.getBean();
+            return factoryByProxy(beanInfo);
         }
 
         return factoryWithProxy(clazz, beanInterface, beanInfo);

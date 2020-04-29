@@ -212,7 +212,7 @@ public class BeanInitialization {
         return result;
     }
 
-    public <Bean> List<Method> getBeanMethods(Class<Bean> beanClass) {
+    public <Bean> Set<Method> getBeanMethods(Class<Bean> beanClass) {
         return beanRegisterCenter.getBeanMethods(beanClass);
     }
 

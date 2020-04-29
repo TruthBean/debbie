@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface MethodProxy {
 
-    int order();
+    int order() default Short.MAX_VALUE;
 
     Class<? extends MethodProxyHandler> proxyHandler() default DefaultMethodProxyHandler.class;
 }

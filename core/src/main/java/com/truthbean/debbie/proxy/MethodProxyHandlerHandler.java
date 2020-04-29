@@ -2,9 +2,7 @@ package com.truthbean.debbie.proxy;
 
 import org.slf4j.Logger;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
@@ -12,19 +10,31 @@ import java.util.concurrent.Callable;
  * @since 0.0.2
  */
 public class MethodProxyHandlerHandler {
-    private Collection<MethodProxyHandler> interceptors;
+    private final Collection<MethodProxyHandler> interceptors;
 
-    private Logger logger;
+    private final Logger logger;
 
-    public MethodProxyHandlerHandler() {
+    public MethodProxyHandlerHandler(Logger logger) {
+        this.interceptors = new HashSet<>();
+        this.logger = logger;
     }
 
     public void setInterceptors(Collection<MethodProxyHandler> interceptors) {
-        this.interceptors = interceptors;
+        this.interceptors.clear();
+        this.interceptors.addAll(interceptors);
     }
 
-    public void setLogger(Logger logger) {
-        this.logger = logger;
+    public void addInterceptors(Collection<MethodProxyHandler> interceptors) {
+        this.interceptors.addAll(interceptors);
+    }
+
+    public void addInterceptor(MethodProxyHandler... interceptors) {
+        if (interceptors != null && interceptors.length > 0)
+            this.interceptors.addAll(Arrays.asList(interceptors));
+    }
+
+    public boolean hasInterceptor() {
+        return !this.interceptors.isEmpty();
     }
 
     public <T> T proxy(String methodName, Callable<T> noInterceptorsCallback, Callable<T> callback) throws Throwable {
@@ -127,5 +137,13 @@ public class MethodProxyHandlerHandler {
         }
 
         return invoke;
+    }
+
+    public <T> T proxy(MethodCallBack<T> callBack) {
+        try {
+            return proxy(callBack.getMethodName(), callBack, callBack);
+        } catch (Throwable throwable) {
+            throw new MethodProxyException(throwable);
+        }
     }
 }

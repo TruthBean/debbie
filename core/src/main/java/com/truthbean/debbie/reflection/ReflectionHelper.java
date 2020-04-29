@@ -248,7 +248,8 @@ public class ReflectionHelper {
         return nameAndType;
     }
 
-    public static <T> T newInstance(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes, Object[] args) {
+    public static <T> T newInstance(Class<T> type,
+                                    @SuppressWarnings("rawtypes") Class[] parameterTypes, Object[] args) {
         var constructor = getConstructor(type, parameterTypes);
         if (constructor != null) {
             return newInstance(constructor, args);
@@ -258,9 +259,11 @@ public class ReflectionHelper {
 
     public static <T> T newInstance(final Constructor<T> constructor, final Object[] args) {
 
-        boolean flag = constructor.canAccess(null);
+        boolean cannotAccess = ((!Modifier.isPublic(constructor.getModifiers())
+                || !Modifier.isPublic(constructor.getDeclaringClass().getModifiers()))
+                && !constructor.trySetAccessible());
         try {
-            if (!flag) {
+            if (cannotAccess) {
                 constructor.setAccessible(true);
             }
             return constructor.newInstance(args);
@@ -268,7 +271,7 @@ public class ReflectionHelper {
             Throwable cause = e.getCause();
             LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
         } finally {
-            if (!flag) {
+            if (!cannotAccess) {
                 constructor.setAccessible(false);
             }
         }
@@ -278,7 +281,10 @@ public class ReflectionHelper {
     public static Object invokeStaticMethod(String methodName, Class<?> targetClass) {
         try {
             Method declaredMethod = targetClass.getDeclaredMethod(methodName);
-            if (declaredMethod.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
+                    || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers()))
+                    && !declaredMethod.trySetAccessible());
+            if (cannotAccess) {
                 declaredMethod.setAccessible(true);
             }
             return declaredMethod.invoke(null);
@@ -291,13 +297,16 @@ public class ReflectionHelper {
 
     public static Object invokeStaticMethod(Method declaredMethod) {
         try {
-            if (declaredMethod.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
+                    || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers())) &&
+                    !declaredMethod.trySetAccessible());
+            if (cannotAccess) {
                 declaredMethod.setAccessible(true);
             }
             return declaredMethod.invoke(null);
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
-            LOGGER.error("invoke static method(" + declaredMethod + " error ). \n", Objects.requireNonNullElse(cause, e));
+            LOGGER.error("invoke static method(" + declaredMethod + " error ).\n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
@@ -305,7 +314,10 @@ public class ReflectionHelper {
     public static <T> Constructor<T> getConstructor(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(parameterTypes);
-            if (constructor.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(constructor.getModifiers())
+                    || !Modifier.isPublic(constructor.getDeclaringClass().getModifiers()))
+                    && !constructor.trySetAccessible());
+            if (cannotAccess) {
                 constructor.setAccessible(true);
             }
             return constructor;
@@ -318,7 +330,8 @@ public class ReflectionHelper {
 
     public static Set<Annotation> getClassAnnotations(Class<?> clazz) {
         Set<Annotation> annotations = new HashSet<>();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             Annotation[] classAnnotations = superClass.getAnnotations();
             if (classAnnotations.length > 0) {
                 annotations.addAll(Arrays.asList(classAnnotations));
@@ -343,7 +356,8 @@ public class ReflectionHelper {
 
     public static List<Field> getDeclaredFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             Field[] declaredFields = superClass.getDeclaredFields();
             if (declaredFields.length > 0) {
                 fields.addAll(Arrays.asList(declaredFields));
@@ -352,9 +366,10 @@ public class ReflectionHelper {
         return fields;
     }
 
-    public static List<Method> getDeclaredMethods(Class<?> clazz) {
-        List<Method> methods = new ArrayList<>();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+    public static Set<Method> getDeclaredMethods(Class<?> clazz) {
+        Set<Method> methods = new HashSet<>();
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             Method[] declaredMethods = superClass.getDeclaredMethods();
             if (declaredMethods.length > 0) {
                 methods.addAll(Arrays.asList(declaredMethods));
@@ -409,7 +424,32 @@ public class ReflectionHelper {
     }
 
     public static Method getDeclaredMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
+            Method[] declaredMethods = superClass.getDeclaredMethods();
+            if (declaredMethods.length > 0) {
+                for (Method declaredMethod : declaredMethods) {
+                    Class<?>[] parameterClass = declaredMethod.getParameterTypes();
+                    if (methodName.equals(declaredMethod.getName()) && Arrays.equals(parameterClass, parameterTypes)) {
+                        return declaredMethod;
+                    }
+                }
+            }
+        }
+        Set<Method> interfaceDefaultMethods = getInterfaceDefaultMethods(clazz);
+        if (interfaceDefaultMethods.size() > 0) {
+            for (Method declaredMethod : interfaceDefaultMethods) {
+                Class<?>[] parameterClass = declaredMethod.getParameterTypes();
+                if (methodName.equals(declaredMethod.getName()) && Arrays.equals(parameterClass, parameterTypes)) {
+                    return declaredMethod;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Method getMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+        for (var superClass = clazz; superClass != null; superClass = superClass.getSuperclass()) {
             Method[] declaredMethods = superClass.getDeclaredMethods();
             if (declaredMethods.length > 0) {
                 for (Method declaredMethod : declaredMethods) {
@@ -434,7 +474,8 @@ public class ReflectionHelper {
 
     public static Object invokeSetMethod(Object target, Field field, Object arg) {
         Class<?> clazz = target.getClass();
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             try {
                 return invokeSetMethod(superClass, target, field.getName(), field.getType(), arg);
             } catch (NoSuchMethodException ignored) {
@@ -446,7 +487,8 @@ public class ReflectionHelper {
     public static void invokeFieldBySetMethod(Object target, Field field, Object arg) {
         Class<?> clazz = target.getClass();
         boolean invoked = false;
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             try {
                 invokeSetMethod(superClass, target, field.getName(), field.getType(), arg);
                 invoked = true;
@@ -459,7 +501,8 @@ public class ReflectionHelper {
         }
     }
 
-    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Class<?> fieldType, Object arg) throws NoSuchMethodException {
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName,
+                                         Class<?> fieldType, Object arg) throws NoSuchMethodException {
         var methodName = "set" + handleFieldName(fieldName);
 
         try {
@@ -471,7 +514,8 @@ public class ReflectionHelper {
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", Objects.requireNonNullElse(cause, e));
+                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n",
+                        Objects.requireNonNullElse(cause, e));
             } else {
                 LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", e.getMessage());
             }
@@ -488,7 +532,9 @@ public class ReflectionHelper {
 
     public static void setField(Object target, Field field, Object value) {
         try {
-            if (field.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(field.getModifiers())
+                    || !Modifier.isPublic(field.getDeclaringClass().getModifiers())) && !field.trySetAccessible());
+            if (cannotAccess) {
                 field.setAccessible(true);
             }
             field.set(target, value);
@@ -500,7 +546,10 @@ public class ReflectionHelper {
     public static void setField(Object target, String fieldName, Object value) {
         try {
             Field field = target.getClass().getField(fieldName);
-            if (field.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(field.getModifiers())
+                    || !Modifier.isPublic(field.getDeclaringClass().getModifiers()))
+                    && !field.trySetAccessible());
+            if (cannotAccess) {
                 field.setAccessible(true);
             }
             field.set(target, value);
@@ -511,7 +560,10 @@ public class ReflectionHelper {
 
     public static Object getField(Object target, Field field) {
         try {
-            if (field.trySetAccessible()) {
+            boolean cannotAccess = ((!Modifier.isPublic(field.getModifiers())
+                    || !Modifier.isPublic(field.getDeclaringClass().getModifiers()))
+                    && !field.trySetAccessible());
+            if (cannotAccess) {
                 field.setAccessible(true);
             }
             return field.get(target);
@@ -530,22 +582,27 @@ public class ReflectionHelper {
                 for (Object parameter : parameters) {
                     parameterTypes.add(parameter.getClass());
                 }
-                declaredMethod = targetClass.getDeclaredMethod(methodName, parameterTypes.toArray(new Class[]{}));
+                declaredMethod = getMethod(targetClass, methodName, parameterTypes.toArray(new Class[]{}));
             } else {
-                declaredMethod = targetClass.getDeclaredMethod(methodName);
+                declaredMethod = getMethod(targetClass, methodName, new Class[]{});
             }
-            if (declaredMethod.trySetAccessible()) {
-                declaredMethod.setAccessible(true);
+            if (declaredMethod != null) {
+                boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
+                        || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers()))
+                        && !declaredMethod.trySetAccessible());
+                if (cannotAccess)
+                    declaredMethod.setAccessible(true);
             }
             return declaredMethod.invoke(target, parameters);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
+        } catch (IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }
 
-    public static Object invokeMethod(Object target, String methodName, Object[] parameters, Class<?>[] parameterTypes) {
+    public static Object invokeMethod(Object target, String methodName, Object[] parameters,
+                                      Class<?>[] parameterTypes) {
         try {
             Class<?> targetClass = target.getClass();
             Method declaredMethod;
@@ -554,11 +611,18 @@ public class ReflectionHelper {
             } else {
                 declaredMethod = targetClass.getDeclaredMethod(methodName);
             }
-            if (declaredMethod.trySetAccessible()) {
-                declaredMethod.setAccessible(true);
+
+            if (declaredMethod != null) {
+                boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
+                        || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers()))
+                        && !declaredMethod.trySetAccessible());
+                if (cannotAccess)
+                    declaredMethod.setAccessible(true);
             }
+
             return declaredMethod.invoke(target, parameters);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
@@ -575,7 +639,8 @@ public class ReflectionHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T invokeMethod(boolean throwException, Object target, Method method, Object... parameters) throws Throwable {
+    public static <T> T invokeMethod(boolean throwException, Object target, Method method,
+                                     Object... parameters) throws Throwable {
         if (method == null)
             return null;
         try {
@@ -584,7 +649,8 @@ public class ReflectionHelper {
             } else {
                 return (T) method.invoke(target, parameters);
             }
-        } catch (IllegalAccessException | InvocationTargetException | ClassCastException | UndeclaredThrowableException e) {
+        } catch (IllegalAccessException | InvocationTargetException | ClassCastException
+                | UndeclaredThrowableException e) {
             Throwable cause = e.getCause();
             Throwable throwable = Objects.requireNonNullElse(cause, e);
             LOGGER.error("invokeMethod error. \n", throwable);
@@ -597,12 +663,6 @@ public class ReflectionHelper {
 
     public static Object invokeSetMethod(Object target, String fieldName, Object arg, Class<?> parameterTypes) {
         Class<?> clazz = target.getClass();
-        /*for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
-            try {
-                return invokeSetMethod(superClass, target, fieldName, arg, parameterTypes);
-            } catch (NoSuchMethodException ignored) {
-            }
-        }*/
         try {
             return invokeSetMethod(clazz, target, fieldName, arg, parameterTypes);
         } catch (NoSuchMethodException ignored) {
@@ -621,7 +681,8 @@ public class ReflectionHelper {
      * @throws NoSuchMethodException if this field has no getter method
      * @return invoke method result
      */
-    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg, Class<?> parameterTypes) throws NoSuchMethodException {
+    public static Object invokeSetMethod(Class<?> targetClass, Object target, String fieldName, Object arg,
+                                         Class<?> parameterTypes) throws NoSuchMethodException {
 
         var methodName = "set" + handleFieldName(fieldName);
         try {
@@ -658,12 +719,6 @@ public class ReflectionHelper {
 
     public static Object invokeGetMethod(Object target, String fieldName) {
         Class<?> clazz = target.getClass();
-        /*for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
-            try {
-                return invokeGetMethod(superClass, target, fieldName);
-            } catch (NoSuchMethodException ignored) {
-            }
-        }*/
         try {
             return invokeGetMethod(clazz, target, fieldName);
         } catch (NoSuchMethodException ignored) {
@@ -696,7 +751,12 @@ public class ReflectionHelper {
                     return method.invoke(target, parameters);
                 }
             } catch (IllegalAccessException e) {
-                method.setAccessible(true);
+                boolean cannotAccess = ((!Modifier.isPublic(method.getModifiers())
+                        || !Modifier.isPublic(method.getDeclaringClass().getModifiers()))
+                        && !method.trySetAccessible());
+                if (cannotAccess)
+                    method.setAccessible(true);
+
                 try {
                     if (parameterTypes == null || parameterTypes.length == 0) {
                         return method.invoke(target);
@@ -720,7 +780,8 @@ public class ReflectionHelper {
      * @throws NoSuchMethodException if this field has no getter method
      * @return invoke method result
      */
-    public static Object invokeGetMethod(Class<?> targetClass, Object target, String fieldName) throws NoSuchMethodException {
+    public static Object invokeGetMethod(Class<?> targetClass, Object target, String fieldName)
+            throws NoSuchMethodException {
 
         String methodName = "get" + handleFieldName(fieldName);
         try {
@@ -776,7 +837,8 @@ public class ReflectionHelper {
     public static Set<Class<?>> getInterfaces(Class<?> clazz) {
         Set<Class<?>> result = new HashSet<>();
 
-        for (var superClass = clazz; superClass != null && superClass != Object.class; superClass = superClass.getSuperclass()) {
+        for (var superClass = clazz; superClass != null && superClass != Object.class;
+             superClass = superClass.getSuperclass()) {
             getInterfaces(result, superClass);
         }
 
@@ -803,7 +865,8 @@ public class ReflectionHelper {
     public static <T> List<Class<? extends T>> getSubClass(List<Class<?>> allClass, Class<T> parentClass) {
         List<Class<? extends T>> result = new ArrayList<>();
         for (var clazz : allClass) {
-            boolean isTarget = (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) && parentClass.isAssignableFrom(clazz);
+            boolean isTarget = (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()))
+                    && parentClass.isAssignableFrom(clazz);
             if (isTarget) {
                 result.add((Class<? extends T>) clazz);
             }
@@ -933,7 +996,9 @@ public class ReflectionHelper {
      * @param recursive 是否递归
      * @param classes 结果
      */
-    private static void findAndAddClassesInPackageByFile(ClassLoader classLoader, String packageName, String packagePath, final boolean recursive, List<Class<?>> classes) {
+    private static void findAndAddClassesInPackageByFile(ClassLoader classLoader, String packageName,
+                                                         String packagePath, final boolean recursive,
+                                                         List<Class<?>> classes) {
         // 获取此包的目录 建立一个File
         var dir = new File(packagePath);
         // 如果不存在或者 也不是目录就直接返回

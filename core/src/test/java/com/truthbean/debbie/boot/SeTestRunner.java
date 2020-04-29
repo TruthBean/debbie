@@ -1,4 +1,4 @@
-package com.truthbean.debbie.se;
+package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
@@ -21,7 +21,7 @@ public class SeTestRunner {
 
     @DebbieTask(async = true)
     public void sleep() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             logger.info("sleep : " + i);
         }
     }

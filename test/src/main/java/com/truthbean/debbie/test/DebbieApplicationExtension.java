@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -26,7 +27,6 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class);
 
     private static final String START_TIME = "start time";
-    private static final String NAMESPACE = "com.truthbean.debbie.test";
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
@@ -103,8 +103,10 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
                         ReflectionHelper.setField(o, field, result);
                     } else {
+                        @SuppressWarnings("unchecked")
                         Class injectClass = beanFactoryHandler.getInjectType();
                         if (injectClass == null) return;
+                        @SuppressWarnings("unchecked")
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
                             Class<?> type = field.getType();
@@ -135,7 +137,8 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(NAMESPACE, context.getRequiredTestMethod()));
+        return context.getStore(ExtensionContext.Namespace
+                .create(TestSuitConstants.NAMESPACE, context.getRequiredTestMethod()));
     }
 
     @Override

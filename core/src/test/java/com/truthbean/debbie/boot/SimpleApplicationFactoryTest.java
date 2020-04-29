@@ -1,20 +1,18 @@
-package com.truthbean.debbie.se;
+package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.boot.DebbieBootApplication;
 import org.junit.jupiter.api.Test;
 
 @DebbieBootApplication
-class NoWebApplicationFactoryTest {
+class SimpleApplicationFactoryTest {
 
     @Test
     public void testConfig() {
-        DebbieApplicationFactory beanFactoryHandler = DebbieApplicationFactory.configure(NoWebApplicationFactoryTest.class);
+        DebbieApplicationFactory beanFactoryHandler = DebbieApplicationFactory.configure(SimpleApplicationFactoryTest.class);
     }
 
     @Test
     public void testApplication() {
-        var application = DebbieApplicationFactory.create(NoWebApplicationFactoryTest.class);
+        var application = DebbieApplicationFactory.create(SimpleApplicationFactoryTest.class);
         application.start();
     }
 

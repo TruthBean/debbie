@@ -14,6 +14,7 @@ dependencies {
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     testImplementation(project(":debbie-test"))
+    testImplementation(project(":debbie-aio"))
 
     val javassistVersion: String by project
     testImplementation("org.javassist:javassist:$javassistVersion")

@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 public class ReflectionHelperTest {
@@ -62,7 +63,7 @@ public class ReflectionHelperTest {
     @Test
     public void getMethodActualTypes() throws ClassNotFoundException {
         Class<?> clazz = ClassLoaderUtils.getDefaultClassLoader().loadClass("com.truthbean.debbie.reflection.TestParameterized");
-        List<Method> declaredMethods = ReflectionHelper.getDeclaredMethods(clazz);
+        Set<Method> declaredMethods = ReflectionHelper.getDeclaredMethods(clazz);
         // Method[] declaredMethods = clazz.getMethods();
         for (Method declaredMethod : declaredMethods) {
             System.out.println(declaredMethod.getName() + "-----------------------------------------");

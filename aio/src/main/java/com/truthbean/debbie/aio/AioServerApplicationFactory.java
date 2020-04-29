@@ -1,6 +1,7 @@
 package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -48,7 +49,7 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
         }
     }
 
-    private class AioServerApplication extends DebbieApplication implements Runnable {
+    private class AioServerApplication extends AbstractDebbieApplication implements Runnable {
 
         private final AsynchronousServerSocketChannel server;
 
@@ -59,6 +60,7 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
 
         AioServerApplication(BeanFactoryHandler beanFactoryHandler, AioServerConfiguration configuration,
                              final SessionManager sessionManager) throws IOException {
+            super(LOGGER, beanFactoryHandler);
             int port = configuration.getPort();
             this.beanFactoryHandler = beanFactoryHandler;
             this.configuration = configuration;
@@ -78,54 +80,53 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
             server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
         }
 
-        private volatile boolean running;
-        private ThreadGroup threadGroup = new ThreadGroup("aio-server-application");
+        // private volatile boolean running;
+        private final ThreadGroup threadGroup = new ThreadGroup("aio-server-application");
         private volatile Thread starterThread;
-        private volatile Thread destroyerThread;
+        // private volatile Thread destroyerThread;
 
         @Override
         protected void start(long beforeStartTime, String... args) {
             starterThread = new Thread(threadGroup, this);
             // starterThread.setDaemon(true);
             LOGGER.debug("aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
-            beforeStart(LOGGER, beanFactoryHandler);
             printlnWebUrl(LOGGER, configuration.getPort());
             LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
 
-            destroyerThread = new Thread(threadGroup, this::exit);
+            // destroyerThread = new Thread(threadGroup, this::exit);
             starterThread.start();
         }
 
         @Override
-        public void exit(String... args) {
+        public void exit(long beforeStartTime, String... args) {
             LOGGER.debug("exit ...");
-            while (running) {
-                running = false;
-                beforeExit(beanFactoryHandler, args);
+            // while (running) {
+                // running = false;
+            LOGGER.debug("exiting ...");
                 if (starterThread != null && !starterThread.isInterrupted()) {
                     starterThread.interrupt();
                 }
-                if (destroyerThread != null && !destroyerThread.isInterrupted()) {
-                    destroyerThread.interrupt();
-                }
-            }
+//                if (destroyerThread != null && !destroyerThread.isInterrupted()) {
+//                    destroyerThread.interrupt();
+//                }
+            // }
         }
 
         @Override
         public void run() {
             try {
-                LOGGER.debug("run .... ");
+                LOGGER.debug("running .... ");
                 // 为服务端socket指定接收操作对象.accept原型是：
                 // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
                 // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
                 // 即是listener。另一个参数V，就是原型中的客户端socket
                 var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, beanFactoryHandler, server);
                 server.accept(server, mvcCompletionHandler);
-                running = true;
+                // running = true;
 
-                Runtime.getRuntime().addShutdownHook(destroyerThread);
+//                Runtime.getRuntime().addShutdownHook(destroyerThread);
 
-                starterThread.join();
+                // starterThread.join();
             } catch (Exception e) {
                 LOGGER.error("", e);
             }

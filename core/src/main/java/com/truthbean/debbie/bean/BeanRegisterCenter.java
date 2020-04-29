@@ -1,6 +1,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ final class BeanRegisterCenter {
     private static final Set<DebbieBeanInfo<?>> CLASS_INFO_SET = new HashSet<>();
 
     private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
-    private static final Map<Class<? extends Annotation>, Map<Class<?>, List<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
+    private static final Map<Class<? extends Annotation>, Map<Class<?>, Set<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
 
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo<?>>> ANNOTATION_METHOD_BEANS = new HashMap<>();
@@ -46,9 +47,8 @@ final class BeanRegisterCenter {
         }
         CLASS_INFO_SET.add(beanClassInfo);
 
-        List<Method> declaredMethods = beanClassInfo.getMethods();
-        declaredMethods.forEach(method -> {
-            var annotations = method.getDeclaredAnnotations();
+        Map<Method, Set<Annotation>> methodWithAnnotations = beanClassInfo.getMethodWithAnnotations();
+        methodWithAnnotations.forEach((method, annotations) -> {
             if (annotations != null) {
                 for (Annotation annotation : annotations) {
                     var methodAnnotation = annotation.annotationType();
@@ -70,7 +70,7 @@ final class BeanRegisterCenter {
                 if (classMethodMap == null) {
                     classMethodMap = new HashMap<>();
                 }
-                classMethodMap.put(beanClass, declaredMethods);
+                classMethodMap.put(beanClass, methodWithAnnotations.keySet());
                 BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
             });
         }
@@ -96,6 +96,9 @@ final class BeanRegisterCenter {
             return false;
         if (beanClass.isAnnotation())
             return false;
+        if (beanClass.getAnnotation(AsmGenerated.class) != null) {
+            return false;
+        }
         return true;
     }
 
@@ -136,7 +139,7 @@ final class BeanRegisterCenter {
         packageNames.forEach(ele -> this.register(ele, classLoader, resourceResolver));
     }
 
-    List<Method> getBeanMethods(Class<?> beanClass) {
+    Set<Method> getBeanMethods(Class<?> beanClass) {
         var classInfoSet = BEAN_CLASSES;
         if (!classInfoSet.containsKey(beanClass)) {
             LOGGER.error(beanClass.getName() + " has not register");

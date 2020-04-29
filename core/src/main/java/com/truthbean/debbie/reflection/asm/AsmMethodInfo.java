@@ -1,59 +1,71 @@
 package com.truthbean.debbie.reflection.asm;
 
+import com.truthbean.debbie.reflection.MethodInfo;
+import com.truthbean.debbie.reflection.TypeHelper;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
  * @author 璩诗斌
  * @since 0.0.1
  */
-public class AsmMethodInfo {
+public class AsmMethodInfo extends MethodInfo {
     private AsmClassInfo classInfo;
-    private int modifier;
-    private Signature signature;
-    private Type[] exceptionTypes;
+
+    private final int access;
+    private final String descriptor;
+    private final String signature;
+
+    private final String[] exceptions;
+
     private Attribute attribute;
 
-    public AsmClassInfo getClassInfo() {
-        return classInfo;
+    private final boolean idDefault;
+    private final boolean isInterface;
+    private final boolean isReturnVoid;
+
+    public AsmMethodInfo(Method method) {
+        super(method);
+        this.access = TypeHelper.getAccessByModifiers(method.getModifiers());
+        this.descriptor = Type.getMethodDescriptor(method);
+        this.signature = super.getName() + this.descriptor;
+
+        this.exceptions = TypeHelper.getExceptions(method.getExceptionTypes());
+
+        this.isInterface = method.getDeclaringClass().isInterface();
+        this.isReturnVoid = method.getReturnType().isAssignableFrom(Void.class);
+        this.idDefault = method.isDefault();
     }
 
-    public void setClassInfo(AsmClassInfo classInfo) {
-        this.classInfo = classInfo;
+    public int getAccess() {
+        return access;
     }
 
-    public int getModifier() {
-        return modifier;
+    public String getDescriptor() {
+        return descriptor;
     }
 
-    public void setModifier(int modifier) {
-        this.modifier = modifier;
-    }
-
-    public Signature getSignature() {
+    public String getSignature() {
         return signature;
     }
 
-    public void setSignature(Signature signature) {
-        this.signature = signature;
+    public String[] getExceptions() {
+        return exceptions;
     }
 
-    public Type[] getExceptionTypes() {
-        return exceptionTypes;
+    public boolean isIdDefault() {
+        return idDefault;
     }
 
-    public void setExceptionTypes(Type[] exceptionTypes) {
-        this.exceptionTypes = exceptionTypes;
+    public boolean isInterface() {
+        return isInterface;
     }
 
-    public Attribute getAttribute() {
-        return attribute;
-    }
-
-    public void setAttribute(Attribute attribute) {
-        this.attribute = attribute;
+    public boolean isReturnVoid() {
+        return isReturnVoid;
     }
 
     @Override
