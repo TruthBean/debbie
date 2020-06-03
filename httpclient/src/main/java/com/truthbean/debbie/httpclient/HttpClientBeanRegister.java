@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -13,9 +22,9 @@ import java.util.Set;
  * @since 0.0.2
  */
 public class HttpClientBeanRegister extends SingletonBeanRegister {
-    private HttpClientFactory handler;
-    private BeanFactoryHandler beanFactoryHandler;
-    private BeanInitialization initialization;
+    private final HttpClientFactory handler;
+    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanInitialization initialization;
 
     public HttpClientBeanRegister(BeanFactoryHandler beanFactoryHandler) {
         super(beanFactoryHandler);
@@ -39,7 +48,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
         DebbieBeanInfo<HttpClientFactory> httpClientFactoryBeanInfo = initialization.getRegisterRawBean(HttpClientFactory.class);
         if (httpClientFactoryBeanInfo == null) {
             registerSingletonBean(handler, HttpClientFactory.class, "httpClientFactory");
-        } else if (httpClientFactoryBeanInfo.getBean() == null) {
+        } else if (httpClientFactoryBeanInfo.isEmpty()) {
             httpClientFactoryBeanInfo.setBeanName("httpClientFactory");
             httpClientFactoryBeanInfo.setBean(handler);
             registerSingletonBean(httpClientFactoryBeanInfo);

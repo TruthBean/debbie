@@ -1,6 +1,7 @@
 package com.truthbean.debbie.task;
 
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.event.TestBean;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
 import org.junit.jupiter.api.Test;

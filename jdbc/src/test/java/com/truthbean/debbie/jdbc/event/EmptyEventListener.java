@@ -6,8 +6,8 @@ import com.truthbean.debbie.event.GenericEventListener;
 @EventBeanListener
 public class EmptyEventListener implements GenericEventListener<EmptyEvent> {
   @Override
-  public boolean supportsSourceType(Class<?> sourceType) {
-    return sourceType == EmptyEvent.class;
+  public Class<EmptyEvent> getEventType() {
+    return EmptyEvent.class;
   }
 
   @Override

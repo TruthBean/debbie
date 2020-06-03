@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.bean.inter;
 
 import com.truthbean.debbie.bean.BeanComponent;
@@ -16,7 +25,7 @@ public class DemoBeanComponent {
     private final Demo2 demo1;
     private final Demo2 demo2;
 
-    public DemoBeanComponent(@BeanInject(name = "demo") Demo2 demo1, @BeanInject(name = "demo") Demo2 demo2) {
+    public DemoBeanComponent(Demo2 demo1, Demo2 demo2) {
         uuid = UUID.randomUUID().toString();
         this.demo2 = demo2;
         this.demo1 = demo1;
@@ -37,18 +46,18 @@ public class DemoBeanComponent {
 
     @BeanComponent(name = "demo", type = BeanType.NO_LIMIT)
     public static class Demo2 {
-        private boolean id;
+        private byte id;
 
         public Demo2() {
         }
 
         @MethodProxy(order = 32)
-        public boolean getUuid() {
+        public byte getUuid() {
             return id;
         }
 
         @MethodProxy(order = 32)
-        public void setId(boolean id, int a) {
+        public void setId(byte id) {
             this.id = id;
         }
     }

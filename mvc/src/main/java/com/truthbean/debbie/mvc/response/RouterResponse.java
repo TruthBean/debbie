@@ -1,9 +1,19 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
@@ -195,6 +205,32 @@ public class RouterResponse implements Cloneable {
         this.status = response.status;
 
         this.error = response.error;
+    }
+
+    public void copyNoNull(RouterResponse response) {
+        this.redirect = response.redirect;
+        this.headers.putAll(response.headers);
+
+        if (response.content != null)
+            this.content = response.content;
+
+        if (response.handler != null)
+            this.handler = response.handler;
+
+        this.cookies.addAll(response.cookies);
+        this.modelAttributes.putAll(response.modelAttributes);
+
+        this.hasTemplate = response.hasTemplate;
+        if (StringUtils.hasText(response.templatePrefix))
+            this.templatePrefix = response.templatePrefix;
+        if (StringUtils.hasText(response.templateSuffix))
+            this.templateSuffix = response.templateSuffix;
+
+        if (response.restResponseClass != null)
+            this.restResponseClass = response.restResponseClass;
+
+        if (response.status != null)
+            this.status = response.status;
     }
 
     @Override

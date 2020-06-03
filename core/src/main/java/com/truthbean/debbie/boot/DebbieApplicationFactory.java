@@ -1,10 +1,21 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.bean.AutoCreatedBeanFactory;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.event.AbstractDebbieStartedEventListener;
 import com.truthbean.debbie.event.DebbieStartedEvent;
+import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
@@ -66,7 +77,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         return result;
     }
 
-    protected void config(Class<?> applicationClass) {
+    protected synchronized void config(Class<?> applicationClass) {
         LOGGER.debug("init configuration");
         // beanInitialization
         var beanInitialization = super.getBeanInitialization();
@@ -103,7 +114,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         eventListenerBeanRegister.register();
     }
 
-    protected void callStarter() {
+    protected synchronized void callStarter() {
         if (debbieModuleStarters == null) {
             debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         }
@@ -115,7 +126,15 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
                 debbieModuleStarter.starter(configurationFactory, this);
             }
         }
+    }
 
+    private volatile AutoCreatedBeanFactory autoCreatedBeanFactory;
+    protected synchronized void postCallStarter() {
+        // create not lazy beans
+        if (this.autoCreatedBeanFactory == null) {
+            autoCreatedBeanFactory = new AutoCreatedBeanFactory(this);
+        }
+        autoCreatedBeanFactory.autoCreateBeans();
         // do startedEvent
         multicastEvent(this);
         // do task
@@ -123,13 +142,20 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         taskFactory.doTask();
     }
 
+    private volatile DebbieStartedEventProcessor processor;
     private void multicastEvent(BeanFactoryHandler beanFactoryHandler) {
-        DebbieStartedEvent startedEvent = new DebbieStartedEvent(this, beanFactoryHandler);
-        List<AbstractDebbieStartedEventListener> beanInfoList = beanFactoryHandler.getBeanList(AbstractDebbieStartedEventListener.class);
-        if (beanInfoList != null) {
-            for (AbstractDebbieStartedEventListener startedEventListener : beanInfoList) {
-                startedEventListener.onEvent(startedEvent);
-            }
+        if (this.processor == null) {
+            this.processor = new DebbieStartedEventProcessor(beanFactoryHandler);
+        }
+        processor.multicastEvent();
+    }
+
+    private synchronized void beforeRelease() {
+        if (this.autoCreatedBeanFactory != null) {
+            this.autoCreatedBeanFactory.stopAll();
+        }
+        if (this.processor != null) {
+            processor.stopAll();
         }
     }
 
@@ -139,6 +165,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         if (debbieModuleStarters == null) {
             debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         }
+        beforeRelease();
         if (!debbieModuleStarters.isEmpty()) {
             List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
             Collections.sort(list, (starter1, starter2) -> {
@@ -214,6 +241,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
         config(applicationClass);
         callStarter();
+
         debbieApplication = factoryApplication();
         debbieApplicationFactory.configDebbieApplication(debbieApplication, beforeStartTime);
         return debbieApplication;

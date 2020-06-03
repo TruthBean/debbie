@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.data.transformer.DataTransformer;
@@ -22,6 +31,7 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author TruthBean
@@ -30,9 +40,9 @@ import java.util.*;
  */
 public class BeanFactoryHandler {
 
-    private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = new HashSet<>();
+    private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = Collections.synchronizedSet(new HashSet<>());
 
-    private final Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap = new HashMap<>();
+    private final Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap = new ConcurrentHashMap<>();
 
     private final BeanInitialization beanInitialization;
     private final DebbieConfigurationFactory configurationFactory;
@@ -123,14 +133,15 @@ public class BeanFactoryHandler {
         });
     }
 
-    public void autoCreateBeans() {
+    Set<DebbieBeanInfo<?>> getAutoCreatedBean() {
+        Set<DebbieBeanInfo<?>> result = new HashSet<>();
         for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet) {
             Boolean lazyCreate = beanInfo.getLazyCreate();
             if (lazyCreate != null && !lazyCreate) {
-                beanInfo.setBean(factory(beanInfo.getServiceName()));
-                beanInitialization.refreshBean(beanInfo);
+                result.add(beanInfo);
             }
         }
+        return result;
     }
 
     public void destroy(DebbieBeanInfo<?> beanInfo) {
@@ -293,15 +304,15 @@ public class BeanFactoryHandler {
         return factory(beanInfo);
     }
 
-    public <T> T factory(String serviceName) {
+    public synchronized <T> T factory(String serviceName) {
         LOGGER.trace("factory bean with name " + serviceName);
         return factory(serviceName, null, true);
     }
 
     public <T> T factoryByProxy(DebbieBeanInfo<T> beanInfo) {
         return beanInfo.getBean();
-        /*MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
-        Map<Method, Set<Annotation>> methodWithAnnotations = beanInfo.getMethodWithAnnotations();
+        // MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
+        /*Map<Method, Set<Annotation>> methodWithAnnotations = beanInfo.getMethodWithAnnotations();
         if (methodWithAnnotations == null || methodWithAnnotations.isEmpty()) {
             return beanInfo.getBean();
         }
@@ -321,8 +332,7 @@ public class BeanFactoryHandler {
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {
         if (beanInfo.getBeanType() == BeanType.SINGLETON) {
             resolveFieldBeans(beanInfo);
-            var bean = beanInfo.getBean();
-            if (bean != null) {
+            if (beanInfo.isPresent()) {
                 return factoryByProxy(beanInfo);
             }
         }
@@ -387,7 +397,7 @@ public class BeanFactoryHandler {
         if (fieldBeanDependents != null && !fieldBeanDependents.isEmpty()) {
             Collection<DebbieBeanInfo<?>> fieldBeanDependent = fieldBeanDependents.values();
             for (DebbieBeanInfo debbieBeanInfo : fieldBeanDependent) {
-                if ((debbieBeanInfo.getBean() == null || debbieBeanInfo.isHasVirtualValue())) {
+                if ((debbieBeanInfo.isEmpty() || debbieBeanInfo.isHasVirtualValue())) {
                     Object object = getBeanInfo(debbieBeanInfo.getServiceName(), (Class<T>) debbieBeanInfo.getBeanClass(), true, beanServiceInfoSet).getBean();
                     if (object != null) {
                         debbieBeanInfo.setBean(object);
@@ -447,7 +457,6 @@ public class BeanFactoryHandler {
     }
 
     private void resolvePropertyFieldValue(DebbieBeanInfo<?> beanInfo) {
-        Object object = beanInfo.getBean();
         List<Field> fields = beanInfo.getFields();
         String keyPrefix = null;
 
@@ -462,7 +471,7 @@ public class BeanFactoryHandler {
 
         if (fields != null && !fields.isEmpty()) {
             String finalKeyPrefix = keyPrefix;
-            fields.forEach(field -> resolvePropertyFieldValue(object, field, finalKeyPrefix));
+            fields.forEach(field -> resolvePropertyFieldValue(beanInfo.getBean(), field, finalKeyPrefix));
         }
     }
 
@@ -648,7 +657,7 @@ public class BeanFactoryHandler {
             // resolve third level beans
             Collection<DebbieBeanInfo<?>> constructorBeanDependent = beanInfo.getConstructorBeanDependent().values();
             for (DebbieBeanInfo<?> debbieBeanInfo : constructorBeanDependent) {
-                if ((debbieBeanInfo.getBean() == null || !debbieBeanInfo.isHasVirtualValue())) {
+                if ((debbieBeanInfo.optional().isEmpty() || !debbieBeanInfo.isHasVirtualValue())) {
                     beanInfo.setHasVirtualValue(true);
                     factoryNoLimit(debbieBeanInfo);
                 }

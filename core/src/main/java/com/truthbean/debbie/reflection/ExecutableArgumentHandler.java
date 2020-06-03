@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -5,6 +14,7 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,14 +61,7 @@ public class ExecutableArgumentHandler {
             invokedParameter = new ExecutableArgument();
             Class<?> type = parameterTypes[i];
             invokedParameter.setType(type);
-            if (!parameter.isNamePresent()) {
-                String name = parameter.getName();
-                if (name.startsWith("arg")) {
-                    invokedParameter.setIndex(Integer.parseInt(name.split("arg")[1]));
-                } else {
-                    invokedParameter.setName(name);
-                }
-            }
+            invokedParameter.setIndex(i);
 
             BeanInject beanInject = parameter.getAnnotation(BeanInject.class);
             if (beanInject != null) {
@@ -76,6 +79,13 @@ public class ExecutableArgumentHandler {
                     value = beanFactoryHandler.factory(type);
                 }
                 invokedParameter.setValue(value);
+            }
+
+            String name = invokedParameter.getName();
+            if (!StringUtils.hasText(name)) {
+                if (parameter.isNamePresent()) {
+                    invokedParameter.setName(parameter.getName());
+                }
             }
 
             invokedParameter.setAnnotations(parameter.getAnnotations());

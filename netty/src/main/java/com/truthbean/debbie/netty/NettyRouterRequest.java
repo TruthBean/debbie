@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.io.FileNameUtils;
@@ -127,7 +136,10 @@ public class NettyRouterRequest implements RouterRequest {
 
     public void handleHttpData(HttpContent httpContent) {
         try {
-            decoder.offer(httpContent);
+            HttpContent content = httpContent.copy();
+            // 处理 java.lang.IndexOutOfBoundsException: writerIndex(x) + minWritableBytes(x) exceeds maxCapacity(x): UnpooledSlicedByteBuf(ridx: x, widx: x, cap: x/x, unwrapped: CompositeByteBuf(ridx: 0, widx: x, cap: x, components=3))
+            content.content().resetWriterIndex();
+            decoder.offer(content);
             while (decoder.hasNext()) {
                 InterfaceHttpData data = decoder.next();
                 if (data != null) {
@@ -151,6 +163,8 @@ public class NettyRouterRequest implements RouterRequest {
     public void resetHttpRequest() {
         try {
             decoder.removeHttpDataFromClean(decoder.currentPartialHttpData());
+            decoder.cleanFiles();
+            decoder.destroy();
         } catch (Exception e) {
             if (e instanceof HttpPostRequestDecoder.EndOfDataDecoderException
                 || e instanceof HttpPostRequestDecoder.ErrorDataDecoderException) {
@@ -199,16 +213,22 @@ public class NettyRouterRequest implements RouterRequest {
             // tells if the file is in Memory
             if (fileUpload.isInMemory()) {
                 try {
-                    routerRequestCache.addParameter(fileUpload.getName(), fileUpload.getFile());
+                    routerRequestCache.addParameter(fileUpload.getName(), fileUpload.get());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("read memory file error. ", e);
+                }
+            } else {
+                try {
+                    routerRequestCache.addParameter(fileUpload.getName(), fileUpload.getFile());
+                    // or on File
+                    // fileUpload.renameTo(dest); // enable to move into another
+                    // File dest
+                    // decoder.removeFileUploadFromClean(fileUpload); //remove
+                    // the File of to delete file
+                } catch (IOException e) {
+                    LOGGER.error("read file error. ", e);
                 }
             }
-            // or on File
-            // fileUpload.renameTo(dest); // enable to move into another
-            // File dest
-            // decoder.removeFileUploadFromClean(fileUpload); //remove
-            // the File of to delete file
         } else {
             LOGGER.error("File to be continued but should not!");
         }
@@ -220,9 +240,9 @@ public class NettyRouterRequest implements RouterRequest {
         try {
             value = attribute.getValue();
             routerRequestCache.addParameter(attribute.getName(), value);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            LOGGER.error("BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " Error while reading value: " + e1.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.error("BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " Error while reading value: " + e.getMessage());
             return;
         }
         if (value.length() > 100) {

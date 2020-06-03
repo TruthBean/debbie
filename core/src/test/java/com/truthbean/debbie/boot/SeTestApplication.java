@@ -14,12 +14,17 @@ class SeTestApplication {
     }
 
     public static void main(String[] args) {
-        /*DebbieApplication application = DebbieApplicationFactory.create(SimpleApplicationFactoryTest.class);
+        /*DebbieApplication application = DebbieApplicationFactory.create(SeTestApplication.class);
 
-        new Thread(() -> application.start(args)).start();
-        new Thread(() -> application.start(args)).start();
-        application.start(args);
-        new Thread(() -> application.start(args)).start();
+        new Thread(() -> application.start(args)).start();*/
+
+        Package pkg = SeTestApplication.class.getPackage();
+        String result = pkg != null ? pkg.getImplementationVersion() : null;
+        System.out.println(result);
+
+        /* new Thread(() -> application.start(args)).start();
+        application.start(args);*/
+        /*new Thread(() -> application.start(args)).start();
         new Thread(() -> application.start(args)).start();
         new Thread(() -> application.start(args)).start();
 
@@ -27,7 +32,13 @@ class SeTestApplication {
         application.exit(args);
         new Thread(() -> application.exit(args)).start();*/
 
-        SeTestApplication instance = ReflectionHelper.newInstance(SeTestApplication.class);
-        System.out.println(instance);
+        /*try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        application.exit(args);*/
+        /*new Thread(() -> application.exit(args)).start();*/
     }
 }

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -58,14 +59,14 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
                 String returnTypeName = returnType.getName();
                 if (isAnnotationMethod(method)) {
                     proxyClass.addMethod(CtNewMethod.make("public " + returnTypeName + " " + methodName + "() {\n" +
-                            "        " + methodCallBackClassName + " callBack = new " + methodCallBackClassName + "(target, \"" + methodName + "\");\n" +
+                            "        " + methodCallBackClassName + " callBack = new " + methodCallBackClassName + "(target, \"" + method + "\");\n" +
                             "        return this.handler.proxy(callBack);\n" +
                             "    }", proxyClass));
                 } else if (returnType == void.class) {
                     proxyClass.addMethod(CtNewMethod.make("public " + returnType + " " + methodName + "() {\n" +
                             "        target." + methodName + "();\n" +
                             "    }", proxyClass));
-                } else if (method.isDefault()) {
+                } else if (method.isDefault() || Modifier.isAbstract(method.getModifiers()) || Modifier.isFinal(method.getModifiers())) {
                     // do nothing
                 } else {
                     proxyClass.addMethod(CtNewMethod.make("public " + returnType + " " + methodName + "() {\n" +

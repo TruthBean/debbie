@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * &lt;li&gt;{@code ?} matches one character&lt;/li&gt;
  * &lt;li&gt;{@code *} matches zero or more characters&lt;/li&gt;
  * &lt;li&gt;{@code **} matches zero or more &lt;em&gt;directories&lt;/em&gt; in a path&lt;/li&gt;
- * &lt;li&gt;{@code {spring:[a-z]+}} matches the regexp {@code [a-z]+} as a path variable named "spring"&lt;/li&gt;
+ * &lt;li&gt;{@code {debbie:[a-z]+}} matches the regexp {@code [a-z]+} as a path variable named "debbie"&lt;/li&gt;
  * &lt;/ul&gt;
  *
  * &lt;h3&gt;Examples&lt;/h3&gt;
@@ -29,11 +29,11 @@ import java.util.regex.Pattern;
  * {@code com} directory&lt;/li&gt;
  * &lt;li&gt;&lt;code&gt;com/&#42;&#42;/test.jsp&lt;/code&gt; &mdash; matches all {@code test.jsp}
  * files underneath the {@code com} path&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;org/springframework/&#42;&#42;/*.jsp&lt;/code&gt; &mdash; matches all
+ * &lt;li&gt;&lt;code&gt;com/debbie/&#42;&#42;/*.jsp&lt;/code&gt; &mdash; matches all
  * {@code .jsp} files underneath the {@code org/springframework} path&lt;/li&gt;
  * &lt;li&gt;&lt;code&gt;org/&#42;&#42;/servlet/bla.jsp&lt;/code&gt; &mdash; matches
- * {@code org/springframework/servlet/bla.jsp} but also
- * {@code org/springframework/testing/servlet/bla.jsp} and {@code org/servlet/bla.jsp}&lt;/li&gt;
+ * {@code com/debbie/servlet/bla.jsp} but also
+ * {@code com/debbie/testing/servlet/bla.jsp} and {@code org/servlet/bla.jsp}&lt;/li&gt;
  * &lt;li&gt;{@code com/{filename:\\w+}.jsp} will match {@code com/test.jsp} and assign the value {@code test}
  * to the {@code filename} variable&lt;/li&gt;
  * &lt;/ul&gt;

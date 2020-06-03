@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
@@ -574,15 +583,15 @@ public class ReflectionHelper {
     }
 
     public static Object invokeMethod(Object target, String methodName, Object... parameters) {
+        Method declaredMethod = null;
         try {
             Class<?> targetClass = target.getClass();
-            Method declaredMethod;
             if (parameters != null && parameters.length > 0) {
                 List<Class<?>> parameterTypes = new LinkedList<>();
                 for (Object parameter : parameters) {
                     parameterTypes.add(parameter.getClass());
                 }
-                declaredMethod = getMethod(targetClass, methodName, parameterTypes.toArray(new Class[]{}));
+                declaredMethod = getMethod(targetClass, methodName, parameterTypes.toArray(new Class<?>[]{}));
             } else {
                 declaredMethod = getMethod(targetClass, methodName, new Class[]{});
             }
@@ -592,11 +601,19 @@ public class ReflectionHelper {
                         && !declaredMethod.trySetAccessible());
                 if (cannotAccess)
                     declaredMethod.setAccessible(true);
+            } else {
+                throw new NoSuchMethodException(methodName);
             }
-            return declaredMethod.invoke(target, parameters);
-        } catch (IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
+            if (parameters != null && parameters.length > 0)
+                return declaredMethod.invoke(target, parameters);
+            else
+                return declaredMethod.invoke(target);
+        } catch (IllegalAccessException | InvocationTargetException | UndeclaredThrowableException | NoSuchMethodException e) {
             Throwable cause = e.getCause();
-            LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
+            if (declaredMethod != null)
+                LOGGER.error("invoke method(" + declaredMethod + " error ). \n", Objects.requireNonNullElse(cause, e));
+            else
+                LOGGER.error("invoke method(" + methodName + " error ). \n", Objects.requireNonNullElse(cause, e));
         }
         return null;
     }

@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.reflection;
 
 import java.lang.annotation.Annotation;
@@ -18,6 +27,8 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
     private int index;
     private String name;
     private Map<Class<? extends Annotation>, Annotation> annotations;
+
+    private String stack;
 
     public ExecutableArgument() {
         this.annotations = new HashMap<>();
@@ -79,6 +90,10 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
         this.name = name;
     }
 
+    public void setStack(String stack) {
+        this.stack = stack;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -128,10 +143,27 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
         parameter.index = index;
         parameter.name = name;
         parameter.annotations = new HashMap<>(annotations);
+
+        parameter.stack = stack;
         return parameter;
     }
 
     public void resetValue(){
         this.value = null;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"type\":" + type +
+                ",\"value\":" + value +
+                ",\"index\":" + index +
+                ",\"name\":\"" + name + '\"' +
+                ",\"annotations\":" + annotations +
+                '}';
+    }
+
+    public String stack() {
+        return stack;
     }
 }

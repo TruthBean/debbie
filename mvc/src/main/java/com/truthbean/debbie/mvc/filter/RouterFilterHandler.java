@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.mvc.filter;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -29,7 +38,7 @@ public class RouterFilterHandler {
         this.routerFilter = routerFilter;
     }
 
-    public Boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
+    public boolean preRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
         String url = routerRequest.getUrl();
 
         List<String> rawUrlPattern = filterInfo.getRawUrlPattern();
@@ -46,11 +55,15 @@ public class RouterFilterHandler {
             }
         }
 
-        return null;
+        return false;
     }
 
     public Boolean postRouter(RouterRequest routerRequest, RouterResponse routerResponse) {
         return routerFilter.postRouter(routerRequest, routerResponse);
+    }
+
+    public boolean notFilter(RouterRequest request) {
+        return routerFilter.notFilter(request);
     }
 
 }

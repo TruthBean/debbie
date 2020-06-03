@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +32,7 @@ import com.truthbean.debbie.proxy.DefaultMethodProxyHandler;
 import com.truthbean.debbie.proxy.MethodProxy;
 import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
-import com.truthbean.debbie.task.ThreadPooledExecutor;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,8 +62,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
         registerTransformer(beanInitialization);
 
-        // MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
-        // methodProxyHandlerRegister.register(MethodProxy.class, DefaultMethodProxyHandler.class);
+        MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
+        methodProxyHandlerRegister.register(MethodProxy.class, DefaultMethodProxyHandler.class);
     }
 
     @Override

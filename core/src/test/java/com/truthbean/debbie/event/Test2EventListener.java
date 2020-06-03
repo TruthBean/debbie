@@ -16,7 +16,7 @@ public class Test2EventListener implements GenericEventListener<Test2Event> {
     }
 
     @Override
-    public boolean supportsSourceType(Class<?> sourceType) {
-        return sourceType == Test2Event.class;
+    public Class<Test2Event> getEventType() {
+        return Test2Event.class;
     }
 }

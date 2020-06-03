@@ -2,6 +2,7 @@ package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -9,7 +10,8 @@ public class EventTest {
     @Test
     public void testEvent() {
         long start = System.currentTimeMillis();
-        DebbieEventMulticaster eventMulticaster = new DefaultEventMulticaster();
+        ThreadPooledExecutor factory = new ThreadPooledExecutor();
+        DebbieEventMulticaster eventMulticaster = new DefaultEventPublisher(factory);
         // eventMulticaster.addEventListener(new TestEventListener());
         eventMulticaster.addEventListener(new Test2EventListener());
 

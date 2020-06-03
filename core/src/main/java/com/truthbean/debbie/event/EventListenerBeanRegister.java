@@ -1,10 +1,16 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.SingletonBeanRegister;
-import com.truthbean.debbie.task.ThreadPooledExecutor;
+import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -37,10 +43,10 @@ public class EventListenerBeanRegister {
         for (DebbieBeanInfo debbieBeanInfo : classInfoSet) {
             Class<?> beanType = debbieBeanInfo.getBeanClass();
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
-                Object bean = beanFactoryHandler.factory(beanType);
-                debbieBeanInfo.setBean(bean);
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
-                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), (DebbieEventListener<? extends AbstractDebbieEvent>) bean);
+                BeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
+                listenerBeanFactory.setBeanFactoryHandler(beanFactoryHandler);
+                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), listenerBeanFactory);
             }
         }
         // 处理 EventMethodListener
@@ -60,8 +66,16 @@ public class EventListenerBeanRegister {
                             if (AbstractDebbieEvent.class.isAssignableFrom(type)) {
                                 var listener = new EventMethodListenerFactory(bean, type, method);
                                 listener.setAsync(annotation.async());
-                                debbieBeanInfo.setBean(listener);
-                                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) type, (DebbieEventListener<? extends AbstractDebbieEvent>) listener);
+
+                                @SuppressWarnings("unchecked")
+                                DebbieBeanInfo listenerBeanInfo = new DebbieBeanInfo<>(EventMethodListenerFactory.class);
+                                listenerBeanInfo.setBean(listener);
+
+                                DebbieBeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>();
+                                listenerBeanFactory.setBeanFactoryHandler(beanFactoryHandler);
+                                listenerBeanFactory.setBeanInfo(listenerBeanInfo);
+
+                                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) type, listenerBeanFactory);
                             }
                         }
                     }

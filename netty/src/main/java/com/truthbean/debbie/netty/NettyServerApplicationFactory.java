@@ -19,6 +19,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.ManagementFactory;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -76,8 +78,9 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
             ChannelFuture channelFuture = b.bind(configuration.getPort()).sync();
             LOGGER.debug("netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
-            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-            // Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+            double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+            debbieApplication.postBeforeStart();
 
             // Wait until the server socket is closed.
             // In this example, this does not happen, but you can do that to gracefully
@@ -129,6 +132,11 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
             this.configuration = configuration;
             this.sessionManager = sessionManage;
             this.beanFactoryHandler = beanFactoryHandler;
+        }
+
+        @Override
+        protected void postBeforeStart() {
+            super.postBeforeStart();
         }
 
         @Override

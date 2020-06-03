@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.data.validate.DefaultDataValidateFactory;
@@ -12,6 +21,7 @@ import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.AbstractView;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.reflection.*;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +135,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     if (parameters.getBody() != null) {
                                 /*handleObjectFiled(parameters.getBody(), requestParam.requestType(), newInstance,
                                         fields.get(i), parameter);*/
-                                // todo
+                        // todo
                     }
 
                     Map<String, List> headers = parameters.getHeaders();
@@ -148,10 +158,9 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
     }
 
     /**
-     *
-     * @param parameters router request values
+     * @param parameters       router request values
      * @param invokedParameter method parameter
-     * @param requestType router request type
+     * @param requestType      router request type
      * @return if is special return true
      */
     public boolean doHandleParam(RouterRequestValues parameters, ExecutableArgument invokedParameter, MediaType requestType) {
@@ -320,14 +329,8 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             invokedParameter = new ExecutableArgument();
             Type parameterizedType = parameterTypes[i];
             invokedParameter.setType(parameterizedType);
-            if (!parameter.isNamePresent()) {
-                String name = parameter.getName();
-                if (name.startsWith("arg")) {
-                    invokedParameter.setIndex(Integer.valueOf(name.split("arg")[1]));
-                } else {
-                    invokedParameter.setName(name);
-                }
-            }
+            invokedParameter.setIndex(i);
+
             RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
             if (requestParameter != null) {
                 var name = requestParameter.value();
@@ -337,6 +340,14 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                 invokedParameter.setName(name);
             }
             invokedParameter.setAnnotations(parameter.getAnnotations());
+
+            String name = invokedParameter.getName();
+            if (!StringUtils.hasText(name)) {
+                if (parameter.isNamePresent()) {
+                    invokedParameter.setName(parameter.getName());
+                }
+            }
+            invokedParameter.setStack("param(" + parameterizedType + "[" + i + "]" + name + ") \nin method(" + method.toString() + ")\n");
 
             result.add(invokedParameter);
         }

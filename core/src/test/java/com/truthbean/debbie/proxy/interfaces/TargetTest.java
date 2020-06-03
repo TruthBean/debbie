@@ -38,7 +38,7 @@ public class TargetTest {
         var proxy = new MethodProxyHandlerHandler(LOGGER);
         proxy.setInterceptors(list);
 
-        MethodCallBack<Void> callBack = new MethodCallBack<Void>(target, "code", "java");
+        MethodCallBack<Void> callBack = new MethodCallBack<Void>(target, "code", new Class[]{String.class}, new Object[]{"java"});
 
         proxy.proxy(callBack);
     }

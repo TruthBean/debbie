@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.proxy.asm;
 
 import com.truthbean.debbie.proxy.MethodCallBack;
@@ -16,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +33,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+/**
+ * @author truthbean/Rogar·Q
+ * @since 0.0.2
+ */
 public class AsmProxy<B> extends AbstractProxy<B> {
 
     private static final Map<Class<?>, Class<?>> beanAndProxy = new ConcurrentHashMap<>();
@@ -32,11 +46,12 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         super(beanClass, handler, methodAnnotation);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public synchronized B proxy(Supplier<B> bean) {
         Class<B> beanClass = getBeanClass();
         if (beanAndProxy.containsKey(beanClass)) {
-            return doProxy(beanAndProxy.get(beanClass), beanClass, bean);
+            return doProxy((Class<? extends B>) beanAndProxy.get(beanClass), beanClass, bean);
         }
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
@@ -53,7 +68,6 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         }
 
         classWriter.visitAnnotation(Type.getDescriptor(AsmGenerated.class), true);
-
 
         buildConstructor(classWriter, superClassPath);
 
@@ -79,7 +93,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
         try {
             byte[] data = classWriter.toByteArray();
-            File file = new File("G:\\DevOps\\java\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
+            File file = new File("I:\\DevOps\\java\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
             FileOutputStream out = new FileOutputStream(file);
             out.write(data);
             out.close();
@@ -94,7 +108,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         return doProxy(proxyClass, beanClass, bean);
     }
 
-    private B doProxy(Class<?> proxyClass, Class<B> beanClass, Supplier<B> bean) {
+    private B doProxy(Class<? extends B> proxyClass, Class<B> beanClass, Supplier<B> bean) {
         B proxy = (B) ReflectionHelper.newInstance(proxyClass);
 
         ReflectionHelper.invokeSetMethod(proxy, "handler", getHandler(), getHandlerClass());
@@ -104,7 +118,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
     }
 
     private void buildConstructor(ClassWriter classWriter, String superClassPath) {
-        MethodVisitor initVisitor = classWriter.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        MethodVisitor initVisitor = classWriter.visitMethod(Opcodes.ACC_PUBLIC, NAME_CTOR, "()V", null, null);
         // Code:
         initVisitor.visitCode();
         // 0: aload_0
@@ -113,12 +127,12 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         boolean isInterface = beanClass.isInterface();
         if (isInterface) {
             // 1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-            initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+            initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, JAVA_LANG_OBJECT, NAME_CTOR, "()V", false);
         } else {
             List<AsmConstructorInfo> constructorInfoList = getConstructorInfoList();
             if (constructorInfoList.isEmpty()) {
                 // 1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-                initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superClassPath, "<init>", "()V", false);
+                initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superClassPath, NAME_CTOR, "()V", false);
             } else {
                 AsmConstructorInfo constructorInfo = constructorInfoList.get(0);
                 Class<?>[] parameterTypes = constructorInfo.getParameterTypes();
@@ -138,12 +152,13 @@ public class AsmProxy<B> extends AbstractProxy<B> {
                     }
                 }
                 // 2: invokespecial #1
-                initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superClassPath, "<init>", constructorInfo.getDescriptor(), false);
+                initVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superClassPath, NAME_CTOR, constructorInfo.getDescriptor(), false);
             }
         }
         // 4: return
         initVisitor.visitInsn(Opcodes.RETURN);
-        initVisitor.visitMaxs(0, 0);
+        // Maxs computed by ClassWriter.COMPUTE_MAXS, these arguments ignored
+        initVisitor.visitMaxs(-1, -1);
         initVisitor.visitEnd();
     }
 
@@ -198,7 +213,9 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
     private void proxyMethod(ClassWriter classWriter, String superClassPath, String classPath, String handlerPath,
                              AsmMethodInfo methodInfo) {
+        Method method = methodInfo.getMethod();
         String name = methodInfo.getName();
+        Class<?>[] paramTypes = methodInfo.getParamTypes();
         MethodVisitor methodVisitor = classWriter.visitMethod(methodInfo.getAccess(), name,
                 methodInfo.getDescriptor(), methodInfo.getSignature(), methodInfo.getExceptions());
         // Code:
@@ -217,67 +234,104 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         methodVisitor.visitLdcInsn(name);
         boolean hasParams = methodInfo.hasParams();
         if (hasParams) {
+            int length = paramTypes.length;
             // 10: iconst_1
-            methodVisitor.visitInsn(Opcodes.ICONST_1);
-            // 11: anewarray     #6                  // class java/lang/Object
-            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Object.class));
+            methodVisitor.visitInsn(Opcodes.ICONST_0 + length);
+            // 11: anewarray     #6                  // class java/lang/Class
+            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Class.class));
             // 14: dup
             methodVisitor.visitInsn(Opcodes.DUP);
             // 15: iconst_0
             methodVisitor.visitInsn(Opcodes.ICONST_0);
+            // ??
             // 16: aload_1
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            // 17: aastore
+            // 19: aastore
             methodVisitor.visitInsn(Opcodes.AASTORE);
-            // 18: invokespecial #32                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-            // 21: astore_2
-            methodVisitor.visitVarInsn(Opcodes.ASTORE, 2);
-            // 22: aload_0
-            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            // 23: getfield      #25                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
-            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "handler", "L" + handlerPath + ";");
-            // 26: aload_2
-            methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
-            // 27: invokevirtual #38                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, handlerPath, "proxy", "(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;", false);
-            // 30: pop
-            methodVisitor.visitInsn(Opcodes.POP);
 
-           /* // 10: iconst_0
-            methodVisitor.visitInsn(Opcodes.ICONST_0);
-            // 11: anewarray     #8                  // class java/lang/Object
+            // 20: iconst_1
+            methodVisitor.visitInsn(Opcodes.ICONST_1);
+            // 21: anewarray     #6                  // class java/lang/Class
             methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Object.class));
-            // 14: invokespecial #9                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-            // 17: astore_2
+            // 24: dup
+            methodVisitor.visitInsn(Opcodes.DUP);
+            // 25: iconst_0
+            methodVisitor.visitInsn(Opcodes.ICONST_0);
+            for (int i = 0; i < 1; i++) {
+                Class<?> paramType = paramTypes[i];
+                if (paramType == double.class) {
+                    // 26: dload_1
+                    methodVisitor.visitVarInsn(Opcodes.DLOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+                } else if (paramType == float.class) {
+                    // 26: fload_1
+                    methodVisitor.visitVarInsn(Opcodes.FLOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+                } else if (paramType == long.class) {
+                    // 26: lload_1
+                    methodVisitor.visitVarInsn(Opcodes.LLOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Long.valueOf:(L)Ljava/lang/Long;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(L)Ljava/lang/Long;", false);
+                } else if (paramType == int.class) {
+                    // 26: iload_1
+                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+                } else if (paramType == char.class) {
+                    // 26: iload_1
+                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Character.valueOf:(C)Ljava/lang/Character;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
+                } else if (paramType == byte.class) {
+                    // 26: iload_1
+                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Byte.valueOf:(B)Ljava/lang/Byte;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
+                } else if (paramType == short.class) {
+                    // 26: iload_1
+                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Short.valueOf:(S)Ljava/lang/Short;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+                } else if (paramType == boolean.class) {
+                    // 26: iload_1
+                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                    // 27: invokestatic  #11                 // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+                } else {
+                    // 26: aload_1
+                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+                }
+            }
+            // 30: aastore
+            methodVisitor.visitInsn(Opcodes.AASTORE);
+            // 31: invokespecial #32                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)V
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)V", false);
+            // 34: astore_2
             methodVisitor.visitVarInsn(Opcodes.ASTORE, 2);
-            // 18: aload_0
+            // 35: aload_0
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            // 19: getfield      #4                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
+            // 36: getfield      #25                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
             methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "handler", "L" + handlerPath + ";");
-            // 22: aload_2
+            // 39: aload_2
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
-            // 23: invokevirtual #10                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
+            // 40: invokevirtual #38                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
             methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, handlerPath, "proxy", "(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;", false);
-            // 26: pop
-            methodVisitor.visitInsn(Opcodes.POP);*/
+            // 43: pop
+            methodVisitor.visitInsn(Opcodes.POP);
         } else {
-            // 10: iconst_0
-            methodVisitor.visitInsn(Opcodes.ICONST_0);
-            // 11: anewarray     #8                  // class java/lang/Object
-            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Object.class));
-            // 14: invokespecial #9                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-            // 17: astore_1
+            // 10: invokespecial #9                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;)V
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;)V", false);
+            // 13: astore_1
             methodVisitor.visitVarInsn(Opcodes.ASTORE, 1);
-            // 18: aload_0
+            // 14: aload_0
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            // 19: getfield      #4                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
+            // 15: getfield      #4                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
             methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "handler", "L" + handlerPath + ";");
-            // 22: aload_1
+            // 18: aload_1
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            // 23: invokevirtual #10                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
+            // 19: invokevirtual #10                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
             methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, handlerPath, "proxy", "(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;", false);
             // checkcast
             methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(methodInfo.getReturnWrapperType()));

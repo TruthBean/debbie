@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.proxy.JdkDynamicProxy;
@@ -95,16 +104,16 @@ public class BeanInvoker<Bean> {
                     Object[] values = new Object[parameterCount];
                     Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent = new HashMap<>();
 
-                    boolean constructorInject = false;
+                    boolean constructorInjectRequired = false;
                     BeanInject beanInject = constructor.getAnnotation(BeanInject.class);
                     if (beanInject != null) {
-                        constructorInject = true;
+                        constructorInjectRequired = beanInject.require();
                     } else {
                         Class injectClass = beanFactoryHandler.getInjectType();
                         if (injectClass != null) {
                             Annotation inject = constructor.getAnnotation(injectClass);
                             if (inject != null) {
-                                constructorInject = true;
+                                constructorInjectRequired = true;
                             }
                         }
                     }
@@ -115,7 +124,7 @@ public class BeanInvoker<Bean> {
                         Parameter parameter = parameters[i];
 
                         var type = parameter.getType();
-                        boolean required = false;
+                        boolean required = constructorInjectRequired;
                         String name = null;
                         BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                         if (annotation != null) {
@@ -131,21 +140,19 @@ public class BeanInvoker<Bean> {
                             required = annotation.require();
                         }
 
-                        if (annotation != null || constructorInject) {
-                            DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, type, required);
-                            if (beanInfo == null && required) {
-                                throw new NoBeanException("no bean " + names[i] + " found .");
-                            } else if (beanInfo != null) {
-                                boolean flag = singletonBeanInvokerMap.containsKey(beanInfo);
-                                if (flag && beanInfo.getBeanType() == BeanType.SINGLETON) {
-                                    BeanInvoker<?> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
-                                    constructorBeanDependent.put(i, beanInvoker.getBeanInfo());
-                                } else {
-                                    constructorBeanDependent.put(i, beanInfo);
-                                    var bean = beanFactoryHandler.factory(beanInfo);
-                                    if (bean != null) {
-                                        values[i] = bean;
-                                    }
+                        DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, type, required);
+                        if (beanInfo == null && required) {
+                            throw new NoBeanException("no bean " + names[i] + " found .");
+                        } else if (beanInfo != null) {
+                            boolean flag = singletonBeanInvokerMap.containsKey(beanInfo);
+                            if (flag && beanInfo.getBeanType() == BeanType.SINGLETON) {
+                                BeanInvoker<?> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
+                                constructorBeanDependent.put(i, beanInvoker.getBeanInfo());
+                            } else {
+                                constructorBeanDependent.put(i, beanInfo);
+                                var bean = beanFactoryHandler.factory(beanInfo);
+                                if (bean != null) {
+                                    values[i] = bean;
                                 }
                             }
                         }

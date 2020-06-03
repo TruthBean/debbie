@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -24,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -83,7 +93,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         int port = Math.max(configuration.getPort(), 0);
         connector.setPort(port);
         if (StringUtils.hasText(configuration.getServerHeader())) {
-            connector.setAttribute("server", configuration.getServerHeader());
+            connector.setProperty("server", configuration.getServerHeader());
         }
         if (connector.getProtocolHandler() instanceof AbstractProtocol) {
             if (StringUtils.hasText(configuration.getHost())) {
@@ -191,8 +201,9 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
                     server.getConnector();
                     server.start();
                     printlnWebUrl(LOGGER, configuration.getPort());
-                    LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-                    Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
+                    double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+                    LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+                    postBeforeStart();
                 } catch (LifecycleException e) {
                     Throwable cause = e.getCause();
                     if (cause == null) {

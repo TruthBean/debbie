@@ -39,7 +39,7 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
         if (dataSourceFactoryBeanInfo == null) {
             DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler, configurationClass);
             registerSingletonBean(dataSourceFactory, DataSourceFactory.class, "dataSourceFactory");
-        } else if (dataSourceFactoryBeanInfo.getBean() == null) {
+        } else if (dataSourceFactoryBeanInfo.isEmpty()) {
             DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler, configurationClass);
             dataSourceFactoryBeanInfo.setBean(dataSourceFactory);
             dataSourceFactoryBeanInfo.setBeanName("dataSourceFactory");

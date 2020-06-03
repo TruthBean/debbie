@@ -82,7 +82,10 @@ public final class StreamHelper {
      * @see java.net.URL#openConnection()
      * @see java.net.URLConnection#setUseCaches(boolean)
      * @see java.net.URLConnection#getInputStream()
-     * @throws IOException
+     *
+     * @return an input stream that reads from this open connection
+     *
+     * @throws IOException if an I/O error occurs while creating the input stream.
      */
     public static InputStream getInputStream(URL url) throws IOException {
         URLConnection con = url.openConnection();

@@ -1,28 +1,72 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanClosure;
-import com.truthbean.debbie.task.ThreadPooledExecutor;
+import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.DebbieBeanFactory;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author truthbean
  * @since 0.0.2
  */
-public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure {
-    private final Map<Class<? extends AbstractDebbieEvent>, DebbieEventListener> eventListenerMap;
+public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventMulticaster, BeanClosure {
+    private final Map<Class<? extends AbstractDebbieEvent>, BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>>> eventListenerMap;
 
-    private ThreadPooledExecutor executor;
+    private final ThreadPooledExecutor executor;
     public DefaultEventPublisher(ThreadPooledExecutor threadPooledExecutor) {
         this.executor = threadPooledExecutor;
-        this.eventListenerMap = new LinkedHashMap<>();;
+        this.eventListenerMap = new ConcurrentHashMap<>();
     }
 
-    public void addEventListener(Class<? extends AbstractDebbieEvent> eventType, DebbieEventListener<? extends AbstractDebbieEvent> listener) {
-        eventListenerMap.put(eventType, listener);
+    public void addEventListener(Class<? extends AbstractDebbieEvent> eventType,
+                                 BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("eventType: " + eventType + " ; listenerType: " + listenerBeanFactory.getBeanType());
+        }
+        eventListenerMap.put(eventType, listenerBeanFactory);
+    }
+
+    @Override
+    public void addEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener) {
+        DebbieBeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>();
+        @SuppressWarnings("unchecked")
+        var listenerType = (Class<DebbieEventListener<? extends AbstractDebbieEvent>>) listener.getClass();
+        DebbieBeanInfo<DebbieEventListener<? extends AbstractDebbieEvent>> beanInfo = new DebbieBeanInfo<>(listenerType);
+        listenerBeanFactory.setBeanInfo(beanInfo);
+        eventListenerMap.put(listener.getEventType(), listenerBeanFactory);
+    }
+
+    @Override
+    public void addEventListenerBean(String listenerBeanName) {
+        // todo
+    }
+
+    @Override
+    public void removeEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener) {
+        eventListenerMap.remove(listener.getEventType());
+    }
+
+    @Override
+    public void removeEventListenerBean(String listenerBeanName) {
+        // todo
+    }
+
+    @Override
+    public void removeAllListeners() {
+        eventListenerMap.clear();
+    }
+
+    @Override
+    public <E extends AbstractDebbieEvent> void multicastEvent(E event) {
+        publishEvent(event);
     }
 
     @SuppressWarnings("unchecked")
@@ -31,7 +75,8 @@ public class DefaultEventPublisher implements DebbieEventPublisher, BeanClosure 
         long start = System.currentTimeMillis();
         for (var classDebbieEventListenerEntry : eventListenerMap.entrySet()) {
             if (event.getClass() == classDebbieEventListenerEntry.getKey()) {
-                DebbieEventListener eventListener = classDebbieEventListenerEntry.getValue();
+                var beanFactory = classDebbieEventListenerEntry.getValue();
+                DebbieEventListener eventListener = beanFactory.getBean();
                 if (!eventListener.async()) {
                     eventListener.onEvent(event);
                 } else {

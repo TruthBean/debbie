@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.io.MediaType;
@@ -156,9 +165,13 @@ public class HttpClientHandler extends HttpClientAction {
         return delete(url, null, headers);
     }
 
-    public String delete(String url, String jsonContent,
-                                Map<String, String> headers) {
+    public String delete(String url, String jsonContent, Map<String, String> headers) {
         return action(doDelete(url, jsonContent, headers));
+    }
+
+    public String delete(String url, String jsonContent, Map<String, String> headers, MediaType responseType) {
+        HttpClientResponse<String> delete = doDelete(url, jsonContent, headers, responseType.info());
+        return action(delete);
     }
 
     public HttpClientResponse<String> doDelete(String url, Map<String, String> headers) {
@@ -186,7 +199,7 @@ public class HttpClientHandler extends HttpClientAction {
             httpRequest = builder.DELETE().build();
         } else {
             HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(jsonContent);
-            httpRequest = builder.method("delete", body).build();
+            httpRequest = builder.method("DELETE", body).build();
         }
         return action(httpRequest, startTime, responseType);
     }

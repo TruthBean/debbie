@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -9,18 +18,18 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
+import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -80,36 +89,23 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
             server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
         }
 
-        // private volatile boolean running;
-        private final ThreadGroup threadGroup = new ThreadGroup("aio-server-application");
-        private volatile Thread starterThread;
-        // private volatile Thread destroyerThread;
+        private final ThreadFactory namedThreadFactory = new NamedThreadFactory("aio-server-application-");
+        private final ThreadPooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
         @Override
         protected void start(long beforeStartTime, String... args) {
-            starterThread = new Thread(threadGroup, this);
-            // starterThread.setDaemon(true);
             LOGGER.debug("aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
-            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-
-            // destroyerThread = new Thread(threadGroup, this::exit);
-            starterThread.start();
+            double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+            postBeforeStart();
+            singleThreadPool.execute(this);
         }
 
         @Override
         public void exit(long beforeStartTime, String... args) {
-            LOGGER.debug("exit ...");
-            // while (running) {
-                // running = false;
-            LOGGER.debug("exiting ...");
-                if (starterThread != null && !starterThread.isInterrupted()) {
-                    starterThread.interrupt();
-                }
-//                if (destroyerThread != null && !destroyerThread.isInterrupted()) {
-//                    destroyerThread.interrupt();
-//                }
-            // }
+            LOGGER.debug("destroy running thread");
+            singleThreadPool.destroy();
         }
 
         @Override
@@ -122,11 +118,6 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
                 // 即是listener。另一个参数V，就是原型中的客户端socket
                 var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, beanFactoryHandler, server);
                 server.accept(server, mvcCompletionHandler);
-                // running = true;
-
-//                Runtime.getRuntime().addShutdownHook(destroyerThread);
-
-                // starterThread.join();
             } catch (Exception e) {
                 LOGGER.error("", e);
             }

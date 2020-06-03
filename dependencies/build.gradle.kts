@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 plugins {
     id("io.spring.dependency-management") version "1.0.9.RELEASE"
 }
@@ -13,6 +22,7 @@ dependencyManagement {
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
         dependency("com.fasterxml.jackson.module:jackson-module-afterburner:$jacksonVersion")
+        dependency("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
         val snakeyamlVersion: String by project
         dependency("org.yaml:snakeyaml:$snakeyamlVersion")
         val slf4jVersion: String by project
@@ -28,6 +38,13 @@ dependencyManagement {
         dependency("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 
         // logs
+        val loggerVersion: String by project
+        dependency("com.truthbean.logger:core:${loggerVersion}")
+        dependency("com.truthbean.logger:jdk:${loggerVersion}")
+        dependency("com.truthbean.logger:log4j:${loggerVersion}")
+        dependency("com.truthbean.logger:log4j2:${loggerVersion}")
+        dependency("com.truthbean.logger:slf4j:${loggerVersion}")
+        dependency("com.truthbean.logger:stdout:${loggerVersion}")
         val log4j2Version: String by project
         dependency("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
         val logbackVersion: String by project

@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.io.*;
@@ -6,6 +15,7 @@ import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.net.uri.UriUtils;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
@@ -30,12 +40,13 @@ import java.util.*;
  * Created on 2019/3/16 11:01.
  */
 public class UndertowRouterRequest implements RouterRequest {
-    private String id;
+    private final String id;
     private final HttpServerExchange exchange;
 
     private final Map<String, List<String>> headers = new HashMap<>();
 
     private final DefaultRouterRequest routerRequestCache = new DefaultRouterRequest();
+    private UndertowRouterResponse routerResponse;
 
     public UndertowRouterRequest(HttpServerExchange exchange) {
         this(UUID.randomUUID().toString(), exchange);
@@ -346,6 +357,14 @@ public class UndertowRouterRequest implements RouterRequest {
         if (destinationAddress != null)
             return destinationAddress.toString();
         return null;
+    }
+
+    public UndertowRouterResponse getRouterResponse() {
+        return routerResponse;
+    }
+
+    public void setRouterResponse(UndertowRouterResponse routerResponse) {
+        this.routerResponse = routerResponse;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UndertowRouterRequest.class);

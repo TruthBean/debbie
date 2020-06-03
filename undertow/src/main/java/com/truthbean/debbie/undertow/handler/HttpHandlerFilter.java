@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.undertow.handler;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -38,10 +47,17 @@ public class HttpHandlerFilter implements HttpHandler {
 
     private static final AttachmentKey<UndertowRouterRequest> request = AttachmentKey.create(UndertowRouterRequest.class);
 
+    public Class<? extends RouterFilter> getFilterType() {
+        return filterInfo.getRouterFilterType();
+    }
+
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         if (exchange.isInIoThread()) {
             exchange.dispatch(this);
+            return;
+        }
+        if (!exchange.isResponseChannelAvailable()) {
             return;
         }
         UndertowRouterRequest routerRequest = exchange.getAttachment(request);
@@ -50,7 +66,11 @@ public class HttpHandlerFilter implements HttpHandler {
         }
         exchange.putAttachment(request, routerRequest);
 
-        UndertowRouterResponse routerResponse = new UndertowRouterResponse();
+        UndertowRouterResponse routerResponse = routerRequest.getRouterResponse();
+        if (routerResponse == null) {
+            routerResponse = new UndertowRouterResponse();
+            routerRequest.setRouterResponse(routerResponse);
+        }
 
         String url = exchange.getRequestURI();
         List<String> rawUrlPattern = filterInfo.getRawUrlPattern();
@@ -71,8 +91,8 @@ public class HttpHandlerFilter implements HttpHandler {
 
         for (String s : rawUrlPattern) {
             if (s.equals(url)) {
-                filter = true;
-                if (handleFilter(routerFilter, routerRequest, routerResponse, exchange)) {
+                filter = handleFilter(routerFilter, routerFilterType, routerRequest, routerResponse, exchange);
+                if (filter) {
                     return;
                 }
                 break;
@@ -82,8 +102,8 @@ public class HttpHandlerFilter implements HttpHandler {
         List<Pattern> urlPattern = filterInfo.getUrlPattern();
         for (Pattern pattern : urlPattern) {
             if (pattern.matcher(url).find()) {
-                filter = true;
-                if (handleFilter(routerFilter, routerRequest, routerResponse, exchange)) {
+                filter = handleFilter(routerFilter, routerFilterType, routerRequest, routerResponse, exchange);
+                if (filter) {
                     return;
                 }
                 break;
@@ -97,21 +117,27 @@ public class HttpHandlerFilter implements HttpHandler {
 
     private void handleServerExchangeRequest(final HttpServerExchange exchange) throws Exception {
         if (next.getClass() == DispatcherHttpHandler.class) {
+            logger.trace("next is DispatcherHttpHandler");
             ((DispatcherHttpHandler) next).setRequest(request);
             next.handleRequest(exchange);
+            return;
         } else {
             next.handleRequest(exchange);
         }
     }
 
-    private boolean handleFilter(final RouterFilter routerFilter,
+    private boolean handleFilter(final RouterFilter routerFilter, final Class<? extends RouterFilter> filterClass,
                                  final UndertowRouterRequest routerRequest, final UndertowRouterResponse routerResponse,
                                  final HttpServerExchange exchange) throws Exception {
         var filter = false;
-        Class<? extends RouterFilter> filterClass = routerFilter.getClass();
+        Class<? extends HttpHandler> nextClass = next.getClass();
+        if (nextClass == HttpHandlerFilter.class) {
+            logger.trace("next handler: " + ((HttpHandlerFilter) next).getFilterType());
+        } else
+            logger.trace("next handler: " + nextClass.getName());
         if (routerFilter.preRouter(routerRequest, routerResponse)) {
             logger.trace(filterClass + " no pre filter");
-            if (next.getClass() != DispatcherHttpHandler.class) {
+            if (nextClass != DispatcherHttpHandler.class) {
                 next.handleRequest(exchange);
             }
         } else {
@@ -123,16 +149,14 @@ public class HttpHandlerFilter implements HttpHandler {
             if (post != null) {
                 logger.trace(filterClass + " post filter");
                 UndertowResponseHandler handler = new UndertowResponseHandler(exchange);
+                handler.changeResponseWithoutContent(routerResponse);
                 if (post) {
-                    handler.changeResponseWithoutContent(routerResponse);
                     handler.handle(routerResponse, configuration.getDefaultContentType());
                     return true;
-                } else {
-                    handler.changeResponseWithoutContent(routerResponse);
                 }
             }
             return false;
-        } else if (next.getClass() == DispatcherHttpHandler.class) {
+        } else if (nextClass == DispatcherHttpHandler.class) {
             logger.trace(filterClass + " to dispatcherHttpHandler");
             ((DispatcherHttpHandler) next).setRequest(request);
             next.handleRequest(exchange);

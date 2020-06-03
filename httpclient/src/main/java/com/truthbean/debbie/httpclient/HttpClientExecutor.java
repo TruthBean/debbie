@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
@@ -13,6 +22,7 @@ import com.truthbean.debbie.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +38,7 @@ import java.util.*;
  */
 public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
-    private HttpClientConfiguration configuration;
+    private final HttpClientConfiguration configuration;
     private final HttpClientAction httpClientAction;
 
     private final List<HttpClientRequest> requests = new ArrayList<>();
@@ -87,11 +97,21 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             if (name.isBlank()) {
                                 name = parameter.getName();
                             }
-                            invokedParameter.setName(name);
+                            if (!name.isBlank()) {
+                                invokedParameter.setName(name);
+                            }
                             invokedParameter.setIndex(i);
                             invokedParameter.setAnnotation(requestParameter.getAnnotation());
                             invokedParameter.setType(type);
                         }
+                        String name = invokedParameter.getName();
+                        if (!StringUtils.hasText(name)) {
+                            if (parameter.isNamePresent()) {
+                                invokedParameter.setName(parameter.getName());
+                            }
+                        }
+
+                        invokedParameter.setStack("param(" + invokedParameter.getType() + "[" + i + "]" + name + ") \nin method(" + method.toString() + ")\n");
 
                         request.addInvokedParameter(invokedParameter);
                     }

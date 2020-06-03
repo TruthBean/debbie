@@ -1,9 +1,20 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.management.ManagementFactory;
 
 /**
  * @author truthbean
@@ -19,7 +30,9 @@ public class SimpleApplicationFactory extends AbstractApplicationFactory {
 
             @Override
             protected void start(long beforeStartTime, String... args) {
-                logger.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+                double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+                logger.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+                postBeforeStart();
             }
 
             @Override

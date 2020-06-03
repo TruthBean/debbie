@@ -87,7 +87,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         }
         this.handler.setInterceptors(methodInterceptors);
         var methodName = method.getName();
-        return this.handler.proxy(methodName, () -> null, () -> method.invoke(target, args));
+        return this.handler.proxy(methodName, () -> method.invoke(target, args), () -> method.invoke(target, args));
     }
 
 }

@@ -2,11 +2,12 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.task.DebbieTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@BeanComponent(lazy = false)
+@BeanComponent(lazy = false, type = BeanType.SINGLETON)
 public class SeTestRunner {
 
     @BeanInject

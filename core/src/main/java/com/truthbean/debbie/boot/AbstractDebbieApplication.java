@@ -1,8 +1,21 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.slf4j.Logger;
 
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -28,6 +41,12 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
      */
     private Thread shutdownHook;
 
+    /**
+     * startup and shutdown thread
+     */
+    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true);
+    private final ThreadPooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
+
     public AbstractDebbieApplication(Logger logger, BeanFactoryHandler beanFactoryHandler) {
         this.logger = logger;
         this.beanFactoryHandler = beanFactoryHandler;
@@ -37,14 +56,22 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
         this.beforeStartTime = beforeStartTime;
     }
 
+    protected void postBeforeStart() {
+        if (beanFactoryHandler instanceof DebbieApplicationFactory) {
+            ((DebbieApplicationFactory) beanFactoryHandler).postCallStarter();
+        }
+    }
+
     @Override
     public final void start(String... args) {
-        if (running.compareAndSet(false, true) && exited.get()) {
-            beanFactoryHandler.autoCreateBeans();
-            registerShutdownHook();
-            start(beforeStartTime, args);
-            exited.set(false);
-        }
+        startupShutdownThreadPool.execute(() -> {
+            logger.debug("debbie ("+ DebbieVersion.getVersion() +") application start in thread ...");
+            if (running.compareAndSet(false, true) && exited.get()) {
+                registerShutdownHook();
+                start(beforeStartTime, args);
+                exited.set(false);
+            }
+        });
     }
 
     /**
@@ -87,16 +114,19 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
 
     @Override
     public final void exit(String... args) {
-        if (running.get() && exited.compareAndSet(false, true)) {
-            logger.debug("application exiting...");
-            beforeExit(beanFactoryHandler, args);
-            doExit(args);
-        }
+        startupShutdownThreadPool.execute(() -> {
+            if (running.get() && exited.compareAndSet(false, true)) {
+                logger.debug("application exiting...");
+                beforeExit(beanFactoryHandler, args);
+                doExit(args);
+            }
+        });
+        startupShutdownThreadPool.destroy();
     }
 
     /**
      * exit application
-     *
+     * @param beforeStartTime before start time, long timestamp
      * @param args args
      */
     protected abstract void exit(long beforeStartTime, String... args);

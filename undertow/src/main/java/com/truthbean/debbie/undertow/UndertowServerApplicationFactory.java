@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.undertow;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
@@ -20,6 +29,7 @@ import io.undertow.server.session.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 
 /**
@@ -77,8 +87,9 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
             public void start(long beforeStartTime, String... args) {
                 server.start();
                 printlnWebUrl(LOGGER, configuration.getPort());
-                LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> exit(args)));
+                double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+                LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+                postBeforeStart();
             }
 
             @Override
