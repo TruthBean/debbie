@@ -144,6 +144,10 @@ public class BeanFactoryHandler {
         return result;
     }
 
+    public Set<DebbieBeanInfo<?>> getAllDebbieBeanInfo() {
+        return Set.copyOf(beanServiceInfoSet);
+    }
+
     public void destroy(DebbieBeanInfo<?> beanInfo) {
         beanServiceInfoSet.remove(beanInfo);
         singletonBeanInvokerMap.remove(beanInfo);

@@ -204,7 +204,7 @@ public class BeanInvoker<Bean> {
                             var beanInfo = beanFactoryHandler.getBeanInfo(name, fieldType, annotation.require());
                             if (annotation.require() && beanInfo == null) {
                                 throw new NoBeanException("no bean " + name + " found .");
-                            } else {
+                            } else if (beanInfo != null) {
                                 var bean = beanInfo.getBean();
                                 if (bean != null) {
                                     if (fieldType.isInstance(bean)) {

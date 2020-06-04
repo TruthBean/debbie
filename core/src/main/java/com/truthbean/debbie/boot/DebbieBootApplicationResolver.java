@@ -29,6 +29,35 @@ class DebbieBootApplicationResolver {
         this.beanFactoryHandler = beanFactoryHandler;
     }
 
+    void resolverClasses(BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
+        Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
+        if (targetClasses.isEmpty()) {
+            ClassLoader classLoader = this.beanFactoryHandler.getClassLoader();
+            var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
+            allClass.forEach(configuration::addScanClasses);
+        }
+
+        DebbieConfigurationCenter.addConfiguration(configuration);
+    }
+
+    void resolverClasses(DebbieScan scan, BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
+        if (scan != null) {
+            String[] basePackages = scan.basePackages();
+            configuration.addScanBasePackages(basePackages);
+
+            Class<?>[] classes = scan.classes();
+            configuration.addScanClasses(classes);
+
+            Class<?>[] excludeClasses = scan.excludeClasses();
+            configuration.addScanExcludeClasses(excludeClasses);
+
+            String[] excludePackages = scan.excludePackages();
+            configuration.addScanExcludePackages(excludePackages);
+        }
+
+        resolverClasses(configuration, resourceResolver);
+    }
+
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
         LOGGER.debug("applicationClass: " + applicationClass);
@@ -63,7 +92,7 @@ class DebbieBootApplicationResolver {
             if (targetClasses.isEmpty()) {
                 ClassLoader classLoader = this.beanFactoryHandler.getClassLoader();
                 var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
-                if (allClass != null && !allClass.isEmpty()) {
+                if (!allClass.isEmpty()) {
                     boolean hasDebbieBootApplication = false;
                     for (Class<?> clazz : allClass) {
                         DebbieBootApplication bootApplication = clazz.getAnnotation(DebbieBootApplication.class);

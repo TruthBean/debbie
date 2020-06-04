@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -12,9 +12,8 @@ package com.truthbean.debbie.boot;
 import com.truthbean.debbie.bean.AutoCreatedBeanFactory;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
-import com.truthbean.debbie.event.AbstractDebbieStartedEventListener;
-import com.truthbean.debbie.event.DebbieStartedEvent;
 import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @author TruthBean
@@ -79,13 +79,25 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     protected synchronized void config(Class<?> applicationClass) {
         LOGGER.debug("init configuration");
-        // beanInitialization
-        var beanInitialization = super.getBeanInitialization();
-
         var classLoader = getClassLoader();
         BeanScanConfiguration configuration = ClassesScanProperties.toConfiguration(classLoader);
         bootApplicationResolver.resolverApplicationClass(applicationClass, configuration, getResourceResolver());
+        config(configuration);
+    }
+
+    protected synchronized void config(Consumer<BeanScanConfiguration> configurationConsumer) {
+        LOGGER.debug("init configuration");
+        var classLoader = getClassLoader();
+        BeanScanConfiguration configuration = ClassesScanProperties.toConfiguration(classLoader);
+        configurationConsumer.accept(configuration);
+        bootApplicationResolver.resolverClasses(configuration, getResourceResolver());
+        config(configuration);
+    }
+
+    public void config(BeanScanConfiguration configuration) {
         var targetClasses = configuration.getTargetClasses(getResourceResolver());
+        // beanInitialization
+        var beanInitialization = super.getBeanInitialization();
         beanInitialization.init(targetClasses);
         super.refreshBeans();
 
@@ -129,6 +141,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     }
 
     private volatile AutoCreatedBeanFactory autoCreatedBeanFactory;
+
     protected synchronized void postCallStarter() {
         // create not lazy beans
         if (this.autoCreatedBeanFactory == null) {
@@ -143,6 +156,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
     }
 
     private volatile DebbieStartedEventProcessor processor;
+
     private void multicastEvent(BeanFactoryHandler beanFactoryHandler) {
         if (this.processor == null) {
             this.processor = new DebbieStartedEventProcessor(beanFactoryHandler);
@@ -217,6 +231,15 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
             return debbieApplicationFactory;
         debbieApplicationFactory = new DebbieApplicationFactory(classLoader);
         debbieApplicationFactory.config(applicationClass);
+        debbieApplicationFactory.callStarter();
+        return debbieApplicationFactory;
+    }
+
+    public static DebbieApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer) {
+        if (debbieApplicationFactory != null)
+            return debbieApplicationFactory;
+        debbieApplicationFactory = new DebbieApplicationFactory(classLoader);
+        debbieApplicationFactory.config(consumer);
         debbieApplicationFactory.callStarter();
         return debbieApplicationFactory;
     }
