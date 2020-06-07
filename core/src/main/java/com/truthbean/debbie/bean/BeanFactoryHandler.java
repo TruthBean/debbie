@@ -176,7 +176,8 @@ public class BeanFactoryHandler {
         LOGGER.info("release all bean.");
     }
 
-    private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, Set<DebbieBeanInfo<?>> beanInfoSet) {
+    private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require,
+                                              Set<DebbieBeanInfo<?>> beanInfoSet, boolean throwException) {
         List<DebbieBeanInfo<?>> list = new ArrayList<>();
         if (serviceName != null && !serviceName.isBlank()) {
             for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
@@ -210,7 +211,10 @@ public class BeanFactoryHandler {
                     if ((serviceName == null || serviceName.isBlank()) && type != null) {
                         serviceName = type.getName();
                     }
-                    throw new NoBeanException(serviceName + " not found");
+                    if (throwException)
+                        throw new NoBeanException(serviceName + " not found");
+                    else
+                        return null;
                 } else {
                     return null;
                 }
@@ -232,7 +236,10 @@ public class BeanFactoryHandler {
                 return beanInfo.copy();
             }
         }
-        throw new NoBeanException("bean " + type + " not found");
+        if (throwException)
+            throw new NoBeanException("bean " + type + " not found");
+        else
+            return null;
     }
 
     private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require, Set<DebbieBeanInfo<?>> beanInfoSet) {
@@ -283,7 +290,7 @@ public class BeanFactoryHandler {
 
     public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
         try {
-            return getBeanInfo(serviceName, type, require, beanServiceInfoSet);
+            return getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
         }
@@ -291,7 +298,7 @@ public class BeanFactoryHandler {
     }
 
     protected <T> T factory(String serviceName, Class<T> type, boolean require) {
-        var beanInfo = getBeanInfo(serviceName, type, require, beanServiceInfoSet);
+        var beanInfo = getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
         if (!require && beanInfo == null)
             return null;
         assert beanInfo != null;
@@ -372,7 +379,7 @@ public class BeanFactoryHandler {
 
     public <T, K extends T> DebbieBeanInfo<T> getBeanInfo(Class<T> type) {
         LOGGER.trace("factory bean with type " + type.getName());
-        var beanInfo = getBeanInfo(null, type, true, beanServiceInfoSet);
+        var beanInfo = getBeanInfo(null, type, true, beanServiceInfoSet, true);
         if (beanInfo != null) {
             T bean = factory(beanInfo);
             DebbieBeanInfo<T> result = new DebbieBeanInfo<>(beanInfo.getBeanClass());
@@ -395,6 +402,14 @@ public class BeanFactoryHandler {
         return result;
     }
 
+    public <T> boolean containsBean(Class<T> beanType) {
+        return getBeanInfoList(beanType, false, beanServiceInfoSet) != null;
+    }
+
+    public boolean containsBean(String beanName) {
+        return getBeanInfo(beanName, null, false, beanServiceInfoSet, false) != null;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> void resolveFieldBeans(DebbieBeanInfo<T> beanInfo) {
         Map<Field, DebbieBeanInfo<?>> fieldBeanDependents = beanInfo.getFieldBeanDependent();
@@ -402,7 +417,8 @@ public class BeanFactoryHandler {
             Collection<DebbieBeanInfo<?>> fieldBeanDependent = fieldBeanDependents.values();
             for (DebbieBeanInfo debbieBeanInfo : fieldBeanDependent) {
                 if ((debbieBeanInfo.isEmpty() || debbieBeanInfo.isHasVirtualValue())) {
-                    Object object = getBeanInfo(debbieBeanInfo.getServiceName(), (Class<T>) debbieBeanInfo.getBeanClass(), true, beanServiceInfoSet).getBean();
+                    Object object = getBeanInfo(debbieBeanInfo.getServiceName(), (Class<T>) debbieBeanInfo.getBeanClass(),
+                            true, beanServiceInfoSet, true).getBean();
                     if (object != null) {
                         debbieBeanInfo.setBean(object);
                     }
@@ -698,9 +714,9 @@ public class BeanFactoryHandler {
         return bean;
     }
 
-    public <T> Object factoryAndInvokeMethod(Class<T> type, Method routerMethod, Object[] parameters) {
+    public <T> Object factoryAndInvokeMethod(Class<T> type, Method method, Object[] parameters) {
         T bean = factoryNoLimit(type);
-        return ReflectionHelper.invokeMethod(bean, routerMethod, parameters);
+        return ReflectionHelper.invokeMethod(bean, method, parameters);
     }
 
     public <T, K extends T> T factoryWithProxy(Class<K> type, Class<T> interfaceType, DebbieBeanInfo<K> beanInfo) {

@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
+public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBeanInfo<Bean> {
     private String beanName;
     private BeanType beanType;
     private Boolean lazyCreate;
@@ -113,6 +113,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         this.hasVirtualValue = hasVirtualValue;
     }
 
+    @Override
     public void setBeanFactory(BeanFactory<Bean> beanFactory) {
         this.beanFactory = beanFactory;
     }
@@ -192,7 +193,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
      *
      * @param beanType BeanType
      */
-    void setBeanType(BeanType beanType) {
+    @Override
+    public void setBeanType(BeanType beanType) {
         this.beanType = beanType;
     }
 
@@ -207,7 +209,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         if (beanInterface == null) {
             Class<?> clazz = super.getClazz();
             Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces == null || interfaces.length == 0) {
+            if (interfaces.length == 0) {
                 LOGGER.trace(clazz.getName() + " has no direct interface");
                 noInterface = true;
                 beanInterface = null;
@@ -237,10 +239,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> {
         return beanType;
     }
 
+    @Override
     public void setBeanName(String beanName) {
         this.beanName = beanName;
     }
 
+    @Override
     public void setBean(Bean bean) {
         this.bean = bean;
     }

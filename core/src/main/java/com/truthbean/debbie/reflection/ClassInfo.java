@@ -23,7 +23,7 @@ import java.util.*;
  * Created on 2019/3/23 13:23.
  */
 public class ClassInfo<C> implements Serializable {
-    private Class<C> clazz;
+    private final Class<C> clazz;
     private final Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
     private Constructor<C>[] constructors;
