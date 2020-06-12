@@ -37,6 +37,12 @@ dependencyManagement {
         dependency("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
         dependency("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 
+        // class
+        val javassistVersion: String by project
+        dependency("org.javassist:javassist:$javassistVersion")
+        val cglibVersion: String by project
+        dependency("cglib:cglib:$cglibVersion")
+
         // logs
         val loggerVersion: String by project
         dependency("com.truthbean.logger:core:${loggerVersion}")
@@ -47,6 +53,8 @@ dependencyManagement {
         dependency("com.truthbean.logger:stdout:${loggerVersion}")
         val log4j2Version: String by project
         dependency("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+        dependency("org.apache.logging.log4j:log4j-api:$log4j2Version")
+        dependency("org.apache.logging.log4j:log4j-core:$log4j2Version")
         val logbackVersion: String by project
         dependency("ch.qos.logback:logback-classic:$logbackVersion") {
             exclude("org.slf4j:slf4j-api")

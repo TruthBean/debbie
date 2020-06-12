@@ -93,7 +93,8 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
         try {
             byte[] data = classWriter.toByteArray();
-            File file = new File("I:\\DevOps\\java\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
+            File file = new File("V:\\person\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
+            System.out.println(file.getAbsolutePath());
             FileOutputStream out = new FileOutputStream(file);
             out.write(data);
             out.close();

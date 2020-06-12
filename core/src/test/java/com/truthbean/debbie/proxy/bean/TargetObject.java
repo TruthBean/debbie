@@ -1,7 +1,6 @@
 package com.truthbean.debbie.proxy.bean;
 
 import com.truthbean.debbie.bean.BeanComponent;
-import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.proxy.MethodProxy;
 
 /**

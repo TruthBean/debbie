@@ -11,6 +11,7 @@ package com.truthbean.debbie.reflection;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -50,6 +51,14 @@ public class MethodInfo {
         return modifiers;
     }
 
+    public boolean isPublic() {
+        return Modifier.isPublic(modifiers);
+    }
+
+    public boolean isProtected() {
+        return Modifier.isProtected(modifiers);
+    }
+
     public String getName() {
         return name;
     }
@@ -70,7 +79,7 @@ public class MethodInfo {
     }
 
     public boolean hasParams() {
-        return paramTypes != null && paramTypes.length > 0 && (paramTypes.length == 1 ? paramTypes[0] != null : false);
+        return paramTypes != null && paramTypes.length > 0 && (paramTypes.length == 1 && paramTypes[0] != null);
     }
 
     public Class<?>[] getExceptionTypes() {
@@ -79,6 +88,11 @@ public class MethodInfo {
 
     public Method getMethod() {
         return method;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Annotation> T getAnnotation(Class<? extends Annotation> methodAnnotation) {
+        return (T) method.getAnnotation(methodAnnotation);
     }
 
     @Override

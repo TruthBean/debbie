@@ -65,7 +65,7 @@ public class AsmMethodInfo extends MethodInfo {
         return exceptions;
     }
 
-    public boolean isIdDefault() {
+    public boolean isDefault() {
         return idDefault;
     }
 

@@ -120,6 +120,10 @@ public abstract class AbstractProxy<B> {
         return getMethodAnnotation().isInstance(method.getAnnotation(methodAnnotation));
     }
 
+    public boolean isAnnotationMethod(AsmMethodInfo method) {
+        return getMethodAnnotation().isInstance(method.getAnnotation(methodAnnotation));
+    }
+
     public B proxy(B bean) {
         return proxy(() -> bean);
     }

@@ -79,9 +79,7 @@ subprojects {
     }
 
     tasks.withType<Test> {
-        useJUnit {
-            includeCategories("com/truthbean/debbie/**")
-        }
+        useJUnitPlatform()
     }
 
     afterEvaluate {

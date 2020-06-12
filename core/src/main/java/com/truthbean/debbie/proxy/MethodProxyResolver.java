@@ -155,6 +155,7 @@ public class MethodProxyResolver {
     private void getMethodProxyHandler(Method method, Class<? extends Annotation> annotationClass,
                                        List<Class<? extends MethodProxyHandler>> proxyHandlers,
                                        List<MethodProxyHandler> methodProxyHandlers) {
+        if (method == null) return;
         Annotation[] declaredAnnotations = method.getDeclaredAnnotations();
         getMethodProxyHandler(method, annotationClass, proxyHandlers, methodProxyHandlers, Arrays.asList(declaredAnnotations));
     }
