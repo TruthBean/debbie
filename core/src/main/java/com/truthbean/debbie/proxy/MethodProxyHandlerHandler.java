@@ -22,6 +22,7 @@ public class MethodProxyHandlerHandler {
     private final Collection<MethodProxyHandler> interceptors;
 
     private final Logger logger;
+    public final Object reference = new Object();
 
     public MethodProxyHandlerHandler(Logger logger) {
         this.interceptors = new HashSet<>();
@@ -46,7 +47,26 @@ public class MethodProxyHandlerHandler {
         return !this.interceptors.isEmpty();
     }
 
+    public boolean sync() {
+        for (MethodProxyHandler interceptor : this.interceptors) {
+            if (interceptor.sync()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public <T> T proxy(String methodName, Callable<T> noInterceptorsCallback, Callable<T> callback) throws Throwable {
+        if (sync()) {
+            synchronized (reference) {
+                return doProxy(methodName, noInterceptorsCallback, callback);
+            }
+        } else {
+            return doProxy(methodName, noInterceptorsCallback, callback);
+        }
+    }
+
+    private <T> T doProxy(String methodName, Callable<T> noInterceptorsCallback, Callable<T> callback) throws Throwable {
         // before
         Map<MethodProxyHandler, Exception> beforeInvokeExceptions = new HashMap<>();
         for (MethodProxyHandler interceptor : interceptors) {

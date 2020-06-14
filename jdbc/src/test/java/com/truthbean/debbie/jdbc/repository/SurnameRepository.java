@@ -1,7 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanComponent;
-import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.Page;
@@ -19,13 +18,16 @@ import java.util.concurrent.Future;
 @BeanComponent
 public class SurnameRepository {
 
-    @BeanInject
-    private DataSourceFactory factory;
-    @BeanInject
-    private DataSourceConfiguration configuration;
+    private final DataSourceFactory factory;
+    private final DataSourceConfiguration configuration;
 
-    private final DmlRepositoryHandler<Surname, Long> repositoryHandler =
-            DmlRepositoryHandler.of(configuration.getDriverName(), Surname.class, Long.class);
+    private final DmlRepositoryHandler<Surname, Long> repositoryHandler;
+
+    public SurnameRepository(DataSourceFactory factory, DataSourceConfiguration configuration) {
+        this.factory = factory;
+        this.configuration = configuration;
+        repositoryHandler = DmlRepositoryHandler.of(configuration.getDriverName(), Surname.class, Long.class);
+    }
 
     public boolean save(Surname surname) {
         var transaction = factory.getTransaction();
@@ -48,7 +50,7 @@ public class SurnameRepository {
             var connection = transaction.getDriverConnection();
             Long insert = repositoryHandler.insert(connection, surname, false);
             surname.setId(insert);
-            System.out.println(1/0);
+            System.out.println(1 / 0);
             repositoryHandler.deleteById(connection, deleteId);
             return repositoryHandler.selectAll(connection);
         });

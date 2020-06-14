@@ -150,5 +150,10 @@ dependencyManagement {
         dependency("org.freemarker:freemarker:$freemarkerVersion")
 
         dependency("com.truthbean.debbie:debbie-freemarker:$projectVersion")
+
+        // spring
+        val springVersion: String by project
+        dependency("org.springframework:spring-context-support:${springVersion}")
+        dependency("com.truthbean.debbie:debbie-spring:$projectVersion")
     }
 }

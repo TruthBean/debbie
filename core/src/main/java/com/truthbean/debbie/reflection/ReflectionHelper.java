@@ -400,8 +400,21 @@ public class ReflectionHelper {
         return methods;
     }
 
+    public static Set<Method> getDeclaredMethods(Class<?> clazz, String methodName) {
+        Set<Method> result = new HashSet<>();
+        Set<Method> methods = getDeclaredMethods(clazz);
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)) {
+                result.add(method);
+            }
+        }
+        return result;
+    }
+
     public static Set<Method> getInterfaceDefaultMethods(Class<?> clazz) {
         Set<Method> methods = new HashSet<>();
+        if (clazz == null)
+            return methods;
 
         if (clazz.isInterface()) {
             Method[] declaredMethods = clazz.getDeclaredMethods();

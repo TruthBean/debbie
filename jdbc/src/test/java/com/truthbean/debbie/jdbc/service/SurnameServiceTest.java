@@ -23,7 +23,7 @@ class SurnameServiceTest {
         surnameService = beanFactoryHandler.factory("surnameService");
     }
 
-    @Test
+    // @Test
     void save() throws MalformedURLException {
         var q = new Surname();
         q.setId(27L);
@@ -43,7 +43,12 @@ class SurnameServiceTest {
 
     @Test
     void selectAll() {
-        System.out.println(surnameService.list());
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                System.out.println(surnameService.list());
+                System.out.println("--------------------------------------");
+            }).start();
+        }
     }
 
     @Test

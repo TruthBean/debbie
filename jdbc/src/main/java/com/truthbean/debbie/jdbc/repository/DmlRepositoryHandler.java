@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.bean.BeanAware;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
@@ -23,7 +24,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/4/3 23:23.
  */
-public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
+public class DmlRepositoryHandler<E, ID> extends RepositoryHandler implements BeanAware<DataSourceConfiguration> {
 
     private Class<E> entityClass;
     private Class<ID> idClass;
@@ -31,10 +32,16 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     private final EntityResolver entityResolver;
 
-    @BeanInject
+    // @BeanInject
     private DataSourceConfiguration configuration;
 
-    public void setConfiguration(DataSourceConfiguration configuration) {
+    @Override
+    public Class<DataSourceConfiguration> getBeanClass() {
+        return DataSourceConfiguration.class;
+    }
+
+    @Override
+    public void setBean(DataSourceConfiguration configuration) {
         this.configuration = configuration;
         super.setDriverName(configuration.getDriverName());
     }

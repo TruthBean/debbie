@@ -36,6 +36,10 @@ public interface MethodProxyHandler<A extends Annotation> extends Comparable<Met
         return false;
     }
 
+    default boolean sync() {
+        return false;
+    }
+
     default void setMethodAnnotation(A methodAnnotation) {
     }
 

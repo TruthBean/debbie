@@ -39,6 +39,11 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
+    public boolean sync() {
+        return false;
+    }
+
+    @Override
     public int getOrder() {
         return order;
     }

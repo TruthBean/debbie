@@ -438,7 +438,6 @@ public class BeanFactoryHandler {
     }
 
     void resolveDependentBean(Object object, ClassInfo<?> classInfo) {
-        List<Field> fields = classInfo.getFields();
         String keyPrefix = null;
 
         Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
@@ -450,10 +449,44 @@ public class BeanFactoryHandler {
             }
         }
 
+        List<Field> fields = classInfo.getFields();
         if (fields != null && !fields.isEmpty()) {
             String finalKeyPrefix = keyPrefix;
             fields.forEach(field -> resolveFieldValue(object, field, finalKeyPrefix));
         }
+
+        Class<?> clazz = classInfo.getClazz();
+        if (BeanAware.class.isAssignableFrom(clazz)) {
+
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resolveAwareValue(Object object, Class<?> clazz) {
+        BeanAware aware = (BeanAware) object;
+        Class<?> beanClass = aware.getBeanClass();
+
+        String name = null;
+        Set<Method> setBeanMethods = ReflectionHelper.getDeclaredMethods(clazz, "setBean");
+        if (setBeanMethods.size() == 1) {
+            Method method = setBeanMethods.iterator().next();
+            Parameter[] parameters = method.getParameters();
+            if (parameters[0].isNamePresent()) {
+                name = parameters[0].getName();
+            }
+        }
+
+        var values = getBeanList(beanClass);
+        if (!values.isEmpty()) {
+            aware.setBeans(values);
+            if (name != null) {
+                Object factory = factory(name, beanClass, true);
+                aware.setBean(factory);
+            } else if (values.size() == 1) {
+                aware.setBean(values.get(0));
+            }
+        }
+
     }
 
     @SuppressWarnings("unchecked")
