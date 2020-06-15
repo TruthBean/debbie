@@ -276,7 +276,19 @@ public class ReflectionHelper {
                 constructor.setAccessible(true);
             }
             return constructor.newInstance(args);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (InstantiationException e) {
+            Throwable cause = e.getCause();
+            LOGGER.trace("Is it an abstract class?");
+            LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
+        } catch (IllegalAccessException e) {
+            Throwable cause = e.getCause();
+            LOGGER.trace("Is the constructor accessible?");
+            LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
+        } catch (IllegalArgumentException e) {
+            Throwable cause = e.getCause();
+            LOGGER.trace("Illegal argument for constructor");
+            LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error("new instance error. \n", Objects.requireNonNullElse(cause, e));
         } finally {

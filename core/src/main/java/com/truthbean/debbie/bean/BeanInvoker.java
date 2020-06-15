@@ -389,10 +389,10 @@ public class BeanInvoker<Bean> {
                         Object[] params = new Object[parameterCount];
                         for (int i = 0; i < parameterCount; i++) {
                             Parameter parameter = parameters[i];
-                            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
-                            if (annotation != null) {
-                                params[i] = beanFactoryHandler.getParameterBean(parameter);
-                            }
+                            // BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+                            // if (annotation != null) {
+                            params[i] = beanFactoryHandler.getParameterBean(parameter);
+                            // }
                         }
                         this.bean = constructor.newInstance(params);
                     }
@@ -417,10 +417,12 @@ public class BeanInvoker<Bean> {
         var errorMessage = e.getMessage();
         if (cause != null) {
             errorMessage = cause.getMessage();
+        } else {
+            cause = e;
         }
         if (errorMessage != null)
-            throw new BeanCreatedException(errorMessage);
-        else throw new BeanCreatedException(Objects.requireNonNullElse(cause, e));
+            throw new BeanCreatedException(errorMessage, cause, true, true);
+        else throw new BeanCreatedException("", Objects.requireNonNullElse(cause, e), true, true);
     }
 
     public Bean getBean() {

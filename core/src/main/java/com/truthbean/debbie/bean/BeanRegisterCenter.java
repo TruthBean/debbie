@@ -11,6 +11,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.proxy.asm.AsmGenerated;
+import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,13 @@ final class BeanRegisterCenter {
 
     <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
+        // if (BEAN_CLASSES.containsKey(beanClass)) {
+            // TODO merge
+            // DebbieBeanInfo<?> beanInfo = BEAN_CLASSES.get(beanClass);
+            // add bean alias name
+            // if singleton, set order
+            // return;
+        // }
 
         DebbieBeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
         if (put == null) {
@@ -105,7 +113,8 @@ final class BeanRegisterCenter {
             return false;
         if (beanClass.isAnnotation())
             return false;
-        if (beanClass.getAnnotation(AsmGenerated.class) != null) {
+        if (beanClass.getAnnotation(AsmGenerated.class) != null ||
+                JavaassistProxyBean.class.isAssignableFrom(beanClass)) {
             return false;
         }
         return true;

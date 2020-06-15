@@ -297,8 +297,8 @@ public class BeanFactoryHandler {
         return null;
     }
 
-    protected <T> T factory(String serviceName, Class<T> type, boolean require) {
-        var beanInfo = getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
+    protected <T> T factory(String serviceName, Class<T> type, boolean require, boolean throwException) {
+        var beanInfo = getBeanInfo(serviceName, type, require, beanServiceInfoSet, throwException);
         if (!require && beanInfo == null)
             return null;
         assert beanInfo != null;
@@ -313,6 +313,10 @@ public class BeanFactoryHandler {
         }
 
         return factory(beanInfo);
+    }
+
+    protected <T> T factory(String serviceName, Class<T> type, boolean require) {
+        return factory(serviceName, type, require, true);
     }
 
     public synchronized <T> T factory(String serviceName) {
@@ -606,29 +610,35 @@ public class BeanFactoryHandler {
     public Object getParameterBean(Parameter parameter) {
         LOGGER.trace("resolve parameter dependent bean(" + parameter.getType() + ") by type ");
         var beanInject = parameter.getAnnotation(BeanInject.class);
+        String name = "";
+        boolean require = false;
         if (beanInject != null) {
-            String name = beanInject.name();
+            name = beanInject.name();
             if (name.isBlank()) {
                 name = beanInject.value();
             }
-            Class<?> type = parameter.getType();
-            if (!name.isBlank()) {
-                var value = factory(name, type, beanInject.require());
-                if (value != null) {
-                    return value;
-                } else {
-                    if (beanInject.require()) {
-                        throw new NoBeanException("no bean " + name + " found .");
-                    }
-                }
+            require = beanInject.require();
+        }
+        if (name.isBlank() && parameter.isNamePresent()) {
+            name = parameter.getName();
+        }
+        Class<?> type = parameter.getType();
+        if (!name.isBlank()) {
+            var value = factory(name, type, require, false);
+            if (value != null) {
+                return value;
             } else {
-                var value = factory(null, type, beanInject.require());
-                if (value != null) {
-                    return value;
-                } else {
-                    if (beanInject.require()) {
-                        throw new NoBeanException("no bean " + name + " found .");
-                    }
+                if (require) {
+                    throw new NoBeanException("no bean " + name + " found .");
+                }
+            }
+        } else {
+            var value = factory(null, type, require, false);
+            if (value != null) {
+                return value;
+            } else {
+                if (require) {
+                    throw new NoBeanException("no bean " + name + " found .");
                 }
             }
         }
