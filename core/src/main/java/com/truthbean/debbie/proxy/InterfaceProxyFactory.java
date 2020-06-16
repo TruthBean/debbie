@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InterfaceProxyFactory<T> {
     private final Class<T> interfaceType;
     private final Map<Method, AbstractMethodExecutor> methodCache = new ConcurrentHashMap<>();
-    private Object configuration;
+    private final Object configuration;
 
     private final ClassLoader classLoader;
 

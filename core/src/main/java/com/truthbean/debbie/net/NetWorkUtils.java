@@ -325,5 +325,10 @@ public class NetWorkUtils {
         return result.toString();
     }
 
+    private static boolean isPrivateIp(String ipv4) {
+        String prefix = "169.254.";
+        return ipv4.startsWith(prefix);
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(NetWorkUtils.class);
 }

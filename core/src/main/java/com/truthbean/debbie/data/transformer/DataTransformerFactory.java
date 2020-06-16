@@ -263,7 +263,7 @@ public class DataTransformerFactory {
                     }
                     return target.cast(reverse);
                 } catch (Exception e) {
-                    LOGGER.warn(e.getMessage());
+                    LOGGER.warn("transformer error.", e);
                 }
             }
         }

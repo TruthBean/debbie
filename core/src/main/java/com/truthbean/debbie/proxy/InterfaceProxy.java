@@ -44,7 +44,7 @@ public class InterfaceProxy<T> implements InvocationHandler {
         try {
             if (Object.class.equals(method.getDeclaringClass())) {
                 return method.invoke(this, args);
-            } else if (isDefaultMethod(method)) {
+            } else if (method.isDefault()) {
                 return invokeDefaultMethod(proxy, method, args);
             }
         } catch (Throwable t) {

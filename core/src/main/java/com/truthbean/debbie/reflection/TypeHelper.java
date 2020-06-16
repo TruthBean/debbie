@@ -142,7 +142,7 @@ public final class TypeHelper {
 
     public static boolean isArrayType(java.lang.reflect.Type type) {
         if (type instanceof Class) {
-            Class clazz = (Class) type;
+            Class<?> clazz = (Class<?>) type;
             return clazz == Set.class || clazz == Map.class || clazz == List.class;
         } else if (type instanceof ParameterizedType) {
             java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
@@ -211,6 +211,7 @@ public final class TypeHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static Object valueOf(java.lang.reflect.Type type, Object value) {
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -228,7 +229,7 @@ public final class TypeHelper {
                             // todo 需要改良这里的硬编码
                             if (str.contains(",")) {
                                 String[] split = str.split(",");
-                                if (split != null && split.length > 0) {
+                                if (split.length > 0) {
                                     for (String s : split) {
                                         Object o = valueOf((Class<?>) typeArgument, s);
                                         if (o != null)
@@ -237,7 +238,7 @@ public final class TypeHelper {
                                 }
                             } else if (str.contains(";")) {
                                 String[] split = str.split(";");
-                                if (split != null && split.length > 0) {
+                                if (split.length > 0) {
                                     for (String s : split) {
                                         Object o = valueOf((Class<?>) typeArgument, s);
                                         if (o != null)
@@ -264,7 +265,7 @@ public final class TypeHelper {
                         // todo 需要改良这里的硬编码
                         if (str.contains(",")) {
                             String[] split = str.split(",");
-                            if (split != null && split.length > 0) {
+                            if (split.length > 0) {
                                 for (String s : split) {
                                     Object o = valueOf((Class<?>) typeArgument, s);
                                     if (o != null)
@@ -273,7 +274,7 @@ public final class TypeHelper {
                             }
                         } else if (str.contains(";")) {
                             String[] split = str.split(";");
-                            if (split != null && split.length > 0) {
+                            if (split.length > 0) {
                                 for (String s : split) {
                                     Object o = valueOf((Class<?>) typeArgument, s);
                                     if (o != null)

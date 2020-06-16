@@ -91,7 +91,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         classWriter.visitEnd();
         byte[] code = classWriter.toByteArray();
 
-        try {
+        /*try {
             byte[] data = classWriter.toByteArray();
             File file = new File("V:\\person\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
             System.out.println(file.getAbsolutePath());
@@ -100,7 +100,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             out.close();
         } catch (IOException e) {
             LOGGER.error("", e);
-        }
+        }*/
 
         ClassLoader classLoader = ClassLoaderUtils.getClassLoader(getBeanClass());
         Class<? extends B> proxyClass = (Class<? extends B>) new ByteArrayClassLoader(classLoader).defineClass(className, code);

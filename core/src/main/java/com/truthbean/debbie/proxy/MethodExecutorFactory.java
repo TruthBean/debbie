@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +24,9 @@ public class MethodExecutorFactory {
 
     public static <T> AbstractMethodExecutor factory(Class<? extends AbstractMethodExecutor> executorClass,
                                                         Class<T> interfaceType, Method method, Object configuration) {
-        try {
-            var constructor = executorClass.getConstructor(Class.class, Method.class, Object.class);
-            return constructor.newInstance(interfaceType, method, configuration);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            LOGGER.error("", e);
-        }
-
-        return null;
+        return ReflectionHelper.newInstance(executorClass,
+                new Class[]{Class.class, Method.class, Object.class},
+                new Object[]{interfaceType, method, configuration});
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodExecutorFactory.class);
 }

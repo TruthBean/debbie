@@ -87,6 +87,36 @@ public class ReflectionHelper {
         return newInstance(type, Constants.EMPTY_CLASS_ARRAY, null);
     }
 
+    public static Object[] makeDefaultValue(Class<?>[] parameterTypes) {
+        final Object[] result = new Object[parameterTypes.length];
+        if (parameterTypes.length > 0 && parameterTypes[0] != null) {
+            int n = parameterTypes.length;
+            for (int i = 0; i < n; i++) {
+                Class<?> parameterType = parameterTypes[i];
+                if (parameterType == byte.class) {
+                    result[i] = (byte) 0;
+                } else if (parameterType == char.class) {
+                    result[i] = (char) 0;
+                } else if (parameterType == short.class) {
+                    result[i] = (short) 0;
+                } else if (parameterType == int.class) {
+                    result[i] = 0;
+                } else if (parameterType == long.class) {
+                    result[i] = 0L;
+                } else if (parameterType == float.class) {
+                    result[i] = 0.0F;
+                } else if (parameterType == double.class) {
+                    result[i] = 0.0D;
+                } else if (parameterType == boolean.class) {
+                    result[i] = false;
+                } else {
+                    result[i] = null;
+                }
+            }
+        }
+        return result;
+    }
+
     public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz, int typeNum) {
         if (clazz == Object.class || clazz == Void.class) {
             return null;

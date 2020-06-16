@@ -1,6 +1,7 @@
 package com.truthbean.debbie.hikari;
 
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
 import org.junit.jupiter.api.Test;
@@ -23,5 +24,10 @@ public class HikariDataSourcesTest {
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testDataSourceConfiguration(@BeanInject DataSourceConfiguration configuration) {
+        System.out.println(configuration);
     }
 }

@@ -99,10 +99,12 @@ public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
 
     @Override
     public void destroy() {
-        LOGGER.info("destroy tasks bean");
-        taskThreadPool.destroy();
-        taskBeans.clear();
-        // TODO: 清除正在运行的任务
+        if (!isTaskRunning()) {
+            LOGGER.info("destroy tasks bean");
+            taskThreadPool.destroy();
+            taskBeans.clear();
+            // TODO: 清除正在运行的任务
+        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskFactory.class);

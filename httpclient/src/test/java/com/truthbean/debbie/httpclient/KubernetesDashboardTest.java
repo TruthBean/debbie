@@ -26,7 +26,7 @@ public class KubernetesDashboardTest {
     @BeforeEach
     public void before() {
         var properties = new HttpClientProperties();
-        httpClientHandler = new HttpClientHandler(properties.toConfiguration());
+        httpClientHandler = new HttpClientHandler(properties.loadConfiguration());
     }
 
     @Test

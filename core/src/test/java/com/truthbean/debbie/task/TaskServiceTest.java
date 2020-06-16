@@ -54,11 +54,7 @@ public class TaskServiceTest {
         try {
             String s = submit.get(5000, TimeUnit.MILLISECONDS);
             System.out.println("2. " + s);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
         System.out.println("3 ...................");

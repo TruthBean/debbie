@@ -23,7 +23,7 @@ public class SeaweedfsTest {
     @BeforeEach
     public void before() {
         var properties = new HttpClientProperties();
-        httpClientHandler = new HttpClientHandler(properties.toConfiguration());
+        httpClientHandler = new HttpClientHandler(properties.loadConfiguration());
     }
 
     @Test
@@ -36,7 +36,7 @@ public class SeaweedfsTest {
     public static void main(String[] args) {
         SeaweedfsTest test = new SeaweedfsTest();
         var properties = new HttpClientProperties();
-        test.httpClientHandler = new HttpClientHandler(properties.toConfiguration());
+        test.httpClientHandler = new HttpClientHandler(properties.loadConfiguration());
         for (int i = 3897; i <= 4673; i+=10) {
             String url = "http://192.168.1.11:2002/peoples";
             Map<String, String> head = new Hashtable<>();

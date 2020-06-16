@@ -18,6 +18,7 @@ import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.data.transformer.ClassTransformer;
 import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
 import com.truthbean.debbie.data.transformer.date.DefaultTimeTransformer;
+import com.truthbean.debbie.data.transformer.date.TimestampLongTransformer;
 import com.truthbean.debbie.data.transformer.jdbc.BlobToByteArrayTransformer;
 import com.truthbean.debbie.data.transformer.jdbc.BlobToStringTransformer;
 import com.truthbean.debbie.data.transformer.numeric.BigDecimalToLongTransformer;
@@ -38,6 +39,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
 import java.sql.Blob;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * @author truthbean
@@ -87,7 +90,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     private void registerTransformer(BeanInitialization beanInitialization) {
 
-        beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Long.class, String.class);
+        beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Date.class, String.class);
+        beanInitialization.registerDataTransformer(new TimestampLongTransformer(), Timestamp.class, Long.class);
         beanInitialization.registerDataTransformer(new JsonNodeTransformer(), JsonNode.class, String.class);
         beanInitialization.registerDataTransformer(new UrlTransformer(), URL.class, String.class);
 

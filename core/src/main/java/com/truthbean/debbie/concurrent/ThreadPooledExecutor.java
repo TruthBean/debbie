@@ -52,21 +52,21 @@ public class ThreadPooledExecutor implements Executor {
         this.executorService.execute(task);
     }
 
+    public boolean isRunning() {
+        return !executorService.isShutdown() && !executorService.isTerminated();
+    }
+
     public <R> Future<R> submit(Callback<R> task, Object...args) {
-        return this.executorService.submit(() -> {
-            return task.call(args);
-        });
+        return this.executorService.submit(() -> task.call(args));
     }
 
     public void destroy() {
-        if (executorService != null) {
-            if (!executorService.isShutdown() && !executorService.isTerminated()) {
-                try {
-                    executorService.shutdown();
-                    executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    executorService.shutdownNow();
-                }
+        if (isRunning()) {
+            try {
+                executorService.shutdown();
+                executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                executorService.shutdownNow();
             }
         }
     }

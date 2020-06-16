@@ -23,6 +23,15 @@ public class ReflectionHelperTest {
     }
 
     @Test
+    public void makeDefaultValue() {
+        Class<?>[] types = new Class[]{String.class, int.class, float.class, boolean.class};
+        Object[] objects = ReflectionHelper.makeDefaultValue(types);
+        for (Object object : objects) {
+            System.out.println(object);
+        }
+    }
+
+    @Test
     public void getAllClassByResources() {
         Class<?> clazz = ReflectionHelperTest.class;
         Class<?>[] classes = clazz.getClasses();
