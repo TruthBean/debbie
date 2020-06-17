@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -164,6 +167,40 @@ public final class JacksonUtils {
         return obj;
     }
 
+    /**
+     * @param jsonInputStream json stream
+     * @param clazz class of list element
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T jsonStreamToListBean(InputStream jsonInputStream, Class<T> clazz) {
+        T obj = null;
+        try {
+            obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(List.class, clazz));
+        } catch (IOException e) {
+            LOGGER.error("json inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    /**
+     * @param jsonInputStream json stream
+     * @param clazz class of set element
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T jsonStreamToSetBean(InputStream jsonInputStream, Class<T> clazz) {
+        T obj = null;
+        try {
+            obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(Set.class, clazz));
+        } catch (IOException e) {
+            LOGGER.error("json inputStream to bean error", e);
+        }
+        return obj;
+    }
+
     public static <T> T jsonToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
         try {
             JacksonUtils.OBJECT_MAPPER.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
@@ -247,6 +284,27 @@ public final class JacksonUtils {
         return null;
     }
 
+    public static <T> List<T> jsonToSetBean(String jsonStr, Class<T> bean) {
+        try {
+            return OBJECT_MAPPER.readValue(jsonStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(Set.class, bean));
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    public static <T> List<T> jsonToCollectionBean(String jsonStr,
+                                                   Class<? extends Collection> collectionType, Class<T> bean) {
+        try {
+            return OBJECT_MAPPER.readValue(jsonStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(collectionType, bean));
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
     public static <T, I> List<T> jsonToListBean(String jsonStr, Class<T> bean, Class<I> interfaceClass) {
         try {
             var mapper = OBJECT_MAPPER.copy();
@@ -319,6 +377,42 @@ public final class JacksonUtils {
         return null;
     }
 
+    public static <T> T xmlToListBean(String xmlStr, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(List.class, clazz));
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    public static <T> T xmlToSetBean(String xmlStr, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(Set.class, clazz));
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    public static <T> T xmlToCollectionBean(String xmlStr, Class<? extends Collection<?>> collectionClass, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(collectionClass, clazz));
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
     /**
      * @param xmlInputStream xml stream
      * @param clazz class of bean
@@ -330,6 +424,42 @@ public final class JacksonUtils {
         T obj = null;
         try {
             obj = xmlMapper.readValue(xmlInputStream, clazz);
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    /**
+     * @param xmlInputStream xml stream
+     * @param clazz list element type
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T xmlStreamToListBean(InputStream xmlInputStream, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(List.class, clazz));
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    /**
+     * @param xmlInputStream xml stream
+     * @param clazz list element type
+     * @param <T> class
+     * @return obj
+     */
+    public static <T> T xmlStreamToSetBean(InputStream xmlInputStream, Class<T> clazz) {
+        var xmlMapper = XML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(Set.class, clazz));
         } catch (IOException e) {
             LOGGER.error("xml inputStream to bean error", e);
         }

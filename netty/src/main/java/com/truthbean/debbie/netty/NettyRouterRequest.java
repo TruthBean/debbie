@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.*;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +130,7 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     public void setInputStreamBody(HttpContent httpContent) {
-        HttpContent copy = httpContent.copy();
+        HttpContent copy = httpContent; //.duplicate();
         ByteBufInputStream byteBufInputStream = new ByteBufInputStream(copy.content());
         this.routerRequestCache.setInputStreamBody(byteBufInputStream);
     }

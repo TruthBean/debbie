@@ -598,6 +598,14 @@ public final class TypeHelper {
         return null;
     }
 
+    public static java.lang.reflect.Type[] getActualType(java.lang.reflect.Type type) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return parameterizedType.getActualTypeArguments();
+        }
+        return null;
+    }
+
     public static boolean isOrValueOf(Class<?> clazz, Object target) {
         if (target.getClass().equals(clazz)) {
             return true;

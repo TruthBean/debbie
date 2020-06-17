@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @see java.lang.reflect.Executable
@@ -185,11 +182,25 @@ public class ExecutableArgumentHandler {
         switch (type) {
             case APPLICATION_XML:
             case APPLICATION_XML_UTF8:
-                value = JacksonUtils.xmlStreamToBean(stream, clazz);
+                if (clazz == List.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.xmlStreamToListBean(stream, (Class<?>)actualType[0]);
+                } else if (clazz == Set.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.xmlStreamToSetBean(stream, (Class<?>)actualType[0]);
+                } else
+                    value = JacksonUtils.xmlStreamToBean(stream, clazz);
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
-                value = JacksonUtils.jsonStreamToBean(stream, clazz);
+                if (clazz == List.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.jsonStreamToListBean(stream, (Class<?>)actualType[0]);
+                } else if (clazz == Set.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.jsonStreamToSetBean(stream, (Class<?>)actualType[0]);
+                } else
+                    value = JacksonUtils.jsonStreamToBean(stream, clazz);
                 break;
             case TEXT_PLAIN_UTF8:
             case TEXT_CSS_UTF8:
@@ -226,11 +237,25 @@ public class ExecutableArgumentHandler {
         switch (type) {
             case APPLICATION_XML:
             case APPLICATION_XML_UTF8:
-                value = JacksonUtils.xmlToBean(body, clazz);
+                if (clazz == List.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.xmlToListBean(body, (Class<?>)actualType[0]);
+                } else if (clazz == Set.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.xmlToSetBean(body, (Class<?>)actualType[0]);
+                } else
+                    value = JacksonUtils.xmlToBean(body, clazz);
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
-                value = JacksonUtils.jsonToBean(body, clazz);
+                if (clazz == List.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.jsonToListBean(body, (Class<?>)actualType[0]);
+                } else if (clazz == Set.class) {
+                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                    value = JacksonUtils.jsonToCollectionBean(body, Set.class, (Class<?>)actualType[0]);
+                } else
+                    value = JacksonUtils.jsonToBean(body, clazz);
                 break;
             // TODO MORE CASE
             default:

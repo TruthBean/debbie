@@ -715,6 +715,12 @@ public class ReflectionHelper {
                                      Object... parameters) throws Throwable {
         if (method == null)
             return null;
+        boolean cannotAccess = ((!Modifier.isPublic(method.getModifiers())
+                || !Modifier.isPublic(method.getDeclaringClass().getModifiers()))
+                && !method.trySetAccessible());
+        if (cannotAccess) {
+            method.setAccessible(true);
+        }
         try {
             if (parameters == null || parameters.length == 0) {
                 return (T) method.invoke(target);
