@@ -377,6 +377,17 @@ public final class JacksonUtils {
         return null;
     }
 
+    public static <T> T xmlToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
+        var mapper = XML_MAPPER.copy();
+        try {
+            return mapper.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
+                    .constructParametricType(rawType, parameterClasses));
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
     public static <T> T xmlToListBean(String xmlStr, Class<T> clazz) {
         var xmlMapper = XML_MAPPER.copy();
         T obj = null;
@@ -541,5 +552,29 @@ public final class JacksonUtils {
             LOGGER.error("xml inputStream to bean error", e);
         }
         return obj;
+    }
+
+    public static <T> T yamlToCollectionBean(String xmlStr, Class<? extends Collection<?>> collectionClass,
+                                          Class<T> clazz) {
+        var yamlMapper = YAML_MAPPER.copy();
+        T obj = null;
+        try {
+            obj = yamlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
+                    .constructCollectionType(collectionClass, clazz));
+        } catch (IOException e) {
+            LOGGER.error("xml inputStream to bean error", e);
+        }
+        return obj;
+    }
+
+    public static <T> T yamlToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
+        var mapper = YAML_MAPPER.copy();
+        try {
+            return mapper.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
+                    .constructParametricType(rawType, parameterClasses));
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return null;
     }
 }
