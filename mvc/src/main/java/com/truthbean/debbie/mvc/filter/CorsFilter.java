@@ -39,24 +39,8 @@ public class CorsFilter implements RouterFilter {
 
     @Override
     public boolean preRouter(RouterRequest request, RouterResponse response) {
-        if (isCorsRequest(request) && this.configuration.isEnableCors()) {
-            this.doCors = true;
-        } else {
-            this.doCors = false;
-        }
+        this.doCors = isCorsRequest(request) && this.configuration.isEnableCors();
         return false;
-        /*if (this.configuration.isEnableCors()) {
-             if (isPreFlightRequest(request)) {
-                this.doCors = true;
-                return false;
-            } else {
-                this.doCors = true;
-                return true;
-            }
-        } else {
-            this.doCors = false;
-            return false;
-        }*/
     }
 
     @Override
@@ -80,7 +64,7 @@ public class CorsFilter implements RouterFilter {
                 response.addHeader(PRAGMA, "no-cache");
             }
             return false;
-        } else if(!this.configuration.isEnableCors()) {
+        } else if(!this.configuration.isEnableCors() && isRequestOriginEqualRequestHost(request)) {
             LOGGER.info("cors forbidden");
             response.setStatus(HttpStatus.NOT_ACCEPTABLE);
             response.setContent("cors rejected!");
@@ -111,8 +95,8 @@ public class CorsFilter implements RouterFilter {
         if (header != null) {
             String origin = header.getHeader(HttpHeader.HttpHeaderNames.ORIGIN);
             String host = header.getHeader(HttpHeader.HttpHeaderNames.HOST);
-            if (origin == null && host == null) return false;
-            return origin != null && host != null && origin.equalsIgnoreCase(host);
+            if (origin == null && host == null) return true;
+            return origin != null && (origin.equalsIgnoreCase(host) || ("http" + host).equalsIgnoreCase(origin));
         }
         return false;
     }
