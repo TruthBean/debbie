@@ -96,7 +96,8 @@ public class CorsFilter implements RouterFilter {
             String origin = header.getHeader(HttpHeader.HttpHeaderNames.ORIGIN);
             String host = header.getHeader(HttpHeader.HttpHeaderNames.HOST);
             if (origin == null && host == null) return true;
-            return origin != null && (origin.equalsIgnoreCase(host) || ("http" + host).equalsIgnoreCase(origin));
+            return origin != null && (origin.equalsIgnoreCase(host)
+                    || ("http://" + host).equalsIgnoreCase(origin) || ("https://" + host).equalsIgnoreCase(origin));
         }
         return false;
     }
