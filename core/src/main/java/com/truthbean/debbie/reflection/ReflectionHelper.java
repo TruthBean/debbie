@@ -15,8 +15,8 @@ import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -179,13 +179,13 @@ public class ReflectionHelper {
                 Parameter parameter = parameters[i];
                 // 方法参数的泛型
                 String typeName = parameter.getType().getTypeName();
-                LOGGER.trace("parameter.getType().getTypeName() = " + typeName);
+                LOGGER.trace(() -> "parameter.getType().getTypeName() = " + typeName);
 
                 String typeName1 = parameter.getParameterizedType().getTypeName();
-                LOGGER.trace("parameter.getParameterizedType().getTypeName() = " + typeName);
+                LOGGER.trace(() -> "parameter.getParameterizedType().getTypeName() = " + typeName);
 
                 String genericParameterTypeName = genericParameterTypes[i].getTypeName();
-                LOGGER.trace("genericParameterTypes: " + genericParameterTypeName);
+                LOGGER.trace(() -> "genericParameterTypes: " + genericParameterTypeName);
 
                 for (Map.Entry<String, Type> nameTypeEntry : typeParameters.entrySet()) {
                     var name = nameTypeEntry.getKey();
@@ -1006,7 +1006,7 @@ public class ReflectionHelper {
      */
     public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader,
                                                           ResourceResolver resourceResolver) {
-        LOGGER.trace("packageName: " + packageName);
+        LOGGER.trace(() -> "packageName: " + packageName);
         var packageDirName = packageName.replace('.', '/');
         if (!packageName.endsWith("**")) {
             packageDirName = packageDirName + "/**";
@@ -1023,7 +1023,7 @@ public class ReflectionHelper {
      * @return class list
      */
     public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader) {
-        LOGGER.trace("packageName: " + packageName);
+        LOGGER.trace(() -> "packageName: " + packageName);
         var packageDirName = packageName.replace('.', '/');
         List<String> resources = ResourcesHandler.getAllClassPathResources(packageDirName, classLoader);
         return ResourcesHandler.getClassesByResources(resources, classLoader);

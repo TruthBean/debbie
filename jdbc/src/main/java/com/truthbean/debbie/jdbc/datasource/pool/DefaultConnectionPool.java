@@ -1,8 +1,8 @@
 package com.truthbean.debbie.jdbc.datasource.pool;
 
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;

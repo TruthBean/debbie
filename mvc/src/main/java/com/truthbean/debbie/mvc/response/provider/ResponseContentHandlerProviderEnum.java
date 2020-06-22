@@ -14,8 +14,8 @@ import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
 import com.truthbean.debbie.mvc.response.view.NoTemplateViewHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;

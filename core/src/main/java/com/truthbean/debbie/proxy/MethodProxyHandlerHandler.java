@@ -9,8 +9,9 @@
  */
 package com.truthbean.debbie.proxy;
 
-import org.slf4j.Logger;
+import com.truthbean.Logger;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -19,7 +20,7 @@ import java.util.concurrent.Callable;
  * @since 0.0.2
  */
 public class MethodProxyHandlerHandler {
-    private final Collection<MethodProxyHandler> interceptors;
+    private final Collection<MethodProxyHandler<? extends Annotation>> interceptors;
 
     private final Logger logger;
     public final Object reference = new Object();
@@ -29,16 +30,16 @@ public class MethodProxyHandlerHandler {
         this.logger = logger;
     }
 
-    public void setInterceptors(Collection<MethodProxyHandler> interceptors) {
+    public void setInterceptors(Collection<MethodProxyHandler<? extends Annotation>> interceptors) {
         this.interceptors.clear();
         this.interceptors.addAll(interceptors);
     }
 
-    public void addInterceptors(Collection<MethodProxyHandler> interceptors) {
+    public void addInterceptors(Collection<MethodProxyHandler<? extends Annotation>> interceptors) {
         this.interceptors.addAll(interceptors);
     }
 
-    public void addInterceptor(MethodProxyHandler... interceptors) {
+    public void addInterceptor(MethodProxyHandler<? extends Annotation>... interceptors) {
         if (interceptors != null && interceptors.length > 0)
             this.interceptors.addAll(Arrays.asList(interceptors));
     }
@@ -48,7 +49,7 @@ public class MethodProxyHandlerHandler {
     }
 
     public boolean sync() {
-        for (MethodProxyHandler interceptor : this.interceptors) {
+        for (MethodProxyHandler<? extends Annotation> interceptor : this.interceptors) {
             if (interceptor.sync()) {
                 return true;
             }
@@ -68,8 +69,8 @@ public class MethodProxyHandlerHandler {
 
     private <T> T doProxy(String methodName, Callable<T> noInterceptorsCallback, Callable<T> callback) throws Throwable {
         // before
-        Map<MethodProxyHandler, Exception> beforeInvokeExceptions = new HashMap<>();
-        for (MethodProxyHandler interceptor : interceptors) {
+        Map<MethodProxyHandler<? extends Annotation>, Exception> beforeInvokeExceptions = new HashMap<>();
+        for (MethodProxyHandler<? extends Annotation> interceptor : interceptors) {
             try {
                 interceptor.before();
             } catch (Exception e) {
@@ -105,11 +106,11 @@ public class MethodProxyHandlerHandler {
             invokeException = throwable;
         }
 
-        Map<MethodProxyHandler, Throwable> catchedExceptions = new HashMap<>();
+        Map<MethodProxyHandler<? extends Annotation>, Throwable> catchedExceptions = new HashMap<>();
 
         if (invokeException != null) {
             // do catch exception
-            for (MethodProxyHandler interceptor : interceptors) {
+            for (MethodProxyHandler<? extends Annotation> interceptor : interceptors) {
                 try {
                     interceptor.catchException(invokeException);
                 } catch (Throwable e) {
@@ -118,8 +119,8 @@ public class MethodProxyHandlerHandler {
             }
         } else {
             // after
-            Map<MethodProxyHandler, Throwable> afterInvokeExceptions = new HashMap<>();
-            for (MethodProxyHandler interceptor : interceptors) {
+            Map<MethodProxyHandler<? extends Annotation>, Throwable> afterInvokeExceptions = new HashMap<>();
+            for (MethodProxyHandler<? extends Annotation> interceptor : interceptors) {
                 try {
                     interceptor.after();
                 } catch (Exception e) {
@@ -145,7 +146,7 @@ public class MethodProxyHandlerHandler {
         }
 
         // finally
-        for (MethodProxyHandler proxyHandler : interceptors) {
+        for (MethodProxyHandler<? extends Annotation> proxyHandler : interceptors) {
             try {
                 proxyHandler.finallyRun();
             } catch (Exception e) {

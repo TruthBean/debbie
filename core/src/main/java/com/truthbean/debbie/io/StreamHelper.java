@@ -2,8 +2,8 @@ package com.truthbean.debbie.io;
 
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.util.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -198,9 +198,7 @@ public final class StreamHelper {
                     // 添加到classes
                     classes.add(classLoader.loadClass(packageName + '.' + className));
                 } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.error("", e);
-                    }
+                    LOGGER.debug("", e);
                 }
             }
         }

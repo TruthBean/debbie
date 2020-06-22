@@ -10,8 +10,8 @@
 package com.truthbean.debbie.data.transformer.jdbc;
 
 import com.truthbean.debbie.data.transformer.DataTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.sql.Blob;
 import java.sql.SQLException;

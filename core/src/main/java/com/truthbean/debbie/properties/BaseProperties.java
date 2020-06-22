@@ -11,8 +11,8 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -57,7 +57,7 @@ public class BaseProperties {
         if (applicationUrl == null) {
             LOGGER.error("debbie.application.properties value cannot be null.");
         } else {
-            LOGGER.debug("application.properties: " + applicationUrl);
+            LOGGER.debug(() -> "application.properties: " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
             if (url == null) {
                 if (applicationUrl.equals(Constants.APPLICATION_PROPERTIES))
@@ -68,7 +68,7 @@ public class BaseProperties {
                 // read via file
                 File file = new File(applicationUrl);
                 if (file.exists()) {
-                    LOGGER.debug("application.properties url: " + file.getAbsolutePath());
+                    LOGGER.debug(() -> "application.properties url: " + file.getAbsolutePath());
                     InputStream inputStream;
                     try {
                         inputStream = new FileInputStream(file);
@@ -83,7 +83,8 @@ public class BaseProperties {
                     try {
                         if (!applicationUrl.equals(Constants.APPLICATION_PROPERTIES)) {
                             url = new URL(applicationUrl);
-                            LOGGER.debug("application.properties url: " + url);
+                            if (LOGGER.isDebugEnabled())
+                                LOGGER.debug("application.properties url: " + url);
                             inputStream = url.openStream();
                             var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                             PROPERTIES.load(reader);
@@ -93,7 +94,8 @@ public class BaseProperties {
                     }
                 }
             } else {
-                LOGGER.debug("application.properties url: " + url);
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("application.properties url: " + url);
                 InputStream inputStream;
                 try {
                     inputStream = url.openStream();
@@ -146,7 +148,7 @@ public class BaseProperties {
         // 逐个匹配
         while (matcher.find()) {
             String key = matcher.group(1);
-            LOGGER.debug("env key:" + key);
+            LOGGER.debug(() -> "env key:" + key);
             String value = System.getProperty(key);
             if (value == null && params != null) {
                 value = params.getProperty(key);
@@ -159,7 +161,8 @@ public class BaseProperties {
                     System.setProperty(key, value);
                 }
             }
-            LOGGER.debug("env value:" + value);
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("env value:" + value);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
         matcher.appendTail(sb);

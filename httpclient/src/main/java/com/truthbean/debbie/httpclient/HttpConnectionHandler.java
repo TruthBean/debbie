@@ -16,8 +16,8 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -207,7 +207,7 @@ public class HttpConnectionHandler extends HttpHandler {
             }
             if (cookies != null && !cookies.isEmpty()) {
                 var cookie = buildCookies(cookies);
-                LOGGER.debug("request Cookie: " + cookie);
+                LOGGER.debug(() -> "request Cookie: " + cookie);
                 connection.setRequestProperty("Cookie", cookie);
             }
             if (headers != null && !headers.isEmpty()) {
@@ -240,7 +240,7 @@ public class HttpConnectionHandler extends HttpHandler {
             return null;
         }
 
-        LOGGER.debug("remote service response status: " + status);
+        LOGGER.debug(() -> "remote service response status: " + status);
 
         if (status / 100 == 5) {
             LOGGER.info("remote service is unavailable (status " + status + ")");
@@ -314,7 +314,7 @@ public class HttpConnectionHandler extends HttpHandler {
             return (HttpsURLConnection) createUrlConnection(urlSpec);
 
         } catch (Exception e) {
-            LOGGER.debug("https config ssl failure: " + e.getMessage());
+            LOGGER.debug(() -> "https config ssl failure: " + e.getMessage());
         }
 
         return null;

@@ -30,8 +30,8 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.util.ReferenceCountUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -194,7 +194,7 @@ public class NettyRouterRequest implements RouterRequest {
      */
     private void handleAttribute(InterfaceHttpData data) {
         var httpDataType = data.getHttpDataType();
-        LOGGER.debug("HttpDataType " + httpDataType);
+        LOGGER.debug(() -> "HttpDataType " + httpDataType);
         switch (httpDataType) {
             case Attribute:
                 setParameter(data);
@@ -243,13 +243,14 @@ public class NettyRouterRequest implements RouterRequest {
             routerRequestCache.addParameter(attribute.getName(), value);
         } catch (IOException e) {
             e.printStackTrace();
-            LOGGER.error("BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " Error while reading value: " + e.getMessage());
+            LOGGER.error(() -> "BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() +
+                    " Error while reading value: " + e.getMessage());
             return;
         }
         if (value.length() > 100) {
-            LOGGER.error("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " data too long");
+            LOGGER.error(() -> "\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() + " data too long");
         } else {
-            LOGGER.debug("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.toString() + "\r\n");
+            LOGGER.debug(() -> "\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.toString() + "\r\n");
         }
     }
 

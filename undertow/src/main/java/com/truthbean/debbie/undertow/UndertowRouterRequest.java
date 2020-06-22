@@ -24,8 +24,8 @@ import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.HttpString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;

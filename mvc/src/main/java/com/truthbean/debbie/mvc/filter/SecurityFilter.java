@@ -13,8 +13,8 @@ import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.RouterResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -67,7 +67,7 @@ public class SecurityFilter implements RouterFilter {
                 || "Poirot".equalsIgnoreCase(userAgent) || "searchbot admin@google.com".equalsIgnoreCase(userAgent)
                 || "sogou develop spider".equalsIgnoreCase(userAgent) || "WEP Search 00".equalsIgnoreCase(userAgent)
                 );
-        LOGGER.trace("attacked: " + attacked);
+        LOGGER.trace(() -> "attacked: " + attacked);
         return !this.attacked;
     }
 

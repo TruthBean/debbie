@@ -13,8 +13,8 @@ import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.NumericUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -69,7 +69,7 @@ public final class TypeHelper {
                 return classClassEntry.getValue();
             }
         }
-        return null;
+        return baseType;
     }
 
     public static Class<?> getClass(String className) {

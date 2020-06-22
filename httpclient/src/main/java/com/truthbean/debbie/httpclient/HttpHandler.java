@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;

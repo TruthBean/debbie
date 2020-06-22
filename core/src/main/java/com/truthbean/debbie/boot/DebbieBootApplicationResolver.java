@@ -12,8 +12,8 @@ package com.truthbean.debbie.boot;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Set;
 
@@ -60,7 +60,7 @@ class DebbieBootApplicationResolver {
 
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
-        LOGGER.debug("applicationClass: " + applicationClass);
+        LOGGER.debug(() -> "applicationClass: " + applicationClass);
         if (applicationClass == null) return;
 
         BeanInitialization beanInitialization = this.beanFactoryHandler.getBeanInitialization();

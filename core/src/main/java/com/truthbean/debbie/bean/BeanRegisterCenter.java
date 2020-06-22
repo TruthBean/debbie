@@ -13,8 +13,8 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -60,7 +60,7 @@ final class BeanRegisterCenter {
 
         DebbieBeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
         if (put == null) {
-            LOGGER.trace("register class " + beanClass.getName() + " with bean name " + beanClassInfo.getServiceName());
+            LOGGER.trace(() -> "register class " + beanClass.getName() + " with bean name " + beanClassInfo.getServiceName());
         }
         CLASS_INFO_SET.add(beanClassInfo);
 
@@ -96,7 +96,7 @@ final class BeanRegisterCenter {
     @SuppressWarnings("unchecked")
     <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
-        LOGGER.trace("refresh class " + beanClass.getName());
+        LOGGER.trace(() -> "refresh class " + beanClass.getName());
 
         DebbieBeanInfo<Bean> beanInfo = (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(beanClass);
         if (beanInfo == null) {
@@ -160,7 +160,7 @@ final class BeanRegisterCenter {
     Set<Method> getBeanMethods(Class<?> beanClass) {
         var classInfoSet = BEAN_CLASSES;
         if (!classInfoSet.containsKey(beanClass)) {
-            LOGGER.error(beanClass.getName() + " has not register");
+            LOGGER.error(() -> beanClass.getName() + " has not register");
             throw new NoBeanException(beanClass.getName() + " has not register");
         }
         return classInfoSet.get(beanClass).getMethods();

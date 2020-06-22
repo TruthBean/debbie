@@ -16,8 +16,8 @@ import com.truthbean.debbie.mvc.router.RouterRequestValues;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.reflection.TypeHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;

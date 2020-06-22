@@ -14,8 +14,8 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -95,7 +95,7 @@ public class DispatcherServlet extends HttpServlet {
             }
         } else {
             var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
-            LOGGER.debug("routerInfo invoke method params : " + routerInfo.getMethodParams());
+            LOGGER.debug(() -> "routerInfo invoke method params : " + routerInfo.getMethodParams());
             RouterResponse response = MvcRouterHandler.handleRouter(routerInfo, handler);
 
             // handle response

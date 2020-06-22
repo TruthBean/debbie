@@ -13,7 +13,7 @@ import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import org.slf4j.Logger;
+import com.truthbean.Logger;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;

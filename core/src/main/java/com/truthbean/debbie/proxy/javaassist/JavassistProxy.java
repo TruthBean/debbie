@@ -1,24 +1,21 @@
-package com.truthbean.debbie.proxy;
+package com.truthbean.debbie.proxy.javaassist;
 
-import com.truthbean.debbie.proxy.asm.AsmGenerated;
-import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
+import com.truthbean.debbie.proxy.MethodCallBack;
+import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.proxy.asm.AbstractProxy;
+import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
+
 import javassist.*;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.AttributeInfo;
-import javassist.bytecode.ConstPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -33,7 +30,6 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
     public JavassistProxy(Class<B> beanClass, MethodProxyHandlerHandler handler,
                           Class<? extends Annotation> methodAnnotation) {
         super(beanClass, handler, methodAnnotation);
-
     }
 
     @Override
@@ -61,11 +57,6 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
             CtConstructor newConstructor = CtNewConstructor.make(constructor, proxyClass);
             proxyClass.addConstructor(newConstructor);
 
-            /*CtClass[] parameters = convert(classPool, asmConstructorInfo.getParameterTypes());
-            CtClass[] exceptions = convert(classPool, asmConstructorInfo.getExceptions());
-            CtConstructor newConstructor = CtNewConstructor.make(parameters, exceptions, null, proxyClass);
-            proxyClass.addConstructor(newConstructor);*/
-
             String methodProxyHandlerHandlerClassName = MethodProxyHandlerHandler.class.getName();
 
             proxyClass.addField(CtField.make("private " + beanClassName + " target;", proxyClass));
@@ -77,6 +68,7 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
             Set<AsmMethodInfo> proxyMethod = getMethodInfoList();
             for (AsmMethodInfo method : proxyMethod) {
                 String methodContent = makeMethod(method);
+                LOGGER.trace(() -> methodContent);
                 proxyClass.addMethod(CtNewMethod.make(methodContent, proxyClass));
             }
             try {
@@ -154,9 +146,9 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
 
         StringBuilder methodContext = new StringBuilder();
         if (method.isPublic()) {
-            methodContext.append("public ");
+            methodContext.append("    public ");
         } else if (method.isProtected()) {
-            methodContext.append("protected ");
+            methodContext.append("    protected ");
         } else if (!method.isDefault()) {
             return null;
         }
@@ -179,12 +171,20 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
             for (int i = 0; i < n; i++) {
                 Class<?> parameterType = parameterTypes[i];
                 methodContext.append(parameterType.getName()).append(" arg").append(i).append(", ");
-                params.append("arg").append(i).append(", ");
+                if (TypeHelper.isRawBaseType(parameterType)) {
+                    params.append(setBaseWrapperClassValue(parameterType)).append("arg").append(i).append("), ");
+                } else {
+                    params.append("arg").append(i).append(", ");
+                }
                 paramTypes.append(parameterType.getName()).append(".class, ");
             }
             Class<?> parameterType = parameterTypes[n];
             methodContext.append(parameterType.getName()).append(" arg").append(n);
-            params.append("arg").append(n);
+            if (TypeHelper.isRawBaseType(parameterType)) {
+                params.append(setBaseWrapperClassValue(parameterType)).append("arg").append(n).append(")");
+            } else {
+                params.append("arg").append(n);
+            }
             paramTypes.append(parameterType.getName()).append(".class");
         }
         paramTypes.append("}");
@@ -204,6 +204,15 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
         methodContext.append(" {\n");
         if (isAnnotationMethod(method)) {
             String methodCallBackClassName = MethodCallBack.class.getName();
+            Class<?> wrapperClass = returnType;
+            if (TypeHelper.isRawBaseType(returnType)) {
+                wrapperClass = TypeHelper.getWrapperClass(returnType);
+            }
+            if (returnType == void.class) {
+                wrapperClass = Void.class;
+            }
+            String wrapperClassName = wrapperClass.getName();
+
             methodContext.append("        ")
                     .append(methodCallBackClassName)
                     .append(" callBack = new ")
@@ -215,18 +224,24 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
                     .append(");\n");
             if (returnType == void.class) {
                 methodContext.append("        this.handler.proxy(callBack);\n");
+            } else if (TypeHelper.isRawBaseType(returnType)) {
+                methodContext.append("        return ((")
+                        .append(wrapperClassName)
+                        .append(")this.handler.proxy(callBack))")
+                        .append(getBaseWrapperClassValue(returnType))
+                        .append(";\n");
             } else {
                 methodContext.append("        return this.handler.proxy(callBack);\n");
             }
         } else {
             if (returnType == void.class) {
-                methodContext.append("        return target.")
+                methodContext.append("        target.")
                         .append(methodName)
                         .append("(")
                         .append(params.toString())
                         .append(");\n");
             } else {
-                methodContext.append("        target.")
+                methodContext.append("        return target.")
                         .append(methodName)
                         .append("(")
                         .append(params.toString())
@@ -235,6 +250,62 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
         }
         methodContext.append("    }");
         return methodContext.toString();
+    }
+
+    private String getBaseWrapperClassValue(Class<?> wrapperClass) {
+        if (wrapperClass == boolean.class) {
+            return ".booleanValue()";
+        }
+        if (wrapperClass == byte.class) {
+            return ".byteValue()";
+        }
+        if (wrapperClass == char.class) {
+            return ".charValue()";
+        }
+        if (wrapperClass == short.class) {
+            return ".shortValue()";
+        }
+        if (wrapperClass == int.class) {
+            return ".intValue()";
+        }
+        if (wrapperClass == long.class) {
+            return ".longValue()";
+        }
+        if (wrapperClass == float.class) {
+            return ".floatValue()";
+        }
+        if (wrapperClass == double.class) {
+            return ".doubleValue()";
+        }
+        return "";
+    }
+
+    private String setBaseWrapperClassValue(Class<?> wrapperClass) {
+        if (wrapperClass == boolean.class) {
+            return "Boolean.valueOf(";
+        }
+        if (wrapperClass == byte.class) {
+            return "Byte.valueOf(";
+        }
+        if (wrapperClass == char.class) {
+            return "Character.valueOf(";
+        }
+        if (wrapperClass == short.class) {
+            return "Short.valueOf(";
+        }
+        if (wrapperClass == int.class) {
+            return "Integer.valueOf(";
+        }
+        if (wrapperClass == long.class) {
+            return "Long.valueOf(";
+        }
+        if (wrapperClass == float.class) {
+            return "Float.valueOf(";
+        }
+        if (wrapperClass == double.class) {
+            return "Double.valueOf(";
+        }
+        return "";
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JavassistProxy.class);

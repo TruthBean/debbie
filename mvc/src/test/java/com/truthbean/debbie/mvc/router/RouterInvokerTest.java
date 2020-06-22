@@ -11,7 +11,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.proxy.JdkDynamicProxy;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import org.junit.jupiter.api.Test;
 
 /**

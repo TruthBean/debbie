@@ -16,8 +16,8 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.nio.ByteBuffer;
@@ -92,7 +92,7 @@ public class UndertowResponseHandler implements ResponseHandler {
             // Response Sender
             if (responseData != null) {
                 var strResponse = responseData.toString();
-                LOGGER.trace("response : " + strResponse);
+                LOGGER.trace(() -> "response : " + strResponse);
                 sender.send(strResponse);
             } else {
                 sender.send("");

@@ -30,10 +30,10 @@ public class MethodProxyResolver {
         this.classInfo = classInfo;
     }
 
-    public List<MethodProxyHandler> getMethodProxyHandler(Method method) {
-        List<MethodProxyHandler> methodProxyHandlers = new ArrayList<>();
+    public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method) {
+        List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
         MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
-        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
+        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
         if (classListMap != null && !classListMap.isEmpty()) {
             classListMap.forEach((key, value) -> {
                 getMethodProxyHandler(method, key, value, methodProxyHandlers);
@@ -42,10 +42,12 @@ public class MethodProxyResolver {
         return methodProxyHandlers;
     }
 
-    public List<MethodProxyHandler> getMethodProxyHandler(Method method, Collection<Annotation> annotations) {
-        List<MethodProxyHandler> methodProxyHandlers = new ArrayList<>();
+    public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method,
+                                                                                Collection<Annotation> annotations) {
+        List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
         MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
-        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
+        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap
+                = methodProxyHandlerRegister.getAllMethodProxyHandlers();
         if (classListMap != null && !classListMap.isEmpty()) {
             classListMap.forEach((key, value) -> {
                 getMethodProxyHandler(method, key, value, methodProxyHandlers, annotations);
@@ -55,7 +57,7 @@ public class MethodProxyResolver {
     }
 
     @SuppressWarnings("unchecked")
-    public MethodProxyHandler getMethodProxyHandler(Method method, MethodProxy methodProxy) {
+    public MethodProxyHandler<MethodProxy> getMethodProxyHandler(Method method, MethodProxy methodProxy) {
         var proxyHandler = methodProxy.proxyHandler();
         MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
         methodProxyHandler.setMethodAnnotation(methodProxy);
@@ -67,11 +69,11 @@ public class MethodProxyResolver {
 
     @SuppressWarnings("unchecked")
     private void addMethodProxyHandler(Method method, Class<? extends Annotation> annotationType,
-                                       List<Class<? extends MethodProxyHandler>> proxyHandlers,
-                                       Annotation annotation, List<MethodProxyHandler> methodProxyHandlers) {
+                                       List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
+                                       Annotation annotation, List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {
         MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
         if (methodProxy != null) {
-            List<MethodProxyHandler> tmp = new ArrayList<>();
+            List<MethodProxyHandler<? extends Annotation>> tmp = new ArrayList<>();
             for (var proxyHandler : proxyHandlers) {
                 MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
                 handler.setOrder(methodProxy.order());
@@ -93,8 +95,8 @@ public class MethodProxyResolver {
     }
 
     private void getMethodProxyHandler(Method method, Class<? extends Annotation> annotationClass,
-                                       List<Class<? extends MethodProxyHandler>> proxyHandlers,
-                                       List<MethodProxyHandler> methodProxyHandlers,
+                                       List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
+                                       List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers,
                                        Collection<? extends Annotation> declaredAnnotations) {
         if (declaredAnnotations != null && !declaredAnnotations.isEmpty()) {
             for (Annotation annotation : declaredAnnotations) {
@@ -153,19 +155,20 @@ public class MethodProxyResolver {
     }
 
     private void getMethodProxyHandler(Method method, Class<? extends Annotation> annotationClass,
-                                       List<Class<? extends MethodProxyHandler>> proxyHandlers,
-                                       List<MethodProxyHandler> methodProxyHandlers) {
+                                       List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
+                                       List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {
         if (method == null) return;
         Annotation[] declaredAnnotations = method.getDeclaredAnnotations();
         getMethodProxyHandler(method, annotationClass, proxyHandlers, methodProxyHandlers, Arrays.asList(declaredAnnotations));
     }
 
     @SuppressWarnings("unchecked")
-    public MethodProxyHandler getMethodProxyHandler(Class<? extends Annotation> annotationType, Annotation value, Method method) {
+    public MethodProxyHandler<? extends Annotation> getMethodProxyHandler(Class<? extends Annotation> annotationType,
+                                                                          Annotation value, Method method) {
         MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
         if (methodProxy != null) {
             var proxyHandler = methodProxy.proxyHandler();
-            MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
+            MethodProxyHandler<Annotation> handler = ReflectionHelper.newInstance(proxyHandler);
             handler.setOrder(methodProxy.order());
             handler.setClassAnnotation(value);
             handler.setBeanFactoryHandler(this.beanFactoryHandler);

@@ -14,8 +14,8 @@ import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.*;

@@ -12,8 +12,8 @@ package com.truthbean.debbie.tomcat;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.server.BaseServerProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -65,7 +65,8 @@ public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> 
         } else {
             userDir = System.getProperty("user.dir");
         }
-        LOGGER.debug("user.dir: " + userDir);
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("user.dir: " + userDir);
         var webappPath = classLoader.getResource("webapp");
         if (webappPath == null) {
             userDir = userDir + "/../webapp";

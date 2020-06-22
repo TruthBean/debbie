@@ -13,13 +13,12 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.proxy.JdkDynamicProxy;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.extension.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

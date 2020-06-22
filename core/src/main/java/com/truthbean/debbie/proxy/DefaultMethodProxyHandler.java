@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
 
@@ -44,17 +44,17 @@ public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy
 
     @Override
     public void before() {
-        LOGGER.debug("runing before method(" + methodName + ") invoke ..");
+        LOGGER.debug(() -> "runing before method(" + methodName + ") invoke ..");
     }
 
     @Override
     public void after() {
-        LOGGER.debug("runing after method(" + methodName + ") invoke ..");
+        LOGGER.debug(() -> "runing after method(" + methodName + ") invoke ..");
     }
 
     @Override
     public void catchException(Throwable e) throws Throwable {
-        LOGGER.debug("runing when method(" + methodName + ") invoke throw exception and cached ..", e);
+        LOGGER.debug(() -> "runing when method(" + methodName + ") invoke throw exception and cached ..", e);
         if (e != null) {
             throw e;
         }
@@ -62,7 +62,7 @@ public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy
 
     @Override
     public void finallyRun() {
-        LOGGER.debug("runing when method(" + methodName + ") invoke throw exception and run to finally ..");
+        LOGGER.debug(() -> "runing when method(" + methodName + ") invoke throw exception and run to finally ..");
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultMethodProxyHandler.class);

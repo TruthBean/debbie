@@ -21,8 +21,8 @@ import com.truthbean.debbie.mvc.response.view.NoViewRender;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -114,7 +114,7 @@ public class RouterInvoker {
             if (filter == null) {
                 throw new ResponseTypeException(methodResult.toString() + " to " + responseType.getValue() + " error");
             }
-            LOGGER.debug(filter.toString());
+            LOGGER.debug(filter::toString);
             routerResponse.setContent(filter);
         }
     }

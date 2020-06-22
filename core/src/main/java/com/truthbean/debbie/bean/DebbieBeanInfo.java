@@ -12,8 +12,8 @@ package com.truthbean.debbie.bean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -210,7 +210,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             Class<?> clazz = super.getClazz();
             Class<?>[] interfaces = clazz.getInterfaces();
             if (interfaces.length == 0) {
-                LOGGER.trace(clazz.getName() + " has no direct interface");
+                LOGGER.trace(() -> clazz.getName() + " has no direct interface");
                 noInterface = true;
                 beanInterface = null;
             } else {

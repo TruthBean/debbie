@@ -14,8 +14,8 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,14 +86,14 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url.toString());
+                LOGGER.debug(url::toString);
                 var file = new File(url.getFile());
                 if (file.exists() && file.isDirectory()) {
                     result.add(file);
                     String[] list = file.list();
                     if (list != null) {
                         for (String s : list) {
-                            LOGGER.debug(s);
+                            LOGGER.debug(() -> s);
                         }
                     }
 
@@ -115,7 +115,7 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url.toString());
+                LOGGER.debug(() -> url.toString());
                 var protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());
@@ -167,7 +167,7 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url.toString());
+                LOGGER.debug(url::toString);
                 var protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());

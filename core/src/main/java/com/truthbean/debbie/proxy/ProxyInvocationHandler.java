@@ -4,8 +4,8 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -49,12 +49,12 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     @SuppressWarnings("unchecked")
     public ProxyInvocationHandler(Target target, BeanFactoryHandler beanFactoryHandler) {
-        LOGGER.debug("init ProxyInvocationHandler with " + target);
+        LOGGER.debug(() -> "init ProxyInvocationHandler with " + target);
         this.beanFactoryHandler = beanFactoryHandler;
         this.target = target;
         Class<Target> targetClass = (Class<Target>) target.getClass();
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
-        classInfo = new DebbieBeanInfo<>(targetClass);
+        this.classInfo = new DebbieBeanInfo<>(targetClass);
 
         this.handler = new MethodProxyHandlerHandler(LOGGER);
         this.methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, classInfo);
@@ -72,16 +72,17 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         var proxyClassName = proxy.getClass().getName();
         Class<?> targetClass = target.getClass();
-        LOGGER.trace(proxyClassName + " proxy " + targetClass.getName());
+        LOGGER.trace(() -> proxyClassName + " proxy " + targetClass.getName());
         Method targetMethod;
         Class<?>[] parameterClass = method.getParameterTypes();
         try {
             targetMethod = ReflectionHelper.getDeclaredMethod(targetClass, method.getName(), parameterClass);
         } catch (Exception e) {
-            LOGGER.warn(targetClass + " has no method(" + method.getName() + "). ");
+            LOGGER.warn(() -> targetClass + " has no method(" + method.getName() + "). ");
             targetMethod = method;
         }
-        List<MethodProxyHandler> methodInterceptors = this.methodProxyResolver.getMethodProxyHandler(targetMethod);
+        List<MethodProxyHandler<? extends Annotation>> methodInterceptors =
+                this.methodProxyResolver.getMethodProxyHandler(targetMethod);
         if (!methodInterceptors.isEmpty()) {
             methodInterceptors.sort(MethodProxyHandler::compareTo);
         }

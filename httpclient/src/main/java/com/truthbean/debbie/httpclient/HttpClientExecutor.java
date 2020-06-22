@@ -23,8 +23,8 @@ import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;

@@ -4,8 +4,8 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.sql.DataSource;
 

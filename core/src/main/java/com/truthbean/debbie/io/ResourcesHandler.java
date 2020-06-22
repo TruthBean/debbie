@@ -12,8 +12,8 @@ package com.truthbean.debbie.io;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -161,9 +161,7 @@ public final class ResourcesHandler {
                         // 添加到classes
                         classes.add(classLoader.loadClass(className));
                     } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                        if (LOGGER.isTraceEnabled()) {
-                            LOGGER.error("load class<" + className + "> error.\n", e);
-                        }
+                        LOGGER.error(() -> "load class<" + className + "> error.\n", e);
                     }
                 }
             }

@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.bean;
 
-import com.truthbean.debbie.proxy.JdkDynamicProxy;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -176,7 +176,7 @@ public class BeanInvoker<Bean> {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
+            LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by constructor error \n");
             throwException(e);
         }
     }
@@ -272,13 +272,13 @@ public class BeanInvoker<Bean> {
                 if (annotation != null) {
                     var bean = beanDependent.get(i);
                     String serviceName = bean.getServiceName();
-                    LOGGER.trace("resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
+                    LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
                     Object beanValue = bean.getBean();
                     if (annotation.require() && !bean.isHasVirtualValue() && beanValue == null) {
                         throw new NoBeanException("bean " + serviceName + " value is null .");
                     }
                     if (beanValue != null) {
-                        LOGGER.trace(serviceName + " hashCode: " + beanValue.hashCode());
+                        LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
                         values[i] = beanValue;
                     }
                 }
@@ -286,8 +286,9 @@ public class BeanInvoker<Bean> {
             try {
                 this.bean = constructor.newInstance(values);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-                LOGGER.error("new instance (" + beanClass.getName() + ") by constructor error \n");
-                LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
+                LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by constructor error \n");
+                if (LOGGER.isTraceEnabled())
+                    LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
             }
         }  else {
             throw new BeanCreatedException("No Constructor can be visited in class(" + beanClass.getName() + ")");
@@ -412,7 +413,8 @@ public class BeanInvoker<Bean> {
     }
 
     private void throwException(Exception e) {
-        LOGGER.trace("", e);
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("", e);
         Throwable cause = e.getCause();
         var errorMessage = e.getMessage();
         if (cause != null) {

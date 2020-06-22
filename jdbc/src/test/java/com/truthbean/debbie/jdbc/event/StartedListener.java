@@ -5,8 +5,8 @@ import com.truthbean.debbie.event.AbstractDebbieStartedEventListener;
 import com.truthbean.debbie.event.DebbieStartedEvent;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.service.SurnameService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class StartedListener extends AbstractDebbieStartedEventListener {
     }
 
     private void printStartInfo() {
-        LOGGER.debug("！！！！！！！！！！！！！！");
+        LOGGER.debug(() -> "！！！！！！！！！！！！！！");
         List<Surname> surnames = surnameService.list();
         System.out.println(surnames);
     }

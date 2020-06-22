@@ -11,8 +11,8 @@ package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.net.URI;
@@ -42,11 +42,11 @@ public class HttpClientHandler extends HttpClientAction {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object get(String url, List<HttpCookie> cookies, MediaTypeInfo responseType) {
         long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始GET通信，目标url: " + url);
+        LOGGER.debug(() -> OPERATION_NAME + "开始GET通信，目标url: " + url);
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         if (cookies != null && !cookies.isEmpty()) {
             var cookie = buildCookies(cookies);
-            LOGGER.debug("request Cookie: " + cookie);
+            LOGGER.debug(() -> "request Cookie: " + cookie);
             builder = builder.header("Cookie", cookie);
         }
         HttpRequest httpRequest = builder.uri(URI.create(url)).build();
@@ -69,7 +69,7 @@ public class HttpClientHandler extends HttpClientAction {
     @SuppressWarnings({"unchecked"})
     public HttpClientResponse<String> doGet(String url, Map<String, String> headers) {
         long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始GET通信，目标url: " + url);
+        LOGGER.debug(() -> OPERATION_NAME + "开始GET通信，目标url: " + url);
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -100,7 +100,8 @@ public class HttpClientHandler extends HttpClientAction {
     public HttpClientResponse doPost(String url, String jsonContent, Map<String, String> headers,
                                       MediaTypeInfo responseType) {
         long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始POST通信，目标url: " + url + " ，内容：" + jsonContent);
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug(OPERATION_NAME + "开始POST通信，目标url: " + url + " ，内容：" + jsonContent);
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -136,7 +137,8 @@ public class HttpClientHandler extends HttpClientAction {
     public HttpClientResponse doPut(String url, String jsonContent, Map<String, String> headers,
                                             MediaTypeInfo responseType) {
         long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始PUT通信，目标url: " + url + " ，内容：" + jsonContent);
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug(OPERATION_NAME + "开始PUT通信，目标url: " + url + " ，内容：" + jsonContent);
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -187,7 +189,7 @@ public class HttpClientHandler extends HttpClientAction {
     public HttpClientResponse doDelete(String url, String jsonContent, Map<String, String> headers,
                                        MediaTypeInfo responseType) {
         long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始DELETE通信，目标url: " + url + " ，内容：" + jsonContent);
+        LOGGER.debug(() -> OPERATION_NAME + "开始DELETE通信，目标url: " + url + " ，内容：" + jsonContent);
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {

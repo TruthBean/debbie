@@ -7,12 +7,13 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.proxy;
+package com.truthbean.debbie.proxy.jdk;
 
 import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.proxy.ProxyInvocationHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -39,20 +40,21 @@ public class JdkDynamicProxy<T, K extends T> {
         var proxyInstance = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
         var proxyClass = proxyInstance.getClass();
 
-        LOGGER.trace("proxy(" + proxyClass.getName() + ") interface(" + targetInterface.getName() + ") with class(" + targetClass.getName() + ")");
+        LOGGER.trace(() -> "proxy(" + proxyClass.getName() + ") interface(" + targetInterface.getName() + ") with " +
+                "class(" + targetClass.getName() + ")");
 
         T result;
 
         try {
             result = targetInterface.cast(proxyInstance);
         } catch (Exception e) {
-            LOGGER.warn(proxyClass.getName() + " cast to " + targetClass.getName() + " error", e);
+            LOGGER.warn(() -> proxyClass.getName() + " cast to " + targetClass.getName() + " error", e);
             // handle error
             result = target;
         }
 
         // do after
-        LOGGER.trace("after proxy ....");
+        LOGGER.trace(() -> "after proxy ....");
 
         return result;
     }
@@ -61,7 +63,7 @@ public class JdkDynamicProxy<T, K extends T> {
         InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxyValue);
         if (invocationHandler instanceof ProxyInvocationHandler) {
             @SuppressWarnings("unchecked")
-            ProxyInvocationHandler<K> proxyInvocationHandler = (ProxyInvocationHandler) invocationHandler;
+            ProxyInvocationHandler<K> proxyInvocationHandler = (ProxyInvocationHandler<K>) invocationHandler;
             return proxyInvocationHandler.getRealTarget();
         }
         return null;

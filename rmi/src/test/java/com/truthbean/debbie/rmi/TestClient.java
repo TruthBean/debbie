@@ -2,8 +2,8 @@ package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.bean.BeanInject;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 public class TestClient {
 
@@ -23,7 +23,7 @@ public class TestClient {
         //调用远程方法
         String result = service.queryName("hello");
         //输出调用结果
-        LOGGER.debug("result from remote : " + result);
+        LOGGER.debug(() -> "result from remote : " + result);
     }
 
     @Test

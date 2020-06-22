@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -38,7 +38,8 @@ public class PathUtils {
             }
 
         } else {
-            LOGGER.debug("resource: " + resource);
+            if (LOGGER.isTraceEnabled())
+                LOGGER.trace("resource: " + resource);
             try {
                 path = Path.of(resource.toURI()).toString();
             } catch (Exception e) {

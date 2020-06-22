@@ -11,8 +11,8 @@ package com.truthbean.debbie.servlet.response.view;
 
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.mvc.response.view.NoViewRender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

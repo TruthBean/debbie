@@ -1,8 +1,8 @@
 package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.Closeable;
 import java.lang.reflect.Method;
@@ -164,7 +164,7 @@ public class TransactionInfo implements Closeable {
 
         try {
             if (!connection.isReadOnly() && !connection.getAutoCommit()) {
-                LOGGER.debug("Connection(" + connection + ") " + connection.hashCode() + " commit ...");
+                LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " commit ...");
                 connection.commit();
             }
         } catch (SQLException e) {
@@ -198,7 +198,7 @@ public class TransactionInfo implements Closeable {
 
         try {
             if (!connection.isReadOnly()) {
-                LOGGER.debug("Connection(" + connection + ") " + connection.hashCode() + " rollback ...");
+                LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " rollback ...");
                 connection.rollback();
             }
         } catch (SQLException e) {
@@ -230,7 +230,7 @@ public class TransactionInfo implements Closeable {
             return;
         }
 
-        LOGGER.debug("close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
+        LOGGER.debug(() -> "close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
         try {
             if (!connection.isClosed()) {
                 connection.close();

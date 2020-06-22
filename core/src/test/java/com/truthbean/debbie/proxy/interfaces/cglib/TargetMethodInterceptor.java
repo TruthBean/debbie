@@ -5,7 +5,7 @@ import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.proxy.interfaces.TargetProxyHandler;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.slf4j.Logger;
+import com.truthbean.Logger;
 
 import java.lang.reflect.Method;
 

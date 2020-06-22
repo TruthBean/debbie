@@ -5,8 +5,8 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean

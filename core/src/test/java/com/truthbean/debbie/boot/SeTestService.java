@@ -1,8 +1,8 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.UUID;
 

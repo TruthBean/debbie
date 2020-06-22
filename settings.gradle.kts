@@ -13,8 +13,9 @@ val modules =
         arrayOf("core",
                 "jdbc", "mvc", "rmi",
                 "servlet", "httpclient", "hikari",
-                "server", "tomcat", "undertow", "netty", "aio",
-                "dependencies",
+                "server",
+                "tomcat", "undertow", "netty", "aio",
+                "dependencies", "boot",
                 "test"
         )
 

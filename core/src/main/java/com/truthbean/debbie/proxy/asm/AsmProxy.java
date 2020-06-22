@@ -18,8 +18,8 @@ import com.truthbean.debbie.reflection.asm.AsmClassInfo;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
 import org.objectweb.asm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -104,7 +104,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
         ClassLoader classLoader = ClassLoaderUtils.getClassLoader(getBeanClass());
         Class<? extends B> proxyClass = (Class<? extends B>) new ByteArrayClassLoader(classLoader).defineClass(className, code);
-        LOGGER.trace("asm create Class: " + proxyClass);
+        LOGGER.trace(() -> "asm create Class: " + proxyClass);
         beanAndProxy.put(beanClass, proxyClass);
         return doProxy(proxyClass, beanClass, bean);
     }

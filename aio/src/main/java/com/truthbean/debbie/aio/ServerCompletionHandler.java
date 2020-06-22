@@ -12,8 +12,8 @@ package com.truthbean.debbie.aio;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.server.session.SessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousServerSocketChannel;
@@ -55,7 +55,8 @@ public class ServerCompletionHandler implements CompletionHandler<AsynchronousSo
 
     private RouterRequest handleRequest(AsynchronousSocketChannel channel) {
         try {
-            LOGGER.debug("remote address: " + channel.getRemoteAddress().toString());
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("remote address: " + channel.getRemoteAddress().toString());
         } catch (IOException e) {
             LOGGER.error("", e);
         }

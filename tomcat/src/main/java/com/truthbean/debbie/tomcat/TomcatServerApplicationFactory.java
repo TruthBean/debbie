@@ -28,8 +28,8 @@ import org.apache.tomcat.util.descriptor.web.ErrorPage;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
 import org.apache.tomcat.util.scan.StandardJarScanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -159,13 +159,13 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         try {
             String path;
             var resource = classLoader.getResource("/");
-            LOGGER.debug("resource: " + resource);
+            LOGGER.debug(() -> "resource: " + resource);
             if (resource == null) {
                 path = new File("").getAbsolutePath();
             } else {
                 path = Path.of(resource.toURI()).toString();
             }
-            LOGGER.debug("configuring app with basedir: " + path);
+            LOGGER.debug(() -> "configuring app with basedir: " + path);
 
             // Declare an alternative location for your "WEB-INF/classes" dir
             // Servlet 3.0 annotation will work
@@ -179,8 +179,8 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         }
 
         server.setBaseDir(webappDir);
-        LOGGER.info("webapp: " + webappDir);
-        LOGGER.debug("tomcat config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+        LOGGER.info(() -> "webapp: " + webappDir);
+        LOGGER.debug(() -> "tomcat config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
     }
 
     @Override
@@ -202,7 +202,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
                     server.start();
                     printlnWebUrl(LOGGER, configuration.getPort());
                     double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-                    LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+                    LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
                     postBeforeStart();
                 } catch (LifecycleException e) {
                     Throwable cause = e.getCause();

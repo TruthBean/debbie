@@ -4,8 +4,8 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Set;
 

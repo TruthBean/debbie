@@ -26,8 +26,8 @@ import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.debbie.watcher.WatcherType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -70,7 +70,7 @@ public class MvcRouterRegister {
                 routerInfo.setMethod(method);
 
                 var stackMethod = classInfo.getClazz().getName() + "." + method.getName();
-                LOGGER.debug("register router method: " + stackMethod);
+                LOGGER.debug(() -> "register router method: " + stackMethod);
 
                 List<RouterPathFragments> routerPathFragments =
                         RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), prefixRouter, router);
@@ -155,7 +155,7 @@ public class MvcRouterRegister {
 
                 routerInfo.setResponse(response);
                 routerInfo.setMethodParams(methodParams);
-                LOGGER.debug("register router: " + routerInfo);
+                LOGGER.debug(() -> "register router: " + routerInfo);
                 ROUTER_INFO_SET.add(routerInfo);
             }
         }

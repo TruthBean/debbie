@@ -4,8 +4,8 @@ import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.proxy.bean.TargetInterface;
 import com.truthbean.debbie.proxy.interfaces.TargetProxyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,6 +30,7 @@ public class JdkInvocationHandler<I> implements InvocationHandler {
         return interceptor.proxy(callBack);
     }
 
+    @SuppressWarnings("unchecked")
     public I newProxyInstance() {
         return (I) Proxy.newProxyInstance(targetClass.getClassLoader(), new Class[]{targetClass}, this);
     }

@@ -20,8 +20,8 @@ import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -94,24 +94,25 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
 
         @Override
         protected void start(long beforeStartTime, String... args) {
-            LOGGER.debug("aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+            LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
             double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+            LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms" +
+                    " ( JVM running for "  + uptime + "ms )");
             postBeforeStart();
             singleThreadPool.execute(this);
         }
 
         @Override
         public void exit(long beforeStartTime, String... args) {
-            LOGGER.debug("destroy running thread");
+            LOGGER.debug(() -> "destroy running thread");
             singleThreadPool.destroy();
         }
 
         @Override
         public void run() {
             try {
-                LOGGER.debug("running .... ");
+                LOGGER.debug(() -> "running .... ");
                 // 为服务端socket指定接收操作对象.accept原型是：
                 // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
                 // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数

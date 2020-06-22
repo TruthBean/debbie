@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import java.util.function.Supplier;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -20,6 +22,10 @@ public class NoBeanException extends RuntimeException {
 
     public NoBeanException(String message) {
         super(message);
+    }
+
+    public NoBeanException(Supplier<String> message) {
+        super(message.get());
     }
 
     public NoBeanException(String message, Throwable cause) {

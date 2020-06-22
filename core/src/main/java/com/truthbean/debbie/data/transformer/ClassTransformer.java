@@ -10,8 +10,8 @@
 package com.truthbean.debbie.data.transformer;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author truthbean

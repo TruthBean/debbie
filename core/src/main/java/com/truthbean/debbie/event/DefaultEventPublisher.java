@@ -5,8 +5,8 @@ import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.DebbieBeanFactory;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -29,7 +29,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventM
     public void addEventListener(Class<? extends AbstractDebbieEvent> eventType,
                                  BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("eventType: " + eventType + " ; listenerType: " + listenerBeanFactory.getBeanType());
+            LOGGER.debug(() -> "eventType: " + eventType + " ; listenerType: " + listenerBeanFactory.getBeanType());
         }
         eventListenerMap.put(eventType, listenerBeanFactory);
     }
@@ -95,7 +95,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventM
             }
         }
         long end = System.currentTimeMillis();
-        LOGGER.debug("publishEvent spend time: " + (end - start) + "ms");
+        LOGGER.debug(() -> "publishEvent spend time: " + (end - start) + "ms");
     }
 
     @Override

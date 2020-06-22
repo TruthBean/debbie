@@ -22,8 +22,8 @@ import com.truthbean.debbie.mvc.response.view.AbstractView;
 import com.truthbean.debbie.mvc.response.view.StaticResourcesView;
 import com.truthbean.debbie.reflection.*;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -44,7 +44,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
     public List handleMethodParams(RouterRequestValues parameters, List<ExecutableArgument> methodParams, MediaType requestType) {
         List<Object> result = new LinkedList<>();
         for (ExecutableArgument invokedParameter : methodParams) {
-            LOGGER.debug("invokedParameter " + invokedParameter.getType().getTypeName());
+            LOGGER.debug(() -> "invokedParameter " + invokedParameter.getType().getTypeName());
             if (invokedParameter.getType() == RouterSession.class) {
                 invokedParameter.setValue(parameters.getRouterSession());
                 continue;
@@ -187,7 +187,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             }
         } else {
             if (!mixValues.isEmpty()) {
-                LOGGER.debug("mixValues: " + mixValues);
+                LOGGER.debug(() -> "mixValues: " + mixValues);
                 handleParam(mixValues, invokedParameter, false);
             } else {
                 LOGGER.debug("args is empty");

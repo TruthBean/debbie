@@ -8,8 +8,8 @@ import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.reflection.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -47,7 +47,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
         var use = DynamicSqlBuilder.sql(driverName).use(database).builder();
-        LOGGER.debug(use);
+        LOGGER.debug(() -> use);
         return super.update(connection, use);
     }
 

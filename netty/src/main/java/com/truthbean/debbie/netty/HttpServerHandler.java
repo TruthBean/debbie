@@ -32,8 +32,8 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2);
-        LOGGER.debug(msg.getClass().getName());
+        LOGGER.debug(() -> msg.getClass().getName());
 
         if (msg instanceof HttpRequest) {
             LOGGER.debug("msg instanceof HttpRequest. ");
@@ -167,12 +167,12 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             var filterType = filterInfo.getRouterFilterType();
             if (!filter.notFilter(request)) {
                 if (filter.preRouter(request, response)) {
-                    LOGGER.trace(filterType + " no pre filter");
+                    LOGGER.trace(() -> filterType + " no pre filter");
                     continue;
                 } else {
                     Boolean post = filter.postRouter(request, response);
                     if (post != null) {
-                        LOGGER.trace(filterType + " post filter");
+                        LOGGER.trace(() -> filterType + " post filter");
                         if (post) {
                             return false;
                         }

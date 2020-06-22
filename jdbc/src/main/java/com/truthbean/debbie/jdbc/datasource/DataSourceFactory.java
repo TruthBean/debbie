@@ -5,7 +5,7 @@ import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
+import com.truthbean.Logger;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

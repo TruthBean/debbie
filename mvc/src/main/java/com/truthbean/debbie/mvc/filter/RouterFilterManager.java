@@ -15,8 +15,8 @@ import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
 import com.truthbean.debbie.reflection.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -41,7 +41,7 @@ public class RouterFilterManager {
     public static void registerFilter(RouterFilterInfo filterInfo, String... urlPatterns) {
         setFilterUrlPatterns(filterInfo, urlPatterns);
 
-        LOGGER.debug("register filter: " + filterInfo);
+        LOGGER.debug(() -> "register filter: " + filterInfo);
         FILTERS.add(filterInfo);
     }
 
@@ -122,7 +122,7 @@ public class RouterFilterManager {
         }
         setFilterUrlPatterns(filterInfo, urlPatterns);
 
-        LOGGER.debug("register filter: " + filterInfo);
+        LOGGER.debug(() -> "register filter: " + filterInfo);
         FILTERS.add(filterInfo);
     }
 

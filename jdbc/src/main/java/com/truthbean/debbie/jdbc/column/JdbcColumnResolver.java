@@ -8,8 +8,8 @@ import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.repository.DynamicSqlBuilder;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -30,7 +30,7 @@ public class JdbcColumnResolver {
             var resultSetMetaData = resultSet.getMetaData();
 
             int columnCount = resultSetMetaData.getColumnCount();
-            LOGGER.trace("columnCount: {}", columnCount);
+            LOGGER.trace(() ->"columnCount: " + columnCount);
 
             ColumnInfo columnInfo;
             List<ColumnInfo> columnList;
@@ -40,25 +40,25 @@ public class JdbcColumnResolver {
                 for (int i = 1; i <= columnCount; i++) {
 
                     int columnType = resultSetMetaData.getColumnType(i);
-                    LOGGER.trace("columnType: {}", columnType);
+                    LOGGER.trace(() -> "columnType: " + columnType);
 
                     String columnClassName = resultSetMetaData.getColumnClassName(i);
-                    LOGGER.trace("columnClassName: {}", columnClassName);
+                    LOGGER.trace(() -> "columnClassName: " + columnClassName);
 
                     String columnLabel = resultSetMetaData.getColumnLabel(i);
-                    LOGGER.trace("columnLabel: {}", columnLabel);
+                    LOGGER.trace(() -> "columnLabel: " + columnLabel);
 
                     String columnName = resultSetMetaData.getColumnName(i);
-                    LOGGER.trace("columnName: {}", columnName);
+                    LOGGER.trace(() -> "columnName: " + columnName);
 
                     String columnTypeName = resultSetMetaData.getColumnTypeName(i);
-                    LOGGER.trace("columnTypeName: {}", columnTypeName);
+                    LOGGER.trace(() -> "columnTypeName: " + columnTypeName);
 
                     int scale = resultSetMetaData.getScale(i);
-                    LOGGER.trace("scale: {}", scale);
+                    LOGGER.trace(() -> "scale: " + scale);
 
                     int precision = resultSetMetaData.getPrecision(i);
-                    LOGGER.trace("precision: {}", precision);
+                    LOGGER.trace(() -> "precision: " + precision);
 
                     String type = ColumnTypeHandler.getType(columnTypeName, precision, scale);
 
@@ -73,12 +73,12 @@ public class JdbcColumnResolver {
                         columnInfo.setJavaClass(Class.forName(columnClassName));
                         columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, columnClassName));
                     } catch (ClassNotFoundException e) {
-                        LOGGER.error(columnClassName + " has no class defined ");
+                        LOGGER.error(() -> columnClassName + " has no class defined ");
                         try {
                             columnInfo.setJavaClass(Class.forName(type));
                             columnInfo.setValue(ColumnTypeHandler.getColumnValue(resultSet, i, type));
                         } catch (ClassNotFoundException ex) {
-                            LOGGER.error(type + " has no class defined ", e);
+                            LOGGER.error(() -> type + " has no class defined ", e);
                         }
                     }
 
@@ -94,7 +94,7 @@ public class JdbcColumnResolver {
                 columnLists.add(columnList);
             }
         } catch (SQLException e) {
-            LOGGER.error(null, e);
+            LOGGER.error("", e);
         }
         return columnLists;
     }
@@ -114,7 +114,7 @@ public class JdbcColumnResolver {
 
             columnList = resolveResultSetValue(resultSet, columnNameTransformer).get(0);
         } catch (SQLException e) {
-            LOGGER.error(null, e);
+            LOGGER.error("", e);
         } finally {
             JdbcUtils.close(resultSet, preparedStatement);
         }

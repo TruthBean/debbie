@@ -26,8 +26,8 @@ import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.server.session.SessionAttachmentHandler;
 import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.server.session.SessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
@@ -88,7 +88,8 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
                 server.start();
                 printlnWebUrl(LOGGER, configuration.getPort());
                 double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-                LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+                LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) +
+                        "ms ( JVM running for "  + uptime + "ms )");
                 postBeforeStart();
             }
 

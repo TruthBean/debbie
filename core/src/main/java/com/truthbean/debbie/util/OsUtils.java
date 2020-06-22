@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -25,7 +25,7 @@ public class OsUtils {
 
     static {
         String osName = System.getProperty("os.name").toLowerCase();
-        LOGGER.debug(" system property:" + System.getProperties().getProperty("os.name"));
+        LOGGER.debug(() -> " system property:" + System.getProperties().getProperty("os.name"));
         osName = osName.toLowerCase();
         IS_LINUX_OS = osName.contains("linux");
         IS_WIN_OS = osName.contains("win");

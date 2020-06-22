@@ -15,8 +15,8 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.net.uri.QueryStringEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -79,14 +79,16 @@ public class HttpClientAction extends HttpHandler {
         int tryCount = 0;
         HttpResponse response = null;
         while ((response == null) && tryCount < configuration.getRetryTime()) {
-            LOGGER.debug("request send " + tryCount + " time");
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("request send " + tryCount + " time");
             tryCount++;
             // retry the HttpRequest
             future = future.copy();
             response = getResponse(future);
             if (response != null) {
                 try {
-                    LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
+                    if (LOGGER.isDebugEnabled())
+                        LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + response.statusCode());
                 } catch (final Exception e) {
                     LOGGER.error("", e);
                 }
@@ -98,7 +100,7 @@ public class HttpClientAction extends HttpHandler {
     @SuppressWarnings("rawtypes")
     public HttpClientResponse action(final RouterRequest request, final MediaTypeInfo responseType) {
         final long startTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "开始通信: " + request);
+        LOGGER.debug(() -> OPERATION_NAME + "开始通信: " + request);
 
         final var url = request.getUrl();
         final var encoder = new QueryStringEncoder(url);
@@ -117,7 +119,7 @@ public class HttpClientAction extends HttpHandler {
         } catch (final URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
-        LOGGER.trace("request uri: " + uri);
+        LOGGER.trace(() -> "request uri: " + uri);
         if (uri == null) {
             throw new IllegalArgumentException("uri is null");
         }
@@ -132,7 +134,7 @@ public class HttpClientAction extends HttpHandler {
         final var cookies = request.getCookies();
         if (cookies != null && !cookies.isEmpty()) {
             final var cookie = buildCookies(cookies);
-            LOGGER.debug("request Cookie: " + cookie);
+            LOGGER.debug(() -> "request Cookie: " + cookie);
             builder.header("Cookie", cookie);
         }
 
@@ -252,7 +254,7 @@ public class HttpClientAction extends HttpHandler {
             result = new HttpClientResponse();
 
             final int code = response.statusCode();
-            LOGGER.debug(OPERATION_NAME + "通讯完成，返回码：" + code + "，http 状态：" + HttpStatus.valueOf(code));
+            LOGGER.debug(() -> OPERATION_NAME + "通讯完成，返回码：" + code + "，http 状态：" + HttpStatus.valueOf(code));
 
             result.setCode(code);
             result.setSslSession(response.sslSession().orElse(null));
@@ -260,7 +262,7 @@ public class HttpClientAction extends HttpHandler {
 
             final HttpHeaders responseHeaders = response.headers();
             result.setHeaders(responseHeaders.map());
-            LOGGER.debug("whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
+            LOGGER.debug(() -> "whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
 
             final Object responseBody = response.body();
             if (responseBody != null) {
@@ -269,7 +271,8 @@ public class HttpClientAction extends HttpHandler {
                 } catch (final Exception e) {
                     LOGGER.error("通讯成功，解析返回值异常", e);
                 }
-                LOGGER.trace(OPERATION_NAME + "返回内容：" + result);
+                if (LOGGER.isTraceEnabled())
+                    LOGGER.trace(OPERATION_NAME + "返回内容：" + result);
             } else {
                 LOGGER.error("通讯异常");
             }
@@ -278,7 +281,7 @@ public class HttpClientAction extends HttpHandler {
         }
 
         final long endTime = System.nanoTime();
-        LOGGER.debug(OPERATION_NAME + "共计耗时:" + ((endTime - startTime) / 1000000.0) + "ms");
+        LOGGER.debug(() -> OPERATION_NAME + "共计耗时:" + ((endTime - startTime) / 1000000.0) + "ms");
         return result;
     }
 

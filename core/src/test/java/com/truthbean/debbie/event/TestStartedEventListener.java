@@ -1,8 +1,8 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -19,8 +19,8 @@ public class TestStartedEventListener extends AbstractDebbieStartedEventListener
     @Override
     public void onEvent(DebbieStartedEvent event) {
         super.onEvent(event);
-        LOGGER.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> hello debbie >>>>>>>>>>>>>>>>>>>>>");
-        LOGGER.debug(testBean.toString());
+        LOGGER.debug(() -> ">>>>>>>>>>>>>>>>>>>>>>>>>>>>> hello debbie >>>>>>>>>>>>>>>>>>>>>");
+        LOGGER.debug(testBean::toString);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestStartedEventListener.class);

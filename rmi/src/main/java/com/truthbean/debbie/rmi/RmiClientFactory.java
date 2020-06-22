@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.rmi;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -73,7 +73,7 @@ public class RmiClientFactory {
         if (exits(name)) {
             try {
                 RemoteService<S> remoteService = (RemoteService<S>) registry.lookup(name);
-                LOGGER.debug("remote server version: " + remoteService.getVersion());
+                LOGGER.debug(() -> "remote server version: " + remoteService.getVersion());
                 return remoteService.getService();
             } catch (RemoteException | NotBoundException e) {
                 LOGGER.error("", e);

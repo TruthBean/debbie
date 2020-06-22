@@ -17,14 +17,15 @@ import java.util.Map;
 
 public class MethodProxyHandlerRegister {
 
-    private Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler>>> classListMap;
+    private final Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap;
 
     public MethodProxyHandlerRegister() {
         classListMap = new LinkedHashMap<>();
     }
 
-    public void register(Class<? extends Annotation> annotation, Class<? extends MethodProxyHandler> methodProxyHandler) {
-        List<Class<? extends MethodProxyHandler>> classes;
+    public void register(Class<? extends Annotation> annotation,
+                         Class<? extends MethodProxyHandler<? extends Annotation>> methodProxyHandler) {
+        List<Class<? extends MethodProxyHandler<? extends Annotation>>> classes;
 
         boolean exits = classListMap.containsKey(annotation);
         if (exits) {
@@ -40,7 +41,7 @@ public class MethodProxyHandlerRegister {
         classListMap.put(annotation, classes);
     }
 
-    public Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler>>> getAllMethodProxyHandlers() {
+    public Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> getAllMethodProxyHandlers() {
         return classListMap;
     }
 

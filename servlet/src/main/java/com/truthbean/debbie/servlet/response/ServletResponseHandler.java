@@ -18,8 +18,8 @@ import com.truthbean.debbie.mvc.response.view.AbstractTemplateView;
 import com.truthbean.debbie.servlet.ServletRouterCookie;
 import com.truthbean.debbie.servlet.response.view.JspView;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -117,7 +117,7 @@ public class ServletResponseHandler implements ResponseHandler {
         var responseType = routerResponse.getResponseType();
 
         if (any == null) {
-            LOGGER.debug("response is null");
+            LOGGER.debug(() -> "response is null");
         } else if (AbstractTemplateView.isTemplateView(any)) {
             var jspView = new JspView();
             if (any instanceof AbstractTemplateView) {

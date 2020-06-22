@@ -13,8 +13,8 @@ import com.truthbean.debbie.data.transformer.text.DefaultTextTransformer;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -87,7 +87,7 @@ public class DataTransformerFactory {
         for (Map.Entry<DataTransformer<?,?>, Type[]> entry : dataTransformerMap.entrySet()) {
             DataTransformer<?,?> transformer = entry.getKey();
             Type[] argsType = entry.getValue();
-            LOGGER.debug(transformer.getClass().getName());
+            LOGGER.debug(() -> transformer.getClass().getName());
             cache.put(transformer, argsType);
             T result = cast(argsType, transformer, originType, target, origin);
             if (result != null) {
@@ -107,7 +107,7 @@ public class DataTransformerFactory {
             Type[] value = entry.getValue();
             T result = cast(value, transformer, originType, target, origin);
             if (result != null) {
-                LOGGER.trace("transformer : " + transformer);
+                LOGGER.trace(() -> "transformer : " + transformer);
                 return result;
             }
         }

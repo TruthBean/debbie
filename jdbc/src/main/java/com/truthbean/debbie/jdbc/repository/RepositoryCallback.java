@@ -4,8 +4,8 @@ import com.truthbean.debbie.jdbc.transaction.TransactionCallable;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.*;

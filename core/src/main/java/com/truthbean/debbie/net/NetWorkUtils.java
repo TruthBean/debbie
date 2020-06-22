@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.net;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.net.*;
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ public class NetWorkUtils {
             return false;
         }
 
-        LOGGER.trace(address.getClass().getName());
-        LOGGER.trace(address.toString());
+        LOGGER.trace(() -> address.getClass().getName());
+        LOGGER.trace(address::toString);
 
         String name = address.getHostAddress();
         return (name != null
@@ -58,8 +58,8 @@ public class NetWorkUtils {
             return false;
         }
 
-        LOGGER.trace(address.getClass().getName());
-        LOGGER.trace(address.toString());
+        LOGGER.trace(() -> address.getClass().getName());
+        LOGGER.trace(address::toString);
 
         String name = address.getHostAddress();
         return (name != null
@@ -268,7 +268,8 @@ public class NetWorkUtils {
                     // 1 ipv4
                     mask = list.get(1).getNetworkPrefixLength();
                 }
-                LOGGER.debug("network prefix length: " + mask);
+                final int finalMask = mask;
+                LOGGER.debug(() -> "network prefix length: " + finalMask);
                 // 子网掩码的二进制1的个数
                 StringBuilder maskStr = new StringBuilder();
                 int[] maskIp = new int[4];
@@ -280,7 +281,7 @@ public class NetWorkUtils {
                         maskStr.append(".");
                     }
                 }
-                LOGGER.debug("SubnetMask: " + maskStr);
+                LOGGER.debug(() -> "SubnetMask: " + maskStr);
                 return maskStr.toString();
             }
         } catch (Exception e) {

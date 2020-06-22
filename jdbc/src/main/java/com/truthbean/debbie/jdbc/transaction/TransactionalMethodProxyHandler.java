@@ -8,8 +8,8 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.proxy.MethodProxyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
 
@@ -70,7 +70,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void before() {
-        LOGGER.debug("running before method (" + transactionInfo.getMethod() + ") invoke ..");
+        LOGGER.debug(() -> "running before method (" + transactionInfo.getMethod() + ") invoke ..");
         BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
         DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
         DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, beanFactoryHandler);
@@ -102,24 +102,25 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void after() {
-        LOGGER.debug("running after method (" + transactionInfo.getMethod() + ") invoke ..");
+        LOGGER.debug(() -> "running after method (" + transactionInfo.getMethod() + ") invoke ..");
         if (!autoCommit)
             transactionInfo.commit();
     }
 
     @Override
     public void catchException(Throwable e) throws Throwable {
-        LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoke throw exception and catched ..");
+        LOGGER.debug(() -> "running when method (" + transactionInfo.getMethod() + ") invoke throw exception and " +
+                "catched ..");
         if (!autoCommit) {
             if (transactionInfo.isForceCommit()) {
-                LOGGER.debug("force commit ..");
+                LOGGER.debug(() -> "force commit ..");
                 transactionInfo.commit();
             } else {
                 if (transactionInfo.getRollbackFor().isInstance(e)) {
                     transactionInfo.rollback();
-                    LOGGER.debug("rollback ..");
+                    LOGGER.debug(() -> "rollback ..");
                 } else {
-                    LOGGER.debug("not rollback for this exception(" + e.getClass().getName() + "), it committed");
+                    LOGGER.debug(() -> "not rollback for this exception(" + e.getClass().getName() + "), it committed");
                     transactionInfo.commit();
                 }
             }
@@ -129,7 +130,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void finallyRun() {
-        LOGGER.debug("running when method (" + transactionInfo.getMethod() + ") invoked and run to finally ..");
+        LOGGER.debug(() -> "running when method (" + transactionInfo.getMethod() + ") invoked and run to finally ..");
         transactionInfo.close();
         TransactionManager.remove();
     }

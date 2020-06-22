@@ -12,8 +12,8 @@ package com.truthbean.debbie.net.uri;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Assert;
 import com.truthbean.debbie.util.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -121,7 +121,7 @@ public final class UriUtils {
 
         var userInfo = url.getUserInfo();
         if (userInfo != null) {
-            LOGGER.debug(userInfo);
+            LOGGER.trace(() -> userInfo);
             var tmp = userInfo.split(":");
             builder.username(tmp[0]);
             builder.password(tmp[1]);

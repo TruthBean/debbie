@@ -16,8 +16,8 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 
@@ -76,10 +76,11 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
 
             // (7) Bind and start to accept incoming connections.
             ChannelFuture channelFuture = b.bind(configuration.getPort()).sync();
-            LOGGER.debug("netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+            LOGGER.debug(() -> "netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
             double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-            LOGGER.info("application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+            LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms" +
+                    " ( JVM running for "  + uptime + "ms )");
             debbieApplication.postBeforeStart();
 
             // Wait until the server socket is closed.
@@ -96,7 +97,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     }
 
     private void stop() {
-        LOGGER.debug("stop netty server...");
+        LOGGER.debug(() -> "stop netty server...");
         try {
             workerGroup.shutdownGracefully().sync();
             bossGroup.shutdownGracefully().sync();
@@ -106,7 +107,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     }
 
     private void shutdown() {
-        LOGGER.debug("shutdown netty server...");
+        LOGGER.debug(() -> "shutdown netty server...");
         try {
             if (channelFuture != null) {
                 channelFuture.cancel(true);
@@ -148,7 +149,8 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
         public void exit(long beforeStartTime, String... args) {
             shutdown();
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+                LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) +
+                        "ms");
             }
         }
     }

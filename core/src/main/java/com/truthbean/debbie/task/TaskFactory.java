@@ -15,8 +15,8 @@ import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
@@ -58,7 +58,7 @@ public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
             LOGGER.trace("do task....");
             for (DebbieBeanInfo<?> taskBean : taskBeans) {
                 Object task = beanFactoryHandler.factory(taskBean.getServiceName());
-                LOGGER.trace("task bean " + taskBean.getBeanClass());
+                LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
                 Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
                 for (Method method : methods) {
                     DebbieTask annotation = method.getAnnotation(DebbieTask.class);

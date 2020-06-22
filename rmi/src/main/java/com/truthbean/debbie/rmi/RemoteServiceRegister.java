@@ -12,8 +12,8 @@ package com.truthbean.debbie.rmi;
 import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.proxy.ProxyInvocationHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -87,7 +87,7 @@ public class RemoteServiceRegister {
         Registry registry = null;
         try {
             registry = LocateRegistry.createRegistry(registryPort, registryCsf, registrySsf);
-            LOGGER.info("Create the RMI registry with port: " + registryPort);
+            LOGGER.info(() -> "Create the RMI registry with port: " + registryPort);
         } catch (RemoteException e) {
             LOGGER.error("", e);
         }
@@ -95,7 +95,7 @@ public class RemoteServiceRegister {
         if (registry == null) {
             try {
                 registry = LocateRegistry.createRegistry(registryPort);
-                LOGGER.info("Create the RMI registry with port: " + registryPort);
+                LOGGER.info(() -> "Create the RMI registry with port: " + registryPort);
             } catch (RemoteException e) {
                 LOGGER.error("", e);
             }
@@ -134,7 +134,7 @@ public class RemoteServiceRegister {
     }
 
     public void bind(Registry registry, String serviceName, Remote service) {
-        LOGGER.trace("register (" + registry + ") bind " + serviceName + " to " + service);
+        LOGGER.trace(() -> "register (" + registry + ") bind " + serviceName + " to " + service);
 
         boolean serviceBind = false;
         try {
@@ -165,7 +165,7 @@ public class RemoteServiceRegister {
 
                 String[] list = registry.list();
                 for (String s : list) {
-                    LOGGER.debug("bind server " + s);
+                    LOGGER.debug(() -> "bind server " + s);
                 }
 
             } catch (RemoteException | AlreadyBoundException e) {

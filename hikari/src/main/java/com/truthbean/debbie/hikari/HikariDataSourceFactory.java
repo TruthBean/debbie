@@ -15,8 +15,8 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.properties.ConfigurationTypeNotMatchedException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import javax.sql.DataSource;
 

@@ -15,8 +15,8 @@ import com.truthbean.debbie.bean.DebbieConfigurationCenter;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,11 +64,11 @@ public class DebbieConfigurationFactory {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
             if (superConfigurationClass.isAssignableFrom(key)) {
-                LOGGER.debug("configuration class: " + key.getName());
+                LOGGER.debug(() -> "configuration class: " + key.getName());
                 return (C) value;
             }
             if (superConfigurationClass == value.getClass()) {
-                LOGGER.debug("configuration class: " + key.getName());
+                LOGGER.debug(() -> "configuration class: " + key.getName());
                 return (C) value;
             }
         }
@@ -84,7 +84,7 @@ public class DebbieConfigurationFactory {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
             if (configurationClass == value.getClass()) {
-                LOGGER.debug("configuration class: " + key.getName());
+                LOGGER.debug(() -> "configuration class: " + key.getName());
                 return (C) value;
             }
         }
@@ -101,7 +101,7 @@ public class DebbieConfigurationFactory {
             var key = classObjectEntry.getKey();
             DebbieConfiguration value = classObjectEntry.getValue();
             if (configurationClass == value.getClass()) {
-                LOGGER.debug("properties class: " + key.getName() + ", configuration class: " + value.getClass());
+                LOGGER.debug(() -> "properties class: " + key.getName() + ", configuration class: " + value.getClass());
                 result.add((C) value);
             }
         }
@@ -121,7 +121,7 @@ public class DebbieConfigurationFactory {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
             if (configurationClass == value.getClass()) {
-                LOGGER.debug("configuration class: " + key.getName());
+                LOGGER.debug(() -> "configuration class: " + key.getName());
                 return (C) value;
             }
         }

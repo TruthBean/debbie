@@ -1,7 +1,7 @@
 package com.truthbean.debbie.jdbc.transaction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -38,7 +38,7 @@ public class TransactionManager {
     }
 
     public static void offer(TransactionInfo transactionInfo) {
-        LOGGER.debug("offer transactionInfo " + transactionInfo.getId());
+        LOGGER.debug(() -> "offer transactionInfo " + transactionInfo.getId());
         transactionInfo.bindResources(resources.get());
         transactionInfo.registerResourceHolders(resourceHolders.get());
 
@@ -54,7 +54,7 @@ public class TransactionManager {
     public synchronized static TransactionInfo peek() {
         TransactionInfo transactionInfo = TRANSACTION_DEQUE.peekFirst();
         if (transactionInfo != null)
-            LOGGER.debug("peek transactionInfo " + transactionInfo.getId());
+            LOGGER.debug(() -> "peek transactionInfo " + transactionInfo.getId());
         else
             LOGGER.warn("peek transactionInfo null.");
         return transactionInfo;
@@ -63,9 +63,9 @@ public class TransactionManager {
     public synchronized static void remove() {
         TransactionInfo transactionInfo = TRANSACTION_DEQUE.removeFirst();
         if (transactionInfo != null)
-            LOGGER.debug("remove transactionInfo " + transactionInfo.getId());
+            LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
         else
-            LOGGER.debug("remove transactionInfo null.");
+            LOGGER.debug(() -> "remove transactionInfo null.");
     }
 
     public synchronized static void clear() {

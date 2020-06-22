@@ -11,8 +11,8 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.OsUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -158,7 +158,7 @@ public final class PropertiesHelper {
         // 逐个匹配
         while (matcher.find()) {
             String key = matcher.group(1);
-            LOGGER.debug("env key:" + key);
+            LOGGER.debug(() -> "env key:" + key);
             String value = System.getProperty(key);
             if (value == null && params != null) {
                 value = params.getProperty(key);
@@ -171,7 +171,8 @@ public final class PropertiesHelper {
                     System.setProperty(key, value);
                 }
             }
-            LOGGER.debug("env value:" + value);
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("env value:" + value);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
         matcher.appendTail(sb);
@@ -205,13 +206,13 @@ public final class PropertiesHelper {
                     properties.load(reader);
                 }
             } catch (Throwable e) {
-                LOGGER.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
+                LOGGER.warn(() -> "Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
             }
             RAW_PROPERTIES_CACHE.put(fileName, properties);
             return properties;
         } else {
-            String path = getResourcePath(fileName);
-            LOGGER.debug("properties file path: " + path);
+            final String path = getResourcePath(fileName);
+            LOGGER.debug(() -> "properties file path: " + path);
             if (path != null) {
                 File file = new File(path);
                 if (file.exists()) {

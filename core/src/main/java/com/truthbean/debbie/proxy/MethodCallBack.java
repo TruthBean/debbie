@@ -59,8 +59,9 @@ public class MethodCallBack<T> implements Callable<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T call() {
-        if (method != null)
+        if (method != null) {
             return ReflectionHelper.invokeMethod(target, method, parameters);
+        }
         else
             return (T) ReflectionHelper.invokeMethod(target, methodName, parameters, parameterTypes);
     }

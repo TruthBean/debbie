@@ -10,8 +10,8 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.net.NetWorkUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.truthbean.Logger;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.regex.Matcher;
 
@@ -63,7 +63,7 @@ public class InternetHelper extends NetWorkUtils {
         try {
             String ip = this.handler.get(remoteUrl);
             if (ip != null) {
-                LOGGER.trace("internet ip: " + ip);
+                LOGGER.trace(() -> "internet ip: " + ip);
                 Matcher matcher = IPV4_PATTERN.matcher(ip);
                 if (matcher.find()) {
                     return matcher.group();
