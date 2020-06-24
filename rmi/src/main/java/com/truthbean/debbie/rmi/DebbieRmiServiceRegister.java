@@ -43,7 +43,7 @@ public class DebbieRmiServiceRegister implements AnnotationRegister<DebbieRmiSer
         Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
         Set<DebbieBeanInfo<?>> beanInfos = beanInitialization.getRegisteredRawBeans();
         for (DebbieBeanInfo<?> beanInfo : beanInfos) {
-            Annotation classAnnotation = beanInfo.getClassAnnotation(DebbieRmiMapper.class);
+            DebbieRmiMapper classAnnotation = beanInfo.getClassAnnotation(DebbieRmiMapper.class);
             if (classAnnotation != null && beanInfo.getBeanClass().isInterface()) {
                 rmiServiceMappers.add(beanInfo.getBeanClass());
             }

@@ -89,9 +89,9 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
      * <p>Delegates to {@code doClose()} for the actual closing procedure.
      *
      * @see Runtime#addShutdownHook
-     * @see ConfigurableApplicationContext#SHUTDOWN_HOOK_THREAD_NAME
-     * @see #close()
-     * @see #doClose()
+     * @see #SHUTDOWN_HOOK_THREAD_NAME
+     * @see #exit
+     * @see #doExit
      */
     private void registerShutdownHook() {
         if (this.shutdownHook == null) {

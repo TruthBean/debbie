@@ -59,6 +59,27 @@ public class MethodInfo {
         return Modifier.isProtected(modifiers);
     }
 
+    public boolean isPrivate() {
+        return Modifier.isPrivate(modifiers);
+    }
+
+    public boolean isFinal() {
+        return Modifier.isFinal(modifiers);
+    }
+
+    public boolean isStatic() {
+        return Modifier.isStatic(modifiers);
+    }
+
+    public boolean isMethodParameterContainPrimitiveClass() {
+        for (Class<?> paramType : paramTypes) {
+            if (TypeHelper.isRawBaseType(paramType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getName() {
         return name;
     }

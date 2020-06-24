@@ -11,10 +11,7 @@ package com.truthbean.debbie.reflection;
 
 import java.io.Serializable;
 import java.lang.annotation.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -26,6 +23,7 @@ public class ClassInfo<C> implements Serializable {
     private final Class<C> clazz;
     private final Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
+    private final int classModifiers;
     private Constructor<C>[] constructors;
 
     private List<Field> fields;
@@ -37,6 +35,7 @@ public class ClassInfo<C> implements Serializable {
 
     public ClassInfo(Class<C> clazz) {
         this.clazz = clazz;
+        this.classModifiers = clazz.getModifiers();
 
         getClassInfo();
     }
@@ -90,7 +89,7 @@ public class ClassInfo<C> implements Serializable {
         for (Method method : this.methods) {
             Annotation[] annotations = method.getDeclaredAnnotations();
 
-            if (annotations != null && annotations.length > 0) {
+            if (annotations.length > 0) {
                 Set<Annotation> methodAnnotations = new HashSet<>();
                 for (Annotation annotation : annotations) {
                     Class<? extends Annotation> type = annotation.annotationType();
@@ -136,8 +135,34 @@ public class ClassInfo<C> implements Serializable {
         return methods;
     }
 
+    public boolean isMethodParameterContainPrimitiveClass() {
+        for (Method method : methods) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            for (Class<?> paramType : parameterTypes) {
+                if (TypeHelper.isRawBaseType(paramType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isMethodParameterMoreThanOne() {
+        for (Method method : methods) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes.length > 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Map<Method, Set<Annotation>> getMethodWithAnnotations() {
         return methodAnnotationMap;
+    }
+
+    public boolean hasAnnotatedMethod() {
+        return !methodAnnotationMap.isEmpty();
     }
 
     public Map<Class<? extends Annotation>, Annotation> getClassAnnotations() {
@@ -146,7 +171,7 @@ public class ClassInfo<C> implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T extends Annotation> T getClassAnnotation(Class<T> annotationClass) {
-        if (classAnnotations != null && !classAnnotations.isEmpty()) {
+        if (!classAnnotations.isEmpty()) {
             Annotation annotation = classAnnotations.get(annotationClass);
             return (T) annotation;
         }
@@ -191,5 +216,25 @@ public class ClassInfo<C> implements Serializable {
 
     public boolean isInterface() {
         return clazz.isInterface();
+    }
+
+    public boolean isAbstract() {
+        return Modifier.isAbstract(classModifiers);
+    }
+
+    public boolean isFinal() {
+        return Modifier.isFinal(classModifiers);
+    }
+
+    public boolean isAnnotation() {
+        return clazz.isAnnotation();
+    }
+
+    public boolean isEnum() {
+        return clazz.isEnum();
+    }
+
+    public boolean isArray() {
+        return clazz.isArray();
     }
 }

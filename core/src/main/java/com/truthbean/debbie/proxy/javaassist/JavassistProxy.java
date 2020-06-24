@@ -8,6 +8,7 @@ import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
 
+import com.truthbean.debbie.util.OsUtils;
 import javassist.*;
 
 import com.truthbean.Logger;
@@ -16,6 +17,7 @@ import com.truthbean.logger.LoggerFactory;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -27,14 +29,13 @@ import java.util.function.Supplier;
  */
 public class JavassistProxy<B> extends AbstractProxy<B> {
 
-    public JavassistProxy(Class<B> beanClass, MethodProxyHandlerHandler handler,
+    public JavassistProxy(Class<B> beanClass, ClassLoader classLoader, MethodProxyHandlerHandler handler,
                           Class<? extends Annotation> methodAnnotation) {
-        super(beanClass, handler, methodAnnotation);
+        super(beanClass, classLoader, handler, methodAnnotation);
     }
 
     @Override
     public B proxy(Supplier<B> bean) {
-        B bytecodeProxy = null;
         try {
             ClassPool classPool = new ClassPool(true);
             Class<B> beanClass = getBeanClass();
@@ -72,14 +73,26 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
                 proxyClass.addMethod(CtNewMethod.make(methodContent, proxyClass));
             }
             try {
-                proxyClass.writeFile("V:\\person\\debbie\\core\\build\\classes\\java\\test\\");
+                String originPath = beanClassName.replace(".", "/");
+                URL resource = getClassLoader().getResource( originPath + ".class");
+                if (resource != null) {
+                    String path = resource.getFile();
+                    if (OsUtils.isWinOs()) {
+                        path = path.substring(1);
+                    }
+                    int i = path.lastIndexOf(originPath);
+                    path = path.substring(0, i);
+
+                    proxyClass.writeFile(path);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             }
             Class<?> proxyType = proxyClass.toClass();
 
             Object[] objects = asmConstructorInfo.makeConstructorDefaultValue();
-            bytecodeProxy = (B) ReflectionHelper.newInstance(proxyType, asmConstructorInfo.getParameterTypes(), objects);
+            @SuppressWarnings("unchecked")
+            B bytecodeProxy = (B) ReflectionHelper.newInstance(proxyType, asmConstructorInfo.getParameterTypes(), objects);
 
             ReflectionHelper.invokeMethod(bytecodeProxy, "setTarget", new Object[]{bean.get()}, new Class<?>[]{beanClass});
             ReflectionHelper.invokeMethod(bytecodeProxy, "setHandler", new Object[]{getHandler()}, new Class<?>[]{MethodProxyHandlerHandler.class});
@@ -87,7 +100,7 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
         } catch (NotFoundException | CannotCompileException e) {
             LOGGER.error("", e);
         }
-        return bytecodeProxy;
+        return null;
     }
 
     private CtClass[] convert(ClassPool classPool, Type[] classes) {

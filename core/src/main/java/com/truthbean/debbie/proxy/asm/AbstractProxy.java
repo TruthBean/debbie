@@ -38,20 +38,27 @@ public abstract class AbstractProxy<B> {
     private final Class<? extends Annotation> methodAnnotation;
 
     private final AsmClassInfo asmClassInfo;
+    private final ClassLoader classLoader;
 
     protected static final String JAVA_LANG_OBJECT = "java/lang/Object";
     protected static final String NAME_CTOR = "<init>";
 
-    public AbstractProxy(Class<B> beanClass, MethodProxyHandlerHandler handler,
+    public AbstractProxy(Class<B> beanClass, ClassLoader classLoader, MethodProxyHandlerHandler handler,
                           Class<? extends Annotation> methodAnnotation) {
         this.handler = handler;
 
         this.beanClassInfo = new ClassInfo<>(beanClass);
         this.handlerClass = MethodProxyHandlerHandler.class;
 
+        this.classLoader = classLoader;
+
         this.methodAnnotation = methodAnnotation;
 
         this.asmClassInfo = new AsmClassInfo(beanClass);
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
     }
 
     public Set<Method> getMethods() {
@@ -117,7 +124,7 @@ public abstract class AbstractProxy<B> {
     }
 
     public boolean isAnnotationMethod(Method method) {
-        return getMethodAnnotation().isInstance(method.getAnnotation(methodAnnotation));
+        return getMethodAnnotation() == methodAnnotation;
     }
 
     public boolean isAnnotationMethod(AsmMethodInfo method) {

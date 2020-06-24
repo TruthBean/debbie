@@ -57,8 +57,11 @@ public class DemoBeanComponent {
         }
 
         @MethodProxy(order = 32)
-        public void setId(byte id) {
+        public void setId(byte id, String name) {
             this.id = id;
+            System.out.println("---------------------------------------------------");
+            System.out.println(name);
+            System.out.println("---------------------------------------------------");
         }
     }
 }

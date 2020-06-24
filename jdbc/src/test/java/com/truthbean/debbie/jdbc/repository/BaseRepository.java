@@ -1,16 +1,18 @@
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.domain.Sort;
 import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
 
 public class BaseRepository<Domain, ID> extends CustomRepository<Domain, ID> {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BaseRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(BaseRepository.class);
 
     /**
      * Finds all domain by id list and the specified sort.

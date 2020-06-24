@@ -10,10 +10,15 @@
 dependencies {
     api(project(":debbie-mvc"))
     api(project(":debbie-server"))
+    api(project(":debbie-boot"))
 
     testImplementation(project(":debbie-test"))
 
+    val loggerVersion: String by project
+    testImplementation("com.truthbean.logger:log4j2:$loggerVersion")
+
     val log4j2Version: String by project
+    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
 
     val jacksonVersion: String by project

@@ -171,6 +171,7 @@ public class HttpClientHandler extends HttpClientAction {
         return action(doDelete(url, jsonContent, headers));
     }
 
+    @SuppressWarnings({"unchecked"})
     public String delete(String url, String jsonContent, Map<String, String> headers, MediaType responseType) {
         HttpClientResponse<String> delete = doDelete(url, jsonContent, headers, responseType.info());
         return action(delete);

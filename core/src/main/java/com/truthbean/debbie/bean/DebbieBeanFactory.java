@@ -43,10 +43,7 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     @Override
     public Bean getBean() {
         if (canNew()) {
-            var beanBeanInvoker = new BeanInvoker<>(getBeanType(), beanFactoryHandler);
-            var bean = beanBeanInvoker.getBean();
-            var classInfo = beanBeanInvoker.getBeanInfo();
-            beanFactoryHandler.resolveDependentBean(bean, classInfo);
+            Bean bean = beanFactoryHandler.factoryBeanByDependenceProcessor(beanInfo);
             beanInfo.setBean(bean);
             return bean;
         }

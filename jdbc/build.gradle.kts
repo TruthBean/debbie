@@ -1,6 +1,9 @@
 dependencies {
     api(project(":debbie-core"))
 
+    val asmVersion: String by project
+    testImplementation("org.ow2.asm:asm:$asmVersion")
+
     val loggerVersion: String by project
     testImplementation("com.truthbean.logger:log4j2:$loggerVersion")
 

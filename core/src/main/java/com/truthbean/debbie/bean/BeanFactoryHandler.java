@@ -10,26 +10,17 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import com.truthbean.debbie.properties.PropertiesConfiguration;
-import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.*;
 import com.truthbean.debbie.proxy.asm.AbstractProxy;
 import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.javaassist.JavassistProxy;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
-import com.truthbean.debbie.reflection.ClassInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -56,6 +47,9 @@ public class BeanFactoryHandler {
 
     private Class<? extends Annotation> injectType;
 
+    private final InjectedBeanFactory injectedBeanFactory;
+    private final BeanDependenceProcessor beanDependenceProcessor;
+
     private static final Object object = new Object();
 
     @SuppressWarnings("unchecked")
@@ -73,6 +67,12 @@ public class BeanFactoryHandler {
             } catch (ClassNotFoundException e) {
                 LOGGER.info("class javax.inject.Inject not found");
             }
+
+            this.injectedBeanFactory = new InjectedBeanFactory();
+            this.injectedBeanFactory.setBeanFactoryHandler(this);
+
+            this.beanDependenceProcessor = new BeanDependenceProcessor();
+            this.beanDependenceProcessor.setBeanFactoryHandler(this);
         }
     }
 
@@ -98,6 +98,14 @@ public class BeanFactoryHandler {
 
     public MethodProxyHandlerRegister getMethodProxyHandlerRegister() {
         return methodProxyHandlerRegister;
+    }
+
+    public BeanDependenceProcessor getBeanDependenceProcessor() {
+        return beanDependenceProcessor;
+    }
+
+    public InjectedBeanFactory getInjectedBeanFactory() {
+        return injectedBeanFactory;
     }
 
     public void refreshBeans() {
@@ -171,6 +179,9 @@ public class BeanFactoryHandler {
     }
 
     protected void releaseBeans() {
+        beanDependenceProcessor.destroy();
+        injectedBeanFactory.destroy();
+
         destroyBeans(beanServiceInfoSet);
         destroyBeans(singletonBeanInvokerMap.keySet());
         beanServiceInfoSet.clear();
@@ -250,12 +261,15 @@ public class BeanFactoryHandler {
             return null;
     }
 
-    private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require, Set<DebbieBeanInfo<?>> beanInfoSet) {
+    private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require,
+                                                                     Set<DebbieBeanInfo<?>> beanInfoSet) {
         List<DebbieBeanInfo<?>> list = new ArrayList<>();
 
         if (type != null) {
             for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName()) || (debbieBeanInfo.getBeanInterface() != null && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
+                var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName())
+                        || (debbieBeanInfo.getBeanInterface() != null
+                        && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
                 if (flag) {
                     list.add(debbieBeanInfo);
                 }
@@ -263,7 +277,9 @@ public class BeanFactoryHandler {
 
             if (list.isEmpty()) {
                 for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                    var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass()) || (debbieBeanInfo.getBeanInterface() != null && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                    var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
+                            || (debbieBeanInfo.getBeanInterface() != null
+                            && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
                     if (flag) {
                         list.add(debbieBeanInfo);
                     }
@@ -310,16 +326,6 @@ public class BeanFactoryHandler {
         if (!require && beanInfo == null)
             return null;
         assert beanInfo != null;
-        if (beanInfo.getBeanType() == BeanType.SINGLETON) {
-            resolveFieldBeans(beanInfo);
-            T bean = beanInfo.getBean();
-            if (bean == null) {
-                bean = factory(beanInfo);
-                beanInfo.setBean(bean);
-            }
-            return bean;
-        }
-
         return factory(beanInfo);
     }
 
@@ -332,41 +338,46 @@ public class BeanFactoryHandler {
         return factory(serviceName, null, true);
     }
 
-    public <T> T factoryByProxy(DebbieBeanInfo<T> beanInfo) {
-        return factoryByProxy(beanInfo, BeanProxyType.NO);
-    }
+    private <T, K extends T> T factoryAfterCreatedByProxy(DebbieBeanInfo<K> beanInfo, BeanProxyType proxyType) {
+        if (!beanInfo.hasAnnotatedMethod()) {
+            return beanInfo.getBean();
+        }
+        Class<K> clazz = beanInfo.getBeanClass();
+        Class<T> beanInterface = beanInfo.getBeanInterface();
+        if (beanInterface != null) {
+            LOGGER.trace(() -> "resolve field dependent bean(" + beanInterface + ") by implement class " + clazz);
+            JdkDynamicProxy<T, K> dynamicProxy = new JdkDynamicProxy<>();
+            return dynamicProxy.invokeJdkProxy(this, beanInterface, beanInfo.getBean());
+        }
+        if (proxyType == BeanProxyType.NO) {
+            return beanInfo.getBean();
+        }
+        if (!beanInfo.isMethodParameterContainPrimitiveClass()) {
+            MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
+            MethodProxyHandlerProcessor<K> processor =
+                    new MethodProxyHandlerProcessor<>(this, handler, beanInfo).process();
+            if (processor.hasNoProxy()) return beanInfo.getBean();
 
-    public <T> T factoryByProxy(DebbieBeanInfo<T> beanInfo, BeanProxyType proxyType) {
-        if (proxyType == null) return beanInfo.getBean();
-        switch (proxyType) {
-            default:
-            case NO:
-                return beanInfo.getBean();
-            case JDK:
-                // todo
-                return beanInfo.getBean();
-            case ASM:
-            case JAVASSIST:
-                MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
-                MethodProxyHandlerProcessor<T> processor = new MethodProxyHandlerProcessor<>(this, handler, beanInfo).process();
-                if (processor.hasNoProxy()) return beanInfo.getBean();
-
-                AbstractProxy<T> proxy;
-                if (proxyType == BeanProxyType.ASM) {
-                    proxy = new AsmProxy<>(beanInfo.getBeanClass(), handler, MethodProxy.class);
+            try {
+                AbstractProxy<K> proxy;
+                if (!beanInfo.isMethodParameterMoreThanOne()) {
+                    proxy = new AsmProxy<>(beanInfo.getBeanClass(), classLoader, handler, MethodProxy.class);
                 } else {
-                    proxy = new JavassistProxy<>(beanInfo.getBeanClass(), handler, MethodProxy.class);
+                    proxy = new JavassistProxy<>(beanInfo.getBeanClass(), classLoader, handler, MethodProxy.class);
                 }
                 return processor.proxy(proxy);
+            } catch (Exception e) {
+                LOGGER.error("", e);
+                return beanInfo.getBean();
+            }
+        } else {
+            return beanInfo.getBean();
         }
     }
 
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {
-        if (beanInfo.getBeanType() == BeanType.SINGLETON) {
-            resolveFieldBeans(beanInfo);
-            if (beanInfo.isPresent()) {
-                return factoryByProxy(beanInfo);
-            }
+        if (beanInfo.getBeanType() == BeanType.SINGLETON && beanInfo.isPresent()) {
+            return beanInfo.getBean();
         }
         var beanFactory = beanInfo.getBeanFactory();
         if (beanFactory != null) {
@@ -374,31 +385,35 @@ public class BeanFactoryHandler {
                 // TODO to set securityContextProvider
                 try {
                     AccessControlContext securityContextProvider = AccessController.getContext();
-                    AccessController.doPrivileged((PrivilegedAction<T>) beanFactory::getBean, securityContextProvider);
+                    AccessController.doPrivileged((PrivilegedAction<T>) () -> factoryBeanByFactory(beanInfo, beanFactory), securityContextProvider);
                 } catch (Exception e) {
                     LOGGER.error("getBean from factory via securityContextProvider error", e);
                 }
             } else
-                return beanFactory.getBean();
-        }
-        Class<K> clazz = beanInfo.getBeanClass();
-        Class<T> beanInterface = beanInfo.getBeanInterface();
-
-        if (beanInterface == null) {
-            factoryNoLimit(beanInfo);
-            resolveFieldBeans(beanInfo);
-            return factoryByProxy(beanInfo);
+                return factoryBeanByFactory(beanInfo, beanFactory);
         }
 
-        return factoryWithProxy(clazz, beanInterface, beanInfo);
+        return factoryBeanByDependenceProcessor(beanInfo);
     }
 
-    public <T, K extends T> T factory(Class<T> type) {
+    private <T> T factoryBeanByFactory(DebbieBeanInfo<T> beanInfo, BeanFactory<T> beanFactory) {
+        T bean = beanFactory.factoryBean();
+        beanInfo.setBean(bean);
+        return factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+    }
+
+    public <T> T factoryBeanByDependenceProcessor(DebbieBeanInfo<T> beanInfo) {
+        T bean = injectedBeanFactory.factory(beanInfo, beanDependenceProcessor);
+        beanInfo.setBean(bean);
+        return factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+    }
+
+    public <T> T factory(Class<T> type) {
         LOGGER.trace(() -> "factory bean with type " + type.getName());
         return factory(null, type, true);
     }
 
-    public <T, K extends T> DebbieBeanInfo<T> getBeanInfo(Class<T> type) {
+    public <T> DebbieBeanInfo<T> getBeanInfo(Class<T> type) {
         LOGGER.trace(() -> "factory bean with type " + type.getName());
         var beanInfo = getBeanInfo(null, type, true, beanServiceInfoSet, true);
         if (beanInfo != null) {
@@ -431,361 +446,8 @@ public class BeanFactoryHandler {
         return getBeanInfo(beanName, null, false, beanServiceInfoSet, false) != null;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> void resolveFieldBeans(DebbieBeanInfo<T> beanInfo) {
-        Map<Field, DebbieBeanInfo<?>> fieldBeanDependents = beanInfo.getFieldBeanDependent();
-        if (fieldBeanDependents != null && !fieldBeanDependents.isEmpty()) {
-            Collection<DebbieBeanInfo<?>> fieldBeanDependent = fieldBeanDependents.values();
-            for (DebbieBeanInfo debbieBeanInfo : fieldBeanDependent) {
-                if ((debbieBeanInfo.isEmpty() || debbieBeanInfo.isHasVirtualValue())) {
-                    Object object = getBeanInfo(debbieBeanInfo.getServiceName(), (Class<T>) debbieBeanInfo.getBeanClass(),
-                            true, beanServiceInfoSet, true).getBean();
-                    if (object != null) {
-                        debbieBeanInfo.setBean(object);
-                    }
-                }
-            }
-
-            BeanInvoker<T> beanInvoker;
-            if (beanInfo.getBeanType() == BeanType.SINGLETON) {
-                beanInvoker = (BeanInvoker<T>) singletonBeanInvokerMap.get(beanInfo);
-            } else {
-                beanInvoker = BeanInvoker.create(beanInfo, this, singletonBeanInvokerMap);
-            }
-            beanInvoker.resolveFieldsDependent(this);
-            T bean = beanInvoker.getBean();
-            beanInfo.setBean(bean);
-        }
-    }
-
-    void resolveDependentBean(Object object, ClassInfo<?> classInfo) {
-        String keyPrefix = null;
-
-        Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
-        if (classAnnotations.containsKey(PropertiesConfiguration.class)) {
-            var beanConfiguration = (PropertiesConfiguration) classAnnotations.get(PropertiesConfiguration.class);
-            keyPrefix = beanConfiguration.keyPrefix();
-            if (!keyPrefix.isBlank() && !keyPrefix.endsWith(".")) {
-                keyPrefix += ".";
-            }
-        }
-
-        List<Field> fields = classInfo.getFields();
-        if (fields != null && !fields.isEmpty()) {
-            String finalKeyPrefix = keyPrefix;
-            fields.forEach(field -> resolveFieldValue(object, field, finalKeyPrefix));
-        }
-
-        Class<?> clazz = classInfo.getClazz();
-        if (BeanAware.class.isAssignableFrom(clazz)) {
-
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void resolveAwareValue(Object object, Class<?> clazz) {
-        BeanAware aware = (BeanAware) object;
-        Class<?> beanClass = aware.getBeanClass();
-
-        String name = null;
-        Set<Method> setBeanMethods = ReflectionHelper.getDeclaredMethods(clazz, "setBean");
-        if (setBeanMethods.size() == 1) {
-            Method method = setBeanMethods.iterator().next();
-            Parameter[] parameters = method.getParameters();
-            if (parameters[0].isNamePresent()) {
-                name = parameters[0].getName();
-            }
-        }
-
-        var values = getBeanList(beanClass);
-        if (!values.isEmpty()) {
-            aware.setBeans(values);
-            if (name != null) {
-                Object factory = factory(name, beanClass, true);
-                aware.setBean(factory);
-            } else if (values.size() == 1) {
-                aware.setBean(values.get(0));
-            }
-        }
-
-    }
-
-    private void resolveFieldValue(Object object, Field field, String keyPrefix) {
-        var propertyInject = field.getAnnotation(PropertyInject.class);
-        if (propertyInject != null) {
-            resolvePropertiesInject(object, field, keyPrefix, propertyInject);
-            return;
-        }
-        var beanInject = field.getAnnotation(BeanInject.class);
-        if (beanInject != null) {
-            resolveFieldDependentBean(object, field, beanInject);
-        } else {
-            Class<? extends Annotation> injectClass = getInjectType();
-            if (injectClass == null) return;
-            Object inject = field.getAnnotation(injectClass);
-            if (inject != null) {
-                resolveFieldDependentBean(null, object, field, inject);
-            }
-        }
-    }
-
-    private void resolvePropertyFieldValue(DebbieBeanInfo<?> beanInfo) {
-        List<Field> fields = beanInfo.getFields();
-        String keyPrefix = null;
-
-        Map<Class<? extends Annotation>, Annotation> classAnnotations = beanInfo.getClassAnnotations();
-        if (classAnnotations.containsKey(PropertiesConfiguration.class)) {
-            var beanConfiguration = (PropertiesConfiguration) classAnnotations.get(PropertiesConfiguration.class);
-            keyPrefix = beanConfiguration.keyPrefix();
-            if (!keyPrefix.isBlank() && !keyPrefix.endsWith(".")) {
-                keyPrefix += ".";
-            }
-        }
-
-        if (fields != null && !fields.isEmpty()) {
-            String finalKeyPrefix = keyPrefix;
-            fields.forEach(field -> resolvePropertyFieldValue(beanInfo.getBean(), field, finalKeyPrefix));
-        }
-    }
-
-    private void resolvePropertyFieldValue(Object object, Field field, String keyPrefix) {
-        var propertyInject = field.getAnnotation(PropertyInject.class);
-        if (propertyInject != null) {
-            resolvePropertiesInject(object, field, keyPrefix, propertyInject);
-        }
-    }
-
-    private void resolvePropertiesInject(Object object, Field field, String keyPrefix, PropertyInject propertyInject) {
-        String property = propertyInject.value();
-        if (!property.isBlank()) {
-            String key;
-            if (keyPrefix != null) {
-                key = keyPrefix + property;
-            } else {
-                key = property;
-            }
-            BaseProperties properties = new BaseProperties();
-            String value = properties.getValue(key);
-            if (value != null) {
-                Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
-                Object transform = null;
-                try {
-                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
-                    transform = dataTransformer.reverse(value);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Class<?> type = field.getType();
-                if (transform == null || transform.getClass() != type) {
-                    transform = beanInitialization.transform(value, type);
-                }
-                // use setter method to inject filed
-                // if setter method not found, inject directly
-                ReflectionHelper.invokeFieldBySetMethod(object, field, transform);
-            }
-        }
-    }
-
-    private void resolveFieldDependentBean(String name, Object object, Field field, BeanInject beanInject) {
-        if (name == null || name.isBlank()) {
-            name = field.getName();
-        }
-        String finalName = name;
-        LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by name : " + finalName);
-        var value = factory(name, field.getType(), beanInject.require());
-        if (value != null) {
-            ReflectionHelper.setField(object, field, value);
-        } else {
-            if (beanInject.require()) {
-                throw new NoBeanException("no bean " + name + " found .");
-            }
-        }
-    }
-
-    private void resolveFieldDependentBean(String name, Object object, Field field, Object inject) {
-        if (name == null || name.isBlank()) {
-            name = field.getName();
-        }
-        final String finalName = name;
-        LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by name : " + finalName);
-        var value = factory(name, field.getType(), true);
-        if (value != null) {
-            ReflectionHelper.setField(object, field, value);
-        } else {
-            throw new NoBeanException("no bean " + name + " found .");
-        }
-    }
-
-    private void resolveFieldDependentBean(Object object, Field field, BeanInject beanInject) {
-        LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by type ");
-        String name = beanInject.name();
-        if (name.isBlank()) {
-            name = beanInject.value();
-        }
-        resolveFieldDependentBean(name, object, field, beanInject);
-    }
-
-    public Object getParameterBean(Parameter parameter) {
-        LOGGER.trace(() -> "resolve parameter dependent bean(" + parameter.getType() + ") by type ");
-        var beanInject = parameter.getAnnotation(BeanInject.class);
-        String name = "";
-        boolean require = false;
-        if (beanInject != null) {
-            name = beanInject.name();
-            if (name.isBlank()) {
-                name = beanInject.value();
-            }
-            require = beanInject.require();
-        }
-        if (name.isBlank() && parameter.isNamePresent()) {
-            name = parameter.getName();
-        }
-        Class<?> type = parameter.getType();
-        if (!name.isBlank()) {
-            var value = factory(name, type, require, false);
-            if (value != null) {
-                return value;
-            } else {
-                if (require) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
-            }
-        } else {
-            var value = factory(null, type, require, false);
-            if (value != null) {
-                return value;
-            } else {
-                if (require) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
-            }
-        }
-        throw new NoBeanException(() -> "no bean " + parameter.getName() + " found .");
-    }
-
     public <Bean> BeanInvoker<Bean> factoryBeanInvoker(Class<Bean> beanClass) {
         return new BeanInvoker<>(beanClass, this);
-    }
-
-    public <T> T factoryNoLimit(Class<T> type) {
-        LOGGER.trace(() -> "resolve bean(" + type + ") by type ");
-        var beanBeanInvoker = new BeanInvoker<>(type, this);
-        var bean = beanBeanInvoker.getBean();
-        var classInfo = beanBeanInvoker.getBeanInfo();
-        resolveDependentBean(bean, classInfo);
-        return bean;
-    }
-
-    public <T> T getBeanByFactory(DebbieBeanInfo<T> beanInfo) {
-        Class<T> beanClass = beanInfo.getBeanClass();
-        BeanFactory<T> beanFactory = beanInfo.getBeanFactory();
-        return getBeanByFactory(beanClass, beanFactory);
-    }
-
-    public <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory) {
-        if (beanClass.isInterface() || Modifier.isAbstract(beanClass.getModifiers())) {
-            if (beanFactory != null) {
-                return beanFactory.getBean();
-            } else {
-                return factory(beanClass);
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getBeanByInitMethod(Method initMethod, BeanFactoryHandler handler) {
-        if (Modifier.isStatic(initMethod.getModifiers())) {
-            Parameter[] parameters = initMethod.getParameters();
-            if (parameters == null || parameters.length == 0) {
-                return (T) ReflectionHelper.invokeStaticMethod(initMethod);
-            } else {
-                // todo
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> BeanInvoker<T> setIfNotExist(DebbieBeanInfo<T> beanInfo) {
-        if (beanInfo.getBeanType() == BeanType.SINGLETON) {
-            if (singletonBeanInvokerMap.containsKey(beanInfo)) {
-                return (BeanInvoker<T>) singletonBeanInvokerMap.get(beanInfo);
-            } else {
-                BeanInvoker<T> beanInvoker = new BeanInvoker<>(beanInfo, this);
-                singletonBeanInvokerMap.put(beanInfo, beanInvoker);
-                return beanInvoker;
-            }
-        } else {
-            return BeanInvoker.create(beanInfo, this, singletonBeanInvokerMap);
-        }
-    }
-
-    public <T> BeanInvoker<T> resolveSecondLevelBeans(DebbieBeanInfo<T> beanInfo) {
-        BeanInvoker<T> beanInvoker = setIfNotExist(beanInfo);
-        var bean = beanInvoker.getBean();
-        if (beanInfo.getBeanType() == BeanType.SINGLETON && bean == null) {
-            // resolve second level beans
-            beanInvoker.resolveConstructor(this, singletonBeanInvokerMap);
-        }
-        return beanInvoker;
-    }
-
-    public <T> T factoryNoLimit(DebbieBeanInfo<T> beanInfo) {
-        BeanInvoker<T> beanInvoker = resolveSecondLevelBeans(beanInfo);
-        var bean = beanInvoker.getBean();
-        if (bean == null) {
-            // resolve third level beans
-            Collection<DebbieBeanInfo<?>> constructorBeanDependent = beanInfo.getConstructorBeanDependent().values();
-            for (DebbieBeanInfo<?> debbieBeanInfo : constructorBeanDependent) {
-                if ((debbieBeanInfo.optional().isEmpty() || !debbieBeanInfo.isHasVirtualValue())) {
-                    beanInfo.setHasVirtualValue(true);
-                    factoryNoLimit(debbieBeanInfo);
-                }
-            }
-            if (beanInfo.getConstructorBeanDependent().isEmpty() || beanInfo.isConstructorBeanDependentHasValue()) {
-                beanInvoker.createBeanByConstructorDependent();
-                bean = beanInvoker.getBean();
-                if (bean != null) {
-                    beanInfo = beanInvoker.getBeanInfo();
-                    beanInfo.setBean(bean);
-                    beanInfo.setHasVirtualValue(false);
-                }
-            }
-        }
-        if (bean == null) {
-            beanInvoker.createBeanByConstructorDependent();
-            bean = beanInvoker.getBean();
-            if (bean != null) {
-                beanInfo = beanInvoker.getBeanInfo();
-                beanInfo.setBean(bean);
-                if (beanInfo.isHasVirtualValue()) {
-                    beanInfo.setHasVirtualValue(false);
-                }
-            }
-        }
-
-        bean = beanInvoker.getBean();
-        if (bean != null) {
-            beanInvoker.getFieldsDependent(this);
-            beanInfo.setBean(bean);
-            resolvePropertyFieldValue(beanInfo);
-        }
-
-        return bean;
-    }
-
-    public <T> Object factoryAndInvokeMethod(Class<T> type, Method method, Object[] parameters) {
-        T bean = factoryNoLimit(type);
-        return ReflectionHelper.invokeMethod(bean, method, parameters);
-    }
-
-    public <T, K extends T> T factoryWithProxy(Class<K> type, Class<T> interfaceType, DebbieBeanInfo<K> beanInfo) {
-        LOGGER.trace(() -> "resolve field dependent bean(" + interfaceType + ") by implement class " + type);
-        factoryNoLimit(beanInfo);
-        resolveFieldBeans(beanInfo);
-        JdkDynamicProxy<T, K> dynamicProxy = new JdkDynamicProxy<>();
-        return dynamicProxy.invokeJdkProxy(this, interfaceType, beanInfo.getBean());
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BeanFactoryHandler.class);

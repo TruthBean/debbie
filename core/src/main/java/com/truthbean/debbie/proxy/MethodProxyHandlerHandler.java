@@ -39,7 +39,8 @@ public class MethodProxyHandlerHandler {
         this.interceptors.addAll(interceptors);
     }
 
-    public void addInterceptor(MethodProxyHandler<? extends Annotation>... interceptors) {
+    @SafeVarargs
+    public final void addInterceptor(MethodProxyHandler<? extends Annotation>... interceptors) {
         if (interceptors != null && interceptors.length > 0)
             this.interceptors.addAll(Arrays.asList(interceptors));
     }

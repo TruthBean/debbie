@@ -73,7 +73,8 @@ public class RmiClientFactory {
         if (exits(name)) {
             try {
                 RemoteService<S> remoteService = (RemoteService<S>) registry.lookup(name);
-                LOGGER.debug(() -> "remote server version: " + remoteService.getVersion());
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("remote server version: " + remoteService.getVersion());
                 return remoteService.getService();
             } catch (RemoteException | NotBoundException e) {
                 LOGGER.error("", e);

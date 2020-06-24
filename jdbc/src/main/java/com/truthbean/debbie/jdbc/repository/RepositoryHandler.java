@@ -69,7 +69,7 @@ public class RepositoryHandler {
             //执行sql操作集
             rows = preparedStatement.executeBatch();
         } catch (SQLException ex) {
-            LOGGER.error(null, ex);
+            LOGGER.error("", ex);
             throw new TransactionException(ex);
         } finally {
             JdbcUtils.close(null, preparedStatement);

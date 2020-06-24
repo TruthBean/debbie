@@ -10,6 +10,8 @@
 package com.truthbean.debbie.bean;
 
 import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -21,6 +23,10 @@ public interface BeanAware<Bean> {
     Class<Bean> getBeanClass();
 
     default <T extends Bean> void setBean(T bean) {
+    }
+
+    default <T extends Bean> void setBean(Supplier<BaseBeanCreator<T>> supplier) {
+        setBean(supplier.get().create());
     }
 
     default void setBeans(Collection<Bean> beans) {

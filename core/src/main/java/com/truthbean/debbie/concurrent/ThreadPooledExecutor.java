@@ -44,12 +44,13 @@ public class ThreadPooledExecutor implements Executor {
 
         this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
+                new LinkedBlockingQueue<>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
     }
 
     @Override
     public void execute(Runnable task) {
-        this.executorService.execute(task);
+        if (isRunning())
+            this.executorService.execute(task);
     }
 
     public boolean isRunning() {

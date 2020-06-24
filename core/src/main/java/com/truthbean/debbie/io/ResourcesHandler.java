@@ -161,7 +161,8 @@ public final class ResourcesHandler {
                         // 添加到classes
                         classes.add(classLoader.loadClass(className));
                     } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                        LOGGER.error(() -> "load class<" + className + "> error.\n", e);
+                        if (LOGGER.isTraceEnabled())
+                            LOGGER.error(() -> "load class<" + className + "> error.\n", e);
                     }
                 }
             }

@@ -22,6 +22,8 @@ import java.util.Set;
 
 public class TargetTest {
 
+    private final ClassLoader classLoader = TargetTest.class.getClassLoader();
+
     @Test
     public void direct() throws Exception {
         TargetProxyHandler interceptor = new TargetProxyHandler();
@@ -62,7 +64,8 @@ public class TargetTest {
         handler.setInterceptors(List.of(interceptor));
 
         TargetObject targetBean = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
-        JavassistProxy<TargetObject> javassistProxy = new JavassistProxy<>(TargetObject.class, handler, MethodProxy.class);
+        JavassistProxy<TargetObject> javassistProxy = new JavassistProxy<>(TargetObject.class, classLoader, handler,
+                MethodProxy.class);
         TargetObject proxy = javassistProxy.proxy(targetBean);
         proxy.learn();
         proxy.coding();
@@ -79,7 +82,7 @@ public class TargetTest {
         MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
         handler.setInterceptors(List.of(interceptor));
 
-        AsmProxy<TargetObject> asmProxy = new AsmProxy<>(TargetObject.class, handler, MethodProxy.class);
+        AsmProxy<TargetObject> asmProxy = new AsmProxy<>(TargetObject.class, classLoader, handler, MethodProxy.class);
         TargetObject proxy = asmProxy.proxy(targetBean);
 
         Set<Method> proxyMethod = asmProxy.getProxyMethods();

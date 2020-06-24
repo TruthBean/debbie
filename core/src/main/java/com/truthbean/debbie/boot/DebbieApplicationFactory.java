@@ -183,9 +183,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         beforeRelease();
         if (!debbieModuleStarters.isEmpty()) {
             List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
-            Collections.sort(list, (starter1, starter2) -> {
-                return starter2.compareTo(starter1);
-            });
+            list.sort(Comparator.reverseOrder());
             DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
             for (DebbieModuleStarter debbieModuleStarter : list) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") release");

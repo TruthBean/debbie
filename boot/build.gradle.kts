@@ -2,6 +2,9 @@ dependencies {
     val asmVersion: String by project
     implementation("org.ow2.asm:asm:$asmVersion")
 
+    val javassistVersion: String by project
+    implementation("org.javassist:javassist:$javassistVersion")
+
     val jacksonVersion: String by project
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")

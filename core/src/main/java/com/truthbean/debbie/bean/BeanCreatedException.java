@@ -9,6 +9,10 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
+
+import java.util.Objects;
+
 /**
  * @author truthbean
  * @since 0.0.1
@@ -33,5 +37,20 @@ public class BeanCreatedException extends RuntimeException {
 
     public BeanCreatedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public static void throwException(Logger logger, Exception e) {
+        if (logger.isTraceEnabled())
+            logger.trace("", e);
+        Throwable cause = e.getCause();
+        var errorMessage = e.getMessage();
+        if (cause != null) {
+            errorMessage = cause.getMessage();
+        } else {
+            cause = e;
+        }
+        if (errorMessage != null)
+            throw new BeanCreatedException(errorMessage, cause, true, true);
+        else throw new BeanCreatedException("", Objects.requireNonNullElse(cause, e), true, true);
     }
 }

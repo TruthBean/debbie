@@ -10,6 +10,9 @@
 dependencies {
     api(project(":debbie-jdbc"))
 
+    val slf4jVersion: String by project
+    runtimeOnly("org.slf4j:slf4j-api:$slf4jVersion")
+
     val hikariVersion: String by project
     api("com.zaxxer:HikariCP:$hikariVersion") {
         exclude(group = "org.slf4j", module = "slf4j-api")
@@ -24,6 +27,7 @@ dependencies {
 
     val log4j2Version: String by project
     testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     
     val mysqlVersion: String by project
     testImplementation("mysql:mysql-connector-java:$mysqlVersion")

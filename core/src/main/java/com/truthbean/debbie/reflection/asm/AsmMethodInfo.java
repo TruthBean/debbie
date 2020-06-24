@@ -77,6 +77,10 @@ public class AsmMethodInfo extends MethodInfo {
         return isReturnVoid;
     }
 
+    public boolean canOverride() {
+        return !isDefault() && !isPrivate() && !isFinal() && !isStatic();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

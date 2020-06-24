@@ -17,6 +17,7 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.asm.AsmClassInfo;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
+import com.truthbean.debbie.util.OsUtils;
 import org.objectweb.asm.*;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -26,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +43,9 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
     private static final Map<Class<?>, Class<?>> beanAndProxy = new ConcurrentHashMap<>();
 
-    public AsmProxy(Class<B> beanClass, MethodProxyHandlerHandler handler,
+    public AsmProxy(Class<B> beanClass, ClassLoader classLoader, MethodProxyHandlerHandler handler,
                     Class<? extends Annotation> methodAnnotation) {
-        super(beanClass, handler, methodAnnotation);
+        super(beanClass, classLoader, handler, methodAnnotation);
     }
 
     @SuppressWarnings("unchecked")
@@ -56,11 +58,20 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
         AsmClassInfo asmClassInfo = getAsmClassInfo();
-        String className = beanClass.getName() + "AsmWrapper";
+        String originClassName = beanClass.getName();
+        String className = originClassName + "AsmWrapper";
+        ClassLoader classLoader = getClassLoader();
+        try {
+            Class<? extends B> asmWrapperClass = (Class<? extends B>) classLoader.loadClass(className);
+            beanAndProxy.put(beanClass, asmWrapperClass);
+            return doProxy(asmWrapperClass, beanClass, bean);
+        } catch (ClassNotFoundException e) {
+            LOGGER.debug(() -> className + " not exist, asm will create it.");
+        }
         String classPath = className.replace('.', '/');
 
         // proxy class super class
-        String superClassPath = beanClass.getName().replace('.', '/');
+        String superClassPath = originClassName.replace('.', '/');
         if (beanClass.isInterface()) {
             classWriter.visit(Opcodes.V11, Opcodes.ACC_PUBLIC, classPath, asmClassInfo.getSignature(), "java/lang/Object", new String[]{superClassPath});
         } else {
@@ -81,28 +92,40 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
         Set<AsmMethodInfo> methodInfoList = getMethodInfoList();
         for (AsmMethodInfo method : methodInfoList) {
-            if (isAnnotationMethod(method.getMethod())) {
-                proxyMethod(classWriter, superClassPath, classPath, handlerPath, method);
-            } else {
-                subMethod(classWriter, superClassPath, classPath, method);
+            if (method.canOverride()) {
+                if (isAnnotationMethod(method.getMethod())) {
+                    proxyMethod(classWriter, superClassPath, classPath, handlerPath, method);
+                } else {
+                    subMethod(classWriter, superClassPath, classPath, method);
+                }
             }
         }
 
         classWriter.visitEnd();
         byte[] code = classWriter.toByteArray();
 
-        /*try {
+        try {
             byte[] data = classWriter.toByteArray();
-            File file = new File("V:\\person\\debbie\\core\\build\\classes\\java\\test\\" + classPath + ".class");
-            System.out.println(file.getAbsolutePath());
-            FileOutputStream out = new FileOutputStream(file);
-            out.write(data);
-            out.close();
+            String originPath = originClassName.replace(".", "/");
+            URL resource = classLoader.getResource( originPath + ".class");
+            if (resource != null) {
+                String path = resource.getFile();
+                if (OsUtils.isWinOs()) {
+                    path = path.substring(1);
+                }
+                int i = path.lastIndexOf(originPath);
+                path = path.substring(0, i);
+
+                File file = new File(path + "\\" + classPath + ".class");
+                LOGGER.debug(() -> "AsmWrapper class created: " + file.getAbsolutePath());
+                FileOutputStream out = new FileOutputStream(file);
+                out.write(data);
+                out.close();
+            }
         } catch (IOException e) {
             LOGGER.error("", e);
-        }*/
+        }
 
-        ClassLoader classLoader = ClassLoaderUtils.getClassLoader(getBeanClass());
         Class<? extends B> proxyClass = (Class<? extends B>) new ByteArrayClassLoader(classLoader).defineClass(className, code);
         LOGGER.trace(() -> "asm create Class: " + proxyClass);
         beanAndProxy.put(beanClass, proxyClass);
@@ -214,7 +237,6 @@ public class AsmProxy<B> extends AbstractProxy<B> {
 
     private void proxyMethod(ClassWriter classWriter, String superClassPath, String classPath, String handlerPath,
                              AsmMethodInfo methodInfo) {
-        Method method = methodInfo.getMethod();
         String name = methodInfo.getName();
         Class<?>[] paramTypes = methodInfo.getParamTypes();
         MethodVisitor methodVisitor = classWriter.visitMethod(methodInfo.getAccess(), name,
@@ -231,7 +253,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         // 5: getfield      #21                 // Field target:
         methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "target", "L" + superClassPath + ";");
-        // 8: ldc           #29
+        // 8: ldc           #29                 // String "methodName"
         methodVisitor.visitLdcInsn(name);
         boolean hasParams = methodInfo.hasParams();
         if (hasParams) {
@@ -239,7 +261,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             // 10: iconst_1
             methodVisitor.visitInsn(Opcodes.ICONST_0 + length);
             // 11: anewarray     #6                  // class java/lang/Class
-            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Class.class));
+            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Class");
             // 14: dup
             methodVisitor.visitInsn(Opcodes.DUP);
             // 15: iconst_0
@@ -247,64 +269,102 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             // ??
             // 16: aload_1
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+
+            // for (int i = 0; i < 1; i++) {
+            Class<?> paramType = paramTypes[0];
+            if (paramType == double.class) {
+                //  getstatic     #12                 // Field java/lang/Double.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == float.class) {
+                //  getstatic     #12                 // Field java/lang/Float.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Float", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == long.class) {
+                //  getstatic     #12                 // Field java/lang/Long.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Long", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == int.class) {
+                //  getstatic     #12                 // Field java/lang/Integer.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Integer", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == char.class) {
+                //  getstatic     #12                 // Field java/lang/Character.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Character", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == byte.class) {
+                //  getstatic     #12                 // Field java/lang/Byte.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Byte", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == short.class) {
+                //  getstatic     #12                 // Field java/lang/Short.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Short", "TYPE", "Ljava/lang/Class;");
+            } else if (paramType == boolean.class) {
+                //  getstatic     #12                 // Field java/lang/Boolean.TYPE:Ljava/lang/Class;
+                methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Boolean", "TYPE", "Ljava/lang/Class;");
+            } else {
+                // invokevirtual #11                 // Method java/lang/Object.getClass:()Ljava/lang/Class;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Object.class), "getClass",
+                        "()Ljava/lang/Class;", false);
+            }
+            // }
+            // invokevirtual #11                 // Method java/lang/Object.getClass:()Ljava/lang/Class;
+            // methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "getClass",
+            //        "()Ljava/lang/Class;", false);
+
             // 19: aastore
             methodVisitor.visitInsn(Opcodes.AASTORE);
 
             // 20: iconst_1
             methodVisitor.visitInsn(Opcodes.ICONST_1);
-            // 21: anewarray     #6                  // class java/lang/Class
-            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(Object.class));
+            // 21: anewarray     #6                  // class java/lang/Object
+            methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
             // 24: dup
             methodVisitor.visitInsn(Opcodes.DUP);
             // 25: iconst_0
             methodVisitor.visitInsn(Opcodes.ICONST_0);
-            for (int i = 0; i < 1; i++) {
-                Class<?> paramType = paramTypes[i];
-                if (paramType == double.class) {
-                    // 26: dload_1
-                    methodVisitor.visitVarInsn(Opcodes.DLOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
-                } else if (paramType == float.class) {
-                    // 26: fload_1
-                    methodVisitor.visitVarInsn(Opcodes.FLOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
-                } else if (paramType == long.class) {
-                    // 26: lload_1
-                    methodVisitor.visitVarInsn(Opcodes.LLOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Long.valueOf:(L)Ljava/lang/Long;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(L)Ljava/lang/Long;", false);
-                } else if (paramType == int.class) {
-                    // 26: iload_1
-                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-                } else if (paramType == char.class) {
-                    // 26: iload_1
-                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Character.valueOf:(C)Ljava/lang/Character;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
-                } else if (paramType == byte.class) {
-                    // 26: iload_1
-                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Byte.valueOf:(B)Ljava/lang/Byte;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
-                } else if (paramType == short.class) {
-                    // 26: iload_1
-                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Short.valueOf:(S)Ljava/lang/Short;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
-                } else if (paramType == boolean.class) {
-                    // 26: iload_1
-                    methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
-                    // 27: invokestatic  #11                 // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
-                    methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
-                } else {
-                    // 26: aload_1
-                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-                }
+
+            // for (int i = 0; i < 1; i++) {
+            // Class<?> paramType = paramTypes[0];
+            if (paramType == double.class) {
+                // 26: dload_1
+                methodVisitor.visitVarInsn(Opcodes.DLOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+            } else if (paramType == float.class) {
+                // 26: fload_1
+                methodVisitor.visitVarInsn(Opcodes.FLOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+            } else if (paramType == long.class) {
+                // 26: lload_1
+                methodVisitor.visitVarInsn(Opcodes.LLOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Long.valueOf:(L)Ljava/lang/Long;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(L)Ljava/lang/Long;", false);
+            } else if (paramType == int.class) {
+                // 26: iload_1
+                methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+            } else if (paramType == char.class) {
+                // 26: iload_1
+                methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Character.valueOf:(C)Ljava/lang/Character;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
+            } else if (paramType == byte.class) {
+                // 26: iload_1
+                methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Byte.valueOf:(B)Ljava/lang/Byte;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
+            } else if (paramType == short.class) {
+                // 26: iload_1
+                methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Short.valueOf:(S)Ljava/lang/Short;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+            } else if (paramType == boolean.class) {
+                // 26: iload_1
+                methodVisitor.visitVarInsn(Opcodes.ILOAD, 1);
+                // 27: invokestatic  #11                 // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+            } else {
+                // 26: aload_1
+                methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
             }
+            // }
             // 30: aastore
             methodVisitor.visitInsn(Opcodes.AASTORE);
             // 31: invokespecial #32                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)V
@@ -319,8 +379,6 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
             // 40: invokevirtual #38                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
             methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, handlerPath, "proxy", "(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;", false);
-            // 43: pop
-            methodVisitor.visitInsn(Opcodes.POP);
         } else {
             // 10: invokespecial #9                 // Method com/truthbean/debbie/proxy/MethodCallBack."<init>":(Ljava/lang/Object;Ljava/lang/String;)V
             methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, methodCallBackClass, "<init>", "(Ljava/lang/Object;Ljava/lang/String;)V", false);
@@ -334,42 +392,46 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
             // 19: invokevirtual #10                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
             methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, handlerPath, "proxy", "(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;", false);
-            // checkcast
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(methodInfo.getReturnWrapperType()));
         }
         // return
         Class<?> returnType = methodInfo.getReturnType();
         if (returnType == void.class) {
+            // 43: pop
+            methodVisitor.visitInsn(Opcodes.POP);
             methodVisitor.visitInsn(Opcodes.RETURN);
-        } else if (returnType == double.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", "()D", false);
-            methodVisitor.visitInsn(Opcodes.DRETURN);
-        } else if (returnType == float.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", "()F", false);
-            methodVisitor.visitInsn(Opcodes.FRETURN);
-        } else if (returnType == long.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", "()J", false);
-            methodVisitor.visitInsn(Opcodes.LRETURN);
-        } else if (returnType == int.class) {
-            // invokevirtual #10                 // Method java/lang/Integer.intValue:()I
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", "()I", false);
-            methodVisitor.visitInsn(Opcodes.IRETURN);
-        } else if (returnType == char.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Character.class), "charValue", "()C", false);
-            methodVisitor.visitInsn(Opcodes.IRETURN);
-        } else if (returnType == byte.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", "()B", false);
-            methodVisitor.visitInsn(Opcodes.IRETURN);
-        } else if (returnType == short.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", "()S", false);
-            methodVisitor.visitInsn(Opcodes.IRETURN);
-        } else if (returnType == boolean.class) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", "()Z", false);
-            methodVisitor.visitInsn(Opcodes.IRETURN);
         } else {
-            methodVisitor.visitInsn(Opcodes.ARETURN);
+            // checkcast        // class
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(methodInfo.getReturnWrapperType()));
+            if (returnType == double.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", "()D", false);
+                methodVisitor.visitInsn(Opcodes.DRETURN);
+            } else if (returnType == float.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", "()F", false);
+                methodVisitor.visitInsn(Opcodes.FRETURN);
+            } else if (returnType == long.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", "()J", false);
+                methodVisitor.visitInsn(Opcodes.LRETURN);
+            } else if (returnType == int.class) {
+                // invokevirtual #10                 // Method java/lang/Integer.intValue:()I
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", "()I", false);
+                methodVisitor.visitInsn(Opcodes.IRETURN);
+            } else if (returnType == char.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Character.class), "charValue", "()C", false);
+                methodVisitor.visitInsn(Opcodes.IRETURN);
+            } else if (returnType == byte.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", "()B", false);
+                methodVisitor.visitInsn(Opcodes.IRETURN);
+            } else if (returnType == short.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", "()S", false);
+                methodVisitor.visitInsn(Opcodes.IRETURN);
+            } else if (returnType == boolean.class) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", "()Z", false);
+                methodVisitor.visitInsn(Opcodes.IRETURN);
+            } else {
+                methodVisitor.visitInsn(Opcodes.ARETURN);
+            }
         }
-        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitMaxs(1, 1);
         methodVisitor.visitEnd();
     }
 

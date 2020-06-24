@@ -6,9 +6,9 @@ import javax.inject.Inject;
 
 @BeanComponent
 public class InjectTest {
+    @Inject
     private A a;
 
-    @Inject
     public void setA(A a) {
         this.a = a;
     }

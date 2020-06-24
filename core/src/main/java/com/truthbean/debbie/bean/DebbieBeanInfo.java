@@ -122,6 +122,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return beanFactory;
     }
 
+    public boolean hasBeanFactory() {
+        return beanFactory != null;
+    }
+
     private void resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
         if (key == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
@@ -196,6 +200,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     @Override
     public void setBeanType(BeanType beanType) {
         this.beanType = beanType;
+    }
+
+    public boolean isSingleton() {
+        return this.beanType != null && this.beanType == BeanType.SINGLETON;
     }
 
     @SuppressWarnings("unchecked")

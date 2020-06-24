@@ -65,11 +65,11 @@ public class BeanConfigRegisterTest {
     public void demo(@BeanInject DemoBeanComponent demoBeanComponent) {
         System.out.println(demoBeanComponent.getUuid());
         DemoBeanComponent.Demo2 demo1 = demoBeanComponent.getDemo1();
-        demo1.setId((byte) 1);
+        demo1.setId((byte) 1, "111");
         System.out.println(demo1.getUuid());
 
         DemoBeanComponent.Demo2 demo2 = demoBeanComponent.getDemo2();
-        demo2.setId((byte) 2);
+        demo2.setId((byte) 2, "222");
         System.out.println(demo2.getUuid());
     }
 
