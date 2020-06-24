@@ -167,7 +167,8 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                         Object[] params = new Object[parameterCount];
                         for (int i = 0; i < parameterCount; i++) {
                             Parameter parameter = parameters[i];
-                            BeanCreator<?> beanCreator = beanDependenceProcessor.getParameterBean(parameter, injectedBeanFactory);
+                            BeanCreator<?> beanCreator =
+                                    beanDependenceProcessor.getParameterBean(parameter, beanClass, injectedBeanFactory);
                             params[i] = beanCreator.create();
                         }
                         this.bean = constructor.newInstance(params);

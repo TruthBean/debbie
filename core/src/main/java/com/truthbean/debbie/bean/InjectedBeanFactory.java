@@ -38,6 +38,9 @@ public class InjectedBeanFactory implements BeanFactoryHandlerAware, BeanClosure
             creator = (BeanCreator<T>) prepatations.get(beanInfo);
         } else
             creator = factoryBeanPreparation(beanInfo, processor);
+
+        // TODO 循环递归解决依赖问题，上个版本已经解决了的
+
         creator.postConstructor();
         creator.postPreparation();
         creator.postCreated();
@@ -66,7 +69,7 @@ public class InjectedBeanFactory implements BeanFactoryHandlerAware, BeanClosure
                 return creatorImpl;
             }
             if (beanInfo.hasBeanFactory()) {
-                creatorImpl.create(beanInfo.getBean());
+                creatorImpl.create(beanInfo.getBeanFactory().factoryBean());
                 creatorImpl.setCreated(true);
                 return creatorImpl;
             }

@@ -36,8 +36,6 @@ public class BeanFactoryHandler {
 
     private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = Collections.synchronizedSet(new HashSet<>());
 
-    private final Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap = new ConcurrentHashMap<>();
-
     private final BeanInitialization beanInitialization;
     private final DebbieConfigurationFactory configurationFactory;
     private final MethodProxyHandlerRegister methodProxyHandlerRegister;
@@ -162,7 +160,6 @@ public class BeanFactoryHandler {
 
     public void destroy(DebbieBeanInfo<?> beanInfo) {
         beanServiceInfoSet.remove(beanInfo);
-        singletonBeanInvokerMap.remove(beanInfo);
     }
 
     public void release(String... args) {
@@ -183,9 +180,7 @@ public class BeanFactoryHandler {
         injectedBeanFactory.destroy();
 
         destroyBeans(beanServiceInfoSet);
-        destroyBeans(singletonBeanInvokerMap.keySet());
         beanServiceInfoSet.clear();
-        singletonBeanInvokerMap.clear();
         beanInitialization.reset();
         resourceResolver.cleanResources();
         LOGGER.info("release all bean.");

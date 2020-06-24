@@ -45,8 +45,9 @@ public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClo
         this.beanInitialization = beanFactoryHandler.getBeanInitialization();
     }
 
-    public BeanCreator<?> getParameterBean(Parameter parameter, InjectedBeanFactory injectedBeanFactory) {
-        LOGGER.trace(() -> "resolve parameter dependent bean(" + parameter.getType() + ") by type ");
+    public BeanCreator<?> getParameterBean(Parameter parameter, Class<?> beanClass,
+                                           InjectedBeanFactory injectedBeanFactory) {
+        LOGGER.trace(() -> "resolve " + beanClass + "'s parameter dependent bean(" + parameter.getType() + ") by type");
         var beanInject = parameter.getAnnotation(BeanInject.class);
         String name = "";
         boolean require = false;
