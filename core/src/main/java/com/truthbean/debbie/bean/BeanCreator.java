@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import java.util.Map;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -17,7 +19,7 @@ package com.truthbean.debbie.bean;
 public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>,
         InjectedBeanFactoryAware, BeanDependenceProcessorAware {
 
-    void createPreparation();
+    void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
 
     void postConstructor();
 
@@ -26,4 +28,6 @@ public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>,
     void postCreated();
 
     boolean isCreated();
+
+    Bean getCreatedBean();
 }

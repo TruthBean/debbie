@@ -11,6 +11,7 @@ package com.truthbean.debbie.bean;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -37,7 +38,11 @@ public class InjectedBeanFactory implements BeanFactoryHandlerAware, BeanClosure
         if (prepatations.containsKey(beanInfo)) {
             creator = (BeanCreator<T>) prepatations.get(beanInfo);
         } else
-            creator = factoryBeanPreparation(beanInfo, processor);
+            creator = factoryBeanPreparation(beanInfo, processor, processor.singletonBeanCreatorMap);
+
+        if (creator.isCreated()) {
+            return creator.getCreatedBean();
+        }
 
         // TODO 循环递归解决依赖问题，上个版本已经解决了的
 
@@ -54,7 +59,8 @@ public class InjectedBeanFactory implements BeanFactoryHandlerAware, BeanClosure
     }
 
     @SuppressWarnings({"unchecked"})
-    public <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo, BeanDependenceProcessor processor) {
+    public <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo, BeanDependenceProcessor processor,
+                                                     Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
         if (singletonBean.containsKey(beanInfo)) {
             T o = (T) singletonBean.get(beanInfo);
             beanInfo.setBean(o);
@@ -75,7 +81,7 @@ public class InjectedBeanFactory implements BeanFactoryHandlerAware, BeanClosure
             }
             creatorImpl.setBeanDependenceProcessor(processor);
             creatorImpl.setInjectedBeanFactory(this);
-            creatorImpl.createPreparation();
+            creatorImpl.createPreparation(singletonBeanCreatorMap);
             this.prepatations.put(beanInfo, creatorImpl);
             return creatorImpl;
         }

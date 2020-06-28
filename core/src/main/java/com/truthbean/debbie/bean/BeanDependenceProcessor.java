@@ -20,8 +20,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -29,6 +32,8 @@ import java.util.Set;
  * Created on 2020-06-23 22:26.
  */
 public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClosure {
+
+    final Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap = new ConcurrentHashMap<>();
 
     private BeanFactoryHandler beanFactoryHandler;
     private BeanInitialization beanInitialization;
@@ -65,7 +70,7 @@ public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClo
         if (!name.isBlank()) {
             var beanInfo = this.beanFactoryHandler.getBeanInfo(name, type, require);
             if (beanInfo != null) {
-                return injectedBeanFactory.factoryBeanPreparation(beanInfo, this);
+                return injectedBeanFactory.factoryBeanPreparation(beanInfo, this, singletonBeanCreatorMap);
             } else {
                 if (require) {
                     throw new NoBeanException("no bean " + name + " found .");
@@ -74,7 +79,7 @@ public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClo
         } else {
             var beanInfo = this.beanFactoryHandler.getBeanInfo(null, type, require);
             if (beanInfo != null) {
-                return injectedBeanFactory.factoryBeanPreparation(beanInfo, this);
+                return injectedBeanFactory.factoryBeanPreparation(beanInfo, this, singletonBeanCreatorMap);
             } else {
                 if (require) {
                     throw new NoBeanException("no bean " + name + " found .");
@@ -125,7 +130,7 @@ public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClo
             if (name != null) {
                 var beanInfo = this.beanFactoryHandler.getBeanInfo(name, beanClass, true);
                 if (beanInfo != null) {
-                    BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo, this);
+                    BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo, this, singletonBeanCreatorMap);
                     aware.setBean(() -> value);
                 }
             } else if (values.size() == 1) {
@@ -193,11 +198,39 @@ public class BeanDependenceProcessor implements BeanFactoryHandlerAware, BeanClo
         }
         var beanInfo = this.beanFactoryHandler.getBeanInfo(null, field.getType(), required);
         if (beanInfo != null) {
-            BeanCreator<?> beanCreator = injectedBeanFactory.factoryBeanPreparation(beanInfo, this);
+            BeanCreator<?> beanCreator = injectedBeanFactory.factoryBeanPreparation(beanInfo, this, singletonBeanCreatorMap);
             ReflectionHelper.setField(object, field, beanCreator.create());
         } else {
             if (required)
                 throw new NoBeanException("no bean " + name + " found .");
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> void resolveFieldDependenceBeans(DebbieBeanInfo<T> beanInfo, InjectedBeanFactory injectedBeanFactory) {
+        Map<Field, DebbieBeanInfo<?>> fieldBeanDependents = beanInfo.getFieldBeanDependent();
+        if (fieldBeanDependents != null && !fieldBeanDependents.isEmpty()) {
+            Collection<DebbieBeanInfo<?>> fieldBeanDependent = fieldBeanDependents.values();
+            for (DebbieBeanInfo debbieBeanInfo : fieldBeanDependent) {
+                if ((debbieBeanInfo.isEmpty() || debbieBeanInfo.isHasVirtualValue())) {
+                    Object object = beanFactoryHandler.getBeanInfo(debbieBeanInfo.getServiceName(),
+                            (Class<T>) debbieBeanInfo.getBeanClass(), true)
+                            .getBean();
+                    if (object != null) {
+                        debbieBeanInfo.setBean(object);
+                    }
+                }
+            }
+
+            BeanCreatorImpl<T> beanCreator;
+            if (beanInfo.getBeanType() == BeanType.SINGLETON) {
+                beanCreator = (BeanCreatorImpl<T>) singletonBeanCreatorMap.get(beanInfo);
+            } else {
+                beanCreator = injectedBeanFactory.factoryBeanPreparation(beanInfo, this, singletonBeanCreatorMap);
+            }
+            beanInvoker.resolveFieldsDependent(beanFactoryHandler);
+            T bean = beanInvoker.getBean();
+            beanInfo.setBean(bean);
         }
     }
 

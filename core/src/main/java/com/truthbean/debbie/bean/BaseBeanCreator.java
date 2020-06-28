@@ -14,6 +14,7 @@ package com.truthbean.debbie.bean;
  * @since 0.1.0
  * Created on 2020-06-24 11:47.
  */
+@FunctionalInterface
 public interface BaseBeanCreator<Bean> {
 
     Bean create();

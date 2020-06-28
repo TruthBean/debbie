@@ -20,6 +20,8 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 ## maven
 [0.0.1-RELEASE package](./versions/0.0.1-RELEASE.md)
 
+[0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
+
 ## 目标
 --------
 ~~1.先实现一个mvc内核~~
@@ -30,7 +32,7 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 ~~4.用undertow的httphandler适配接口，不能包含任何servlet接口~~
 
-5.用netty适配接口，不能包含servlet和undertow的接口
+~~5.用netty适配接口，不能包含servlet和undertow的接口~~
 
 ~~6.写个example，能更改一个jar依赖就能顺利从tomcat迁移到undertow或netty~~
 
@@ -40,4 +42,8 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 ~~9. 基于mvc内核实现httpclient功能~~
 
-10.待续....
+10.使用javassist或者ASM增强bean proxy功能
+
+10.完善aio、rmi模块
+
+11.待续....
