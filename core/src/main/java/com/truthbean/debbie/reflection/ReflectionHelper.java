@@ -362,6 +362,22 @@ public class ReflectionHelper {
         return null;
     }
 
+    public static Object invokeStaticMethod(Method declaredMethod, Object...args) {
+        try {
+            boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
+                    || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers())) &&
+                    !declaredMethod.trySetAccessible());
+            if (cannotAccess) {
+                declaredMethod.setAccessible(true);
+            }
+            return declaredMethod.invoke(null, args);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            LOGGER.error("invoke static method(" + declaredMethod + " error ).\n", Objects.requireNonNullElse(cause, e));
+        }
+        return null;
+    }
+
     public static <T> Constructor<T> getConstructor(Class<T> type, @SuppressWarnings("rawtypes") Class[] parameterTypes) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(parameterTypes);
@@ -701,7 +717,6 @@ public class ReflectionHelper {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> T invokeMethod(Object target, Method method, Object... parameters) {
         try {
             return invokeMethod(false, target, method, parameters);
@@ -743,8 +758,8 @@ public class ReflectionHelper {
         Class<?> clazz = target.getClass();
         try {
             return invokeSetMethod(clazz, target, fieldName, arg, parameterTypes);
-        } catch (NoSuchMethodException ignored) {
-            LOGGER.error("", ignored);
+        } catch (NoSuchMethodException e) {
+            LOGGER.error("", e);
         }
         return null;
     }

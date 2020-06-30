@@ -9,8 +9,7 @@
  */
 package com.truthbean.debbie.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
@@ -54,9 +53,9 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
+    public void registerBean(BeanFactoryContext applicationContext, BeanInitialization beanInitialization) {
         DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
-        ResourceResolver resourceResolver = beanFactoryHandler.getResourceResolver();
+        ResourceResolver resourceResolver = applicationContext.getResourceResolver();
         beanInfo.setBean(resourceResolver);
         beanInfo.setBeanName("resourceResolver");
         beanInitialization.initSingletonBean(beanInfo);
@@ -65,26 +64,26 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
         registerTransformer(beanInitialization);
 
-        MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
+        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
         methodProxyHandlerRegister.register(MethodProxy.class, DefaultMethodProxyHandler.class);
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
         configurationFactory.register(ClassesScanProperties.class, BeanScanConfiguration.class);
-        new DebbieTaskConfigurer().configure(beanFactoryHandler);
+        new DebbieTaskConfigurer().configure(applicationContext);
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-        beanFactoryHandler.refreshBeans();
+    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+        applicationContext.refreshBeans();
     }
 
     @Override
-    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
         configurationFactory.reset();
 
-        ThreadPooledExecutor executor = beanFactoryHandler.factory("threadPooledExecutor");
+        ThreadPooledExecutor executor = applicationContext.factory("threadPooledExecutor");
         executor.destroy();
     }
 
@@ -92,7 +91,11 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
         beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Date.class, String.class);
         beanInitialization.registerDataTransformer(new TimestampLongTransformer(), Timestamp.class, Long.class);
-        beanInitialization.registerDataTransformer(new JsonNodeTransformer(), JsonNode.class, String.class);
+        try {
+            Class<?> jsonNode = getClass().getClassLoader().loadClass("com.fasterxml.jackson.databind.JsonNode");
+            beanInitialization.registerDataTransformer(new JsonNodeTransformer(), jsonNode, String.class);
+        } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
+        }
         beanInitialization.registerDataTransformer(new UrlTransformer(), URL.class, String.class);
 
         beanInitialization.registerDataTransformer(new BigDecimalTransformer(), BigDecimal.class, String.class);

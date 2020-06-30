@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean.inter;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanInit;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
 
@@ -26,6 +27,13 @@ public class CImpl implements C {
     @BeanInject(name = "b")
     private B bBean;
 
+    /*@BeanInit
+    public static void init(@BeanInject(name = "a") A aBean, @BeanInject(name = "b") B bBean) {
+        CImpl c = new CImpl();
+        c.aBean = aBean;
+        c.bBean = bBean;
+    }*/
+
 
     public String getC() {
         return c;
@@ -33,6 +41,7 @@ public class CImpl implements C {
 
     public CImpl() {
         c = "C --- " + UUID.randomUUID().toString();
+        System.out.println("c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c ");
     }
 
     @Override

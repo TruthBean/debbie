@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.reflection;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
@@ -46,7 +46,7 @@ public class ExecutableArgumentHandler {
         return invokedParameter;
     }
 
-    public static List<ExecutableArgument> typeOf(Method method, BeanFactoryHandler beanFactoryHandler) {
+    public static List<ExecutableArgument> typeOf(Method method, BeanFactoryContext applicationContext) {
         List<ExecutableArgument> result = new ArrayList<>();
 
         Parameter[] parameters = method.getParameters();
@@ -71,9 +71,9 @@ public class ExecutableArgumentHandler {
                 if (!name.isBlank()) {
                     invokedParameter.setName(name);
 
-                    value = beanFactoryHandler.factory(name);
+                    value = applicationContext.factory(name);
                 } else {
-                    value = beanFactoryHandler.factory(type);
+                    value = applicationContext.factory(type);
                 }
                 invokedParameter.setValue(value);
             }

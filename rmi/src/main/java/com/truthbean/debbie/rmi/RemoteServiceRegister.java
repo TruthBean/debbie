@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.proxy.ProxyInvocationHandler;
 import com.truthbean.Logger;
@@ -37,16 +37,16 @@ public class RemoteServiceRegister {
 
     private final Registry registry;
 
-    private final BeanFactoryHandler handler;
+    private final BeanFactoryContext handler;
 
-    public RemoteServiceRegister(BeanFactoryHandler handler, int rmiBindPort) {
+    public RemoteServiceRegister(BeanFactoryContext handler, int rmiBindPort) {
         this.handler = handler;
         this.rmiBindPort = rmiBindPort;
         this.rmiBindAddress = "localhost";
         registry = register(false, rmiBindAddress, rmiBindPort);
     }
 
-    public RemoteServiceRegister(BeanFactoryHandler handler, String rmiBindAddress, int rmiBindPort) {
+    public RemoteServiceRegister(BeanFactoryContext handler, String rmiBindAddress, int rmiBindPort) {
         this.handler = handler;
         this.rmiBindPort = rmiBindPort;
         this.rmiBindAddress = rmiBindAddress;

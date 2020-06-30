@@ -220,7 +220,10 @@ public class RouterResponse implements Cloneable {
         this.cookies.addAll(response.cookies);
         this.modelAttributes.putAll(response.modelAttributes);
 
-        this.hasTemplate = response.hasTemplate;
+        if (response.hasTemplate && !this.hasTemplate) {
+            this.hasTemplate = true;
+        }
+
         if (StringUtils.hasText(response.templatePrefix))
             this.templatePrefix = response.templatePrefix;
         if (StringUtils.hasText(response.templateSuffix))
@@ -235,7 +238,13 @@ public class RouterResponse implements Cloneable {
 
     @Override
     public RouterResponse clone() {
-        RouterResponse response = new RouterResponse();
+        RouterResponse response;
+        try {
+            response = (RouterResponse) super.clone();
+        } catch (CloneNotSupportedException e) {
+            response = new RouterResponse();
+        }
+
         response.redirect = this.redirect;
         response.headers.putAll(this.headers);
 

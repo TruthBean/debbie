@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.filter.*;
@@ -29,18 +29,18 @@ import java.util.Set;
  */
 public class ServletContextHandler {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final BeanInitialization beanInitialization;
 
     private final ClassLoader classLoader;
 
-    public ServletContextHandler(ServletContext servletContext, BeanFactoryHandler handler) {
+    public ServletContextHandler(ServletContext servletContext, BeanFactoryContext handler) {
         setServletConfiguration();
 
         beanInitialization = handler.getBeanInitialization();
-        this.beanFactoryHandler = handler;
+        this.applicationContext = handler;
 
-        this.classLoader = this.beanFactoryHandler.getClassLoader();
+        this.classLoader = this.applicationContext.getClassLoader();
 
         handleServletContext(servletContext);
     }
@@ -58,7 +58,7 @@ public class ServletContextHandler {
 
     private void handleServletContext(ServletContext servletContext) {
         // staticResourcesServlet
-        StaticResourcesServlet staticResourcesServlet = new StaticResourcesServlet(servletConfiguration, beanFactoryHandler);
+        StaticResourcesServlet staticResourcesServlet = new StaticResourcesServlet(servletConfiguration, applicationContext);
         // servlet <url-pattern> should start with / or * and cannot contain **
         Map<String, String> staticResourcesMapping = servletConfiguration.getStaticResourcesMapping();
         String[] staticResourcesMappings = new String[staticResourcesMapping.size()];
@@ -70,7 +70,7 @@ public class ServletContextHandler {
                 .addMapping(staticResourcesMappings);
 
         // dispatcherServlet
-        DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration, beanFactoryHandler);
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfiguration, applicationContext);
 
         // servlet <url-pattern> should start with / or * and cannot contain **
         var dispatcherMapping = servletConfiguration.getDispatcherMapping().replace("**", "*");
@@ -79,7 +79,7 @@ public class ServletContextHandler {
     }
 
     public void registerRouter() {
-        MvcRouterRegister.registerRouter(servletConfiguration, beanFactoryHandler);
+        MvcRouterRegister.registerRouter(servletConfiguration, applicationContext);
     }
 
     public void registerFilter(ServletContext servletContext) {
@@ -121,7 +121,7 @@ public class ServletContextHandler {
 
         Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
         filters.forEach(filter -> {
-            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilterType(), beanFactoryHandler,
+            RouterFilterWrapper filterWrapper = new RouterFilterWrapper(filter.getRouterFilterType(), applicationContext,
                     servletConfiguration.getDefaultContentType());
             servletContext.addFilter(filter.getName(), filterWrapper)
                     .addMappingForUrlPatterns(dispatcherTypes, true, filter.getUrlPatterns());

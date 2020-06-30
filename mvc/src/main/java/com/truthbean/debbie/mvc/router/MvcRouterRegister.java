@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.io.MediaType;
@@ -39,14 +39,14 @@ import java.util.*;
 public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
-    public static void registerRouter(MvcConfiguration webConfiguration, BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+    public static void registerRouter(MvcConfiguration webConfiguration, BeanFactoryContext applicationContext) {
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
         for (DebbieBeanInfo<?> classInfo : classInfoSet) {
             Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
             Watcher watcher = (Watcher) classAnnotations.get(Watcher.class);
             if (watcher == null || watcher.type() == WatcherType.HTTP) {
-                registerRouter(classAnnotations, classInfo, webConfiguration, beanFactoryHandler);
+                registerRouter(classAnnotations, classInfo, webConfiguration, applicationContext);
             }
         }
     }
@@ -57,7 +57,7 @@ public class MvcRouterRegister {
 
     private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
                                        ClassInfo<?> classInfo, MvcConfiguration webConfiguration,
-                                       BeanFactoryHandler beanFactoryHandler) {
+                                       BeanFactoryContext applicationContext) {
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();
@@ -89,7 +89,7 @@ public class MvcRouterRegister {
                 var responseType = router.responseType();
                 if (router.hasTemplate()) {
                     response.setResponseType(responseType);
-                    var handlerFactory = new ResponseContentHandlerFactory(beanFactoryHandler);
+                    var handlerFactory = new ResponseContentHandlerFactory(applicationContext);
                     response.setHandler(handlerFactory.factory(router.handlerClass()));
                 } else {
                     if (responseType != MediaType.ANY) {
@@ -104,7 +104,7 @@ public class MvcRouterRegister {
                             throw new ResponseTypeException("\n" + method + "\n responseType cannot be MediaType.ANY. Or config default response type. Or allow client response type.");
                         } else {
                             response.setResponseType(MediaType.ANY);
-                            var handlerFactory = new ResponseContentHandlerFactory(beanFactoryHandler);
+                            var handlerFactory = new ResponseContentHandlerFactory(applicationContext);
                             response.setHandler(handlerFactory.factory(router.handlerClass()));
                         }
                     }

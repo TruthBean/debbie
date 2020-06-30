@@ -1,6 +1,6 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -38,18 +38,18 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
                                      ClassLoader classLoader) {
-        NettyConfiguration configuration = factory.factory(NettyConfiguration.class, beanFactoryHandler);
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
+        NettyConfiguration configuration = factory.factory(NettyConfiguration.class, applicationContext);
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        MvcRouterRegister.registerRouter(configuration, applicationContext);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
         RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
         RouterFilterManager.registerCorsFilter(configuration, "/**");
         RouterFilterManager.registerCsrfFilter(configuration, "/**");
         RouterFilterManager.registerSecurityFilter(configuration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
-        return new NettyDebbieApplication(configuration, sessionManager, beanFactoryHandler, LOGGER);
+        return new NettyDebbieApplication(configuration, sessionManager, applicationContext, LOGGER);
     }
 
     // (1)
@@ -58,12 +58,12 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     private ChannelFuture channelFuture = null;
 
     private void run(NettyConfiguration configuration, SessionManager sessionManager,
-                     BeanFactoryHandler beanFactoryHandler,
+                     BeanFactoryContext applicationContext,
                      long beforeStartTime, NettyDebbieApplication debbieApplication) {
         try {
             // (2)
             ServerBootstrap b = new ServerBootstrap();
-            HttpChannelInitializer httpChannelInitializer = new HttpChannelInitializer(configuration, sessionManager, beanFactoryHandler);
+            HttpChannelInitializer httpChannelInitializer = new HttpChannelInitializer(configuration, sessionManager, applicationContext);
             b.group(bossGroup, workerGroup)
                 // (3)
                 .channel(NioServerSocketChannel.class)
@@ -125,14 +125,14 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
 
         private final NettyConfiguration configuration;
         private final SessionManager sessionManager;
-        private final BeanFactoryHandler beanFactoryHandler;
+        private final BeanFactoryContext applicationContext;
 
         NettyDebbieApplication(NettyConfiguration configuration, SessionManager sessionManage,
-                               BeanFactoryHandler beanFactoryHandler, Logger logger) {
-            super(logger, beanFactoryHandler);
+                               BeanFactoryContext applicationContext, Logger logger) {
+            super(logger, applicationContext);
             this.configuration = configuration;
             this.sessionManager = sessionManage;
-            this.beanFactoryHandler = beanFactoryHandler;
+            this.applicationContext = applicationContext;
         }
 
         @Override
@@ -142,7 +142,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
 
         @Override
         public void start(long beforeStartTime, String... args) {
-            run(configuration, sessionManager, beanFactoryHandler, beforeStartTime, this);
+            run(configuration, sessionManager, applicationContext, beforeStartTime, this);
         }
 
         @Override

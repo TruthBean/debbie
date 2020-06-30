@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -46,11 +46,11 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
                                      ClassLoader classLoader) {
-        UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, beanFactoryHandler);
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
+        UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, applicationContext);
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        MvcRouterRegister.registerRouter(configuration, applicationContext);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
         RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
         RouterFilterManager.registerCorsFilter(configuration, "/**");
@@ -67,9 +67,9 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
 
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
-        HttpHandler next = new DispatcherHttpHandler(configuration, beanFactoryHandler);
+        HttpHandler next = new DispatcherHttpHandler(configuration, applicationContext);
         for (RouterFilterInfo filter : filters) {
-            next = new HttpHandlerFilter(next, filter, beanFactoryHandler, configuration);
+            next = new HttpHandlerFilter(next, filter, applicationContext, configuration);
         }
 
         // set as next handler your root handler
@@ -82,7 +82,7 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
                 // Default Handler
                 .setHandler(sessionAttachmentHandler).build();
 
-        return new AbstractDebbieApplication(LOGGER, beanFactoryHandler) {
+        return new AbstractDebbieApplication(LOGGER, applicationContext) {
             @Override
             public void start(long beforeStartTime, String... args) {
                 server.start();

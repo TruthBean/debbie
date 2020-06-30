@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.tomcat;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.Logger;
@@ -43,12 +43,12 @@ public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> 
     private TomcatConfiguration configuration;
 
     @Override
-    public TomcatConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public TomcatConfiguration toConfiguration(BeanFactoryContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }
 
-        var classLoader = beanFactoryHandler.getClassLoader();
+        var classLoader = applicationContext.getClassLoader();
         if (classLoader == null) {
             classLoader = ClassLoaderUtils.getDefaultClassLoader();
         }

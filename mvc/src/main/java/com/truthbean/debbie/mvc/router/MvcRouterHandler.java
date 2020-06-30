@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
@@ -356,7 +356,7 @@ public class MvcRouterHandler {
         return false;
     }
 
-    public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryHandler handler) {
+    public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryContext handler) {
         RouterResponse routerResponse = routerInfo.getResponse();
 
         var beanInfo = handler.getBeanInfo(null, ErrorResponseCallback.class, false);

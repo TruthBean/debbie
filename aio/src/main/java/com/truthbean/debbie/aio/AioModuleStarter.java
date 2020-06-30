@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
@@ -21,7 +21,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 public class AioModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
         configurationFactory.register(AioServerProperties.class, AioServerConfiguration.class);
     }
 

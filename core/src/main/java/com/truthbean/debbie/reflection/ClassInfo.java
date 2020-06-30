@@ -26,7 +26,7 @@ public class ClassInfo<C> implements Serializable {
     private final int classModifiers;
     private Constructor<C>[] constructors;
 
-    private List<Field> fields;
+    private List<FieldInfo> fields;
 
     private Set<Method> methods;
     private final Map<Method, Set<Annotation>> methodAnnotationMap = new HashMap<>();
@@ -44,7 +44,8 @@ public class ClassInfo<C> implements Serializable {
     private void getClassInfo() {
         getClassAnnotationsMap();
 
-        fields = ReflectionHelper.getDeclaredFields(clazz);
+        fields = new ArrayList<>();
+        ReflectionHelper.getDeclaredFields(clazz).forEach(field -> fields.add(new FieldInfo(field)));
 
         this.constructors = (Constructor<C>[]) clazz.getConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
@@ -189,7 +190,7 @@ public class ClassInfo<C> implements Serializable {
         return methods;
     }
 
-    public List<Field> getFields() {
+    public List<FieldInfo> getFields() {
         return fields;
     }
 

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.transaction;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
@@ -26,7 +26,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     private int order;
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
     private boolean autoCommit;
 
     public TransactionalMethodProxyHandler() {
@@ -34,8 +34,8 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
-    public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public void setApplicationContext(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -71,9 +71,9 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     @Override
     public void before() {
         LOGGER.debug(() -> "running before method (" + transactionInfo.getMethod() + ") invoke ..");
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        DebbieConfigurationFactory configurationFactory = beanFactoryHandler.getConfigurationFactory();
-        DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, beanFactoryHandler);
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        DebbieConfigurationFactory configurationFactory = applicationContext.getConfigurationFactory();
+        DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, applicationContext);
 
         DataSourceFactory factory = beanInitialization.getRegisterBean(DataSourceFactory.class);
         DriverConnection driverConnection = new DriverConnection();

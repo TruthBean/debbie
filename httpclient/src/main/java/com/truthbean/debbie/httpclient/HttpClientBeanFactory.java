@@ -10,7 +10,7 @@
 package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 
 /**
  * @author TruthBean
@@ -20,7 +20,7 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
 
     private final Class<HttpClientBean> httpClientBeanClass;
     private final HttpClientFactory httpClientFactory;
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
 
     public HttpClientBeanFactory(Class<HttpClientBean> httpClientBeanClass, HttpClientFactory httpClientFactory) {
         this.httpClientBeanClass = httpClientBeanClass;
@@ -28,8 +28,8 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     }
 
     @Override
-    public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @Override

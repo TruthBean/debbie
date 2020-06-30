@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.Logger;
@@ -29,24 +29,24 @@ import java.util.Set;
 @HandlesTypes(value = {Watcher.class})
 public class ServletApplicationInitializer extends DebbieApplicationFactory implements ServletContainerInitializer {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
     public ServletApplicationInitializer() {
         super(ServletApplicationInitializer.class);
         if (debbieApplication == null) {
             LOGGER.debug("run servlet module without application");
-            beanFactoryHandler = getBeanFactoryHandler();
+            applicationContext = getBeanFactoryHandler();
             super.config(ServletApplicationInitializer.class);
             super.callStarter();
         } else {
-            beanFactoryHandler = debbieApplicationFactory;
+            applicationContext = debbieApplicationFactory;
         }
     }
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext ctx) throws ServletException {
         LOGGER.info("ServletContainerInitializer onStartup ...");
-        var handler = new ServletContextHandler(ctx, beanFactoryHandler);
+        var handler = new ServletContextHandler(ctx, applicationContext);
         handler.registerRouter();
         handler.registerFilter(ctx);
 

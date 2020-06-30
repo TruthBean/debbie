@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
@@ -35,11 +35,11 @@ public class DispatcherHttpHandler implements HttpHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherHttpHandler.class);
 
     private final UndertowConfiguration configuration;
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    public DispatcherHttpHandler(final UndertowConfiguration configuration, BeanFactoryHandler beanFactoryHandler) {
+    public DispatcherHttpHandler(final UndertowConfiguration configuration, BeanFactoryContext applicationContext) {
         this.configuration = configuration;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
     }
 
     public void setRequest(AttachmentKey<UndertowRouterRequest> request) {
@@ -74,7 +74,7 @@ public class DispatcherHttpHandler implements HttpHandler {
             RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
             LOGGER.debug(() -> httpRequest.toString());
 
-            MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
+            MvcRouterHandler.handleRouter(routerInfo, applicationContext);
 
             var response = routerInfo.getResponse();
             var responseHandler = new UndertowResponseHandler(exchange);

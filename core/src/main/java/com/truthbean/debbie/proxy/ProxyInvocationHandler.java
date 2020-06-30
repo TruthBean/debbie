@@ -1,6 +1,6 @@
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -10,9 +10,7 @@ import com.truthbean.logger.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author TruthBean
@@ -27,14 +25,14 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     private final DebbieBeanInfo<Target> classInfo;
     private final ClassLoader classLoader;
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
     private final MethodProxyHandlerHandler handler;
     private final MethodProxyResolver methodProxyResolver;
 
-    public ProxyInvocationHandler(Class<Target> targetClass, BeanFactoryHandler beanFactoryHandler) {
+    public ProxyInvocationHandler(Class<Target> targetClass, BeanFactoryContext applicationContext) {
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         var target = ReflectionHelper.newInstance(targetClass);
         classInfo = new DebbieBeanInfo<>(targetClass);
         if (target == null) {
@@ -44,20 +42,20 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         }
 
         this.handler = new MethodProxyHandlerHandler(LOGGER);
-        this.methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, classInfo);
+        this.methodProxyResolver = new MethodProxyResolver(applicationContext, classInfo);
     }
 
     @SuppressWarnings("unchecked")
-    public ProxyInvocationHandler(Target target, BeanFactoryHandler beanFactoryHandler) {
+    public ProxyInvocationHandler(Target target, BeanFactoryContext applicationContext) {
         LOGGER.debug(() -> "init ProxyInvocationHandler with " + target);
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.target = target;
         Class<Target> targetClass = (Class<Target>) target.getClass();
         this.classLoader = ClassLoaderUtils.getClassLoader(targetClass);
         this.classInfo = new DebbieBeanInfo<>(targetClass);
 
         this.handler = new MethodProxyHandlerHandler(LOGGER);
-        this.methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, classInfo);
+        this.methodProxyResolver = new MethodProxyResolver(applicationContext, classInfo);
     }
 
     public Target getRealTarget() {

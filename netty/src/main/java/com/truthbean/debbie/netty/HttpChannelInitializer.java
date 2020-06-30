@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -27,8 +27,8 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel> {
     private final HttpServerHandler httpServerHandler;
 
     public HttpChannelInitializer(NettyConfiguration configuration, SessionManager sessionManager,
-                                  BeanFactoryHandler beanFactoryHandler) {
-        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager, beanFactoryHandler);
+                                  BeanFactoryContext applicationContext) {
+        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager, applicationContext);
     }
 
     @Override

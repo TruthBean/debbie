@@ -17,7 +17,7 @@ package com.truthbean.debbie.bean;
 public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
 
     private DebbieBeanInfo<Bean> beanInfo;
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
 
     public DebbieBeanFactory() {
     }
@@ -31,8 +31,8 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     }
 
     @Override
-    public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     private boolean canNew() {
@@ -42,8 +42,11 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
 
     @Override
     public Bean getBean() {
+        if (beanInfo.isSingleton() && beanInfo.isPresent()) {
+            return beanInfo.getBean();
+        }
         if (canNew()) {
-            Bean bean = beanFactoryHandler.factoryBeanByDependenceProcessor(beanInfo);
+            Bean bean = applicationContext.factoryBeanByDependenceProcessor(beanInfo);
             beanInfo.setBean(bean);
             return bean;
         }

@@ -28,20 +28,20 @@ import java.util.concurrent.ThreadFactory;
  * @author TruthBean
  * @since 0.0.2
  */
-public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
+public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
     private volatile boolean taskRunning;
 
     @Override
-    public void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
 
     public void registerTask() {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         Set<DebbieBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
         if (tasks != null && !tasks.isEmpty()) {
             taskBeans.addAll(tasks);
@@ -52,12 +52,12 @@ public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
     private final ThreadPooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     public void doTask() {
-        final ThreadPooledExecutor executor = beanFactoryHandler.factory("threadPooledExecutor");
+        final ThreadPooledExecutor executor = applicationContext.factory("threadPooledExecutor");
         final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>(this.taskBeans);
         taskThreadPool.execute(() -> {
             LOGGER.trace("do task....");
             for (DebbieBeanInfo<?> taskBean : taskBeans) {
-                Object task = beanFactoryHandler.factory(taskBean.getServiceName());
+                Object task = applicationContext.factory(taskBean.getServiceName());
                 LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
                 Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
                 for (Method method : methods) {
@@ -83,7 +83,7 @@ public class TaskFactory implements BeanFactoryHandlerAware, BeanClosure {
     }
 
     private void doMethodTask(Object task, Method method) {
-        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method, beanFactoryHandler);
+        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method, applicationContext);
         Object[] params = new Object[methodParams.size()];
         for (int i = 0; i < methodParams.size(); i++) {
             params[i] = methodParams.get(i).getValue();

@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -39,11 +39,11 @@ import java.util.concurrent.*;
 public class AioServerApplicationFactory extends AbstractWebServerApplicationFactory {
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryHandler beanFactoryHandler,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
                                      ClassLoader classLoader) {
-        final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, beanFactoryHandler);
-        var beanInitialization = beanFactoryHandler.getBeanInitialization();
-        MvcRouterRegister.registerRouter(configuration, beanFactoryHandler);
+        final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, applicationContext);
+        var beanInitialization = applicationContext.getBeanInitialization();
+        MvcRouterRegister.registerRouter(configuration, applicationContext);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
         RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
         RouterFilterManager.registerCorsFilter(configuration, "/**");
@@ -51,7 +51,7 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
         RouterFilterManager.registerSecurityFilter(configuration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
         try {
-            return new AioServerApplication(beanFactoryHandler, configuration, sessionManager);
+            return new AioServerApplication(applicationContext, configuration, sessionManager);
         } catch (IOException e) {
             LOGGER.error("create aio server error", e);
             return null;
@@ -62,16 +62,16 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
 
         private final AsynchronousServerSocketChannel server;
 
-        private final BeanFactoryHandler beanFactoryHandler;
+        private final BeanFactoryContext applicationContext;
         private final AioServerConfiguration configuration;
 
         private final SessionManager sessionManager;
 
-        AioServerApplication(BeanFactoryHandler beanFactoryHandler, AioServerConfiguration configuration,
+        AioServerApplication(BeanFactoryContext applicationContext, AioServerConfiguration configuration,
                              final SessionManager sessionManager) throws IOException {
-            super(LOGGER, beanFactoryHandler);
+            super(LOGGER, applicationContext);
             int port = configuration.getPort();
-            this.beanFactoryHandler = beanFactoryHandler;
+            this.applicationContext = applicationContext;
             this.configuration = configuration;
 
             this.sessionManager = sessionManager;
@@ -117,7 +117,7 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
                 // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
                 // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
                 // 即是listener。另一个参数V，就是原型中的客户端socket
-                var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, beanFactoryHandler, server);
+                var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, applicationContext, server);
                 server.accept(server, mvcCompletionHandler);
             } catch (Exception e) {
                 LOGGER.error("", e);

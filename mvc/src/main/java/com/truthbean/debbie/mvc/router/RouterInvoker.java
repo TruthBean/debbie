@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.ResponseTypeException;
@@ -37,7 +37,7 @@ public class RouterInvoker {
         this.routerInfo = routerInfo;
     }
 
-    public void action(RouterResponse routerResponse, BeanFactoryHandler beanFactoryHandler) throws Throwable {
+    public void action(RouterResponse routerResponse, BeanFactoryContext applicationContext) throws Throwable {
         if (routerInfo == null) {
             return;
         }
@@ -69,7 +69,7 @@ public class RouterInvoker {
 
         var instance = routerInfo.getRouterInstance();
         if (instance == null) {
-            instance = beanFactoryHandler.factory(type);
+            instance = applicationContext.factory(type);
             routerInfo.setRouterInstance(instance);
         }
 

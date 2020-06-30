@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource.pool;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 
@@ -51,7 +51,7 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties {
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public DataSourceConfiguration toConfiguration(BeanFactoryContext applicationContext) {
         if (unpool) {
             return super.getConfiguration();
         }

@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
@@ -25,21 +25,21 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     private DebbieRmiServiceRegister rmiServiceRegister;
 
     @Override
-    public void registerBean(BeanFactoryHandler beanFactoryHandler, BeanInitialization beanInitialization) {
+    public void registerBean(BeanFactoryContext applicationContext, BeanInitialization beanInitialization) {
         rmiServiceRegister = new DebbieRmiServiceRegister(beanInitialization);
         beanInitialization.addAnnotationRegister(rmiServiceRegister);
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
         configurationFactory.register(RmiServerProperties.class, RmiServerConfiguration.class);
 
-        RmiServerConfiguration configuration = configurationFactory.factory(RmiServerConfiguration.class, beanFactoryHandler);
+        RmiServerConfiguration configuration = configurationFactory.factory(RmiServerConfiguration.class, applicationContext);
 
         // 注册管理器
-        var register = new RemoteServiceRegister(beanFactoryHandler, configuration.getRmiBindAddress(), configuration.getRmiBindPort());
+        var register = new RemoteServiceRegister(applicationContext, configuration.getRmiBindAddress(), configuration.getRmiBindPort());
         // bind
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         Set<Class<?>> rmiServiceMappers = rmiServiceRegister.getRmiServiceMappers();
         for (Class<?> rmiServiceMapper : rmiServiceMappers) {
             register.bind(rmiServiceMapper);
@@ -52,7 +52,7 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
+    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
         // todo
     }
 }

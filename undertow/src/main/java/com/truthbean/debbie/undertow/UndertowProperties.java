@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
@@ -25,12 +25,12 @@ public class UndertowProperties extends BaseServerProperties<UndertowConfigurati
     private UndertowConfiguration configuration;
 
     @Override
-    public UndertowConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public UndertowConfiguration toConfiguration(BeanFactoryContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }
 
-        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+        ClassLoader classLoader = applicationContext.getClassLoader();
         configuration = new UndertowConfiguration(classLoader);
 
         BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);

@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
@@ -23,14 +23,14 @@ import java.util.Set;
  */
 public class HttpClientBeanRegister extends SingletonBeanRegister {
     private final HttpClientFactory handler;
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final BeanInitialization initialization;
 
-    public HttpClientBeanRegister(BeanFactoryHandler beanFactoryHandler) {
-        super(beanFactoryHandler);
-        handler = new HttpClientFactory(beanFactoryHandler.getClassLoader());
-        this.beanFactoryHandler = beanFactoryHandler;
-        initialization = beanFactoryHandler.getBeanInitialization();
+    public HttpClientBeanRegister(BeanFactoryContext applicationContext) {
+        super(applicationContext);
+        handler = new HttpClientFactory(applicationContext.getClassLoader());
+        this.applicationContext = applicationContext;
+        initialization = applicationContext.getBeanInitialization();
     }
 
     public void registerHttpClient() {
@@ -39,7 +39,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
             for (DebbieBeanInfo<?> httpClientRouter : annotatedClass) {
                 httpClientRouter.setBeanFactory(new HttpClientBeanFactory<>(httpClientRouter.getBeanClass(), handler));
                 initialization.refreshBean(httpClientRouter);
-                beanFactoryHandler.refreshBeans();
+                applicationContext.refreshBeans();
             }
         }
     }

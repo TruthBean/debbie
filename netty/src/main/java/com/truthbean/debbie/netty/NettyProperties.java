@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
@@ -26,12 +26,12 @@ public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
     private NettyConfiguration configuration;
 
     @Override
-    public NettyConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public NettyConfiguration toConfiguration(BeanFactoryContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }
 
-        var classLoader = beanFactoryHandler.getClassLoader();
+        var classLoader = applicationContext.getClassLoader();
 
         configuration = new NettyConfiguration(classLoader);
 

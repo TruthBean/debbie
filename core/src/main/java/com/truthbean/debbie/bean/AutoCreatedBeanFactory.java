@@ -22,23 +22,23 @@ import java.util.concurrent.ThreadFactory;
  */
 public class AutoCreatedBeanFactory {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final BeanInitialization beanInitialization;
-    public AutoCreatedBeanFactory(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
-        this.beanInitialization = beanFactoryHandler.getBeanInitialization();
+    public AutoCreatedBeanFactory(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
+        this.beanInitialization = applicationContext.getBeanInitialization();
     }
 
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("AutoCreatedBeanFactory", true);
     private final ThreadPooledExecutor autoCreatedBeanExecutor = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     public void autoCreateBeans() {
-        final Set<DebbieBeanInfo<?>> autoCreatedBean = beanFactoryHandler.getAutoCreatedBean();
+        final Set<DebbieBeanInfo<?>> autoCreatedBean = applicationContext.getAutoCreatedBean();
         autoCreatedBeanExecutor.execute(() -> {
             for (DebbieBeanInfo<?> beanInfo : autoCreatedBean) {
                 Boolean lazyCreate = beanInfo.getLazyCreate();
                 if (lazyCreate != null && !lazyCreate) {
-                    beanInfo.setBean(beanFactoryHandler.factory(beanInfo.getServiceName()));
+                    beanInfo.setBean(applicationContext.factory(beanInfo.getServiceName()));
                     beanInitialization.refreshBean(beanInfo);
                 }
             }

@@ -30,25 +30,25 @@ class BeanConfigurationRegisterTest {
     @Test
     void register() {
 
-        BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
-        DataTransformer<Integer, Character> bean = beanFactoryHandler.factory("dataTransformer");
+        BeanFactoryContext applicationContext = factory.getBeanFactoryHandler();
+        DataTransformer<Integer, Character> bean = applicationContext.factory("dataTransformer");
         System.out.println(bean.reverse('a'));
 
-        System.out.println(beanFactoryHandler.factory("hehe").toString());
-        System.out.println(beanFactoryHandler.factory("狄青").toString());
-        System.out.println(beanFactoryHandler.factory("幽灵").toString());
+        System.out.println(applicationContext.factory("hehe").toString());
+        System.out.println(applicationContext.factory("狄青").toString());
+        System.out.println(applicationContext.factory("幽灵").toString());
 
-        PropertiesConfigurationTest test = beanFactoryHandler.factory(PropertiesConfigurationTest.class);
+        PropertiesConfigurationTest test = applicationContext.factory(PropertiesConfigurationTest.class);
         System.out.println(test.getHehe());
         System.out.println("------------------------------------------------------------------------------");
 
-        System.out.println(beanFactoryHandler.factory(ABean.class));
+        System.out.println(applicationContext.factory(ABean.class));
         System.out.println("------------------------------------------------------------------------------");
-        System.out.println(beanFactoryHandler.factory(BBean.class));
+        System.out.println(applicationContext.factory(BBean.class));
         System.out.println("------------------------------------------------------------------------------");
-        System.out.println(beanFactoryHandler.factory(CBean.class));
+        System.out.println(applicationContext.factory(CBean.class));
         System.out.println("------------------------------------------------------------------------------");
-        ABCBean abcBean = beanFactoryHandler.factory(ABCBean.class);
+        ABCBean abcBean = applicationContext.factory(ABCBean.class);
         System.out.println(abcBean);
         System.out.println(abcBean.getaBean());
         System.out.println(abcBean.getbBean());
@@ -57,13 +57,13 @@ class BeanConfigurationRegisterTest {
         System.out.println("===============================================================================");
         System.out.println("===============================================================================");
 
-        System.out.println(beanFactoryHandler.factory(A.class));
+        System.out.println(applicationContext.factory(A.class));
         System.out.println("------------------------------------------------------------------------------");
-        System.out.println(beanFactoryHandler.factory(B.class));
+        System.out.println(applicationContext.factory(B.class));
         System.out.println("------------------------------------------------------------------------------");
-        System.out.println(beanFactoryHandler.factory(C.class));
+        System.out.println(applicationContext.factory(C.class));
         System.out.println("------------------------------------------------------------------------------");
-        Abc abc = beanFactoryHandler.factory(Abc.class);
+        Abc abc = applicationContext.factory(Abc.class);
         System.out.println(abc);
         System.out.println(abc.getaBean());
         System.out.println(abc.getbBean());

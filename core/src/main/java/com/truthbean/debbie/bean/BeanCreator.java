@@ -10,24 +10,32 @@
 package com.truthbean.debbie.bean;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-06-24 09:59.
  */
-public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>,
-        InjectedBeanFactoryAware, BeanDependenceProcessorAware {
+public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>, InjectedBeanFactoryAware {
+
+    DebbieBeanInfo<Bean> getBeanInfo();
 
     void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
 
+    void createPreparationByDependence();
+
     void postConstructor();
 
-    void postPreparation();
+    void postPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
 
     void postCreated();
 
     boolean isCreated();
+
+    void create(Bean bean);
+
+    void create(Supplier<Bean> bean);
 
     Bean getCreatedBean();
 }

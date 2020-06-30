@@ -14,12 +14,12 @@ package com.truthbean.debbie.bean;
  * @since 0.0.2
  */
 public class SingletonBeanRegister {
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final BeanInitialization initialization;
 
-    public SingletonBeanRegister(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
-        initialization = beanFactoryHandler.getBeanInitialization();
+    public SingletonBeanRegister(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
+        initialization = applicationContext.getBeanInitialization();
     }
 
     public <T extends I, I> void registerSingletonBean(T bean, Class<I> beanClass, String beanName) {
@@ -27,11 +27,11 @@ public class SingletonBeanRegister {
         beanInfo.setBeanName(beanName);
         beanInfo.setBean(bean);
         initialization.initSingletonBean(beanInfo);
-        beanFactoryHandler.refreshBeans();
+        applicationContext.refreshBeans();
     }
 
     public <T extends I, I> void registerSingletonBean(DebbieBeanInfo<T> beanInfo) {
         initialization.refreshSingletonBean(beanInfo);
-        beanFactoryHandler.refreshBeans();
+        applicationContext.refreshBeans();
     }
 }

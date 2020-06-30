@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet.filter;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
@@ -37,12 +37,12 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
     private Class<? extends RouterFilter> filterType;
 
     private final MediaTypeInfo defaultResponseType;
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
 
-    public RouterFilterWrapper(Class<? extends RouterFilter> filterType, BeanFactoryHandler beanFactoryHandler,
+    public RouterFilterWrapper(Class<? extends RouterFilter> filterType, BeanFactoryContext applicationContext,
                                MediaTypeInfo defaultResponseType) {
         this.filterType = filterType;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.defaultResponseType = defaultResponseType;
     }
 
@@ -66,7 +66,7 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
         if (filter == null) {
             synchronized (this) {
                 if (filter == null) {
-                    filter = beanFactoryHandler.factory(filterType);
+                    filter = applicationContext.factory(filterType);
                 }
             }
         }

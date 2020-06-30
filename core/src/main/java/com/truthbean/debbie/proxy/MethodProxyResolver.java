@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -23,16 +23,16 @@ import java.util.*;
  * Created on 2020-04-26 18:12.
  */
 public class MethodProxyResolver {
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final DebbieBeanInfo<?> classInfo;
-    public MethodProxyResolver(BeanFactoryHandler beanFactoryHandler, DebbieBeanInfo<?> classInfo) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public MethodProxyResolver(BeanFactoryContext applicationContext, DebbieBeanInfo<?> classInfo) {
+        this.applicationContext = applicationContext;
         this.classInfo = classInfo;
     }
 
     public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method) {
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
-        MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
+        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
         Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
         if (classListMap != null && !classListMap.isEmpty()) {
             classListMap.forEach((key, value) -> {
@@ -45,7 +45,7 @@ public class MethodProxyResolver {
     public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method,
                                                                                 Collection<Annotation> annotations) {
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
-        MethodProxyHandlerRegister methodProxyHandlerRegister = beanFactoryHandler.getMethodProxyHandlerRegister();
+        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
         Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap
                 = methodProxyHandlerRegister.getAllMethodProxyHandlers();
         if (classListMap != null && !classListMap.isEmpty()) {
@@ -63,7 +63,7 @@ public class MethodProxyResolver {
         methodProxyHandler.setMethodAnnotation(methodProxy);
         methodProxyHandler.setMethod(method);
         methodProxyHandler.setOrder(methodProxy.order());
-        methodProxyHandler.setBeanFactoryHandler(beanFactoryHandler);
+        methodProxyHandler.setApplicationContext(applicationContext);
         return methodProxyHandler;
     }
 
@@ -78,7 +78,7 @@ public class MethodProxyResolver {
                 MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
                 handler.setOrder(methodProxy.order());
                 handler.setClassAnnotation(annotation);
-                handler.setBeanFactoryHandler(this.beanFactoryHandler);
+                handler.setApplicationContext(this.applicationContext);
                 handler.setMethod(method);
                 if (handler.exclusive()) {
                     methodProxyHandlers.add(handler);
@@ -129,7 +129,7 @@ public class MethodProxyResolver {
                     methodProxyHandler.setOrder(methodProxy.order());
                     methodProxyHandler.setClassAnnotation(methodProxy);
                     methodProxyHandler.setMethod(method);
-                    methodProxyHandler.setBeanFactoryHandler(beanFactoryHandler);
+                    methodProxyHandler.setApplicationContext(applicationContext);
                     methodProxyHandlers.add(methodProxyHandler);
                 } else {
                     Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
@@ -171,7 +171,7 @@ public class MethodProxyResolver {
             MethodProxyHandler<Annotation> handler = ReflectionHelper.newInstance(proxyHandler);
             handler.setOrder(methodProxy.order());
             handler.setClassAnnotation(value);
-            handler.setBeanFactoryHandler(this.beanFactoryHandler);
+            handler.setApplicationContext(this.applicationContext);
             handler.setMethod(method);
             return handler;
         }

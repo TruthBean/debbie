@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
+import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/3/23 12:05.
  */
-public class BeanInvoker<Bean> {
+public class BeanCreatedResolver<Bean> {
     private final Class<Bean> beanClass;
     private final DebbieBeanInfo<Bean> beanInfo;
     private final Map<String, Method> beanMethods = new HashMap<>();
@@ -31,43 +32,41 @@ public class BeanInvoker<Bean> {
     private Method initMethod;
     private Bean bean;
 
-    private BeanCreator<Bean> beanCreator;
-
-    public BeanInvoker(Class<Bean> beanClass, BeanFactoryHandler beanFactoryHandler) {
-        BeanInitialization initialization = beanFactoryHandler.getBeanInitialization();
+    public BeanCreatedResolver(Class<Bean> beanClass, BeanFactoryContext applicationContext,
+                               BeanCreatedFactory beanCreatedFactory) {
+        BeanInitialization initialization = applicationContext.getBeanInitialization();
         this.beanClass = beanClass;
         this.beanInfo = initialization.getRegisterRawBean(beanClass);
 
         var methods = initialization.getBeanMethods(beanClass);
         setMethods(methods);
         if (initMethod != null) {
-            this.bean = beanFactoryHandler.getBeanByInitMethod(initMethod, beanFactoryHandler);
+            this.bean = beanCreatedFactory.getBeanByInitMethod(initMethod, applicationContext);
         }
 
         if (this.bean == null) {
-            this.bean = beanFactoryHandler.getBeanByFactory(beanClass, null);
+            this.bean = applicationContext.getBeanByFactory(beanClass, null);
             if (this.bean == null) {
-                createBean(beanFactoryHandler);
+                createBean(applicationContext, beanCreatedFactory);
             }
         }
 
-        beanCreator = new BeanCreatorImpl<>(beanClass, beanFactoryHandler);
     }
 
-    public BeanInvoker(DebbieBeanInfo<Bean> beanInfo, BeanFactoryHandler beanFactoryHandler) {
+    public BeanCreatedResolver(DebbieBeanInfo<Bean> beanInfo, BeanFactoryContext applicationContext,
+                               BeanCreatedFactory beanCreatedFactory) {
         this.beanClass = beanInfo.getBeanClass();
         this.beanInfo = beanInfo;
 
         var methods = beanInfo.getMethods();
         setMethods(methods);
         if (initMethod != null) {
-            this.bean = beanFactoryHandler.getBeanByInitMethod(initMethod, beanFactoryHandler);
+            this.bean = beanCreatedFactory.getBeanByInitMethod(initMethod, applicationContext);
         }
 
         if (bean == null)
-            this.bean = beanFactoryHandler.getBeanByFactory(beanInfo);
+            this.bean = applicationContext.getBeanByFactory(beanInfo);
 
-        beanCreator = new BeanCreatorImpl<>(beanInfo, beanFactoryHandler);
     }
 
     private void setMethods(Set<Method> methods) {
@@ -79,24 +78,26 @@ public class BeanInvoker<Bean> {
         });
     }
 
-    public static <T> BeanInvoker<T> create(DebbieBeanInfo<T> beanInfo, BeanFactoryHandler factoryHandler,
-                                            Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
-        BeanInvoker<T> invoker = new BeanInvoker<>(beanInfo, factoryHandler);
-        invoker.resolveConstructor(factoryHandler, singletonBeanInvokerMap);
+    public static <T> BeanCreatedResolver<T> create(DebbieBeanInfo<T> beanInfo, BeanFactoryContext factoryHandler,
+                                                    Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
+                                                    BeanCreatedFactory beanCreatedFactory) {
+        BeanCreatedResolver<T> invoker = new BeanCreatedResolver<>(beanInfo, factoryHandler, beanCreatedFactory);
+        invoker.resolveConstructor(factoryHandler, singletonBeanInvokerMap, beanCreatedFactory);
         return invoker;
     }
 
-    public void resolveConstructor(BeanFactoryHandler factoryHandler,
-                                   Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
+    public void resolveConstructor(BeanFactoryContext factoryHandler,
+                                   Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
+                                   BeanCreatedFactory beanCreatedFactory) {
         if (this.bean == null) {
-            this.resolveConstructorDependent(factoryHandler, singletonBeanInvokerMap);
+            this.resolveConstructorDependent(factoryHandler, singletonBeanInvokerMap, beanCreatedFactory);
         }
         this.getFieldsDependent(factoryHandler);
     }
 
-    @SuppressWarnings("unchecked")
-    private void resolveConstructorDependent(BeanFactoryHandler beanFactoryHandler,
-                                             Map<DebbieBeanInfo<?>, BeanInvoker<?>> singletonBeanInvokerMap) {
+    private void resolveConstructorDependent(BeanFactoryContext applicationContext,
+                                             Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
+                                             BeanCreatedFactory beanCreatedFactory) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = beanInfo.getConstructors();
@@ -116,7 +117,7 @@ public class BeanInvoker<Bean> {
                     if (beanInject != null) {
                         constructorInjectRequired = beanInject.require();
                     } else {
-                        Class injectClass = beanFactoryHandler.getInjectType();
+                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass != null) {
                             Annotation inject = constructor.getAnnotation(injectClass);
                             if (inject != null) {
@@ -147,17 +148,17 @@ public class BeanInvoker<Bean> {
                             required = annotation.require();
                         }
 
-                        DebbieBeanInfo<?> beanInfo = beanFactoryHandler.getBeanInfo(name, type, required);
+                        DebbieBeanInfo<?> beanInfo = applicationContext.getBeanInfo(name, type, required);
                         if (beanInfo == null && required) {
                             throw new NoBeanException("no bean " + names[i] + " found .");
                         } else if (beanInfo != null) {
                             boolean flag = singletonBeanInvokerMap.containsKey(beanInfo);
                             if (flag && beanInfo.getBeanType() == BeanType.SINGLETON) {
-                                BeanInvoker<?> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
+                                BeanCreatedResolver<?> beanInvoker = singletonBeanInvokerMap.get(beanInfo);
                                 constructorBeanDependent.put(i, beanInvoker.getBeanInfo());
                             } else {
                                 constructorBeanDependent.put(i, beanInfo);
-                                var bean = beanFactoryHandler.factory(beanInfo);
+                                var bean = beanCreatedFactory.factory(beanInfo);
                                 if (bean != null) {
                                     values[i] = bean;
                                 }
@@ -188,14 +189,14 @@ public class BeanInvoker<Bean> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    void getFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
+    void getFieldsDependent(BeanFactoryContext applicationContext) {
         try {
             // find all field its has BeanInject or Inject annotation
             if (this.bean != null) {
-                List<Field> fields = beanInfo.getFields();
-                Map<Field, DebbieBeanInfo<?>> map = new HashMap<>();
-                for (Field field : fields) {
+                List<FieldInfo> fields = beanInfo.getFields();
+                Map<FieldInfo, DebbieBeanInfo<?>> map = new HashMap<>();
+                for (FieldInfo fieldInfo : fields) {
+                    Field field = fieldInfo.getField();
                     Class<?> fieldType = field.getType();
                     BeanInject annotation = field.getAnnotation(BeanInject.class);
                     if (annotation != null) {
@@ -208,45 +209,43 @@ public class BeanInvoker<Bean> {
                         }
                         var fieldValue = ReflectionHelper.getField(this.bean, field);
                         if (fieldValue == null) {
-                            var beanInfo = beanFactoryHandler.getBeanInfo(name, fieldType, annotation.require());
+                            var beanInfo = applicationContext.getBeanInfo(name, fieldType, annotation.require());
                             if (annotation.require() && beanInfo == null) {
                                 throw new NoBeanException("no bean " + name + " found .");
                             } else if (beanInfo != null) {
                                 var bean = beanInfo.getBean();
                                 if (bean != null) {
-                                    if (fieldType.isInstance(bean)) {
-                                        ReflectionHelper.setField(this.bean, field, bean);
-                                    } else {
+                                    if (!fieldType.isInstance(bean)) {
                                         bean = JdkDynamicProxy.getRealValue(bean);
-                                        ReflectionHelper.setField(this.bean, field, bean);
                                     }
+                                    ReflectionHelper.setField(this.bean, field, bean);
+                                    fieldInfo.setValue();
                                 } else {
-                                    map.put(field, beanInfo);
+                                    map.put(fieldInfo, beanInfo);
                                 }
                             }
                         }
                     } else {
-                        Class injectClass = beanFactoryHandler.getInjectType();
+                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass == null) continue;
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
                             String name = fieldType.getName();
                             var fieldValue = ReflectionHelper.getField(this.bean, field);
                             if (fieldValue == null) {
-                                var beanInfo = beanFactoryHandler.getBeanInfo(name, fieldType, true);
+                                var beanInfo = applicationContext.getBeanInfo(name, fieldType, true);
                                 if (beanInfo == null) {
                                     throw new NoBeanException("no bean " + name + " found .");
                                 } else {
                                     var bean = beanInfo.getBean();
                                     if (bean != null) {
-                                        if (fieldType.isInstance(bean)) {
-                                            ReflectionHelper.setField(this.bean, field, bean);
-                                        } else {
+                                        if (!fieldType.isInstance(bean)) {
                                             bean = JdkDynamicProxy.getRealValue(bean);
-                                            ReflectionHelper.setField(this.bean, field, bean);
                                         }
+                                        ReflectionHelper.setField(this.bean, field, bean);
+                                        fieldInfo.setValue();
                                     } else {
-                                        map.put(field, beanInfo);
+                                        map.put(fieldInfo, beanInfo);
                                     }
                                 }
                             }
@@ -302,14 +301,14 @@ public class BeanInvoker<Bean> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    void resolveFieldsDependent(BeanFactoryHandler beanFactoryHandler) {
-        Map<Field, DebbieBeanInfo<?>> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
+    void resolveFieldsDependent(BeanFactoryContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
+        Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
         try {
             // find all field its has BeanInject or Inject annotation
             if (this.bean != null) {
-                List<Field> fields = beanInfo.getFields();
-                for (Field field : fields) {
+                List<FieldInfo> fields = beanInfo.getFields();
+                for (FieldInfo fieldInfo : fields) {
+                    Field field = fieldInfo.getField();
                     Class<?> fieldType = field.getType();
                     BeanInject annotation = field.getAnnotation(BeanInject.class);
                     if (annotation != null) {
@@ -322,11 +321,11 @@ public class BeanInvoker<Bean> {
                         }
                         var fieldValue = ReflectionHelper.getField(this.bean, field);
                         if (fieldValue == null) {
-                            DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(field);
+                            DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(fieldInfo);
                             if (beanInfo == null) {
                                 throw new NoBeanException("no bean " + name + " found .");
                             } else {
-                                var bean = beanFactoryHandler.factory(beanInfo);
+                                var bean = beanCreatedFactory.factory(beanInfo);
                                 if (bean != null) {
                                     ReflectionHelper.setField(this.bean, field, bean);
                                 } else if (annotation.require()) {
@@ -335,18 +334,18 @@ public class BeanInvoker<Bean> {
                             }
                         }
                     } else {
-                        Class injectClass = beanFactoryHandler.getInjectType();
+                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass == null) continue;
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
                             String name  = fieldType.getName();
                             var fieldValue = ReflectionHelper.getField(this.bean, field);
                             if (fieldValue == null) {
-                                DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(field);
+                                DebbieBeanInfo<?> beanInfo = fieldBeanDependent.get(fieldInfo);
                                 if (beanInfo == null) {
                                     throw new NoBeanException("no bean " + name + " found .");
                                 } else {
-                                    var bean = beanFactoryHandler.factory(beanInfo);
+                                    var bean = beanCreatedFactory.factory(beanInfo);
                                     if (bean != null) {
                                         ReflectionHelper.setField(this.bean, field, bean);
                                     } else {
@@ -380,7 +379,7 @@ public class BeanInvoker<Bean> {
     }
 
     // TODO cache
-    private void createBean(BeanFactoryHandler beanFactoryHandler) {
+    private void createBean(BeanFactoryContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = beanInfo.getConstructors();
@@ -399,7 +398,7 @@ public class BeanInvoker<Bean> {
                             Parameter parameter = parameters[i];
                             // BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                             // if (annotation != null) {
-                            params[i] = beanFactoryHandler.getParameterBean(parameter);
+                            params[i] = beanCreatedFactory.getParameterBean(parameter);
                             // }
                         }
                         this.bean = constructor.newInstance(params);
@@ -457,5 +456,5 @@ public class BeanInvoker<Bean> {
         return ReflectionHelper.invokeMethod(bean, routerMethod, parameters);
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BeanInvoker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BeanCreatedResolver.class);
 }

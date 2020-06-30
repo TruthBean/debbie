@@ -153,13 +153,15 @@ public final class UriUtils {
             }
         }
 
-        var lastPath = pathArray[partLength - 1];
-        if (lastPath.contains(".")) {
-            var tmp = lastPath.split("\\.");
-            builder.addPath(tmp[0]);
-            builder.suffix(tmp[tmp.length - 1]);
-        } else {
-            builder.addPath(lastPath);
+        if (partLength > 0) {
+            var lastPath = pathArray[partLength - 1];
+            if (lastPath.contains(".")) {
+                var tmp = lastPath.split("\\.");
+                builder.addPath(tmp[0]);
+                builder.suffix(tmp[tmp.length - 1]);
+            } else {
+                builder.addPath(lastPath);
+            }
         }
 
         var queries = url.getQuery();

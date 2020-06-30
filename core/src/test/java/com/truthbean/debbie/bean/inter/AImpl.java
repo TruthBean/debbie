@@ -32,6 +32,7 @@ public class AImpl implements A {
         this.cBean = cBean;
 
         a = "A --- " + UUID.randomUUID().toString();
+        System.out.println("a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ");
     }
 
     @Override

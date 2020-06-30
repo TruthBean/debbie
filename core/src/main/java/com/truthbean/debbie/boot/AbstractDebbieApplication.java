@@ -10,7 +10,7 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.DebbieVersion;
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.Logger;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractDebbieApplication implements DebbieApplication {
     private final Logger logger;
     private long beforeStartTime;
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean exited = new AtomicBoolean(true);
@@ -47,9 +47,9 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true);
     private final ThreadPooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
 
-    public AbstractDebbieApplication(Logger logger, BeanFactoryHandler beanFactoryHandler) {
+    public AbstractDebbieApplication(Logger logger, BeanFactoryContext applicationContext) {
         this.logger = logger;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
     }
 
     void setBeforeStartTime(long beforeStartTime) {
@@ -57,8 +57,8 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
     }
 
     protected void postBeforeStart() {
-        if (beanFactoryHandler instanceof DebbieApplicationFactory) {
-            ((DebbieApplicationFactory) beanFactoryHandler).postCallStarter();
+        if (applicationContext instanceof DebbieApplicationFactory) {
+            ((DebbieApplicationFactory) applicationContext).postCallStarter();
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
         }
     }
 
-    private synchronized void beforeExit(BeanFactoryHandler handler, String... args) {
+    private synchronized void beforeExit(BeanFactoryContext handler, String... args) {
         handler.release(args);
     }
 
@@ -117,7 +117,7 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
         startupShutdownThreadPool.execute(() -> {
             if (running.get() && exited.compareAndSet(false, true)) {
                 logger.debug("application exiting...");
-                beforeExit(beanFactoryHandler, args);
+                beforeExit(applicationContext, args);
                 doExit(args);
             }
         });

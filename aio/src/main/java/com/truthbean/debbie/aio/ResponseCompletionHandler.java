@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -31,13 +31,13 @@ import java.util.concurrent.Future;
  */
 public class ResponseCompletionHandler {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final AioServerConfiguration configuration;
     private final RouterRequest routerRequest;
 
-    public ResponseCompletionHandler(BeanFactoryHandler beanFactoryHandler, RouterRequest routerRequest,
+    public ResponseCompletionHandler(BeanFactoryContext applicationContext, RouterRequest routerRequest,
                                      AioServerConfiguration configuration) {
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.configuration = configuration;
         this.routerRequest = routerRequest;
     }
@@ -102,7 +102,7 @@ public class ResponseCompletionHandler {
         logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         logger.debug("--> handle response");
         RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
-        RouterResponse routerResponse = MvcRouterHandler.handleRouter(matchedRouter, this.beanFactoryHandler);
+        RouterResponse routerResponse = MvcRouterHandler.handleRouter(matchedRouter, this.applicationContext);
         MediaTypeInfo responseType = routerResponse.getResponseType();
         if (responseType == null) {
             responseType = matchedRouter.getDefaultResponseType();

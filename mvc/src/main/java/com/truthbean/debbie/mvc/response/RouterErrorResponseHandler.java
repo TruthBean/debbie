@@ -9,10 +9,12 @@
  */
 package com.truthbean.debbie.mvc.response;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.logger.LoggerFactory;
 
 /**
  * @author TruthBean
@@ -61,22 +63,42 @@ public final class RouterErrorResponseHandler {
     }
 
     public static RouterResponse handleError(RouterInfo error, ErrorResponseCallback callback) {
-        RouterRequest request = error.getRequest();
-        RouterResponse response = error.getResponse();
-        Object data = response.getContent();
+        RouterResponse response = null;
 
-        if (callback == null) {
-            response.setStatus(HttpStatus.OK);
-            if (request.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
-                String xmlValue = JacksonUtils.toXml(data);
-                response.setResponseType(request.getResponseType());
-                response.setContent(xmlValue);
-            } else {
-                response.setResponseType(MediaType.APPLICATION_JSON_UTF8);
-                response.setContent(JacksonUtils.toJson(data));
-            }
-        } else
-            callback.callback(response);
+        if (error == null) {
+            response = new RouterResponse();
+            response.setResponseType(MediaType.TEXT_PLAIN_UTF8);
+            response.setContent("system error!");
+            return response;
+        }
+
+        try {
+            RouterRequest request = error.getRequest();
+            response = error.getResponse();
+            Object data = response.getContent();
+
+            if (callback == null) {
+                    response.setStatus(HttpStatus.OK);
+                    if (request.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
+                        String xmlValue = JacksonUtils.toXml(data);
+                        response.setResponseType(request.getResponseType());
+                        response.setContent(xmlValue);
+                    } else {
+                        response.setResponseType(MediaType.APPLICATION_JSON_UTF8);
+                        response.setContent(JacksonUtils.toJson(data));
+                    }
+            } else
+                callback.callback(response);
+        } catch (Throwable e) {
+            LOGGER.error("system error! \n", e);
+            if (response == null)
+                response = new RouterResponse();
+
+            response.setResponseType(MediaType.TEXT_PLAIN_UTF8);
+            response.setContent(e.toString());
+        }
         return response;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RouterErrorResponseHandler.class);
 }

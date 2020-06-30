@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.Logger;
@@ -28,14 +28,14 @@ import java.nio.channels.CompletionHandler;
 public class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketChannel, AsynchronousServerSocketChannel> {
 
     private final AsynchronousServerSocketChannel listener;
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final AioServerConfiguration configuration;
 
     public ServerCompletionHandler(AioServerConfiguration configuration, SessionManager sessionManager,
-                                   final BeanFactoryHandler beanFactoryHandler,
+                                   final BeanFactoryContext applicationContext,
                                    final AsynchronousServerSocketChannel listener) {
         this.listener = listener;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.configuration = configuration;
     }
 
@@ -69,7 +69,7 @@ public class ServerCompletionHandler implements CompletionHandler<AsynchronousSo
     private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,
                                              AsynchronousServerSocketChannel attachment) {
         if (routerRequest != null) {
-            var responseCompletionHandler = new ResponseCompletionHandler(beanFactoryHandler, routerRequest, configuration);
+            var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration);
             responseCompletionHandler.handle(channel);
         }
 

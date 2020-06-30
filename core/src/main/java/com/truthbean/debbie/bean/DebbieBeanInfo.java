@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.reflection.ClassInfo;
+import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.Logger;
@@ -41,8 +42,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     private boolean noInterface = false;
     private Class<?> beanInterface;
 
+    private Method initMethod;
+    private Method destroyMethod;
+
     private Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent;
-    private Map<Field, DebbieBeanInfo<?>> fieldBeanDependent;
+    private Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependent;
+    private Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent;
     private boolean hasVirtualValue;
 
     public DebbieBeanInfo(Class<Bean> beanClass) {
@@ -62,6 +67,14 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         }
     }
 
+    public void setInitMethod(Method initMethod) {
+        this.initMethod = initMethod;
+    }
+
+    public void setDestroyMethod(Method destroyMethod) {
+        this.destroyMethod = destroyMethod;
+    }
+
     public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent) {
         this.constructorBeanDependent = constructorBeanDependent;
     }
@@ -73,7 +86,18 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.constructorBeanDependent.put(index, beanInfo);
     }
 
-    public void setFieldBeanDependent(Map<Field, DebbieBeanInfo<?>> fieldBeanDependent) {
+    public void setInitMethodBeanDependent(Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependent) {
+        this.initMethodBeanDependent = initMethodBeanDependent;
+    }
+
+    public void addInitMethodBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
+        if (this.initMethodBeanDependent == null) {
+            this.initMethodBeanDependent = new HashMap<>();
+        }
+        this.initMethodBeanDependent.put(index, beanInfo);
+    }
+
+    public void setFieldBeanDependent(Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent) {
         this.fieldBeanDependent = fieldBeanDependent;
     }
 
@@ -81,7 +105,23 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         if (this.fieldBeanDependent == null) {
             this.fieldBeanDependent = new HashMap<>();
         }
-        this.fieldBeanDependent.put(field, debbieBeanInfo);
+        this.fieldBeanDependent.put(new FieldInfo(field), debbieBeanInfo);
+    }
+
+    public Map<Integer, DebbieBeanInfo<?>> getInitMethodBeanDependent() {
+        if (initMethodBeanDependent == null) {
+            initMethodBeanDependent = new HashMap<>();
+        }
+        return initMethodBeanDependent;
+    }
+
+    public boolean isInitMethodBeanDependentHasValue() {
+        for (DebbieBeanInfo<?> value : initMethodBeanDependent.values()) {
+            if (!value.isPresent()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Map<Integer, DebbieBeanInfo<?>> getConstructorBeanDependent() {
@@ -93,14 +133,14 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
 
     public boolean isConstructorBeanDependentHasValue() {
         for (DebbieBeanInfo<?> value : constructorBeanDependent.values()) {
-            if (!value.hasVirtualValue) {
+            if (value.bean == null) {
                 return false;
             }
         }
         return true;
     }
 
-    public Map<Field, DebbieBeanInfo<?>> getFieldBeanDependent() {
+    public Map<FieldInfo, DebbieBeanInfo<?>> getFieldBeanDependent() {
         return fieldBeanDependent;
     }
 

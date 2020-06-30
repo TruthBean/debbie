@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
@@ -15,16 +15,16 @@ import com.truthbean.logger.LoggerFactory;
 @SuppressWarnings({"unchecked"})
 public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
     private BeanInitialization initialization;
     private DebbieConfigurationFactory configurationFactory;
 
     private final Logger logger = LoggerFactory.getLogger(DataSourceFactoryBeanRegister.class);
 
-    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, BeanFactoryHandler beanFactoryHandler) {
-        super(beanFactoryHandler);
-        this.beanFactoryHandler = beanFactoryHandler;
-        this.initialization = beanFactoryHandler.getBeanInitialization();
+    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+        super(applicationContext);
+        this.applicationContext = applicationContext;
+        this.initialization = applicationContext.getBeanInitialization();
         this.configurationFactory = configurationFactory;
     }
 
@@ -37,10 +37,10 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
             logger.info("com.truthbean.debbie:debbie-hikari jar not be depended. ");
         }
         if (dataSourceFactoryBeanInfo == null) {
-            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler, configurationClass);
+            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, applicationContext, configurationClass);
             registerSingletonBean(dataSourceFactory, DataSourceFactory.class, "dataSourceFactory");
         } else if (dataSourceFactoryBeanInfo.isEmpty()) {
-            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, beanFactoryHandler, configurationClass);
+            DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, applicationContext, configurationClass);
             dataSourceFactoryBeanInfo.setBean(dataSourceFactory);
             dataSourceFactoryBeanInfo.setBeanName("dataSourceFactory");
             registerSingletonBean(dataSourceFactoryBeanInfo);

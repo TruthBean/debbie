@@ -30,6 +30,7 @@ public class BImpl implements B {
         this.cBean = cBean;
 
         b = "B --- " + UUID.randomUUID().toString();
+        System.out.println("b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b ");
     }
 
     @Override

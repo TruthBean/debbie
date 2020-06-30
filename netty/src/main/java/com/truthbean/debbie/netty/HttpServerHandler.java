@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
@@ -59,12 +59,12 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private final SessionManager sessionManager;
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, BeanFactoryHandler beanFactoryHandler) {
+    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, BeanFactoryContext applicationContext) {
         this.configuration = configuration;
         this.sessionManager = sessionManager;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.routerRequest = new ThreadLocal<>();
     }
 
@@ -140,7 +140,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                     RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
                     RouterResponse response = routerInfo.getResponse();
                     response.copyNoNull(routerResponse);
-                    MvcRouterHandler.handleRouter(routerInfo, beanFactoryHandler);
+                    MvcRouterHandler.handleRouter(routerInfo, applicationContext);
                     doResponse(routerRequest, response, ctx);
                 }
             } else {
@@ -163,7 +163,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
-            var filter = new RouterFilterHandler(filterInfo, beanFactoryHandler);
+            var filter = new RouterFilterHandler(filterInfo, applicationContext);
             var filterType = filterInfo.getRouterFilterType();
             if (!filter.notFilter(request)) {
                 if (filter.preRouter(request, response)) {
@@ -187,7 +187,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         // reverse order to fix the chain order
         List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
         for (RouterFilterInfo filterInfo : filters) {
-            var filter = new RouterFilterHandler(filterInfo, beanFactoryHandler);
+            var filter = new RouterFilterHandler(filterInfo, applicationContext);
             Boolean router = filter.postRouter(request, response);
             if (router != null && router == true) {
                 break;

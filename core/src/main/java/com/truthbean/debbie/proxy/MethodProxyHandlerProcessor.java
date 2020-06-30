@@ -1,6 +1,6 @@
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.proxy.asm.AbstractProxy;
 
@@ -14,13 +14,13 @@ public class MethodProxyHandlerProcessor<T> {
     private boolean noProxy;
     private final DebbieBeanInfo<T> beanInfo;
     private final MethodProxyHandlerHandler handler;
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    public MethodProxyHandlerProcessor(BeanFactoryHandler beanFactoryHandler, MethodProxyHandlerHandler handler,
+    public MethodProxyHandlerProcessor(BeanFactoryContext applicationContext, MethodProxyHandlerHandler handler,
                                        DebbieBeanInfo<T> beanInfo) {
         this.beanInfo = beanInfo;
         this.handler = handler;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
     }
 
     public boolean hasNoProxy() {
@@ -37,7 +37,7 @@ public class MethodProxyHandlerProcessor<T> {
             noProxy = true;
             return this;
         }
-        MethodProxyResolver methodProxyResolver = new MethodProxyResolver(beanFactoryHandler, beanInfo);
+        MethodProxyResolver methodProxyResolver = new MethodProxyResolver(applicationContext, beanInfo);
         methodWithAnnotations.forEach((method, annotations) -> {
             List<MethodProxyHandler<? extends Annotation>> methodProxyHandler =
                     methodProxyResolver.getMethodProxyHandler(method, annotations);

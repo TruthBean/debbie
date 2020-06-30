@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 /**
@@ -18,15 +18,15 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
  */
 public class ResponseContentHandlerFactory {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    public ResponseContentHandlerFactory(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public ResponseContentHandlerFactory(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public <H extends AbstractResponseContentHandler> H factory(Class<H> handlerClass) {
         H handler = ReflectionHelper.newInstance(handlerClass);
-        handler.setBeanFactoryHandler(beanFactoryHandler);
+        handler.setApplicationContext(applicationContext);
         return handler;
     }
 }

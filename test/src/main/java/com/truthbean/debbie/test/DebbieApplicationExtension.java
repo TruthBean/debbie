@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.test;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
@@ -58,13 +58,13 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         }
 
         Class<?> type = parameter.getType();
-        BeanFactoryHandler beanFactoryHandler = getBeanFactoryHandler(extensionContext);
+        BeanFactoryContext applicationContext = getBeanFactoryHandler(extensionContext);
 
         Object result;
         if (name.isBlank()) {
-            result = beanFactoryHandler.factory(type);
+            result = applicationContext.factory(type);
         } else {
-            result = beanFactoryHandler.factory(name);
+            result = applicationContext.factory(name);
         }
 
         if (type.isInstance(result)) {
@@ -74,15 +74,15 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         }
     }
 
-    private BeanFactoryHandler getBeanFactoryHandler(ExtensionContext context) {
+    private BeanFactoryContext getBeanFactoryHandler(ExtensionContext context) {
         return context.getRoot()
                 .getStore(ExtensionContext.Namespace.GLOBAL)
-                .getOrComputeIfAbsent(BeanFactoryHandler.class);
+                .getOrComputeIfAbsent(BeanFactoryContext.class);
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
-        BeanFactoryHandler beanFactoryHandler = getBeanFactoryHandler(context);
+        BeanFactoryContext applicationContext = getBeanFactoryHandler(context);
         Optional<Object> instance = context.getTestInstance();
         instance.ifPresent(o -> {
             var clazz = o.getClass();
@@ -100,9 +100,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
                         Object result;
                         if (name.isBlank()) {
-                            result = beanFactoryHandler.factory(type);
+                            result = applicationContext.factory(type);
                         } else {
-                            result = beanFactoryHandler.factory(name);
+                            result = applicationContext.factory(name);
                         }
 
                         if (!type.isInstance(result)) {
@@ -112,14 +112,14 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
                         ReflectionHelper.setField(o, field, result);
                     } else {
                         @SuppressWarnings("unchecked")
-                        Class injectClass = beanFactoryHandler.getInjectType();
+                        Class injectClass = applicationContext.getInjectType();
                         if (injectClass == null) return;
                         @SuppressWarnings("unchecked")
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
                             Class<?> type = field.getType();
 
-                            Object result = beanFactoryHandler.factory(type);
+                            Object result = applicationContext.factory(type);
 
                             if (!type.isInstance(result)) {
                                 result = JdkDynamicProxy.getRealValue(result);
@@ -160,9 +160,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(applicationClass);
         DebbieApplication debbieApplication = applicationFactory.postCreateApplication();
         debbieApplication.start();
-        BeanFactoryHandler beanFactoryHandler = applicationFactory.getBeanFactoryHandler();
+        BeanFactoryContext applicationContext = applicationFactory.getBeanFactoryHandler();
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
-        store.put(BeanFactoryHandler.class, beanFactoryHandler);
+        store.put(BeanFactoryContext.class, applicationContext);
         store.put(DebbieApplication.class, debbieApplication);
     }
 

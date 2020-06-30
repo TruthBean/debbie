@@ -23,16 +23,16 @@ import java.util.Set;
  */
 class DebbieBootApplicationResolver {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    DebbieBootApplicationResolver(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    DebbieBootApplicationResolver(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     void resolverClasses(BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
         Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
         if (targetClasses.isEmpty()) {
-            ClassLoader classLoader = this.beanFactoryHandler.getClassLoader();
+            ClassLoader classLoader = this.applicationContext.getClassLoader();
             var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
             allClass.forEach(configuration::addScanClasses);
         }
@@ -63,9 +63,9 @@ class DebbieBootApplicationResolver {
         LOGGER.debug(() -> "applicationClass: " + applicationClass);
         if (applicationClass == null) return;
 
-        BeanInitialization beanInitialization = this.beanFactoryHandler.getBeanInitialization();
+        BeanInitialization beanInitialization = this.applicationContext.getBeanInitialization();
         beanInitialization.init(applicationClass);
-        this.beanFactoryHandler.refreshBeans();
+        this.applicationContext.refreshBeans();
         DebbieBootApplication debbieBootApplication = applicationClass.getAnnotation(DebbieBootApplication.class);
         if (debbieBootApplication != null) {
             DebbieScan scan = debbieBootApplication.scan();
@@ -90,7 +90,7 @@ class DebbieBootApplicationResolver {
         } else {
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {
-                ClassLoader classLoader = this.beanFactoryHandler.getClassLoader();
+                ClassLoader classLoader = this.applicationContext.getClassLoader();
                 var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
                 if (!allClass.isEmpty()) {
                     boolean hasDebbieBootApplication = false;

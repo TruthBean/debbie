@@ -1,15 +1,9 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.bean.inter.Abc;
-import com.truthbean.debbie.bean.inter.AbcImpl;
-import com.truthbean.debbie.bean.inter.C;
-import com.truthbean.debbie.bean.inter.DemoBeanComponent;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -17,23 +11,28 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class InjectedBeanFactoryTest {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
     private InjectedBeanFactory injectedBeanFactory;
-    private BeanDependenceProcessor beanDependenceProcessor;
 
     @BeforeEach
     public void before() {
-        beanFactoryHandler = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
+        applicationContext = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
         injectedBeanFactory = new InjectedBeanFactory();
-        injectedBeanFactory.setBeanFactoryHandler(beanFactoryHandler);
-        beanDependenceProcessor = new BeanDependenceProcessor();
-        beanDependenceProcessor.setBeanFactoryHandler(beanFactoryHandler);
+        injectedBeanFactory.setBeanFactoryContext(applicationContext);
     }
 
     @Test
     void factory() {
-        DebbieBeanInfo<Abc> beanInfo = beanFactoryHandler.getBeanInfo("abc", Abc.class, true);
-        Abc factory = injectedBeanFactory.factory(beanInfo, beanDependenceProcessor);
+        DebbieBeanInfo<Abc> beanInfo = applicationContext.getBeanInfo("abc", Abc.class, true);
+        System.out.println("------------------------------------------------------------------------------");
+        // Abc factory1 = applicationContext.factory(Abc.class);
+        // System.out.println(factory1.toString());
+        System.out.println("------------------------------------------------------------------------------");
+
+        Abc factory = injectedBeanFactory.factory(beanInfo);
         System.out.println(factory.toString());
+
+        // Abc abc = applicationContext.factoryBean(Abc.class);
+        // System.out.println(abc.toString());
     }
 }

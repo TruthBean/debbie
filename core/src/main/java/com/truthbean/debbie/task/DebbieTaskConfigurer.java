@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.task;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
@@ -19,17 +19,17 @@ import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
  */
 public class DebbieTaskConfigurer {
 
-    public void configure(BeanFactoryHandler beanFactoryHandler) {
+    public void configure(BeanFactoryContext applicationContext) {
         TaskFactory debbieTaskFactory = new TaskFactory();
-        SingletonBeanRegister register = new SingletonBeanRegister(beanFactoryHandler);
+        SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
 
-        debbieTaskFactory.setBeanFactoryHandler(beanFactoryHandler);
+        debbieTaskFactory.setBeanFactoryContext(applicationContext);
 
         ThreadPooledExecutor factory = new ThreadPooledExecutor();
         register.registerSingletonBean(factory, ThreadPooledExecutor.class, "threadPooledExecutor");
 
         debbieTaskFactory.registerTask();
         register.registerSingletonBean(debbieTaskFactory, TaskFactory.class, "taskFactory");
-        beanFactoryHandler.refreshBeans();
+        applicationContext.refreshBeans();
     }
 }

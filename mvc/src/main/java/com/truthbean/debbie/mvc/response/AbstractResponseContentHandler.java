@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.response;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.io.MediaTypeInfo;
 
@@ -20,16 +20,16 @@ import com.truthbean.debbie.io.MediaTypeInfo;
  */
 public abstract class AbstractResponseContentHandler<S, V> implements DataTransformer<S, V> {
 
-    private BeanFactoryHandler beanFactoryHandler;
+    private BeanFactoryContext applicationContext;
 
-    void setBeanFactoryHandler(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    void setApplicationContext(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public abstract MediaTypeInfo getResponseType();
 
-    public BeanFactoryHandler getBeanFactoryHandler() {
-        return beanFactoryHandler;
+    public BeanFactoryContext getApplicationContext() {
+        return applicationContext;
     }
 
     @Override

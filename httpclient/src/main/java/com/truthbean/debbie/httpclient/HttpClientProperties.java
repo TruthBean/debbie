@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
@@ -57,7 +57,7 @@ public class HttpClientProperties extends BaseProperties implements DebbieProper
     }
 
     @Override
-    public HttpClientConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
+    public HttpClientConfiguration toConfiguration(BeanFactoryContext applicationContext) {
         return configuration;
     }
 }

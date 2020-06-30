@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
@@ -133,8 +133,8 @@ public class MvcProperties extends BaseProperties implements DebbieProperties<Mv
     }
 
     @Override
-    public MvcConfiguration toConfiguration(BeanFactoryHandler beanFactoryHandler) {
-        ClassLoader classLoader = beanFactoryHandler.getClassLoader();
+    public MvcConfiguration toConfiguration(BeanFactoryContext applicationContext) {
+        ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
     }
 }

@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
 import com.truthbean.debbie.undertow.UndertowConfiguration;
@@ -34,14 +34,14 @@ public class HttpHandlerFilter implements HttpHandler {
     private final HttpHandler next;
     private final RouterFilterInfo filterInfo;
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
     private final UndertowConfiguration configuration;
 
-    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo, BeanFactoryHandler beanFactoryHandler,
+    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo, BeanFactoryContext applicationContext,
                              UndertowConfiguration configuration) {
         this.next = next;
         this.filterInfo = filterInfo;
-        this.beanFactoryHandler = beanFactoryHandler;
+        this.applicationContext = applicationContext;
         this.configuration = configuration;
     }
 
@@ -78,7 +78,7 @@ public class HttpHandlerFilter implements HttpHandler {
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
         RouterFilter routerFilter = filterInfo.getFilterInstance();
         if (routerFilter == null) {
-            routerFilter = beanFactoryHandler.factory(routerFilterType);
+            routerFilter = applicationContext.factory(routerFilterType);
         }
 
         if (routerFilter.notFilter(routerRequest)) {

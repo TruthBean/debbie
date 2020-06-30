@@ -1,6 +1,6 @@
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanFactoryHandler;
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.junit.jupiter.api.Test;
@@ -28,9 +28,9 @@ public class EventTest {
         long start = System.currentTimeMillis();
         DebbieApplicationFactory factory = DebbieApplicationFactory.configure(EventTest.class);
 
-        BeanFactoryHandler beanFactoryHandler = factory.getBeanFactoryHandler();
+        BeanFactoryContext applicationContext = factory.getBeanFactoryHandler();
 
-        DebbieEventPublisher eventPublisher = beanFactoryHandler.factory(DebbieEventPublisher.class);
+        DebbieEventPublisher eventPublisher = applicationContext.factory(DebbieEventPublisher.class);
 
         long start1 = System.currentTimeMillis();
         Test2Event testEvent = new Test2Event(this, 2333);

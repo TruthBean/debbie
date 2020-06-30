@@ -14,6 +14,7 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.proxy.MethodProxy;
 
+import javax.inject.Inject;
 import java.util.Random;
 import java.util.UUID;
 
@@ -22,13 +23,13 @@ public class DemoBeanComponent {
 
     private final String uuid;
 
-    private final Demo2 demo1;
+    @Inject
+    private Demo2 demo1;
     private final Demo2 demo2;
 
-    public DemoBeanComponent(Demo2 demo1, Demo2 demo2) {
+    public DemoBeanComponent(Demo2 demo2) {
         uuid = UUID.randomUUID().toString();
         this.demo2 = demo2;
-        this.demo1 = demo1;
     }
 
     @MethodProxy(order = 31)
@@ -63,5 +64,21 @@ public class DemoBeanComponent {
             System.out.println(name);
             System.out.println("---------------------------------------------------");
         }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "\"id\":" + id +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"uuid\":\"" + uuid + '\"' +
+                ",\"demo1\":" + demo1 +
+                ",\"demo2\":" + demo2 +
+                '}';
     }
 }

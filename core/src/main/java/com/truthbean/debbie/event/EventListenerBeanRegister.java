@@ -24,19 +24,19 @@ import java.util.Set;
  */
 public class EventListenerBeanRegister {
 
-    private final BeanFactoryHandler beanFactoryHandler;
+    private final BeanFactoryContext applicationContext;
 
-    public EventListenerBeanRegister(BeanFactoryHandler beanFactoryHandler) {
-        this.beanFactoryHandler = beanFactoryHandler;
+    public EventListenerBeanRegister(BeanFactoryContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @SuppressWarnings("unchecked")
     public void register() {
-        BeanInitialization beanInitialization = beanFactoryHandler.getBeanInitialization();
-        ThreadPooledExecutor executor = beanFactoryHandler.factory("threadPooledExecutor");
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        ThreadPooledExecutor executor = applicationContext.factory("threadPooledExecutor");
         DefaultEventPublisher eventPublisher = new DefaultEventPublisher(executor);
         // 先注册系统相关的
-        SingletonBeanRegister register = new SingletonBeanRegister(beanFactoryHandler);
+        SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
         register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
         // 然后处理用户自定义的
         Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
@@ -45,7 +45,7 @@ public class EventListenerBeanRegister {
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
                 BeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
-                listenerBeanFactory.setBeanFactoryHandler(beanFactoryHandler);
+                listenerBeanFactory.setBeanFactoryContext(applicationContext);
                 eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), listenerBeanFactory);
             }
         }
@@ -54,7 +54,7 @@ public class EventListenerBeanRegister {
         if (beanInfoList != null && beanInfoList.isEmpty()) {
             for (DebbieBeanInfo debbieBeanInfo : beanInfoList) {
                 Class<?> beanType = debbieBeanInfo.getBeanClass();
-                Object bean = beanFactoryHandler.factory(beanType);
+                Object bean = applicationContext.factory(beanType);
                 Set<Method> methods = debbieBeanInfo.getMethods();
                 for (Method method : methods) {
                     EventMethodListener annotation = method.getAnnotation(EventMethodListener.class);
@@ -72,7 +72,7 @@ public class EventListenerBeanRegister {
                                 listenerBeanInfo.setBean(listener);
 
                                 DebbieBeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>();
-                                listenerBeanFactory.setBeanFactoryHandler(beanFactoryHandler);
+                                listenerBeanFactory.setBeanFactoryContext(applicationContext);
                                 listenerBeanFactory.setBeanInfo(listenerBeanInfo);
 
                                 eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) type, listenerBeanFactory);

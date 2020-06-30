@@ -9,10 +9,9 @@
  */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.bean.BeanFactoryContext;
 import com.truthbean.debbie.bean.AutoCreatedBeanFactory;
-import com.truthbean.debbie.bean.BeanFactoryHandler;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
-import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
@@ -33,7 +32,7 @@ import java.util.function.Consumer;
  * @since 0.0.1
  * Created on 2019/3/23 14:09.
  */
-public class DebbieApplicationFactory extends BeanFactoryHandler {
+public class DebbieApplicationFactory extends BeanFactoryContext {
 
     private Set<DebbieModuleStarter> debbieModuleStarters;
     private final DebbieBootApplicationResolver bootApplicationResolver;
@@ -158,9 +157,9 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
 
     private volatile DebbieStartedEventProcessor processor;
 
-    private void multicastEvent(BeanFactoryHandler beanFactoryHandler) {
+    private void multicastEvent(BeanFactoryContext applicationContext) {
         if (this.processor == null) {
-            this.processor = new DebbieStartedEventProcessor(beanFactoryHandler);
+            this.processor = new DebbieStartedEventProcessor(applicationContext);
         }
         processor.multicastEvent();
     }
@@ -199,7 +198,7 @@ public class DebbieApplicationFactory extends BeanFactoryHandler {
         return loadApplication().factory(configurationFactory, this, getClassLoader());
     }
 
-    public BeanFactoryHandler getBeanFactoryHandler() {
+    public BeanFactoryContext getBeanFactoryHandler() {
         return this;
     }
 
