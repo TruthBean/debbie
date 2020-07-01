@@ -35,7 +35,7 @@ public class ServletApplicationInitializer extends DebbieApplicationFactory impl
         super(ServletApplicationInitializer.class);
         if (debbieApplication == null) {
             LOGGER.debug("run servlet module without application");
-            applicationContext = getBeanFactoryHandler();
+            applicationContext = getApplicationContext();
             super.config(ServletApplicationInitializer.class);
             super.callStarter();
         } else {

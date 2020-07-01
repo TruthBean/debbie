@@ -30,7 +30,7 @@ public class DmlRepositoryHandlerTest {
         var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
         var beanFactory = applicationFactory.getGlobalBeanFactory();
 
-        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getApplicationContext();
         var beanInitialization = applicationContext.getBeanInitialization();
         beanInitialization.init(Surname.class);
         applicationContext.refreshBeans();

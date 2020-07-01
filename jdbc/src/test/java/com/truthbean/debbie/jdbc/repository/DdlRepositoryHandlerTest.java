@@ -21,7 +21,7 @@ public class DdlRepositoryHandlerTest {
     public static void before() {
         var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
-        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getApplicationContext();
         var config = DataSourceProperties.toConfiguration();
         factory = new DefaultDataSourceFactory();
         factory.factory(config);

@@ -51,32 +51,18 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
 
     private synchronized AbstractApplicationFactory loadApplication() {
         var classLoader = getClassLoader();
-        AbstractApplicationFactory result = null;
-        AbstractApplicationFactory defaultApplicationFactory = null;
         try {
-            var factories = SpiLoader.loadProviderSet(AbstractApplicationFactory.class, classLoader);
-            for (AbstractApplicationFactory factory : factories) {
-                var factoryClass = factory.getClass().getName();
-                if (SimpleApplicationFactory.class.equals(factoryClass)) {
-                    defaultApplicationFactory = factory;
-                    continue;
-                } else {
-                    result = factory;
-                    break;
-                }
-            }
-            if (result == null && defaultApplicationFactory != null) {
-                result = defaultApplicationFactory;
-            }
+            var result = SpiLoader.loadProvider(AbstractApplicationFactory.class, classLoader, new SimpleApplicationFactory());
             if (result == null) {
                 result = new SimpleApplicationFactory();
             }
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("ApplicationFactory( " + result.getClass() + " ) loaded. ");
+            return result;
         } catch (Exception e) {
             LOGGER.error("", e);
+            return new SimpleApplicationFactory();
         }
-        return result;
     }
 
     protected synchronized void config(Class<?> applicationClass) {
@@ -201,7 +187,7 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
         return loadApplication().factory(configurationFactory, this, getClassLoader());
     }
 
-    public DebbieApplicationContext getBeanFactoryHandler() {
+    public DebbieApplicationContext getApplicationContext() {
         return this;
     }
 

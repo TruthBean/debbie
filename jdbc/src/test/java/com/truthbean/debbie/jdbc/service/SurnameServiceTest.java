@@ -19,7 +19,7 @@ class SurnameServiceTest {
     static void before() {
         var factory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
-        DebbieApplicationContext applicationContext = factory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = factory.getApplicationContext();
         var beanFactory = applicationContext.getGlobalBeanFactory();
         surnameService = beanFactory.factory("surnameService");
     }

@@ -17,16 +17,13 @@ import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.extension.*;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -174,7 +171,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(applicationClass);
         DebbieApplication debbieApplication = applicationFactory.postCreateApplication();
         debbieApplication.start();
-        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getApplicationContext();
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
         store.put(DebbieApplicationContext.class, applicationContext);
         store.put(DebbieApplication.class, debbieApplication);

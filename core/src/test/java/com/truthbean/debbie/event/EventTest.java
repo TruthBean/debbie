@@ -29,7 +29,7 @@ public class EventTest {
         long start = System.currentTimeMillis();
         DebbieApplicationFactory factory = DebbieApplicationFactory.configure(EventTest.class);
 
-        DebbieApplicationContext applicationContext = factory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = factory.getApplicationContext();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
         DebbieEventPublisher eventPublisher = globalBeanFactory.factory(DebbieEventPublisher.class);
