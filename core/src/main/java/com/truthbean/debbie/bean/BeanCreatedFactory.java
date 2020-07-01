@@ -44,12 +44,16 @@ public class BeanCreatedFactory {
 
     private final Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap = new ConcurrentHashMap<>();
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
+    private final DebbieBeanInfoFactory beanInfoFactory;
     private final BeanInitialization beanInitialization;
+    private final GlobalBeanFactory globalBeanFactory;
 
-    public BeanCreatedFactory(BeanFactoryContext applicationContext) {
+    BeanCreatedFactory(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
         this.beanInitialization = applicationContext.getBeanInitialization();
+        this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }
 
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {
@@ -93,7 +97,7 @@ public class BeanCreatedFactory {
     }
 
     public <T> T factoryByProxy(DebbieBeanInfo<T> beanInfo) {
-        return this.applicationContext.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.NO);
+        return this.globalBeanFactory.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.NO);
     }
 
     public <T, K extends T> T factoryWithProxy(Class<K> type, Class<T> interfaceType, DebbieBeanInfo<K> beanInfo) {
@@ -147,7 +151,7 @@ public class BeanCreatedFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getBeanByInitMethod(Method initMethod, BeanFactoryContext handler) {
+    public <T> T getBeanByInitMethod(Method initMethod, DebbieApplicationContext handler) {
         if (Modifier.isStatic(initMethod.getModifiers())) {
             Parameter[] parameters = initMethod.getParameters();
             if (parameters == null || parameters.length == 0) {
@@ -198,11 +202,11 @@ public class BeanCreatedFactory {
             }
         }
 
-        var values = this.applicationContext.getBeanList(beanClass);
+        var values = this.globalBeanFactory.getBeanList(beanClass);
         if (!values.isEmpty()) {
             aware.setBeans(values);
             if (name != null) {
-                Object factory = this.applicationContext.factory(name, beanClass, true);
+                Object factory = this.globalBeanFactory.factory(name, beanClass, true);
                 aware.setBean(factory);
             } else if (values.size() == 1) {
                 aware.setBean(values.get(0));
@@ -221,12 +225,12 @@ public class BeanCreatedFactory {
         if (beanInject != null) {
             resolveFieldDependentBean(object, field, beanInject);
         } else {
-            Class<? extends Annotation> injectClass = this.applicationContext.getInjectType();
+            /*Class<? extends Annotation> injectClass = this.applicationContext.getInjectType();
             if (injectClass == null) return;
             Object inject = field.getAnnotation(injectClass);
             if (inject != null) {
                 resolveFieldDependentBean(null, object, field, inject);
-            }
+            }*/
         }
     }
 
@@ -293,7 +297,7 @@ public class BeanCreatedFactory {
         }
         String finalName = name;
         LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by name : " + finalName);
-        var value = this.applicationContext.factory(name, field.getType(), beanInject.require());
+        var value = this.globalBeanFactory.factory(name, field.getType(), beanInject.require());
         if (value != null) {
             ReflectionHelper.setField(object, field, value);
         } else {
@@ -309,7 +313,7 @@ public class BeanCreatedFactory {
         }
         final String finalName = name;
         LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by name : " + finalName);
-        var value = this.applicationContext.factory(name, field.getType(), true);
+        var value = this.globalBeanFactory.factory(name, field.getType(), true);
         if (value != null) {
             ReflectionHelper.setField(object, field, value);
         } else {
@@ -343,7 +347,7 @@ public class BeanCreatedFactory {
         }
         Class<?> type = parameter.getType();
         if (!name.isBlank()) {
-            var value = this.applicationContext.factory(name, type, require, false);
+            var value = this.globalBeanFactory.factory(name, type, require, false);
             if (value != null) {
                 return value;
             } else {
@@ -352,7 +356,7 @@ public class BeanCreatedFactory {
                 }
             }
         } else {
-            var value = this.applicationContext.factory(null, type, require, false);
+            var value = this.globalBeanFactory.factory(null, type, require, false);
             if (value != null) {
                 return value;
             } else {
@@ -406,7 +410,7 @@ public class BeanCreatedFactory {
             Collection<DebbieBeanInfo<?>> fieldBeanDependent = fieldBeanDependents.values();
             for (DebbieBeanInfo debbieBeanInfo : fieldBeanDependent) {
                 if ((debbieBeanInfo.isEmpty() || debbieBeanInfo.isHasVirtualValue())) {
-                    Object object = this.applicationContext.getBeanInfo(debbieBeanInfo.getServiceName(),
+                    Object object = this.beanInfoFactory.getBeanInfo(debbieBeanInfo.getServiceName(),
                             (Class<T>) debbieBeanInfo.getBeanClass(), true).getBean();
                     if (object != null) {
                         debbieBeanInfo.setBean(object);
@@ -427,7 +431,7 @@ public class BeanCreatedFactory {
     }
 
     public void destroy() {
-        this.applicationContext.destroyBeans(singletonBeanInvokerMap.keySet());
+        this.beanInfoFactory.destroyBeans(singletonBeanInvokerMap.keySet());
         singletonBeanInvokerMap.clear();
     }
 

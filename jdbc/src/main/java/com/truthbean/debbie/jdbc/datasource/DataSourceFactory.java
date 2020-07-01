@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanClosure;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
@@ -26,7 +26,7 @@ public interface DataSourceFactory extends BeanClosure {
      * @return DataSourceFactory
      */
     static <Configuration extends DataSourceConfiguration> DataSourceFactory factory(
-            DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext, Class<Configuration> configurationClass) {
+            DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext, Class<Configuration> configurationClass) {
         var config = DataSourceConfigurationFactory.factory(configurationFactory, applicationContext, configurationClass);
         return loadFactory(config);
     }

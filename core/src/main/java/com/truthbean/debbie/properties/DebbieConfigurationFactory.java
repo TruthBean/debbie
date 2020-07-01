@@ -9,10 +9,7 @@
  */
 package com.truthbean.debbie.properties;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
-import com.truthbean.debbie.bean.BeanScanConfiguration;
-import com.truthbean.debbie.bean.DebbieConfigurationCenter;
-import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.Logger;
@@ -27,19 +24,24 @@ import java.util.Set;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieConfigurationFactory {
+public class DebbieConfigurationFactory implements DebbieApplicationContextAware {
 
-    private final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
+    @SuppressWarnings({"rawtypes"})
+    private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
-    private final BeanFactoryContext factoryHandler;
-    private final SingletonBeanRegister singletonBeanRegister;
+    private DebbieApplicationContext factoryHandler;
+    private SingletonBeanRegister singletonBeanRegister;
 
-    public DebbieConfigurationFactory(BeanFactoryContext applicationContext) {
+    public DebbieConfigurationFactory() {
+    }
+
+    @Override
+    public void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
         this.factoryHandler = applicationContext;
         this.singletonBeanRegister = new SingletonBeanRegister(applicationContext);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <P extends DebbieProperties, C extends DebbieConfiguration>
     void register(Class<P> propertiesClass, Class<C> configurationClass) {
         DebbieProperties<C> properties = (DebbieProperties<C>) ReflectionHelper.newInstance(propertiesClass);
@@ -53,7 +55,7 @@ public class DebbieConfigurationFactory {
     @SuppressWarnings("unchecked")
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C getConfigurationBySuperClassOrPropertiesClass(Class<C> superConfigurationClass, Class<P> propertiesClass,
-                                                    BeanFactoryContext applicationContext) {
+                                                    DebbieApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }
@@ -76,7 +78,7 @@ public class DebbieConfigurationFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, BeanFactoryContext applicationContext) {
+    public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }
@@ -92,7 +94,7 @@ public class DebbieConfigurationFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, BeanFactoryContext applicationContext) {
+    public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
             return null;
@@ -110,7 +112,7 @@ public class DebbieConfigurationFactory {
 
     @SuppressWarnings("unchecked")
     public <P extends BaseProperties, C extends BeanScanConfiguration>
-    C factory(Class<C> configurationClass, Class<P> propertiesClass, BeanFactoryContext applicationContext) {
+    C factory(Class<C> configurationClass, Class<P> propertiesClass, DebbieApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }

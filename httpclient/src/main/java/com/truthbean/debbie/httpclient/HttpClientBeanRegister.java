@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
@@ -23,10 +23,10 @@ import java.util.Set;
  */
 public class HttpClientBeanRegister extends SingletonBeanRegister {
     private final HttpClientFactory handler;
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
     private final BeanInitialization initialization;
 
-    public HttpClientBeanRegister(BeanFactoryContext applicationContext) {
+    public HttpClientBeanRegister(DebbieApplicationContext applicationContext) {
         super(applicationContext);
         handler = new HttpClientFactory(applicationContext.getClassLoader());
         this.applicationContext = applicationContext;
@@ -49,7 +49,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
         if (httpClientFactoryBeanInfo == null) {
             registerSingletonBean(handler, HttpClientFactory.class, "httpClientFactory");
         } else if (httpClientFactoryBeanInfo.isEmpty()) {
-            httpClientFactoryBeanInfo.setBeanName("httpClientFactory");
+            httpClientFactoryBeanInfo.addBeanName("httpClientFactory");
             httpClientFactoryBeanInfo.setBean(handler);
             registerSingletonBean(httpClientFactoryBeanInfo);
         }

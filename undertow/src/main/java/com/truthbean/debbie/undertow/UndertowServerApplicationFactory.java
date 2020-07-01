@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -46,7 +46,7 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, applicationContext);
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.service;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.jdbc.entity.Surname;
@@ -19,8 +19,9 @@ class SurnameServiceTest {
     static void before() {
         var factory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
-        BeanFactoryContext applicationContext = factory.getBeanFactoryHandler();
-        surnameService = applicationContext.factory("surnameService");
+        DebbieApplicationContext applicationContext = factory.getBeanFactoryHandler();
+        var beanFactory = applicationContext.getGlobalBeanFactory();
+        surnameService = beanFactory.factory("surnameService");
     }
 
     // @Test

@@ -15,7 +15,6 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -89,7 +88,7 @@ public class BeanConfigurationRegister {
                 if (name.isBlank()) {
                     name = method.getName();
                 }
-                beanInfo.setBeanName(name);
+                beanInfo.addBeanName(name);
                 beanInfo.setBeanType(BeanType.SINGLETON);
                 beanInfo.setBean(ReflectionHelper.invokeMethod(configuration, method));
                 beanRegisterCenter.register(beanInfo);

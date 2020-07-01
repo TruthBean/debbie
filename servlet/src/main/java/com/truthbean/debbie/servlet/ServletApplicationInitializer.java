@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.Logger;
@@ -29,7 +29,7 @@ import java.util.Set;
 @HandlesTypes(value = {Watcher.class})
 public class ServletApplicationInitializer extends DebbieApplicationFactory implements ServletContainerInitializer {
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
     public ServletApplicationInitializer() {
         super(ServletApplicationInitializer.class);

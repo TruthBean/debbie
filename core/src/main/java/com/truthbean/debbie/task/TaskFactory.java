@@ -30,12 +30,14 @@ import java.util.concurrent.ThreadFactory;
  */
 public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
 
-    private BeanFactoryContext applicationContext;
+    private DebbieApplicationContext applicationContext;
+    private GlobalBeanFactory globalBeanFactory;
     private volatile boolean taskRunning;
 
     @Override
-    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
+    public void setBeanFactoryContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }
 
     private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
@@ -52,12 +54,12 @@ public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
     private final ThreadPooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     public void doTask() {
-        final ThreadPooledExecutor executor = applicationContext.factory("threadPooledExecutor");
+        final ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
         final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>(this.taskBeans);
         taskThreadPool.execute(() -> {
             LOGGER.trace("do task....");
             for (DebbieBeanInfo<?> taskBean : taskBeans) {
-                Object task = applicationContext.factory(taskBean.getServiceName());
+                Object task = globalBeanFactory.factory(taskBean.getServiceName());
                 LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
                 Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
                 for (Method method : methods) {
@@ -83,7 +85,7 @@ public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
     }
 
     private void doMethodTask(Object task, Method method) {
-        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method, applicationContext);
+        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method, globalBeanFactory);
         Object[] params = new Object[methodParams.size()];
         for (int i = 0; i < methodParams.size(); i++) {
             params[i] = methodParams.get(i).getValue();

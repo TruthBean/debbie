@@ -29,21 +29,63 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 0.1.0
  * Created on 2020-06-23 22:07.
  */
-public class InjectedBeanFactory implements BeanFactoryContextAware {
-    private BeanFactoryContext applicationContext;
+public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanFactoryAware {
+    private DebbieApplicationContext applicationContext;
+    private DebbieBeanInfoFactory beanInfoFactory;
+    private GlobalBeanFactory globalBeanFactory;
 
     final Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap = new ConcurrentHashMap<>();
     private final Map<DebbieBeanInfo<?>, BeanCreator<?>> preparations = new LinkedHashMap<>();
 
-    private final Set<Annotation> parameterInject = new HashSet<>();
+    private final Set<Class<? extends Annotation>> injectTypes = new HashSet<>(2);
+    private Class<? extends Annotation> injectType;
 
-    public <A extends Annotation> void registerParameterInject(A inject) {
-        parameterInject.add(inject);
+    @SuppressWarnings("unchecked")
+    InjectedBeanFactory() {
+        injectTypes.add(BeanInject.class);
+        injectTypes.add(PropertyInject.class);
+        try {
+            Class<?> injectType = Class.forName("javax.inject.Inject");
+            if (Annotation.class.isAssignableFrom(injectType)) {
+                this.injectType = (Class<Annotation>) injectType;
+                injectTypes.add(this.injectType);
+            }
+        } catch (ClassNotFoundException e) {
+            LOGGER.info("class javax.inject.Inject not found");
+        }
+    }
+
+    public <A extends Annotation> void registerInjectType(Class<A> injectType) {
+        injectTypes.add(injectType);
+    }
+
+    public void registerInjectType(Set<Class<? extends Annotation>> injectTypes) {
+        if (injectTypes != null && !injectTypes.isEmpty()) {
+            this.injectTypes.addAll(injectTypes);
+        }
+    }
+
+    public boolean containInjectType(Class<? extends Annotation> annotation) {
+        return injectTypes.contains(annotation);
+    }
+
+    public Set<Class<? extends Annotation>> getInjectTypes() {
+        return injectTypes;
+    }
+
+    public Class<? extends Annotation> getInjectType() {
+        return this.injectType;
     }
 
     @Override
-    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
+    public void setBeanFactoryContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+    }
+
+    @Override
+    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
+        this.globalBeanFactory = globalBeanFactory;
     }
 
     public <T> T factory(DebbieBeanInfo<T> beanInfo) {
@@ -79,7 +121,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware {
         if (preparations.containsKey(beanInfo)) {
             return (BeanCreator<T>) preparations.get(beanInfo);
         } else {
-            BeanCreator<T> creator = new BeanCreatorImpl<>(beanInfo, this.applicationContext);
+            BeanCreator<T> creator = new BeanCreatorImpl<>(beanInfo, this.beanInfoFactory);
             if (beanInfo.isSingleton() && beanInfo.isPresent()) {
                 creator.create(beanInfo.getBean());
                 return creator;
@@ -94,59 +136,17 @@ public class InjectedBeanFactory implements BeanFactoryContextAware {
         }
     }
 
-    public BeanCreator<?> getParameterBean(Parameter parameter, Class<?> beanClass) {
-        LOGGER.trace(() -> "resolve " + beanClass + "'s parameter dependent bean(" + parameter.getType() + ") by type");
-        var beanInject = parameter.getAnnotation(BeanInject.class);
-        String name = "";
-        boolean require = false;
-        if (beanInject != null) {
-            name = beanInject.name();
-            if (name.isBlank()) {
-                name = beanInject.value();
-            }
-            require = beanInject.require();
-        }
-        if (name.isBlank() && parameter.isNamePresent()) {
-            name = parameter.getName();
-        }
-        Class<?> type = parameter.getType();
-        if (!name.isBlank()) {
-            var beanInfo = this.applicationContext.getBeanInfo(name, type, require);
-            if (beanInfo != null) {
-                return factoryBeanPreparation(beanInfo);
-            } else {
-                if (require) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
-            }
-        } else {
-            var beanInfo = this.applicationContext.getBeanInfo(null, type, require);
-            if (beanInfo != null) {
-                return factoryBeanPreparation(beanInfo);
-            } else {
-                if (require) {
-                    throw new NoBeanException("no bean " + name + " found .");
-                }
-            }
-        }
-        throw new NoBeanException(() -> "no bean " + parameter.getName() + " found .");
-    }
-
     public void resolveFieldValue(DebbieBeanInfo<?> beanInfo, FieldInfo field, String keyPrefix) {
         var propertyInject = field.getAnnotation(PropertyInject.class);
         if (propertyInject != null) {
             resolvePropertiesInject(beanInfo.getBean(), field.getField(), keyPrefix, propertyInject);
             return;
         }
-        var beanInject = field.getAnnotation(BeanInject.class);
-        if (beanInject != null) {
-            resolveFieldDependentBean(beanInfo, field, beanInject);
-        } else {
-            Class<? extends Annotation> injectClass = applicationContext.getInjectType();
-            if (injectClass == null) return;
-            Object inject = field.getAnnotation(injectClass);
-            if (inject != null) {
-                resolveFieldDependentBean(beanInfo, field, inject);
+        for (Class<? extends Annotation> type : injectTypes) {
+            Annotation annotation = field.getAnnotation(type);
+            if (annotation != null) {
+                resolveFieldDependentBean(beanInfo, field, annotation);
+                break;
             }
         }
     }
@@ -166,11 +166,11 @@ public class InjectedBeanFactory implements BeanFactoryContextAware {
             }
         }
 
-        var values = applicationContext.getBeanList(beanClass);
+        var values = globalBeanFactory.getBeanList(beanClass);
         if (!values.isEmpty()) {
             aware.setBeans(values);
             if (name != null) {
-                var beanInfo = this.applicationContext.getBeanInfo(name, beanClass, true);
+                var beanInfo = this.beanInfoFactory.getBeanInfo(name, beanClass, true);
                 if (beanInfo != null) {
                     BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo);
                     aware.setBean(() -> value);
@@ -184,6 +184,35 @@ public class InjectedBeanFactory implements BeanFactoryContextAware {
 
     public void resolveMethodValue(Object object, Method method) {
         // todo
+    }
+
+    public Object factoryProperty(Class<?> valueType, String keyPrefix, PropertyInject propertyInject) {
+        String property = propertyInject.value();
+        if (!property.isBlank()) {
+            String key;
+            if (keyPrefix != null) {
+                key = keyPrefix + property;
+            } else {
+                key = property;
+            }
+            BaseProperties properties = new BaseProperties();
+            String value = properties.getValue(key);
+            if (value != null) {
+                Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
+                Object transform = null;
+                try {
+                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
+                    transform = dataTransformer.reverse(value);
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
+                if (transform == null || transform.getClass() != valueType) {
+                    transform = applicationContext.transform(value, valueType);
+                }
+                return transform;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -207,38 +236,16 @@ public class InjectedBeanFactory implements BeanFactoryContextAware {
     }
 
     private void resolvePropertiesInject(Object object, Field field, String keyPrefix, PropertyInject propertyInject) {
-        String property = propertyInject.value();
-        if (!property.isBlank()) {
-            String key;
-            if (keyPrefix != null) {
-                key = keyPrefix + property;
-            } else {
-                key = property;
-            }
-            BaseProperties properties = new BaseProperties();
-            String value = properties.getValue(key);
-            if (value != null) {
-                Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
-                Object transform = null;
-                try {
-                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
-                    transform = dataTransformer.reverse(value);
-                } catch (Exception e) {
-                    LOGGER.error("", e);
-                }
-                Class<?> type = field.getType();
-                if (transform == null || transform.getClass() != type) {
-                    transform = applicationContext.transform(value, type);
-                }
-                // use setter method to inject filed
-                // if setter method not found, inject directly
-                ReflectionHelper.invokeFieldBySetMethod(object, field, transform);
-            }
+        Object value = factoryProperty(field.getType(), keyPrefix, propertyInject);
+        if (value != null) {
+            // use setter method to inject filed
+            // if setter method not found, inject directly
+            ReflectionHelper.invokeFieldBySetMethod(object, field, value);
         }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void resolveFieldDependentBean(DebbieBeanInfo<?> beanInfo, FieldInfo fieldInfo, Object inject) {
+    private void resolveFieldDependentBean(DebbieBeanInfo<?> beanInfo, FieldInfo fieldInfo, Annotation inject) {
         String name = null;
         Field field = fieldInfo.getField();
         if (inject instanceof BeanInject) {

@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.tomcat;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.io.PathUtils;
@@ -109,7 +110,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
         if (configuration.getUriEncoding() != null) {
             connector.setURIEncoding(configuration.getUriEncoding().name());
         }
-        // Don't bind to the socket prematurely if BeanFactoryContext is slow to start
+        // Don't bind to the socket prematurely if DebbieApplicationContext is slow to start
         connector.setProperty("bindOnInit", "false");
         // TODO ssl
     }
@@ -184,15 +185,16 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, applicationContext);
-        List<ErrorPage> errorPages = applicationContext.getBeanList(ErrorPage.class);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        List<ErrorPage> errorPages = globalBeanFactory.getBeanList(ErrorPage.class);
         config(configuration, classLoader, errorPages);
         return tomcatApplication(configuration, applicationContext);
     }
 
-    private DebbieApplication tomcatApplication(TomcatConfiguration configuration, BeanFactoryContext applicationContext) {
+    private DebbieApplication tomcatApplication(TomcatConfiguration configuration, DebbieApplicationContext applicationContext) {
         return new AbstractDebbieApplication(LOGGER, applicationContext) {
             @Override
             public void start(long beforeStartTime, String... args) {

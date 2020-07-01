@@ -1,5 +1,6 @@
 package com.truthbean.debbie.hikari;
 
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.zaxxer.hikari.HikariConfig;
@@ -39,9 +40,10 @@ public class HikariTest {
     @Test
     public void testDataSource() {
         DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(HikariTest.class);
+        GlobalBeanFactory globalBeanFactory = applicationFactory.getGlobalBeanFactory();
 
         try {
-            DataSourceFactory factory = applicationFactory.factory("dataSourceFactory");
+            DataSourceFactory factory = globalBeanFactory.factory("dataSourceFactory");
             System.out.println(factory);
             Connection connection = factory.getConnection();
             Thread.sleep(2000);

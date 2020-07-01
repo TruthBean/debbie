@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 
 /**
  * @author TruthBean
@@ -17,7 +17,7 @@ import com.truthbean.debbie.bean.BeanFactoryContext;
  */
 public class DebbieStartedEvent extends AbstractDebbieEvent {
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
     /**
      * @see AbstractDebbieEvent#AbstractDebbieEvent(Object)
@@ -25,12 +25,12 @@ public class DebbieStartedEvent extends AbstractDebbieEvent {
      * @param source event source
      * @param applicationContext bean factory handler
      */
-    public DebbieStartedEvent(Object source, BeanFactoryContext applicationContext) {
+    public DebbieStartedEvent(Object source, DebbieApplicationContext applicationContext) {
         super(source);
         this.applicationContext = applicationContext;
     }
 
-    public BeanFactoryContext getApplicationContext() {
+    public DebbieApplicationContext getApplicationContext() {
         return applicationContext;
     }
 }

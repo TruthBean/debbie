@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
@@ -23,12 +24,12 @@ import java.util.concurrent.ThreadFactory;
  */
 public class DebbieStartedEventProcessor {
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
     private final ThreadPooledExecutor multicastEventThreadPool;
     private final ThreadPooledExecutor startedEventThreadPool;
 
-    public DebbieStartedEventProcessor(final BeanFactoryContext applicationContext) {
+    public DebbieStartedEventProcessor(final DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
 
         ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieMulticastEvent", true);
@@ -40,7 +41,8 @@ public class DebbieStartedEventProcessor {
 
     public void multicastEvent() {
         final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this, applicationContext);
-        final List<AbstractDebbieStartedEventListener> beanInfoList = applicationContext.getBeanList(AbstractDebbieStartedEventListener.class);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        final List<AbstractDebbieStartedEventListener> beanInfoList = globalBeanFactory.getBeanList(AbstractDebbieStartedEventListener.class);
         this.multicastEventThreadPool.execute(() -> {
             if (beanInfoList != null) {
                 for (AbstractDebbieStartedEventListener startedEventListener : beanInfoList) {

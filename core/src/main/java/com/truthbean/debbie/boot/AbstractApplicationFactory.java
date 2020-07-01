@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
 /**
@@ -38,10 +38,10 @@ public abstract class AbstractApplicationFactory {
      * @see DebbieConfigurationFactory
      * @param applicationContext applicationContext
      * @param classLoader main class's classLoader
-     * @see BeanFactoryContext
+     * @see DebbieApplicationContext
      * @return DebbieApplication
      */
-    public abstract DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
+    public abstract DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
                                               ClassLoader classLoader);
 
 }

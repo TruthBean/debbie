@@ -29,8 +29,7 @@ import java.util.function.Supplier;
  * @since 0.0.1
  */
 public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBeanInfo<Bean> {
-    private String beanName;
-    private Set<String> alias;
+    private final Set<String> beanNames = new HashSet<>();
     private int order;
 
     private BeanType beanType;
@@ -71,8 +70,16 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.initMethod = initMethod;
     }
 
+    public Method getInitMethod() {
+        return initMethod;
+    }
+
     public void setDestroyMethod(Method destroyMethod) {
         this.destroyMethod = destroyMethod;
+    }
+
+    public Method getDestroyMethod() {
+        return destroyMethod;
     }
 
     public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent) {
@@ -169,9 +176,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     private void resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
         if (key == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
-            beanName = beanService.name();
+            String beanName = beanService.name();
             if (beanName.isBlank()) {
                 beanName = beanService.value();
+            }
+            if (!beanName.isBlank()) {
+                beanNames.add(beanName);
             }
             beanType = beanService.type();
             lazyCreate = beanService.lazy();
@@ -209,6 +219,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             }
 
             if ((valueMethod != null || nameMethod != null) && typeMethod != null) {
+                String beanName = null;
                 if (valueMethod != null) {
                     beanName = ReflectionHelper.invokeMethod(value, valueMethod);
                 }
@@ -218,6 +229,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 if (StringUtils.isBlank(beanName)) {
                     beanName = getServiceName();
                 }
+                beanNames.add(beanName);
 
                 beanType = ReflectionHelper.invokeMethod(value, typeMethod);
 
@@ -274,13 +286,21 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     }
 
     public String getServiceName() {
-        String name = beanName;
+        String name = this.beanNames.isEmpty() ? null : this.beanNames.iterator().next();
         if (name == null || name.isBlank()) {
             name = super.getClazz().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
-            beanName = name;
+            this.beanNames.add(name);
         }
         return name;
+    }
+
+    public boolean containName(String name) {
+        return this.beanNames.contains(name);
+    }
+
+    public Set<String> getBeanNames() {
+        return this.beanNames;
     }
 
     public BeanType getBeanType() {
@@ -288,8 +308,13 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     }
 
     @Override
-    public void setBeanName(String beanName) {
-        this.beanName = beanName;
+    public void addBeanName(String beanName) {
+        if (beanName != null && !beanName.isBlank())
+            this.beanNames.add(beanName);
+    }
+
+    public void addBeanNames(Set<String> beanNames) {
+        this.beanNames.addAll(beanNames);
     }
 
     @Override
@@ -331,25 +356,24 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         if (!(o instanceof DebbieBeanInfo)) return false;
         if (!super.equals(o)) return false;
         DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
-        String beanName = getServiceName();
-        String oBeanName = beanInfo.getServiceName();
-        boolean beanNameEmpty = beanName == null || beanName.isBlank() || oBeanName == null || oBeanName.isBlank();
+        Set<String> beanNames = getBeanNames();
+        Set<String> oBeanNames = beanInfo.getBeanNames();
+        boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
         if (beanNameEmpty && super.equals(o)) return true;
-        return Objects.equals(beanName, oBeanName);
+        return Objects.equals(beanNames, oBeanNames);
     }
 
     @Override
     public int hashCode() {
-        String beanName = getServiceName();
-        return Objects.hash(super.hashCode(), beanName);
+        return Objects.hash(super.hashCode(), this.beanNames);
     }
 
     @Override
     public DebbieBeanInfo<Bean> copy() {
         DebbieBeanInfo<Bean> beanInfo = new DebbieBeanInfo<>(getClazz());
 
-        if (beanName != null && !beanName.isEmpty()) {
-            beanInfo.setBeanName(beanName);
+        if (beanNames != null && !beanNames.isEmpty()) {
+            beanInfo.beanNames.addAll(beanNames);
         }
         if (beanFactory != null) {
             beanInfo.setBeanFactory(beanFactory);
@@ -361,6 +385,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     }
 
     public void release() {
+        beanNames.clear();
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {

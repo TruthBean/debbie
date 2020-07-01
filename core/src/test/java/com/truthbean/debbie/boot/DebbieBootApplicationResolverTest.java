@@ -2,6 +2,7 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieScan;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,8 @@ public class DebbieBootApplicationResolverTest {
 
     @Test
     void resolverApplicationClass() {
-        DebbieBootApplicationResolverTest factory = this.factory.factory(DebbieBootApplicationResolverTest.class);
+        GlobalBeanFactory globalBeanFactory = this.factory.getGlobalBeanFactory();
+        DebbieBootApplicationResolverTest factory = globalBeanFactory.factory(DebbieBootApplicationResolverTest.class);
         ReflectionHelper.invokeMethod(factory.test, "hello");
     }
 }

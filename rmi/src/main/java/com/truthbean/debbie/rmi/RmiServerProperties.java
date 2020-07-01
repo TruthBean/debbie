@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
@@ -34,7 +34,7 @@ public class RmiServerProperties extends BaseProperties implements DebbiePropert
     }
 
     @Override
-    public RmiServerConfiguration toConfiguration(BeanFactoryContext applicationContext) {
+    public RmiServerConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
         return configuration;
     }
 }

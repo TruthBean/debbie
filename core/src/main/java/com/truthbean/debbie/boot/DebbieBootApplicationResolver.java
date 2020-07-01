@@ -15,6 +15,7 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 /**
@@ -23,9 +24,9 @@ import java.util.Set;
  */
 class DebbieBootApplicationResolver {
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
-    DebbieBootApplicationResolver(BeanFactoryContext applicationContext) {
+    DebbieBootApplicationResolver(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
@@ -65,7 +66,7 @@ class DebbieBootApplicationResolver {
 
         BeanInitialization beanInitialization = this.applicationContext.getBeanInitialization();
         beanInitialization.init(applicationClass);
-        this.applicationContext.refreshBeans();
+        this.applicationContext.getDebbieBeanInfoFactory().refreshBeans();
         DebbieBootApplication debbieBootApplication = applicationClass.getAnnotation(DebbieBootApplication.class);
         if (debbieBootApplication != null) {
             DebbieScan scan = debbieBootApplication.scan();
@@ -85,6 +86,9 @@ class DebbieBootApplicationResolver {
             if (targetClasses.isEmpty()) {
                 configuration.addScanBasePackages(applicationClass.getPackageName());
             }
+
+            Class<? extends Annotation>[] injectTypes = debbieBootApplication.customInjectType();
+            configuration.addCustomInjectType(injectTypes);
 
             DebbieConfigurationCenter.addConfiguration(configuration);
         } else {

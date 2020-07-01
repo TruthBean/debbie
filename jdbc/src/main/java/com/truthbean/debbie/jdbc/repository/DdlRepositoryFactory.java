@@ -1,7 +1,8 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 
 /**
@@ -11,16 +12,16 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
  */
 public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
 
-    private BeanFactoryContext applicationContext;
+    private GlobalBeanFactory beanFactory;
 
     @Override
-    public void setBeanFactoryContext(BeanFactoryContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public void setGlobalBeanFactory(GlobalBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     @Override
     public DdlRepository getBean() {
-        DataSourceConfiguration configuration = this.applicationContext.factory(DataSourceConfiguration.class);
+        DataSourceConfiguration configuration = this.beanFactory.factory(DataSourceConfiguration.class);
         return new DdlRepository(configuration);
     }
 

@@ -9,10 +9,7 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.BeanScanConfiguration;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.data.transformer.ClassTransformer;
 import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
@@ -53,11 +50,11 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(BeanFactoryContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
         DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
         ResourceResolver resourceResolver = applicationContext.getResourceResolver();
         beanInfo.setBean(resourceResolver);
-        beanInfo.setBeanName("resourceResolver");
+        beanInfo.addBeanName("resourceResolver");
         beanInitialization.initSingletonBean(beanInfo);
 
         beanInitialization.addAnnotationRegister(new PropertiesConfigurationRegister(beanInitialization));
@@ -69,21 +66,21 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(ClassesScanProperties.class, BeanScanConfiguration.class);
         new DebbieTaskConfigurer().configure(applicationContext);
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void starter(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         applicationContext.refreshBeans();
     }
 
     @Override
-    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void release(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.reset();
-
-        ThreadPooledExecutor executor = applicationContext.factory("threadPooledExecutor");
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
         executor.destroy();
     }
 

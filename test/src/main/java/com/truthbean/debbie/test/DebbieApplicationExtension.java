@@ -9,21 +9,26 @@
  */
 package com.truthbean.debbie.test;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.InjectedBeanFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.extension.*;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author truthbean
@@ -40,17 +45,34 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
         logger.trace("supportsParameter....");
-        return parameterContext.isAnnotated(BeanInject.class);
+        DebbieApplicationContext applicationContext = getBeanFactoryHandler(extensionContext);
+        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+        Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
+        for (Class<? extends Annotation> injectType : injectTypes) {
+            if (parameterContext.isAnnotated(injectType)) {
+                if (logger.isTraceEnabled())
+                    logger.trace("parameter inject type is: " + injectType);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
         logger.trace("resolveParameter....");
-        return getDebbieBean(parameterContext.getParameter(), extensionContext);
+        DebbieApplicationContext applicationContext = getBeanFactoryHandler(extensionContext);
+        if (parameterContext.isAnnotated(BeanInject.class)) {
+            return getDebbieBean(parameterContext.getParameter(), applicationContext);
+        } else if (parameterContext.isAnnotated(PropertyInject.class)) {
+            return getPropertyValue(parameterContext.getParameter(), applicationContext);
+        } else {
+            return getOtherInjectedBean(parameterContext.getParameter(), applicationContext);
+        }
     }
 
-    private Object getDebbieBean(Parameter parameter, ExtensionContext extensionContext) {
+    private Object getDebbieBean(Parameter parameter, DebbieApplicationContext applicationContext) {
         BeanInject beanInject = parameter.getAnnotation(BeanInject.class);
         String name = beanInject.name();
         if (name.isBlank()) {
@@ -58,13 +80,13 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         }
 
         Class<?> type = parameter.getType();
-        BeanFactoryContext applicationContext = getBeanFactoryHandler(extensionContext);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
         Object result;
         if (name.isBlank()) {
-            result = applicationContext.factory(type);
+            result = globalBeanFactory.factory(type);
         } else {
-            result = applicationContext.factory(name);
+            result = globalBeanFactory.factory(name);
         }
 
         if (type.isInstance(result)) {
@@ -74,63 +96,55 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         }
     }
 
-    private BeanFactoryContext getBeanFactoryHandler(ExtensionContext context) {
+    private Object getOtherInjectedBean(Parameter parameter, DebbieApplicationContext applicationContext) {
+        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+        Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
+
+        Class<? extends Annotation> injectClass = null;
+        Annotation inject;
+
+        for (Class<? extends Annotation> injectType : injectTypes) {
+            inject = parameter.getAnnotation(injectType);
+            if (inject != null) {
+                injectClass = injectType;
+                break;
+            }
+        }
+
+        if (logger.isTraceEnabled())
+            logger.trace("parameter inject type is: " + injectClass);
+
+        Class<?> type = parameter.getType();
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+
+        Object result = globalBeanFactory.factory(type);
+
+        if (type.isInstance(result)) {
+            return result;
+        } else {
+            return JdkDynamicProxy.getRealValue(result);
+        }
+    }
+
+    private Object getPropertyValue(Parameter parameter, DebbieApplicationContext applicationContext) {
+        PropertyInject propertyInject = parameter.getAnnotation(PropertyInject.class);
+        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+        Class<?> type = parameter.getType();
+        return injectedBeanFactory.factoryProperty(type, null, propertyInject);
+    }
+
+    private DebbieApplicationContext getBeanFactoryHandler(ExtensionContext context) {
         return context.getRoot()
                 .getStore(ExtensionContext.Namespace.GLOBAL)
-                .getOrComputeIfAbsent(BeanFactoryContext.class);
+                .getOrComputeIfAbsent(DebbieApplicationContext.class);
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
-        BeanFactoryContext applicationContext = getBeanFactoryHandler(context);
+        DebbieApplicationContext applicationContext = getBeanFactoryHandler(context);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         Optional<Object> instance = context.getTestInstance();
-        instance.ifPresent(o -> {
-            var clazz = o.getClass();
-            List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
-            if (!declaredFields.isEmpty()) {
-                for (Field field: declaredFields) {
-                    BeanInject beanInject = field.getAnnotation(BeanInject.class);
-                    if (beanInject != null) {
-                        String name = beanInject.name();
-                        if (name.isBlank()) {
-                            name = beanInject.value();
-                        }
-
-                        Class<?> type = field.getType();
-
-                        Object result;
-                        if (name.isBlank()) {
-                            result = applicationContext.factory(type);
-                        } else {
-                            result = applicationContext.factory(name);
-                        }
-
-                        if (!type.isInstance(result)) {
-                            result = JdkDynamicProxy.getRealValue(result);
-                        }
-
-                        ReflectionHelper.setField(o, field, result);
-                    } else {
-                        @SuppressWarnings("unchecked")
-                        Class injectClass = applicationContext.getInjectType();
-                        if (injectClass == null) return;
-                        @SuppressWarnings("unchecked")
-                        Object inject = field.getAnnotation(injectClass);
-                        if (inject != null) {
-                            Class<?> type = field.getType();
-
-                            Object result = applicationContext.factory(type);
-
-                            if (!type.isInstance(result)) {
-                                result = JdkDynamicProxy.getRealValue(result);
-                            }
-
-                            ReflectionHelper.setField(o, field, result);
-                        }
-                    }
-                }
-            }
-        });
+        instance.ifPresent(globalBeanFactory::factoryByRawBean);
 
         getStore(context).put(START_TIME, System.currentTimeMillis());
     }
@@ -160,9 +174,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(applicationClass);
         DebbieApplication debbieApplication = applicationFactory.postCreateApplication();
         debbieApplication.start();
-        BeanFactoryContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
-        store.put(BeanFactoryContext.class, applicationContext);
+        store.put(DebbieApplicationContext.class, applicationContext);
         store.put(DebbieApplication.class, debbieApplication);
     }
 

@@ -20,7 +20,7 @@ public interface WriteableBeanInfo<Bean> {
 
     void setBeanType(BeanType beanType);
 
-    void setBeanName(String beanName);
+    void addBeanName(String beanName);
 
     void setBean(Bean bean);
 }

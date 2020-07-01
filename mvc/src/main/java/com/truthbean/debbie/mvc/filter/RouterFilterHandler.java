@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.mvc.filter;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 
@@ -27,13 +28,15 @@ public class RouterFilterHandler {
     private final RouterFilter routerFilter;
 
 
-    public RouterFilterHandler(RouterFilterInfo routerFilterInfo, BeanFactoryContext handler) {
+    public RouterFilterHandler(RouterFilterInfo routerFilterInfo, DebbieApplicationContext applicationContext) {
         this.filterInfo = routerFilterInfo;
 
         Class<? extends RouterFilter> routerFilterType = filterInfo.getRouterFilterType();
         RouterFilter routerFilter = filterInfo.getFilterInstance();
-        if (routerFilter == null)
-            routerFilter = handler.factory(routerFilterType);
+        if (routerFilter == null) {
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            routerFilter = globalBeanFactory.factory(routerFilterType);
+        }
         routerFilter.setMvcConfiguration(this.filterInfo.getConfiguration());
         this.routerFilter = routerFilter;
     }

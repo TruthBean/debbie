@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.transaction;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
@@ -26,7 +26,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     private int order;
 
-    private BeanFactoryContext applicationContext;
+    private DebbieApplicationContext applicationContext;
     private boolean autoCommit;
 
     public TransactionalMethodProxyHandler() {
@@ -34,7 +34,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
-    public void setApplicationContext(BeanFactoryContext applicationContext) {
+    public void setApplicationContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

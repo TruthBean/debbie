@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy.jdk;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.proxy.ProxyInvocationHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.Logger;
@@ -26,7 +26,7 @@ import java.lang.reflect.Proxy;
 public class JdkDynamicProxy<T, K extends T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdkDynamicProxy.class);
 
-    public T invokeJdkProxy(BeanFactoryContext handler, Class<T> targetInterface, K target) {
+    public T invokeJdkProxy(DebbieApplicationContext handler, Class<T> targetInterface, K target) {
         InvocationHandler invocationHandler = new ProxyInvocationHandler<>(target, handler);
 
         return doJdkProxy(targetInterface, target, invocationHandler);

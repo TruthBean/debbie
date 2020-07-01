@@ -14,6 +14,7 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
@@ -28,7 +29,9 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<String> scanExcludePackages;
     private final Set<Class<?>> scanExcludeClasses;
 
-    public ClassLoader classLoader;
+    private final Set<Class<? extends Annotation>> customInjectType;
+
+    private ClassLoader classLoader;
 
     public BeanScanConfiguration() {
         this.scanClasses = new HashSet<>();
@@ -36,6 +39,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanBasePackages = new HashSet<>();
         this.scanExcludePackages = new HashSet<>();
         this.scanExcludeClasses = new HashSet<>();
+
+        this.customInjectType = new HashSet<>();
     }
 
     public BeanScanConfiguration(ClassLoader classLoader) {
@@ -44,6 +49,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanBasePackages = new HashSet<>();
         this.scanExcludePackages = new HashSet<>();
         this.scanExcludeClasses = new HashSet<>();
+
+        this.customInjectType = new HashSet<>();
 
         this.classLoader = classLoader;
     }
@@ -54,6 +61,23 @@ public class BeanScanConfiguration implements DebbieConfiguration {
 
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    public Set<Class<? extends Annotation>> getCustomInjectType() {
+        return customInjectType;
+    }
+
+    public void addCustomInjectType(Set<Class<? extends Annotation>> classes) {
+        if (classes != null && !classes.isEmpty()) {
+            this.customInjectType.addAll(classes);
+        }
+    }
+
+    @SafeVarargs
+    public final void addCustomInjectType(Class<? extends Annotation>... injectType) {
+        if (injectType != null) {
+            this.customInjectType.addAll(Arrays.asList(injectType));
+        }
     }
 
     public Set<Class<?>> getScanClasses() {

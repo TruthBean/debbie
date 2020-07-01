@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.mvc.filter.FilterRegister;
@@ -21,14 +21,14 @@ import com.truthbean.debbie.properties.DebbieConfigurationFactory;
  */
 public class MvcModuleStarter implements DebbieModuleStarter {
     @Override
-    public void registerBean(BeanFactoryContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
         FilterRegister filterRegister = new FilterRegister();
         filterRegister.setInitialization(beanInitialization);
         beanInitialization.addAnnotationRegister(filterRegister);
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(MvcProperties.class, MvcConfiguration.class);
     }
 

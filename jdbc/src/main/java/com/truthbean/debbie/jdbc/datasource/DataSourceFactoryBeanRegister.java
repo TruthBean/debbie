@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
@@ -15,13 +15,13 @@ import com.truthbean.logger.LoggerFactory;
 @SuppressWarnings({"unchecked"})
 public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
-    private BeanFactoryContext applicationContext;
+    private DebbieApplicationContext applicationContext;
     private BeanInitialization initialization;
     private DebbieConfigurationFactory configurationFactory;
 
     private final Logger logger = LoggerFactory.getLogger(DataSourceFactoryBeanRegister.class);
 
-    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         super(applicationContext);
         this.applicationContext = applicationContext;
         this.initialization = applicationContext.getBeanInitialization();
@@ -42,7 +42,7 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
         } else if (dataSourceFactoryBeanInfo.isEmpty()) {
             DataSourceFactory dataSourceFactory = DataSourceFactory.factory(configurationFactory, applicationContext, configurationClass);
             dataSourceFactoryBeanInfo.setBean(dataSourceFactory);
-            dataSourceFactoryBeanInfo.setBeanName("dataSourceFactory");
+            dataSourceFactoryBeanInfo.addBeanName("dataSourceFactory");
             registerSingletonBean(dataSourceFactoryBeanInfo);
         }
     }

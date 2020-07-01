@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
@@ -26,7 +26,7 @@ import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
 public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void registerBean(BeanFactoryContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
         beanInitialization.addAnnotationRegister(new SqlRepositoryRegister(beanInitialization));
 
         beanInitialization.registerDataTransformer(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
@@ -35,15 +35,15 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
         methodProxyHandlerRegister.register(JdbcTransactional.class, TransactionalMethodProxyHandler.class);
 
         DebbieBeanInfo<DdlRepository> beanInfo = new DebbieBeanInfo<>(DdlRepository.class);
-        beanInfo.setBeanName("ddlRepository");
+        beanInfo.addBeanName("ddlRepository");
         DdlRepositoryFactory factory = new DdlRepositoryFactory();
-        factory.setBeanFactoryContext(applicationContext);
+        factory.setGlobalBeanFactory(applicationContext.getGlobalBeanFactory());
         beanInfo.setBeanFactory(factory);
         beanInitialization.initBean(beanInfo);
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class);
         configurationFactory.register(DefaultDataSourcePoolProperties.class, DataSourceConfiguration.class);
 
@@ -54,7 +54,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void starter(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
     }
 
     @Override
@@ -63,7 +63,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release(DebbieConfigurationFactory configurationFactory, BeanFactoryContext applicationContext) {
+    public void release(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
         TransactionManager.clear();
     }
 }

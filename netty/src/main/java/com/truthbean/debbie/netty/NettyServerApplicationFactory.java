@@ -1,6 +1,6 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -38,7 +38,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         NettyConfiguration configuration = factory.factory(NettyConfiguration.class, applicationContext);
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
@@ -58,7 +58,7 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
     private ChannelFuture channelFuture = null;
 
     private void run(NettyConfiguration configuration, SessionManager sessionManager,
-                     BeanFactoryContext applicationContext,
+                     DebbieApplicationContext applicationContext,
                      long beforeStartTime, NettyDebbieApplication debbieApplication) {
         try {
             // (2)
@@ -125,10 +125,10 @@ public class NettyServerApplicationFactory extends AbstractWebServerApplicationF
 
         private final NettyConfiguration configuration;
         private final SessionManager sessionManager;
-        private final BeanFactoryContext applicationContext;
+        private final DebbieApplicationContext applicationContext;
 
         NettyDebbieApplication(NettyConfiguration configuration, SessionManager sessionManage,
-                               BeanFactoryContext applicationContext, Logger logger) {
+                               DebbieApplicationContext applicationContext, Logger logger) {
             super(logger, applicationContext);
             this.configuration = configuration;
             this.sessionManager = sessionManage;

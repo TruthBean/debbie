@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
@@ -21,7 +21,7 @@ public class DdlRepositoryHandlerTest {
     public static void before() {
         var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
 
-        BeanFactoryContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
         var config = DataSourceProperties.toConfiguration();
         factory = new DefaultDataSourceFactory();
         factory.factory(config);

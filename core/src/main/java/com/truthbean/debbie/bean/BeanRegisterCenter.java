@@ -17,6 +17,9 @@ import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -48,15 +51,33 @@ final class BeanRegisterCenter {
         return Collections.unmodifiableSet(BEAN_ANNOTATION);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
-        // if (BEAN_CLASSES.containsKey(beanClass)) {
-            // TODO merge
-            // DebbieBeanInfo<?> beanInfo = BEAN_CLASSES.get(beanClass);
-            // add bean alias name
-            // if singleton, set order
-            // return;
-        // }
+         if (BEAN_CLASSES.containsKey(beanClass)) {
+             // merge
+             DebbieBeanInfo beanInfo = BEAN_CLASSES.get(beanClass);
+             beanInfo.addBeanNames(beanClassInfo.getBeanNames());
+
+             // add bean alias name
+             // if singleton, set order
+             if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
+                 beanInfo.setBeanType(BeanType.SINGLETON);
+                 if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
+                     beanInfo.setBean(beanClassInfo.getBean());
+                 }
+                 if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                     beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                 }
+                 return;
+             } else if ((beanInfo.getBeanType() == BeanType.NO_LIMIT || beanInfo.getBeanType() == null)
+                     && beanClassInfo.getBeanType() == BeanType.NO_LIMIT) {
+                 if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                     beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                 }
+                 return;
+             }
+         }
 
         DebbieBeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
         if (put == null) {
@@ -80,7 +101,12 @@ final class BeanRegisterCenter {
         Map<Class<? extends Annotation>, Annotation> classAnnotation = beanClassInfo.getClassAnnotations();
         if (!classAnnotation.isEmpty()) {
             var annotations = classAnnotation.keySet();
-            CLASS_ANNOTATION.addAll(annotations);
+
+            classAnnotation.forEach((type, annotation) -> {
+                if (filterAnnotation(type)) {
+                    CLASS_ANNOTATION.add(type);
+                }
+            });
 
             annotations.stream().filter(beanClass::isAnnotationPresent).forEach(annotation -> {
                 var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
@@ -91,6 +117,12 @@ final class BeanRegisterCenter {
                 BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
             });
         }
+    }
+
+    boolean filterAnnotation(Class<? extends Annotation> annotationType) {
+        return annotationType != FunctionalInterface.class
+                && annotationType != Documented.class && annotationType != Retention.class && annotationType != Target.class
+                && annotationType != Override.class;
     }
 
     @SuppressWarnings("unchecked")
@@ -123,6 +155,8 @@ final class BeanRegisterCenter {
     void register(Class<?> beanClass) {
         if (support(beanClass)) {
             var beanClassInfo = new DebbieBeanInfo<>(beanClass);
+            if (beanClassInfo.getBeanType() == null)
+                return;
             register(beanClassInfo);
         }
     }

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
@@ -28,8 +28,9 @@ public class DmlRepositoryHandlerTest {
     @BeforeAll
     public static void before() {
         var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
+        var beanFactory = applicationFactory.getGlobalBeanFactory();
 
-        BeanFactoryContext applicationContext = applicationFactory.getBeanFactoryHandler();
+        DebbieApplicationContext applicationContext = applicationFactory.getBeanFactoryHandler();
         var beanInitialization = applicationContext.getBeanInitialization();
         beanInitialization.init(Surname.class);
         applicationContext.refreshBeans();
@@ -38,7 +39,7 @@ public class DmlRepositoryHandlerTest {
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        surnameRepository = applicationFactory.factory(SurnameRepository.class);
+        surnameRepository = beanFactory.factory(SurnameRepository.class);
     }
 
     @Test

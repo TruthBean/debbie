@@ -1,15 +1,17 @@
 package com.truthbean.debbie.test;
 
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.properties.PropertyInject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @ExtendWith({DebbieApplicationExtension.class})
 public class DebbieTestSuitApplicationTest {
 
-    @BeanInject
+    @Autowired
     private TestSuitService testSuitService;
 
     @BeforeAll
@@ -24,8 +26,11 @@ public class DebbieTestSuitApplicationTest {
     }
 
     @Test
-    void testSuitService(@BeanInject TestSuitService testSuitService) {
+    void testSuitService(@BeanInject TestSuitService testSuitService, @PropertyInject("hello.test") String hello,
+                         @Autowired TestSuitService service) {
         System.out.println(testSuitService.getId());
+        System.out.println(hello);
+        System.out.println(service);
     }
 
     @AfterAll

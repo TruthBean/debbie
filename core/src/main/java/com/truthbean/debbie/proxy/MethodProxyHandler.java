@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
  */
 public interface MethodProxyHandler<A extends Annotation> extends Comparable<MethodProxyHandler> {
 
-    default void setApplicationContext(BeanFactoryContext applicationContext) {
+    default void setApplicationContext(DebbieApplicationContext applicationContext) {
     }
 
     /**

@@ -15,5 +15,5 @@ package com.truthbean.debbie.bean;
  */
 public interface BeanFactoryContextAware {
 
-    void setBeanFactoryContext(BeanFactoryContext applicationContext);
+    void setBeanFactoryContext(DebbieApplicationContext applicationContext);
 }

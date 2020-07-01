@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
@@ -356,14 +357,10 @@ public class MvcRouterHandler {
         return false;
     }
 
-    public static RouterResponse handleRouter(RouterInfo routerInfo, BeanFactoryContext handler) {
+    public static RouterResponse handleRouter(RouterInfo routerInfo, DebbieApplicationContext applicationContext) {
         RouterResponse routerResponse = routerInfo.getResponse();
-
-        var beanInfo = handler.getBeanInfo(null, ErrorResponseCallback.class, false);
-        ErrorResponseCallback callback = null;
-        if (beanInfo != null) {
-            callback = handler.factory(beanInfo);
-        }
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        ErrorResponseCallback callback = globalBeanFactory.factoryIfPresent(ErrorResponseCallback.class);
         if (routerResponse.isError()) {
             return RouterErrorResponseHandler.handleError(routerInfo, callback);
         }
@@ -374,12 +371,12 @@ public class MvcRouterHandler {
 
             routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
             RouterInvoker invoker = new RouterInvoker(routerInfo);
-            invoker.action(routerResponse, handler);
+            invoker.action(routerResponse, globalBeanFactory);
             return routerResponse;
         } catch (Throwable e) {
             LOGGER.error("", e);
             var exception = RouterErrorResponseHandler.exception(routerInfo.getRequest(), e);
-            return RouterErrorResponseHandler.handleError(routerInfo, callback);
+            return RouterErrorResponseHandler.handleError(exception, callback);
         }
     }
 }

@@ -9,9 +9,10 @@
  */
 package com.truthbean.debbie.properties;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import java.util.Set;
  * @since 0.0.1
  * Created on 2019/3/5 21:58.
  */
+@SuppressWarnings({"unchecked"})
 public class ClassesScanProperties extends BaseProperties implements DebbieProperties<BeanScanConfiguration> {
     private static final BeanScanConfiguration configuration = new BeanScanConfiguration();
 
@@ -28,6 +30,8 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
     public static final String SCAN_BASE_PACKAGES_KEY = "debbie.core.scan.base-packages";
     public static final String SCAN_EXCLUDE_PACKAGES_KEY = "debbie.core.scan.exclude-packages";
     public static final String SCAN_EXCLUDE_CLASSES_KEY = "debbie.core.scan.exclude-classes";
+
+    public static final String CUSTOM_INJECT_KEY = "debbie.core.scan.inject-classes";
     //===========================================================================
 
     static {
@@ -51,6 +55,15 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
         if (excludeClasses != null) {
             configuration.addScanExcludeClasses(excludeClasses);
         }
+
+        Set<Class<?>> injectClasses = properties.getClassSetValue(CUSTOM_INJECT_KEY, ",");
+        if (injectClasses != null) {
+            for (Class<?> injectClass : injectClasses) {
+                if (Annotation.class.isAssignableFrom(injectClass)) {
+                    configuration.addCustomInjectType((Class<? extends Annotation>) injectClass);
+                }
+            }
+        }
     }
 
     public static BeanScanConfiguration toConfiguration(ClassLoader classLoader) {
@@ -59,7 +72,7 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
     }
 
     @Override
-    public BeanScanConfiguration toConfiguration(BeanFactoryContext applicationContext) {
+    public BeanScanConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
     }

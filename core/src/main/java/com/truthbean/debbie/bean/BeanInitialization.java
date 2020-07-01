@@ -74,14 +74,6 @@ public class BeanInitialization {
         beanConfigurationRegister.register(classes);
     }
 
-    /*private static final Set<DebbieModuleStarter> debbieModuleStarters = new HashSet<>();
-    public <A extends DebbieModuleStarter> void addDebbieModuleStarter(A moduleStarter) {
-        debbieModuleStarters.add(moduleStarter);
-    }
-    public Set<DebbieModuleStarter> getDebbieModuleStarters() {
-        return debbieModuleStarters;
-    }*/
-
     public <D extends DataTransformer<?,?>> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
         Type[] types = new Type[2];
         types[0] = argsType1;

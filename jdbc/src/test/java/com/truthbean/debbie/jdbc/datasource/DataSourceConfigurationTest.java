@@ -27,9 +27,9 @@ public class DataSourceConfigurationTest {
 
     public static void main(String[] args) {
         var applicationFactory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
-        // var application = applicationFactory.postCreateApplication();
+        var beanFactory = applicationFactory.getGlobalBeanFactory();
         // application.start(args);
-        DataSourceConfigurationTest factory = applicationFactory.factory(DataSourceConfigurationTest.class);
+        DataSourceConfigurationTest factory = beanFactory.factory(DataSourceConfigurationTest.class);
         factory.print();
     }
 }

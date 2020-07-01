@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
@@ -35,9 +35,9 @@ public class DispatcherHttpHandler implements HttpHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherHttpHandler.class);
 
     private final UndertowConfiguration configuration;
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
-    public DispatcherHttpHandler(final UndertowConfiguration configuration, BeanFactoryContext applicationContext) {
+    public DispatcherHttpHandler(final UndertowConfiguration configuration, DebbieApplicationContext applicationContext) {
         this.configuration = configuration;
         this.applicationContext = applicationContext;
     }

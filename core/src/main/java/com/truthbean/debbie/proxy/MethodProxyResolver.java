@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -23,9 +23,9 @@ import java.util.*;
  * Created on 2020-04-26 18:12.
  */
 public class MethodProxyResolver {
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
     private final DebbieBeanInfo<?> classInfo;
-    public MethodProxyResolver(BeanFactoryContext applicationContext, DebbieBeanInfo<?> classInfo) {
+    public MethodProxyResolver(DebbieApplicationContext applicationContext, DebbieBeanInfo<?> classInfo) {
         this.applicationContext = applicationContext;
         this.classInfo = classInfo;
     }

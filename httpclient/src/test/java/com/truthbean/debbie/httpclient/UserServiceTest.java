@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ class UserServiceTest {
     static {
         DebbieApplicationFactory factory = DebbieApplicationFactory.configure(UserServiceTest.class);
 
-        BeanFactoryContext applicationContext = factory.getBeanFactoryHandler();
+        GlobalBeanFactory applicationContext = factory.getGlobalBeanFactory();
         userService = applicationContext.factory(UserService.class);
     }
 

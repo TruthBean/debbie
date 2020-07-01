@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -39,7 +39,7 @@ import java.util.concurrent.*;
 public class AioServerApplicationFactory extends AbstractWebServerApplicationFactory {
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, BeanFactoryContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, applicationContext);
         var beanInitialization = applicationContext.getBeanInitialization();
@@ -62,12 +62,12 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
 
         private final AsynchronousServerSocketChannel server;
 
-        private final BeanFactoryContext applicationContext;
+        private final DebbieApplicationContext applicationContext;
         private final AioServerConfiguration configuration;
 
         private final SessionManager sessionManager;
 
-        AioServerApplication(BeanFactoryContext applicationContext, AioServerConfiguration configuration,
+        AioServerApplication(DebbieApplicationContext applicationContext, AioServerConfiguration configuration,
                              final SessionManager sessionManager) throws IOException {
             super(LOGGER, applicationContext);
             int port = configuration.getPort();
@@ -106,6 +106,9 @@ public class AioServerApplicationFactory extends AbstractWebServerApplicationFac
         @Override
         public void exit(long beforeStartTime, String... args) {
             LOGGER.debug(() -> "destroy running thread");
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+            }
             singleThreadPool.destroy();
         }
 

@@ -11,19 +11,19 @@ import org.junit.jupiter.api.Test;
  */
 class InjectedBeanFactoryTest {
 
-    private BeanFactoryContext applicationContext;
+    private DebbieBeanInfoFactory beanInfoFactory;
     private InjectedBeanFactory injectedBeanFactory;
 
     @BeforeEach
     public void before() {
-        applicationContext = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
-        injectedBeanFactory = new InjectedBeanFactory();
-        injectedBeanFactory.setBeanFactoryContext(applicationContext);
+        DebbieApplicationContext applicationContext = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
+        beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+        injectedBeanFactory = applicationContext.getInjectedBeanFactory();
     }
 
     @Test
     void factory() {
-        DebbieBeanInfo<Abc> beanInfo = applicationContext.getBeanInfo("abc", Abc.class, true);
+        DebbieBeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
         System.out.println("------------------------------------------------------------------------------");
         // Abc factory1 = applicationContext.factory(Abc.class);
         // System.out.println(factory1.toString());

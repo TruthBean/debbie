@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.properties;
 
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 
 /**
  * @author TruthBean
@@ -17,5 +17,5 @@ import com.truthbean.debbie.bean.BeanFactoryContext;
  */
 public interface DebbieProperties<C extends DebbieConfiguration> {
 
-    C toConfiguration(BeanFactoryContext applicationContext);
+    C toConfiguration(DebbieApplicationContext applicationContext);
 }

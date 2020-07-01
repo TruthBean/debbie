@@ -8,29 +8,26 @@ import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-@DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
+// @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
 class BeanConfigurationRegisterTest {
 
-    private DebbieApplicationFactory factory;
+    private static DebbieApplicationFactory factory;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         factory = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterAll
+    static void tearDown() {
         factory.release();
     }
 
     @Test
     void register() {
-
-        BeanFactoryContext applicationContext = factory.getBeanFactoryHandler();
+        GlobalBeanFactory applicationContext = factory.getGlobalBeanFactory();
         DataTransformer<Integer, Character> bean = applicationContext.factory("dataTransformer");
         System.out.println(bean.reverse('a'));
 

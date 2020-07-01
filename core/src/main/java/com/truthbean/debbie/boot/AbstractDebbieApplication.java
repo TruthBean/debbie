@@ -10,7 +10,7 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.DebbieVersion;
-import com.truthbean.debbie.bean.BeanFactoryContext;
+import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.Logger;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractDebbieApplication implements DebbieApplication {
     private final Logger logger;
     private long beforeStartTime;
-    private final BeanFactoryContext applicationContext;
+    private final DebbieApplicationContext applicationContext;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean exited = new AtomicBoolean(true);
@@ -47,7 +47,7 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true);
     private final ThreadPooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
 
-    public AbstractDebbieApplication(Logger logger, BeanFactoryContext applicationContext) {
+    public AbstractDebbieApplication(Logger logger, DebbieApplicationContext applicationContext) {
         this.logger = logger;
         this.applicationContext = applicationContext;
     }
@@ -108,7 +108,7 @@ public abstract class AbstractDebbieApplication implements DebbieApplication {
         }
     }
 
-    private synchronized void beforeExit(BeanFactoryContext handler, String... args) {
+    private synchronized void beforeExit(DebbieApplicationContext handler, String... args) {
         handler.release(args);
     }
 

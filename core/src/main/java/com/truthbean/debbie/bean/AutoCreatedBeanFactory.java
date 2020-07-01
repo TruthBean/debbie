@@ -22,23 +22,26 @@ import java.util.concurrent.ThreadFactory;
  */
 public class AutoCreatedBeanFactory {
 
-    private final BeanFactoryContext applicationContext;
+    private final GlobalBeanFactory globalBeanFactory;
+    private final DebbieBeanInfoFactory beanInfoFactory;
     private final BeanInitialization beanInitialization;
-    public AutoCreatedBeanFactory(BeanFactoryContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public AutoCreatedBeanFactory(DebbieApplicationContext applicationContext) {
+        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
         this.beanInitialization = applicationContext.getBeanInitialization();
+        this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }
 
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("AutoCreatedBeanFactory", true);
     private final ThreadPooledExecutor autoCreatedBeanExecutor = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void autoCreateBeans() {
-        final Set<DebbieBeanInfo<?>> autoCreatedBean = applicationContext.getAutoCreatedBean();
+        final Set<DebbieBeanInfo<?>> autoCreatedBean = beanInfoFactory.getAutoCreatedBean();
         autoCreatedBeanExecutor.execute(() -> {
-            for (DebbieBeanInfo<?> beanInfo : autoCreatedBean) {
+            for (DebbieBeanInfo beanInfo : autoCreatedBean) {
                 Boolean lazyCreate = beanInfo.getLazyCreate();
                 if (lazyCreate != null && !lazyCreate) {
-                    beanInfo.setBean(applicationContext.factory(beanInfo.getServiceName()));
+                    beanInfo.setBean(globalBeanFactory.factory(beanInfo));
                     beanInitialization.refreshBean(beanInfo);
                 }
             }

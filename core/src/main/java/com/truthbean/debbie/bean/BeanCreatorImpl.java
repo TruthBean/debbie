@@ -31,7 +31,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private final DebbieBeanInfo<Bean> beanInfo;
     private final Map<String, Method> beanMethods = new HashMap<>();
 
-    private final BeanFactoryContext applicationContext;
+    private final DebbieBeanInfoFactory debbieBeanInfoFactory;
 
     private InjectedBeanFactory injectedBeanFactory;
 
@@ -40,9 +40,9 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private Bean bean;
     private boolean created;
 
-    public BeanCreatorImpl(Class<Bean> beanClass, BeanFactoryContext applicationContext) {
-        this.applicationContext = applicationContext;
-        BeanInitialization initialization = applicationContext.getBeanInitialization();
+    public BeanCreatorImpl(Class<Bean> beanClass, DebbieBeanInfoFactory debbieBeanInfoFactory,
+                           BeanInitialization initialization) {
+        this.debbieBeanInfoFactory = debbieBeanInfoFactory;
         this.beanClass = beanClass;
         var methods = initialization.getBeanMethods(beanClass);
         this.beanInfo = initialization.getRegisterRawBean(beanClass);
@@ -50,8 +50,8 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         setMethods(methods);
     }
 
-    public BeanCreatorImpl(DebbieBeanInfo<Bean> beanInfo, BeanFactoryContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public BeanCreatorImpl(DebbieBeanInfo<Bean> beanInfo, DebbieBeanInfoFactory debbieBeanInfoFactory) {
+        this.debbieBeanInfoFactory = debbieBeanInfoFactory;
         this.beanClass = beanInfo.getBeanClass();
         var methods = beanInfo.getMethods();
         this.beanInfo = beanInfo;
@@ -80,6 +80,11 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             }
             preparationCreated = true;
         }
+    }
+
+    public void setCreatedPreparation(Bean bean) {
+        this.bean = bean;
+        this.preparationCreated = true;
     }
 
     @Override
@@ -185,7 +190,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                         required = annotation.require();
                     }
 
-                    DebbieBeanInfo<?> beanInfo = applicationContext.getBeanInfo(name, type, required);
+                    DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
                     if (beanInfo == null && required) {
                         throw new NoBeanException("no bean " + names[i] + " found .");
                     } else if (beanInfo != null) {
@@ -231,7 +236,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         if (beanInject != null) {
             initMethodInjectRequired = beanInject.require();
         } else {
-            Class<? extends Annotation> injectClass = applicationContext.getInjectType();
+            Class<? extends Annotation> injectClass = injectedBeanFactory.getInjectType();
             if (injectClass != null) {
                 Annotation inject = initMethod.getAnnotation(injectClass);
                 if (inject != null) {
@@ -283,7 +288,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                             required = annotation.require();
                         }
 
-                        DebbieBeanInfo<?> beanInfo = applicationContext.getBeanInfo(name, type, required);
+                        DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
                         if (beanInfo == null && required) {
                             throw new NoBeanException("no bean " + names[i] + " found .");
                         } else if (beanInfo != null) {
@@ -334,7 +339,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         if (beanInject != null) {
             constructorInjectRequired = beanInject.require();
         } else {
-            Class<? extends Annotation> injectClass = applicationContext.getInjectType();
+            Class<? extends Annotation> injectClass = injectedBeanFactory.getInjectType();
             if (injectClass != null) {
                 Annotation inject = constructor.getAnnotation(injectClass);
                 if (inject != null) {
@@ -497,68 +502,72 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private void collectFieldsDependent(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
         try {
             // find all field its has BeanInject or Inject annotation
-            if (this.bean != null) {
-                List<FieldInfo> fields = beanInfo.getFields();
-                Map<FieldInfo, DebbieBeanInfo<?>> map = new HashMap<>();
-                for (FieldInfo fieldInfo : fields) {
-                    if (fieldInfo.hasValue()) continue;
+            List<FieldInfo> fields = beanInfo.getFields();
+            Map<FieldInfo, DebbieBeanInfo<?>> map = new HashMap<>();
+            for (FieldInfo fieldInfo : fields) {
+                if (fieldInfo.hasValue()) continue;
 
-                    Field field = fieldInfo.getField();
-                    Class<?> fieldType = field.getType();
-                    String name = null;
+                Field field = fieldInfo.getField();
+                Class<?> fieldType = field.getType();
+                String name = null;
 
-                    boolean required = false;
+                boolean required = false;
 
-                    BeanInject annotation = field.getAnnotation(BeanInject.class);
-                    if (annotation != null) {
-                        name = annotation.name();
-                        if (name.isBlank()) {
-                            name = annotation.value();
-                        }
-                        if (name.isBlank()) {
-                            name = fieldType.getName();
-                        }
-                        required = annotation.require();
-                    } else {
-                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
-                        if (injectClass == null) continue;
-
-                        Object inject = field.getAnnotation(injectClass);
-                        if (inject == null) continue;
+                BeanInject annotation = field.getAnnotation(BeanInject.class);
+                if (annotation != null) {
+                    name = annotation.name();
+                    if (name.isBlank()) {
+                        name = annotation.value();
                     }
-
-                    if (name == null || name.isBlank()) {
-                        name = field.getName();
+                    if (name.isBlank()) {
+                        name = fieldType.getName();
                     }
-                    var fieldValue = ReflectionHelper.getField(this.bean, field);
-                    if (fieldValue == null) {
-                        var beanInfo = applicationContext.getBeanInfo(name, fieldType, required);
-                        if (required && beanInfo == null) {
-                            throw new NoBeanException("no bean " + name + " found .");
-                        } else if (beanInfo != null) {
-                            boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
-                            if (flag && beanInfo.isSingleton()) {
-                                BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
-                                map.put(fieldInfo, beanCreator.beanInfo);
-                            } else {
-                                var bean = beanInfo.getBean();
-                                if (bean != null) {
-                                    if (!fieldType.isInstance(bean)) {
-                                        bean = JdkDynamicProxy.getRealValue(bean);
-                                    }
-                                    ReflectionHelper.setField(this.bean, field, bean);
-                                    fieldInfo.setValue();
-                                } else {
-                                    map.put(fieldInfo, beanInfo);
+                    required = annotation.require();
+                } else {
+                    Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
+                    boolean injected = false;
+                    for (Class<? extends Annotation> injectType : injectTypes) {
+                        Annotation inject = field.getAnnotation(injectType);
+                        if (inject != null) {
+                            injected = true;
+                            break;
+                        }
+                    }
+                    if (!injected)
+                        continue;
+                }
+
+                if (name == null || name.isBlank()) {
+                    name = field.getName();
+                }
+                var fieldValue = ReflectionHelper.getField(this.bean, field);
+                if (fieldValue == null) {
+                    var beanInfo = debbieBeanInfoFactory.getBeanInfo(name, fieldType, required);
+                    if (required && beanInfo == null) {
+                        throw new NoBeanException("no bean " + name + " found .");
+                    } else if (beanInfo != null) {
+                        boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
+                        if (flag && beanInfo.isSingleton()) {
+                            BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
+                            map.put(fieldInfo, beanCreator.beanInfo);
+                        } else {
+                            var bean = beanInfo.getBean();
+                            if (bean != null) {
+                                if (!fieldType.isInstance(bean)) {
+                                    bean = JdkDynamicProxy.getRealValue(bean);
                                 }
+                                ReflectionHelper.setField(this.bean, field, bean);
+                                fieldInfo.setValue();
+                            } else {
+                                map.put(fieldInfo, beanInfo);
                             }
                         }
                     }
                 }
+            }
 
-                if (!map.isEmpty()) {
-                    this.beanInfo.setFieldBeanDependent(map);
-                }
+            if (!map.isEmpty()) {
+                this.beanInfo.setFieldBeanDependent(map);
             }
         } catch (Exception e) {
             BeanCreatedException.throwException(LOGGER, e);

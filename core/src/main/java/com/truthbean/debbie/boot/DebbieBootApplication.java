@@ -38,5 +38,7 @@ public @interface DebbieBootApplication {
     @BeanAliceFor(name = "name")
     String name() default "";
 
+    Class<? extends Annotation>[] customInjectType() default {};
+
     DebbieScan scan() default @DebbieScan();
 }

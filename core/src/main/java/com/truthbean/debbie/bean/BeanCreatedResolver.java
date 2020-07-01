@@ -32,7 +32,7 @@ public class BeanCreatedResolver<Bean> {
     private Method initMethod;
     private Bean bean;
 
-    public BeanCreatedResolver(Class<Bean> beanClass, BeanFactoryContext applicationContext,
+    BeanCreatedResolver(Class<Bean> beanClass, DebbieApplicationContext applicationContext,
                                BeanCreatedFactory beanCreatedFactory) {
         BeanInitialization initialization = applicationContext.getBeanInitialization();
         this.beanClass = beanClass;
@@ -45,7 +45,8 @@ public class BeanCreatedResolver<Bean> {
         }
 
         if (this.bean == null) {
-            this.bean = applicationContext.getBeanByFactory(beanClass, null);
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            this.bean = globalBeanFactory.getBeanByFactory(beanClass, null);
             if (this.bean == null) {
                 createBean(applicationContext, beanCreatedFactory);
             }
@@ -53,7 +54,7 @@ public class BeanCreatedResolver<Bean> {
 
     }
 
-    public BeanCreatedResolver(DebbieBeanInfo<Bean> beanInfo, BeanFactoryContext applicationContext,
+    public BeanCreatedResolver(DebbieBeanInfo<Bean> beanInfo, DebbieApplicationContext applicationContext,
                                BeanCreatedFactory beanCreatedFactory) {
         this.beanClass = beanInfo.getBeanClass();
         this.beanInfo = beanInfo;
@@ -64,8 +65,10 @@ public class BeanCreatedResolver<Bean> {
             this.bean = beanCreatedFactory.getBeanByInitMethod(initMethod, applicationContext);
         }
 
-        if (bean == null)
-            this.bean = applicationContext.getBeanByFactory(beanInfo);
+        if (bean == null) {
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            this.bean = globalBeanFactory.getBeanByFactory(beanInfo);
+        }
 
     }
 
@@ -78,7 +81,7 @@ public class BeanCreatedResolver<Bean> {
         });
     }
 
-    public static <T> BeanCreatedResolver<T> create(DebbieBeanInfo<T> beanInfo, BeanFactoryContext factoryHandler,
+    public static <T> BeanCreatedResolver<T> create(DebbieBeanInfo<T> beanInfo, DebbieApplicationContext factoryHandler,
                                                     Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
                                                     BeanCreatedFactory beanCreatedFactory) {
         BeanCreatedResolver<T> invoker = new BeanCreatedResolver<>(beanInfo, factoryHandler, beanCreatedFactory);
@@ -86,7 +89,7 @@ public class BeanCreatedResolver<Bean> {
         return invoker;
     }
 
-    public void resolveConstructor(BeanFactoryContext factoryHandler,
+    public void resolveConstructor(DebbieApplicationContext factoryHandler,
                                    Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
                                    BeanCreatedFactory beanCreatedFactory) {
         if (this.bean == null) {
@@ -95,7 +98,7 @@ public class BeanCreatedResolver<Bean> {
         this.getFieldsDependent(factoryHandler);
     }
 
-    private void resolveConstructorDependent(BeanFactoryContext applicationContext,
+    private void resolveConstructorDependent(DebbieApplicationContext applicationContext,
                                              Map<DebbieBeanInfo<?>, BeanCreatedResolver<?>> singletonBeanInvokerMap,
                                              BeanCreatedFactory beanCreatedFactory) {
         try {
@@ -117,13 +120,13 @@ public class BeanCreatedResolver<Bean> {
                     if (beanInject != null) {
                         constructorInjectRequired = beanInject.require();
                     } else {
-                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
+                        /*Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass != null) {
                             Annotation inject = constructor.getAnnotation(injectClass);
                             if (inject != null) {
                                 constructorInjectRequired = true;
                             }
-                        }
+                        }*/
                     }
 
                     Parameter[] parameters = constructor.getParameters();
@@ -148,7 +151,7 @@ public class BeanCreatedResolver<Bean> {
                             required = annotation.require();
                         }
 
-                        DebbieBeanInfo<?> beanInfo = applicationContext.getBeanInfo(name, type, required);
+                        DebbieBeanInfo<?> beanInfo = applicationContext.getDebbieBeanInfoFactory().getBeanInfo(name, type, required);
                         if (beanInfo == null && required) {
                             throw new NoBeanException("no bean " + names[i] + " found .");
                         } else if (beanInfo != null) {
@@ -189,7 +192,7 @@ public class BeanCreatedResolver<Bean> {
         }
     }
 
-    void getFieldsDependent(BeanFactoryContext applicationContext) {
+    void getFieldsDependent(DebbieApplicationContext applicationContext) {
         try {
             // find all field its has BeanInject or Inject annotation
             if (this.bean != null) {
@@ -209,7 +212,7 @@ public class BeanCreatedResolver<Bean> {
                         }
                         var fieldValue = ReflectionHelper.getField(this.bean, field);
                         if (fieldValue == null) {
-                            var beanInfo = applicationContext.getBeanInfo(name, fieldType, annotation.require());
+                            var beanInfo = applicationContext.getDebbieBeanInfoFactory().getBeanInfo(name, fieldType, annotation.require());
                             if (annotation.require() && beanInfo == null) {
                                 throw new NoBeanException("no bean " + name + " found .");
                             } else if (beanInfo != null) {
@@ -226,14 +229,14 @@ public class BeanCreatedResolver<Bean> {
                             }
                         }
                     } else {
-                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
+                        /*Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass == null) continue;
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
                             String name = fieldType.getName();
                             var fieldValue = ReflectionHelper.getField(this.bean, field);
                             if (fieldValue == null) {
-                                var beanInfo = applicationContext.getBeanInfo(name, fieldType, true);
+                                var beanInfo = applicationContext.getDebbieBeanInfoFactory().getBeanInfo(name, fieldType, true);
                                 if (beanInfo == null) {
                                     throw new NoBeanException("no bean " + name + " found .");
                                 } else {
@@ -249,7 +252,7 @@ public class BeanCreatedResolver<Bean> {
                                     }
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
 
@@ -301,7 +304,7 @@ public class BeanCreatedResolver<Bean> {
         }
     }
 
-    void resolveFieldsDependent(BeanFactoryContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
+    void resolveFieldsDependent(DebbieApplicationContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
         Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent = this.beanInfo.getFieldBeanDependent();
         try {
             // find all field its has BeanInject or Inject annotation
@@ -334,7 +337,7 @@ public class BeanCreatedResolver<Bean> {
                             }
                         }
                     } else {
-                        Class<? extends Annotation> injectClass = applicationContext.getInjectType();
+                        /*Class<? extends Annotation> injectClass = applicationContext.getInjectType();
                         if (injectClass == null) continue;
                         Object inject = field.getAnnotation(injectClass);
                         if (inject != null) {
@@ -353,7 +356,7 @@ public class BeanCreatedResolver<Bean> {
                                     }
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
             }
@@ -379,7 +382,7 @@ public class BeanCreatedResolver<Bean> {
     }
 
     // TODO cache
-    private void createBean(BeanFactoryContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
+    private void createBean(DebbieApplicationContext applicationContext, BeanCreatedFactory beanCreatedFactory) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = beanInfo.getConstructors();
