@@ -57,14 +57,14 @@ public class BeanInitialization {
         return initialization;
     }
 
-//    /**
-//     * @param annotationType 注册被
-//     *      @see BeanComponent
-//     * 标识的 annotation
-//     */
-//    public <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
-//        beanRegisterCenter.registerBeanAnnotation(annotationType);
-//    }
+    /**
+     * @param annotationType 注册被
+     *      @see BeanComponent
+     * 标识的 annotation
+     */
+    public <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
+        beanRegisterCenter.registerBeanAnnotation(annotationType);
+    }
 
     public void registerBeanConfiguration(Collection<Class<?>> classes) {
         beanConfigurationRegister.register(classes);
