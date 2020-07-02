@@ -34,6 +34,8 @@ public class BeanInitialization {
     private BeanInitialization(ClassLoader classLoader, ResourceResolver resourceResolver) {
         List<String> resources = ResourcesHandler.getAllClassPathResources("", classLoader);
         resourceResolver.addResource(resources);
+        ResourcesHandler.getAllClassPathResources("com/truthbean", classLoader);
+        resourceResolver.addResource(resources);
         beanRegisterCenter = new BeanRegisterCenter();
         beanRegisterCenter.registerBeanAnnotation(BeanComponent.class);
         beanConfigurationRegister = new BeanConfigurationRegister(beanRegisterCenter, resourceResolver);

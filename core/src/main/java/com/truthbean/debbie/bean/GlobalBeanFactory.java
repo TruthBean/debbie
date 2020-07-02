@@ -18,6 +18,7 @@ import com.truthbean.debbie.proxy.asm.AbstractProxy;
 import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.javaassist.JavassistProxy;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Modifier;
@@ -26,6 +27,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -86,6 +88,20 @@ public class GlobalBeanFactory {
         T bean = injectedBeanFactory.factory(beanCreator);
         debbieBeanInfo.setBean(bean);
         this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+    }
+
+    public <T> T factoryByNoBean(Class<T> noBeanType) {
+        DebbieBeanInfo<T> debbieBeanInfo;
+
+        var beanInfo = this.beanInfoFactory.getBeanInfo(null, noBeanType, false, false);
+        debbieBeanInfo = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieBeanInfo<>(noBeanType));
+
+        BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory);
+        beanCreator.setCreatedPreparation(ReflectionHelper.newInstance(noBeanType));
+        beanCreator.setInjectedBeanFactory(injectedBeanFactory);
+        T bean = injectedBeanFactory.factory(beanCreator);
+        debbieBeanInfo.setBean(bean);
+        return this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
     }
 
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {

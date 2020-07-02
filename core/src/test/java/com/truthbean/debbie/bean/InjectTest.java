@@ -5,7 +5,7 @@ import com.truthbean.debbie.bean.inter.DemoBeanComponent;
 
 import javax.inject.Inject;
 
-@BeanComponent
+// @BeanComponent
 public class InjectTest {
     @Inject
     private A a;

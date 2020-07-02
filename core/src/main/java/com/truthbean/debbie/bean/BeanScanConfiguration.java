@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
@@ -169,8 +170,13 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
                 List<Class<?>> classList;
-                if (resourceResolver != null)
+                if (resourceResolver != null) {
+                    List<String> resources =
+                            ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"),
+                            classLoader);
+                    resourceResolver.addResource(resources);
                     classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+                }
                 else
                     classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.addAll(classList);
@@ -183,8 +189,13 @@ public class BeanScanConfiguration implements DebbieConfiguration {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
                 List<Class<?>> classList;
-                if (resourceResolver != null)
+                if (resourceResolver != null) {
+                    List<String> resources =
+                            ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"),
+                                    classLoader);
+                    resourceResolver.addResource(resources);
                     classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+                }
                 else
                     classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
                 classes.removeAll(classList);

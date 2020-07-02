@@ -2,6 +2,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.bean.inter.Abc;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import demo.raw.NoBeanTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +14,14 @@ class InjectedBeanFactoryTest {
 
     private DebbieBeanInfoFactory beanInfoFactory;
     private InjectedBeanFactory injectedBeanFactory;
+    private GlobalBeanFactory globalBeanFactory;
 
     @BeforeEach
     public void before() {
         DebbieApplicationContext applicationContext = DebbieApplicationFactory.configure(BeanConfigurationRegisterTest.class);
         beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
         injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+        globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }
 
     @Test
@@ -34,5 +37,11 @@ class InjectedBeanFactoryTest {
 
         // Abc abc = applicationContext.factoryBean(Abc.class);
         // System.out.println(abc.toString());
+    }
+
+    @Test
+    void factoryNoBean() {
+        NoBeanTest test = globalBeanFactory.factoryByNoBean(NoBeanTest.class);
+        System.out.println(test);
     }
 }
