@@ -1,9 +1,6 @@
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanClosure;
-import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.DebbieBeanFactory;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -40,6 +37,8 @@ public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventM
         @SuppressWarnings("unchecked")
         var listenerType = (Class<DebbieEventListener<? extends AbstractDebbieEvent>>) listener.getClass();
         DebbieBeanInfo<DebbieEventListener<? extends AbstractDebbieEvent>> beanInfo = new DebbieBeanInfo<>(listenerType);
+        beanInfo.setBeanType(BeanType.SINGLETON);
+        beanInfo.setBean(listener);
         listenerBeanFactory.setBeanInfo(beanInfo);
         eventListenerMap.put(listener.getEventType(), listenerBeanFactory);
     }

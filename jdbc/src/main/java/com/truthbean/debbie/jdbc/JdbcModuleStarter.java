@@ -5,7 +5,6 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
-import com.truthbean.debbie.jdbc.annotation.SqlRepositoryRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactoryBeanRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
@@ -27,8 +26,6 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        beanInitialization.addAnnotationRegister(new SqlRepositoryRegister(beanInitialization));
-
         beanInitialization.registerDataTransformer(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
 
         MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();

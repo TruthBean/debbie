@@ -11,9 +11,11 @@ package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -22,12 +24,8 @@ import java.util.Set;
  */
 public class RmiModuleStarter implements DebbieModuleStarter {
 
-    private DebbieRmiServiceRegister rmiServiceRegister;
-
     @Override
     public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        rmiServiceRegister = new DebbieRmiServiceRegister(beanInitialization);
-        beanInitialization.addAnnotationRegister(rmiServiceRegister);
     }
 
     @Override
@@ -40,10 +38,22 @@ public class RmiModuleStarter implements DebbieModuleStarter {
         var register = new RemoteServiceRegister(applicationContext, configuration.getRmiBindAddress(), configuration.getRmiBindPort());
         // bind
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        Set<Class<?>> rmiServiceMappers = rmiServiceRegister.getRmiServiceMappers();
+        Set<Class<?>> rmiServiceMappers = getRmiServiceMappers(beanInitialization);
         for (Class<?> rmiServiceMapper : rmiServiceMappers) {
             register.bind(rmiServiceMapper);
         }
+    }
+
+    private Set<Class<?>> getRmiServiceMappers(BeanInitialization beanInitialization) {
+        Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
+        Set<DebbieBeanInfo<?>> beanInfos = beanInitialization.getRegisteredRawBeans();
+        for (DebbieBeanInfo<?> beanInfo : beanInfos) {
+            DebbieRmiMapper classAnnotation = beanInfo.getClassAnnotation(DebbieRmiMapper.class);
+            if (classAnnotation != null && beanInfo.getBeanClass().isInterface()) {
+                rmiServiceMappers.add(beanInfo.getBeanClass());
+            }
+        }
+        return rmiServiceMappers;
     }
 
     @Override

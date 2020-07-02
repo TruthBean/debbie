@@ -29,6 +29,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<String> scanExcludePackages;
     private final Set<Class<?>> scanExcludeClasses;
 
+    private final Set<Class<?>> scannedClasses;
     private final Set<Class<? extends Annotation>> customInjectType;
 
     private ClassLoader classLoader;
@@ -40,6 +41,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanExcludePackages = new HashSet<>();
         this.scanExcludeClasses = new HashSet<>();
 
+        this.scannedClasses = new HashSet<>();
         this.customInjectType = new HashSet<>();
     }
 
@@ -50,6 +52,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanExcludePackages = new HashSet<>();
         this.scanExcludeClasses = new HashSet<>();
 
+        this.scannedClasses = new HashSet<>();
         this.customInjectType = new HashSet<>();
 
         this.classLoader = classLoader;
@@ -187,7 +190,12 @@ public class BeanScanConfiguration implements DebbieConfiguration {
                 classes.removeAll(classList);
             });
         }
+        scannedClasses.addAll(classes);
         return Collections.unmodifiableSet(classes);
+    }
+
+    public Set<Class<?>> getScannedClasses() {
+        return Collections.unmodifiableSet(this.scannedClasses);
     }
 
     @Override
@@ -196,6 +204,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanBasePackages.clear();
         this.scanExcludePackages.clear();
         this.scanExcludeClasses.clear();
+        this.scannedClasses.clear();
+        this.customInjectType.clear();
         this.classLoader = null;
     }
 }

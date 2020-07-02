@@ -55,20 +55,14 @@ public class BeanInitialization {
         return initialization;
     }
 
-    <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
-        beanRegisterCenter.registerBeanAnnotation(annotationType);
-    }
-
-    private static final Set<AnnotationRegister<?>> annotationRegisters = new HashSet<>();
-    public <A extends AnnotationRegister<?>> void addAnnotationRegister(A register) {
-        annotationRegisters.add(register);
-        register.register();
-    }
-    public void registerAnnotations() {
-        for (AnnotationRegister<?> annotationRegister : annotationRegisters) {
-            annotationRegister.register();
-        }
-    }
+//    /**
+//     * @param annotationType 注册被
+//     *      @see BeanComponent
+//     * 标识的 annotation
+//     */
+//    public <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
+//        beanRegisterCenter.registerBeanAnnotation(annotationType);
+//    }
 
     public void registerBeanConfiguration(Collection<Class<?>> classes) {
         beanConfigurationRegister.register(classes);
@@ -218,7 +212,6 @@ public class BeanInitialization {
     }
 
     public void reset() {
-        annotationRegisters.clear();
         beanRegisterCenter.reset();
     }
 
