@@ -15,6 +15,7 @@ import com.truthbean.logger.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author TruthBean
@@ -22,11 +23,11 @@ import java.util.*;
  * Created on 2019/06/02 16:37.
  */
 public class DebbieBeanInfoFactory {
-    private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = Collections.synchronizedSet(new HashSet<>());
+    private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = new HashSet<>();
 
     private final BeanInitialization beanInitialization;
 
-    DebbieBeanInfoFactory(BeanInitialization beanInitialization) {
+    DebbieBeanInfoFactory(final BeanInitialization beanInitialization) {
         this.beanInitialization = beanInitialization;
     }
 
@@ -38,6 +39,12 @@ public class DebbieBeanInfoFactory {
 
             copy.addAll(beanInitialization.getRegisteredBeans());
             var beanServiceInfoList = beanInitialization.getAnnotatedBeans();
+
+            Set<Class<? extends Annotation>> beanAnnotations = beanInitialization.getBeanAnnotations();
+            beanAnnotations.forEach((annotationType) -> {
+                Set<DebbieBeanInfo<?>> annotatedClass = beanInitialization.getAnnotatedClass(annotationType);
+                copy.addAll(annotatedClass);
+            });
 
             beanServiceInfoList.forEach((i) -> {
                 var clazz = i.getClazz();
@@ -65,55 +72,71 @@ public class DebbieBeanInfoFactory {
     }
 
     public void autoCreateSingletonBeans(GlobalBeanFactory beanFactory) {
-        beanServiceInfoSet.forEach(i -> {
-            Boolean lazyCreate = i.getLazyCreate();
-            if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
-                i.setBean(beanFactory.factory(i.getServiceName()));
-                beanInitialization.refreshBean(i);
-            }
-        });
+        synchronized (beanServiceInfoSet) {
+            beanServiceInfoSet.forEach(i -> {
+                Boolean lazyCreate = i.getLazyCreate();
+                if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
+                    i.setBean(beanFactory.factory(i.getServiceName()));
+                    beanInitialization.refreshBean(i);
+                }
+            });
+        }
     }
 
     Set<DebbieBeanInfo<?>> getAutoCreatedBean() {
-        Set<DebbieBeanInfo<?>> result = new HashSet<>();
-        for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet) {
-            Boolean lazyCreate = beanInfo.getLazyCreate();
-            if (lazyCreate != null && !lazyCreate) {
-                result.add(beanInfo);
+        synchronized (beanServiceInfoSet) {
+            Set<DebbieBeanInfo<?>> result = new HashSet<>();
+            for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet) {
+                Boolean lazyCreate = beanInfo.getLazyCreate();
+                if (lazyCreate != null && !lazyCreate) {
+                    result.add(beanInfo);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     public Set<DebbieBeanInfo<?>> getAllDebbieBeanInfo() {
-        return Set.copyOf(beanServiceInfoSet);
+        synchronized (beanServiceInfoSet) {
+            return Set.copyOf(beanServiceInfoSet);
+        }
     }
 
     public <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require) {
-        return getBeanInfoList(type, require, beanServiceInfoSet);
+        synchronized (beanServiceInfoSet) {
+            return getBeanInfoList(type, require, beanServiceInfoSet);
+        }
     }
 
     public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
-        try {
-            return getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+        synchronized (beanServiceInfoSet) {
+            try {
+                return getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage());
+            }
+            return null;
         }
-        return null;
     }
 
     public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException) {
-        return getBeanInfo(serviceName, type, require, beanServiceInfoSet, throwException);
+        synchronized (beanServiceInfoSet) {
+            return getBeanInfo(serviceName, type, require, beanServiceInfoSet, throwException);
+        }
     }
 
     public void destroy(DebbieBeanInfo<?> beanInfo) {
-        beanServiceInfoSet.remove(beanInfo);
+        synchronized (beanServiceInfoSet) {
+            beanServiceInfoSet.remove(beanInfo);
+        }
     }
 
     protected void releaseBeans() {
-        destroyBeans(beanServiceInfoSet);
+        synchronized (beanServiceInfoSet) {
+            destroyBeans(beanServiceInfoSet);
 
-        beanServiceInfoSet.clear();
+            beanServiceInfoSet.clear();
+        }
     }
 
     synchronized void destroyBeans(Collection<DebbieBeanInfo<?>> beans) {
@@ -126,7 +149,7 @@ public class DebbieBeanInfoFactory {
     }
 
     private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require,
-                                                                     Set<DebbieBeanInfo<?>> beanInfoSet) {
+                                                                     final Set<DebbieBeanInfo<?>> beanInfoSet) {
         List<DebbieBeanInfo<?>> list = new ArrayList<>();
 
         if (type != null) {
@@ -176,8 +199,8 @@ public class DebbieBeanInfoFactory {
         return null;
     }
 
-    private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require,
-                                              Set<DebbieBeanInfo<?>> beanInfoSet, boolean throwException) {
+    private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, final Class<T> type, boolean require,
+                                              final Set<DebbieBeanInfo<?>> beanInfoSet, boolean throwException) {
         List<DebbieBeanInfo<?>> list = new ArrayList<>();
         if (serviceName != null && !serviceName.isBlank()) {
             for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {

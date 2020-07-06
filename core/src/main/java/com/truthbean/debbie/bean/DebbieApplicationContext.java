@@ -48,9 +48,8 @@ public class DebbieApplicationContext {
             this.classLoader = classLoader;
 
             this.injectedBeanFactory = new InjectedBeanFactory();
-            this.globalBeanFactory = new GlobalBeanFactory();
-
             this.debbieBeanInfoFactory = new DebbieBeanInfoFactory(this.beanInitialization);
+            this.globalBeanFactory = new GlobalBeanFactory(debbieBeanInfoFactory);
         }
     }
 
@@ -59,7 +58,6 @@ public class DebbieApplicationContext {
         this.injectedBeanFactory.setBeanFactoryContext(this);
 
         this.globalBeanFactory.setDebbieApplicationContext(this);
-        this.globalBeanFactory.setDebbieBeanInfoFactory(this.debbieBeanInfoFactory);
         this.globalBeanFactory.setInjectedBeanFactory(injectedBeanFactory);
 
         this.injectedBeanFactory.setGlobalBeanFactory(this.globalBeanFactory);

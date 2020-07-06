@@ -36,19 +36,17 @@ import java.util.Objects;
  */
 public class GlobalBeanFactory {
 
-    private DebbieBeanInfoFactory beanInfoFactory;
+    private final DebbieBeanInfoFactory beanInfoFactory;
     private DebbieApplicationContext applicationContext;
     private InjectedBeanFactory injectedBeanFactory;
 
-    GlobalBeanFactory() {
+    GlobalBeanFactory(final DebbieBeanInfoFactory beanInfoFactory) {
+        this.beanInfoFactory = beanInfoFactory;
+        this.beanInfoFactory.refreshBeans();
     }
 
     void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-    }
-
-    void setDebbieBeanInfoFactory(DebbieBeanInfoFactory beanInfoFactory) {
-        this.beanInfoFactory = beanInfoFactory;
     }
 
     void setInjectedBeanFactory(InjectedBeanFactory injectedBeanFactory) {
@@ -73,35 +71,39 @@ public class GlobalBeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> void factoryByRawBean(T rawBean) {
-        DebbieBeanInfo<T> debbieBeanInfo;
+        synchronized (beanInfoFactory) {
+            DebbieBeanInfo<T> debbieBeanInfo;
 
-        var beanInfo = this.beanInfoFactory.getBeanInfo(null, rawBean.getClass(), false, false);
-        if (beanInfo == null)
-            debbieBeanInfo = new DebbieBeanInfo<>((Class<T>) rawBean.getClass());
-        else {
-            debbieBeanInfo = (DebbieBeanInfo<T>) beanInfo;
+            var beanInfo = this.beanInfoFactory.getBeanInfo(null, rawBean.getClass(), false, false);
+            if (beanInfo == null)
+                debbieBeanInfo = new DebbieBeanInfo<>((Class<T>) rawBean.getClass());
+            else {
+                debbieBeanInfo = (DebbieBeanInfo<T>) beanInfo;
+            }
+
+            BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory);
+            beanCreator.setCreatedPreparation(rawBean);
+            beanCreator.setInjectedBeanFactory(injectedBeanFactory);
+            T bean = injectedBeanFactory.factory(beanCreator);
+            debbieBeanInfo.setBean(bean);
+            this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
         }
-
-        BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory);
-        beanCreator.setCreatedPreparation(rawBean);
-        beanCreator.setInjectedBeanFactory(injectedBeanFactory);
-        T bean = injectedBeanFactory.factory(beanCreator);
-        debbieBeanInfo.setBean(bean);
-        this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
     }
 
     public <T> T factoryByNoBean(Class<T> noBeanType) {
-        DebbieBeanInfo<T> debbieBeanInfo;
+        synchronized (beanInfoFactory) {
+            DebbieBeanInfo<T> debbieBeanInfo;
 
-        var beanInfo = this.beanInfoFactory.getBeanInfo(null, noBeanType, false, false);
-        debbieBeanInfo = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieBeanInfo<>(noBeanType));
+            var beanInfo = this.beanInfoFactory.getBeanInfo(null, noBeanType, false, false);
+            debbieBeanInfo = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieBeanInfo<>(noBeanType));
 
-        BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory);
-        beanCreator.setCreatedPreparation(ReflectionHelper.newInstance(noBeanType));
-        beanCreator.setInjectedBeanFactory(injectedBeanFactory);
-        T bean = injectedBeanFactory.factory(beanCreator);
-        debbieBeanInfo.setBean(bean);
-        return this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+            BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory);
+            beanCreator.setCreatedPreparation(ReflectionHelper.newInstance(noBeanType));
+            beanCreator.setInjectedBeanFactory(injectedBeanFactory);
+            T bean = injectedBeanFactory.factory(beanCreator);
+            debbieBeanInfo.setBean(bean);
+            return this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+        }
     }
 
     public <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo) {
@@ -126,11 +128,13 @@ public class GlobalBeanFactory {
     }
 
     protected <T> T factory(String serviceName, Class<T> type, boolean require, boolean throwException) {
-        var beanInfo = this.beanInfoFactory.getBeanInfo(serviceName, type, require, throwException);
-        if (!require && beanInfo == null)
-            return null;
-        assert beanInfo != null;
-        return factory(beanInfo);
+        synchronized (beanInfoFactory) {
+            var beanInfo = this.beanInfoFactory.getBeanInfo(serviceName, type, require, throwException);
+            if (!require && beanInfo == null)
+                return null;
+            assert beanInfo != null;
+            return factory(beanInfo);
+        }
     }
 
     protected <T> T factory(String serviceName, Class<T> type, boolean require) {
@@ -193,36 +197,44 @@ public class GlobalBeanFactory {
     }
 
     public <T> DebbieBeanInfo<T> getBeanInfoWithBean(Class<T> type) {
-        LOGGER.trace(() -> "factory bean with type " + type.getName());
-        var beanInfo = this.beanInfoFactory.getBeanInfo(null, type, true, true);
-        if (beanInfo != null) {
-            T bean = this.factory(beanInfo);
-            DebbieBeanInfo<T> result = new DebbieBeanInfo<>(beanInfo.getBeanClass());
-            result.setBean(bean);
-            return result;
+        synchronized (beanInfoFactory) {
+            LOGGER.trace(() -> "factory bean with type " + type.getName());
+            var beanInfo = this.beanInfoFactory.getBeanInfo(null, type, true, true);
+            if (beanInfo != null) {
+                T bean = this.factory(beanInfo);
+                DebbieBeanInfo<T> result = new DebbieBeanInfo<>(beanInfo.getBeanClass());
+                result.setBean(bean);
+                return result;
+            }
+            return null;
         }
-        return null;
     }
 
     public <T, K extends T> List<K> getBeanList(Class<T> superType) {
-        List<K> result = new ArrayList<>();
-        LOGGER.trace(() -> "factory bean with type " + superType.getName());
-        List<DebbieBeanInfo<K>> beanInfoList = this.beanInfoFactory.getBeanInfoList(superType, false);
-        if (beanInfoList != null) {
-            for (DebbieBeanInfo<K> beanInfo : beanInfoList) {
-                K bean = this.factory(beanInfo);
-                result.add(bean);
+        synchronized (beanInfoFactory) {
+            List<K> result = new ArrayList<>();
+            LOGGER.trace(() -> "factory bean with type " + superType.getName());
+            List<DebbieBeanInfo<K>> beanInfoList = this.beanInfoFactory.getBeanInfoList(superType, false);
+            if (beanInfoList != null) {
+                for (DebbieBeanInfo<K> beanInfo : beanInfoList) {
+                    K bean = this.factory(beanInfo);
+                    result.add(bean);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     public <T> boolean containsBean(Class<T> beanType) {
-        return this.beanInfoFactory.getBeanInfoList(beanType, false) != null;
+        synchronized (beanInfoFactory) {
+            return this.beanInfoFactory.getBeanInfoList(beanType, false) != null;
+        }
     }
 
     public boolean containsBean(String beanName) {
-        return this.beanInfoFactory.getBeanInfo(beanName, null, false, false) != null;
+        synchronized (beanInfoFactory) {
+            return this.beanInfoFactory.getBeanInfo(beanName, null, false, false) != null;
+        }
     }
 
     public <T> T getBeanByFactory(DebbieBeanInfo<T> beanInfo) {

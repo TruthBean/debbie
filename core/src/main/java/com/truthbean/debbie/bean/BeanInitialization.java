@@ -84,7 +84,7 @@ public class BeanInitialization {
         return DataTransformerFactory.transform(origin, target);
     }
 
-    public void init(Class<?> beanClass) {
+    public synchronized void init(Class<?> beanClass) {
         if (beanClass.isAnonymousClass()) {
             if ("".equals(beanClass.getSimpleName())) {
                 Class<?>[] interfaces = beanClass.getInterfaces();

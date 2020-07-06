@@ -58,12 +58,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
             Class<? extends Annotation> key = entry.getKey();
             Annotation value = entry.getValue();
-            // resolve BeanComponent if has no bean Annotation, use it
-            resolveBeanComponent(key, value);
             // 如果有其他Annotation，则使用其他的，而不是BeanComponent
-            if (resolveComponent(key, value))
+            if (key != BeanComponent.class && resolveComponent(key, value))
                 break;
         }
+        // resolve BeanComponent if has no bean Annotation, use it
+        resolveBeanComponent(classAnnotations.get(BeanComponent.class));
     }
 
     public void setInitMethod(Method initMethod) {
@@ -173,18 +173,23 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return beanFactory != null;
     }
 
-    private void resolveBeanComponent(Class<? extends Annotation> key, Annotation value) {
-        if (key == BeanComponent.class) {
+    private void resolveBeanComponent(Annotation value) {
+        if (value != null) {
             var beanService = ((BeanComponent) value);
-            String beanName = beanService.name();
-            if (beanName.isBlank()) {
-                beanName = beanService.value();
+            if (beanNames.isEmpty()) {
+                String beanName = beanService.name();
+                if (beanName.isBlank()) {
+                    beanName = beanService.value();
+                }
+                if (!beanName.isBlank()) {
+                    beanNames.add(beanName);
+                }
             }
-            if (!beanName.isBlank()) {
-                beanNames.add(beanName);
-            }
-            beanType = beanService.type();
-            lazyCreate = beanService.lazy();
+            if (beanType == null)
+                beanType = beanService.type();
+
+            if (lazyCreate == null)
+                lazyCreate = beanService.lazy();
         }
     }
 
@@ -218,7 +223,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 }
             }
 
-            if ((valueMethod != null || nameMethod != null) && typeMethod != null) {
+            if (valueMethod != null || nameMethod != null) {
                 String beanName = null;
                 if (valueMethod != null) {
                     beanName = ReflectionHelper.invokeMethod(value, valueMethod);
@@ -231,7 +236,9 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 }
                 beanNames.add(beanName);
 
-                beanType = ReflectionHelper.invokeMethod(value, typeMethod);
+                if (typeMethod != null) {
+                    beanType = ReflectionHelper.invokeMethod(value, typeMethod);
+                }
 
                 if (lazyMethod != null) {
                     lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);

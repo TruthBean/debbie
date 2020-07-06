@@ -10,12 +10,14 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.boot.exception.DebbieApplicationException;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.Set;
 
 /**
@@ -62,12 +64,14 @@ class DebbieBootApplicationResolver {
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
         LOGGER.debug(() -> "applicationClass: " + applicationClass);
-        if (applicationClass == null) return;
+        if (notSupport(applicationClass)) return;
 
         BeanInitialization beanInitialization = this.applicationContext.getBeanInitialization();
-        beanInitialization.init(applicationClass);
+        DebbieBeanInfo<?> applicationClassBeanInfo = new DebbieBeanInfo<>(applicationClass);
+        applicationClassBeanInfo.setBeanType(BeanType.SINGLETON);
+        beanInitialization.initBean(applicationClassBeanInfo);
         this.applicationContext.getDebbieBeanInfoFactory().refreshBeans();
-        DebbieBootApplication debbieBootApplication = applicationClass.getAnnotation(DebbieBootApplication.class);
+        DebbieBootApplication debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
         if (debbieBootApplication != null) {
             DebbieScan scan = debbieBootApplication.scan();
             String[] basePackages = scan.basePackages();
@@ -107,11 +111,18 @@ class DebbieBootApplicationResolver {
                         }
                     }
                     if (!hasDebbieBootApplication) {
-                        LOGGER.warn("No class annotated @DebbieBootApplication ");
+                        throw new DebbieApplicationException(applicationClass + " has no @DebbieBootApplication or no annotated " +
+                                "by Annotation annotated By @DebbieBootApplication");
                     }
                 }
             }
         }
+    }
+
+    private boolean notSupport(Class<?> applicationClass) {
+        return applicationClass == null || applicationClass.isAnnotation()
+                || applicationClass.isInterface()
+                || Modifier.isAbstract(applicationClass.getModifiers());
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DebbieBootApplicationResolver.class);

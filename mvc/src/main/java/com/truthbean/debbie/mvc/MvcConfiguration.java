@@ -18,6 +18,7 @@ import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.util.StringUtils;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -186,7 +187,9 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public Charset getCharset() {
-        return charset;
+        if (charset != null)
+            return charset;
+        return StandardCharsets.UTF_8;
     }
 
     public void setCharset(Charset charset) {

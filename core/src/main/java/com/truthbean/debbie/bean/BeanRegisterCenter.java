@@ -52,7 +52,7 @@ final class BeanRegisterCenter {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
+    synchronized <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
          if (BEAN_CLASSES.containsKey(beanClass)) {
              // merge
@@ -60,7 +60,7 @@ final class BeanRegisterCenter {
              beanInfo.addBeanNames(beanClassInfo.getBeanNames());
 
              // add bean alias name
-             // if singleton, set order
+             // TODO if singleton, set order
              if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
                  beanInfo.setBeanType(BeanType.SINGLETON);
                  if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
@@ -126,7 +126,7 @@ final class BeanRegisterCenter {
     }
 
     @SuppressWarnings("unchecked")
-    <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
+    synchronized <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.trace(() -> "refresh class " + beanClass.getName());
 
@@ -152,16 +152,28 @@ final class BeanRegisterCenter {
         return true;
     }
 
-    void register(Class<?> beanClass) {
+    @SuppressWarnings("unchecked")
+    synchronized void register(final Class<?> beanClass) {
+        if (beanClass.isAnnotation()) {
+            registerAnnotation((Class<? extends Annotation>) beanClass);
+            return;
+        }
         if (support(beanClass)) {
             var beanClassInfo = new DebbieBeanInfo<>(beanClass);
-            if (beanClassInfo.getBeanType() == null)
+            if (beanClassInfo.getBeanType() == null) {
                 return;
+            }
             register(beanClassInfo);
         }
     }
 
-    void register(Class<? extends Annotation> classAnnotation,
+    private void registerAnnotation(Class<? extends Annotation> annotationType) {
+        if (annotationType.getAnnotation(BeanComponent.class) != null) {
+            registerBeanAnnotation(annotationType);
+        }
+    }
+
+    synchronized void register(Class<? extends Annotation> classAnnotation,
                          String packageName, ClassLoader classLoader,
                          ResourceResolver resourceResolver) {
         var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
@@ -231,7 +243,10 @@ final class BeanRegisterCenter {
 
     @SuppressWarnings("unchecked")
     <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean) {
-        return (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(bean);
+        DebbieBeanInfo<?> info = BEAN_CLASSES.get(bean);
+        if (info != null)
+            return (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(bean);
+        return null;
     }
 
     Collection<DebbieBeanInfo<?>> getRegisterRawBeans() {
@@ -260,7 +275,7 @@ final class BeanRegisterCenter {
 
         BEAN_CLASSES.forEach((clazz, beanInfo) -> {
             Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces != null && interfaces.length > 0) {
+            if (interfaces.length > 0) {
                 for (Class<?> i : interfaces) {
                     if (i == interfaceType) {
                         classInfoSet.add(beanInfo);

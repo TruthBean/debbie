@@ -162,7 +162,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
     }
 
-    public Set<Class<?>> getTargetClasses(ResourceResolver resourceResolver) {
+    public synchronized Set<Class<?>> getTargetClasses(ResourceResolver resourceResolver) {
         Set<Class<?>> classes = new HashSet<>();
         if (!scanClasses.isEmpty()) {
             classes.addAll(scanClasses);
@@ -202,7 +202,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
             });
         }
         scannedClasses.addAll(classes);
-        return Collections.unmodifiableSet(classes);
+        return Collections.unmodifiableSet(scannedClasses);
     }
 
     public Set<Class<?>> getScannedClasses() {

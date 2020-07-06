@@ -61,8 +61,7 @@ public class ClassInfo<C> implements Serializable {
         Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
 
         if (!annotations.isEmpty()) {
-            Set<Annotation> annotationsCopy = new HashSet<>(annotations);
-            for (Annotation annotation : annotationsCopy) {
+            for (Annotation annotation : annotations) {
                 Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
                 if (!annotationInAnnotation.isEmpty()) {
                     for (Annotation ann : annotationInAnnotation) {
@@ -72,15 +71,11 @@ public class ClassInfo<C> implements Serializable {
                                 !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
                                 !FunctionalInterface.class.equals(annotationType) &&
                                 !SuppressWarnings.class.equals(annotationType)) {
-                            annotations.add(ann);
+                            this.classAnnotations.put(ann.annotationType(), ann);
                         }
                     }
                 }
-            }
-        }
 
-        if (!annotations.isEmpty()) {
-            for (Annotation annotation : annotations) {
                 this.classAnnotations.put(annotation.annotationType(), annotation);
             }
         }

@@ -10,7 +10,6 @@
 dependencies {
     api(project(":debbie-servlet"))
     api(project(":debbie-server"))
-    api(project(":debbie-boot"))
 
     val tomcatVersion: String by project
     api("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")

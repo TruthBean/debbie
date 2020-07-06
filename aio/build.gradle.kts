@@ -10,7 +10,6 @@
 dependencies {
     api(project(":debbie-mvc"))
     api(project(":debbie-server"))
-    api(project(":debbie-boot"))
 
     testImplementation(project(":debbie-test"))
 
