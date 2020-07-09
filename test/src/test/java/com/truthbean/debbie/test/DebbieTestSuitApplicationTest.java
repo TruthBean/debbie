@@ -3,22 +3,26 @@ package com.truthbean.debbie.test;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.properties.PropertyInject;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@ExtendWith({DebbieApplicationExtension.class})
-@DebbieBootApplication(customInjectType = Autowired.class)
+// @ExtendWith({DebbieApplicationExtension.class})
+// @DebbieBootApplication(customInjectType = Autowired.class)
+@DebbieApplicationTest(customInjectType = Autowired.class)
 public class DebbieTestSuitApplicationTest {
 
     @Autowired
     private TestSuitService testSuitService;
 
-    @BeforeAll
+    // @BeforeAll
     static void beforeAll() {
         System.out.println("..................");
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        System.out.println("before each ...");
     }
 
     @Test
@@ -35,7 +39,12 @@ public class DebbieTestSuitApplicationTest {
         System.out.println(service);
     }
 
-    @AfterAll
+    @AfterEach
+    void afterEach() {
+        System.out.println("after each ...");
+    }
+
+    // @AfterAll
     static void afterAll() {
         System.out.println("-------------------");
     }

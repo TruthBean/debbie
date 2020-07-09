@@ -32,6 +32,7 @@ import java.util.Set;
  * @since 0.0.2
  */
 public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver,
+        BeforeEachCallback, AfterEachCallback, TestInstancePostProcessor,
         BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class);
@@ -42,7 +43,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
         logger.trace("supportsParameter....");
-        DebbieApplicationContext applicationContext = getBeanFactoryHandler(extensionContext);
+        DebbieApplicationContext applicationContext = getApplicationContext(extensionContext);
         InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
         Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
         for (Class<? extends Annotation> injectType : injectTypes) {
@@ -59,7 +60,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
         logger.trace("resolveParameter....");
-        DebbieApplicationContext applicationContext = getBeanFactoryHandler(extensionContext);
+        DebbieApplicationContext applicationContext = getApplicationContext(extensionContext);
         if (parameterContext.isAnnotated(BeanInject.class)) {
             return getDebbieBean(parameterContext.getParameter(), applicationContext);
         } else if (parameterContext.isAnnotated(PropertyInject.class)) {
@@ -130,19 +131,21 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         return injectedBeanFactory.factoryProperty(type, null, propertyInject);
     }
 
-    private DebbieApplicationContext getBeanFactoryHandler(ExtensionContext context) {
+    private DebbieApplicationContext getApplicationContext(ExtensionContext context) {
         return context.getRoot()
                 .getStore(ExtensionContext.Namespace.GLOBAL)
                 .getOrComputeIfAbsent(DebbieApplicationContext.class);
     }
 
     @Override
-    public void beforeTestExecution(ExtensionContext context) throws Exception {
-        DebbieApplicationContext applicationContext = getBeanFactoryHandler(context);
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+    public void beforeTestExecution(final ExtensionContext context) throws Exception {
         Optional<Object> instance = context.getTestInstance();
-        instance.ifPresent(globalBeanFactory::factoryByRawBean);
-
+        instance.ifPresent(o -> {
+            DebbieApplicationContext applicationContext = getApplicationContext(context);
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            globalBeanFactory.factoryByRawBean(o);
+            logger.trace(() -> "test instance: " + o);
+        });
         getStore(context).put(START_TIME, System.currentTimeMillis());
     }
 
@@ -183,5 +186,20 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
         DebbieApplication debbieApplication = store.getOrComputeIfAbsent(DebbieApplication.class);
         debbieApplication.exit();
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        logger.debug("afterEach");
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
+        logger.debug("beforeEach");
+    }
+
+    @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
+        logger.debug("postProcessTestInstance");
     }
 }

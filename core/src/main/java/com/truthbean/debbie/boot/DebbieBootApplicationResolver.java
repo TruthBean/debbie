@@ -17,6 +17,7 @@ import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
@@ -45,17 +46,7 @@ class DebbieBootApplicationResolver {
 
     void resolverClasses(DebbieScan scan, BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
         if (scan != null) {
-            String[] basePackages = scan.basePackages();
-            configuration.addScanBasePackages(basePackages);
-
-            Class<?>[] classes = scan.classes();
-            configuration.addScanClasses(classes);
-
-            Class<?>[] excludeClasses = scan.excludeClasses();
-            configuration.addScanExcludeClasses(excludeClasses);
-
-            String[] excludePackages = scan.excludePackages();
-            configuration.addScanExcludePackages(excludePackages);
+            resolveDebbieScan(configuration, scan);
         }
 
         resolverClasses(configuration, resourceResolver);
@@ -71,20 +62,25 @@ class DebbieBootApplicationResolver {
         applicationClassBeanInfo.setBeanType(BeanType.SINGLETON);
         beanInitialization.initBean(applicationClassBeanInfo);
         this.applicationContext.getDebbieBeanInfoFactory().refreshBeans();
-        DebbieBootApplication debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
+
+        Annotation annotation = applicationClassBeanInfo.getAnnotatedClassAnnotation(DebbieBootApplication.class);
+        if (annotation != null) {
+            DebbieBootApplication debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
+            resolveDebbieBootApplicationAnnotation(annotation, debbieBootApplication, configuration);
+            Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
+            if (targetClasses.isEmpty()) {
+                configuration.addScanBasePackages(applicationClass.getPackageName());
+            }
+
+            DebbieConfigurationCenter.addConfiguration(configuration);
+            return;
+        }
+
+        DebbieBootApplication debbieBootApplication = applicationClass.getAnnotation(DebbieBootApplication.class);
+        // debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
         if (debbieBootApplication != null) {
             DebbieScan scan = debbieBootApplication.scan();
-            String[] basePackages = scan.basePackages();
-            configuration.addScanBasePackages(basePackages);
-
-            Class<?>[] classes = scan.classes();
-            configuration.addScanClasses(classes);
-
-            Class<?>[] excludeClasses = scan.excludeClasses();
-            configuration.addScanExcludeClasses(excludeClasses);
-
-            String[] excludePackages = scan.excludePackages();
-            configuration.addScanExcludePackages(excludePackages);
+            resolveDebbieScan(configuration, scan);
 
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {
@@ -116,6 +112,48 @@ class DebbieBootApplicationResolver {
                     }
                 }
             }
+        }
+    }
+
+    private void resolveDebbieScan(BeanScanConfiguration configuration, DebbieScan scan) {
+        String[] basePackages = scan.basePackages();
+        configuration.addScanBasePackages(basePackages);
+
+        Class<?>[] classes = scan.classes();
+        configuration.addScanClasses(classes);
+
+        Class<?>[] excludeClasses = scan.excludeClasses();
+        configuration.addScanExcludeClasses(excludeClasses);
+
+        String[] excludePackages = scan.excludePackages();
+        configuration.addScanExcludePackages(excludePackages);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resolveDebbieBootApplicationAnnotation(Annotation annotation,
+                                                        DebbieBootApplication debbieBootApplication,
+                                                        BeanScanConfiguration configuration) {
+        try {
+            Method customInjectType = ReflectionHelper.getMethod(annotation.annotationType(), "customInjectType", null);
+            if (customInjectType != null) {
+                var injectTypes = (Class<? extends Annotation>[]) ReflectionHelper.invokeMethod(annotation, customInjectType);
+                if (injectTypes != null)
+                    configuration.addCustomInjectType(injectTypes);
+            } else {
+                configuration.addCustomInjectType(debbieBootApplication.customInjectType());
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Method scanMethod = ReflectionHelper.getMethod(annotation.annotationType(), "scan", null);
+            if (scanMethod != null) {
+                var scan = (DebbieScan) ReflectionHelper.invokeMethod(annotation, scanMethod);
+                if (scan != null)
+                    resolveDebbieScan(configuration, scan);
+            } else {
+                resolveDebbieScan(configuration, debbieBootApplication.scan());
+            }
+        } catch (Exception ignored) {
         }
     }
 

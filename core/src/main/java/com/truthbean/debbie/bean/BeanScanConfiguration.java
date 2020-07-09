@@ -79,7 +79,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
 
     @SafeVarargs
     public final void addCustomInjectType(Class<? extends Annotation>... injectType) {
-        if (injectType != null) {
+        if (injectType != null && injectType.length > 0) {
             this.customInjectType.addAll(Arrays.asList(injectType));
         }
     }

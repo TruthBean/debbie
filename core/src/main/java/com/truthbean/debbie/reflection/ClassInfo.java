@@ -174,6 +174,17 @@ public class ClassInfo<C> implements Serializable {
         return null;
     }
 
+    public <T extends Annotation> Annotation getAnnotatedClassAnnotation(Class<T> annotationClass) {
+        if (!classAnnotations.isEmpty()) {
+            for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
+                if (entry.getKey().getAnnotation(annotationClass) != null) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
     public Set<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
         Set<Method> methods = new HashSet<>();
         for (Method method : this.methods) {
