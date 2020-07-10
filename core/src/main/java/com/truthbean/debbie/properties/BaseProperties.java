@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.properties;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
@@ -19,8 +19,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author TruthBean
@@ -30,34 +28,25 @@ import java.util.regex.Pattern;
 public class BaseProperties {
 
     /**
-     * slf4j logger
+     * logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseProperties.class);
-
-    /**
-     * properties变量名称正则
-     */
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
 
     /**
      * properties
      */
     private static final Properties PROPERTIES = new Properties();
 
-    static {
-        readPropertiesFile();
-    }
-
     /**
      * read from properties file
      */
-    private static void readPropertiesFile() {
+    private Properties readPropertiesFile() {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.properties", Constants.APPLICATION_PROPERTIES);
         if (applicationUrl == null) {
-            LOGGER.error("debbie.application.properties value cannot be null.");
+            LOGGER.warn(() -> "debbie.application.properties value is null.");
         } else {
-            LOGGER.debug(() -> "application.properties: " + applicationUrl);
+            LOGGER.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
             if (url == null) {
                 if (applicationUrl.equals(Constants.APPLICATION_PROPERTIES))
@@ -68,7 +57,7 @@ public class BaseProperties {
                 // read via file
                 File file = new File(applicationUrl);
                 if (file.exists()) {
-                    LOGGER.debug(() -> "application.properties url: " + file.getAbsolutePath());
+                    LOGGER.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + file.getAbsolutePath());
                     InputStream inputStream;
                     try {
                         inputStream = new FileInputStream(file);
@@ -84,7 +73,7 @@ public class BaseProperties {
                         if (!applicationUrl.equals(Constants.APPLICATION_PROPERTIES)) {
                             url = new URL(applicationUrl);
                             if (LOGGER.isDebugEnabled())
-                                LOGGER.debug("application.properties url: " + url);
+                                LOGGER.debug(Constants.APPLICATION_PROPERTIES + " url: " + url);
                             inputStream = url.openStream();
                             var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                             PROPERTIES.load(reader);
@@ -95,7 +84,7 @@ public class BaseProperties {
                 }
             } else {
                 if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("application.properties url: " + url);
+                    LOGGER.debug(Constants.APPLICATION_PROPERTIES + " url: " + url);
                 InputStream inputStream;
                 try {
                     inputStream = url.openStream();
@@ -106,6 +95,7 @@ public class BaseProperties {
                 }
             }
         }
+        return PROPERTIES;
     }
 
     public static boolean isPropertiesEmpty() {
@@ -113,60 +103,21 @@ public class BaseProperties {
     }
 
     public Properties getProperties() {
-        Properties result = new Properties();
-        // OS environment variable
-        var env = System.getenv();
-        result.putAll(env);
-        // jvm properties
-        var systemProperties = System.getProperties();
-        result.putAll(systemProperties);
-        // project properties
-        var properties = BaseProperties.PROPERTIES;
-        if (properties.isEmpty()) {
-            BaseProperties.readPropertiesFile();
-            properties = BaseProperties.PROPERTIES;
+        if (PROPERTIES.isEmpty()) {
+            Properties result = new Properties();
+            // OS environment variable
+            var env = System.getenv();
+            result.putAll(env);
+            // jvm properties
+            var systemProperties = System.getProperties();
+            result.putAll(systemProperties);
+            // project properties
+            Properties properties = readPropertiesFile();
+            // custom properties will cover system properties
+            result.putAll(properties);
+            PROPERTIES.putAll(result);
         }
-        // custom properties will cover system properties
-        result.putAll(properties);
-
-        return result;
-    }
-
-    /**
-     * replace property
-     *
-     * @param expression
-     * @param params
-     * @return
-     */
-    private static String replaceProperty(String expression, Properties params) {
-        if (expression == null || expression.length() == 0 || !expression.contains("$")) {
-            return expression;
-        }
-        Matcher matcher = VARIABLE_PATTERN.matcher(expression);
-        StringBuffer sb = new StringBuffer();
-        // 逐个匹配
-        while (matcher.find()) {
-            String key = matcher.group(1);
-            LOGGER.debug(() -> "env key:" + key);
-            String value = System.getProperty(key);
-            if (value == null && params != null) {
-                value = params.getProperty(key);
-            }
-            if (value == null) {
-                value = System.getenv(key);
-                if (value == null) {
-                    value = "";
-                } else {
-                    System.setProperty(key, value);
-                }
-            }
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("env value:" + value);
-            matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
-        }
-        matcher.appendTail(sb);
-        return sb.toString();
+        return PROPERTIES;
     }
 
     public Map<String, String> getMatchedKey(String keyPrefix) {
@@ -190,7 +141,7 @@ public class BaseProperties {
         var properties = getProperties();
         String value = null;
         if (properties.containsKey(key)) {
-            value = replaceProperty(properties.getProperty(key, null), properties);
+            value = PropertiesHelper.replaceProperty(properties.getProperty(key, null), properties);
         }
         return value;
     }
@@ -362,7 +313,6 @@ public class BaseProperties {
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
     public Class<?> getClassValue(String key, String defaultClass) {
         var className = getStringValue(key, defaultClass);
         var classLoader = ClassLoaderUtils.getDefaultClassLoader();

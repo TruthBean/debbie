@@ -19,7 +19,7 @@ import com.truthbean.debbie.util.JacksonUtils;
  */
 public class JsonTransformer<T> implements DataTransformer<T, String> {
 
-    private Class<T> clazz;
+    private final Class<T> clazz;
     public JsonTransformer(Class<T> clazz) {
         this.clazz = clazz;
     }

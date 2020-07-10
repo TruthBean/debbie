@@ -10,8 +10,11 @@
 package com.truthbean.debbie.reflection;
 
 import java.io.Serializable;
-import java.lang.annotation.*;
-import java.lang.reflect.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -66,11 +69,7 @@ public class ClassInfo<C> implements Serializable {
                 if (!annotationInAnnotation.isEmpty()) {
                     for (Annotation ann : annotationInAnnotation) {
                         Class<? extends Annotation> annotationType = ann.annotationType();
-                        if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
-                                !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
-                                !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
-                                !FunctionalInterface.class.equals(annotationType) &&
-                                !SuppressWarnings.class.equals(annotationType)) {
+                        if (TypeHelper.filterAnnotation(annotationType)) {
                             this.classAnnotations.put(ann.annotationType(), ann);
                         }
                     }
@@ -98,11 +97,7 @@ public class ClassInfo<C> implements Serializable {
                     if (!annotationInAnnotation.isEmpty()) {
                         for (Annotation ann : annotationInAnnotation) {
                             Class<? extends Annotation> annotationType = ann.annotationType();
-                            if (!Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
-                                    !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
-                                    !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
-                                    !FunctionalInterface.class.equals(annotationType) &&
-                                    !SuppressWarnings.class.equals(annotationType)) {
+                            if (TypeHelper.filterAnnotation(annotationType)) {
                                 methodAnnotations.add(ann);
                             }
                         }

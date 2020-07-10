@@ -1,18 +1,16 @@
 package com.truthbean.debbie.proxy.javaassist;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.proxy.asm.AbstractProxy;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
-
 import com.truthbean.debbie.util.OsUtils;
-import javassist.*;
-
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
+import javassist.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -94,9 +92,11 @@ public class JavassistProxy<B> extends AbstractProxy<B> {
             @SuppressWarnings("unchecked")
             B bytecodeProxy = (B) ReflectionHelper.newInstance(proxyType, asmConstructorInfo.getParameterTypes(), objects);
 
-            ReflectionHelper.invokeMethod(bytecodeProxy, "setTarget", new Object[]{bean.get()}, new Class<?>[]{beanClass});
-            ReflectionHelper.invokeMethod(bytecodeProxy, "setHandler", new Object[]{getHandler()}, new Class<?>[]{MethodProxyHandlerHandler.class});
-
+            if (bytecodeProxy != null) {
+                ReflectionHelper.invokeMethod(bytecodeProxy, "setTarget", new Object[]{bean.get()}, new Class<?>[]{beanClass});
+                ReflectionHelper.invokeMethod(bytecodeProxy, "setHandler", new Object[]{getHandler()}, new Class<?>[]{MethodProxyHandlerHandler.class});
+            }
+            return bytecodeProxy;
         } catch (NotFoundException | CannotCompileException e) {
             LOGGER.error("", e);
         }

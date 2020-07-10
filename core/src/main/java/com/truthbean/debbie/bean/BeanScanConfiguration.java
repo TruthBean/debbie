@@ -169,16 +169,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList;
-                if (resourceResolver != null) {
-                    List<String> resources =
-                            ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"),
-                            classLoader);
-                    resourceResolver.addResource(resources);
-                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
-                }
-                else
-                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+                List<Class<?>> classList = scanClasses(resourceResolver, packageName);
                 classes.addAll(classList);
             });
         }
@@ -188,21 +179,25 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         if (!scanExcludePackages.isEmpty()) {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList;
-                if (resourceResolver != null) {
-                    List<String> resources =
-                            ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"),
-                                    classLoader);
-                    resourceResolver.addResource(resources);
-                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
-                }
-                else
-                    classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+                List<Class<?>> classList = scanClasses(resourceResolver, packageName);
                 classes.removeAll(classList);
             });
         }
         scannedClasses.addAll(classes);
         return Collections.unmodifiableSet(scannedClasses);
+    }
+
+    private List<Class<?>> scanClasses(ResourceResolver resourceResolver, String packageName) {
+        List<Class<?>> classList;
+        if (resourceResolver != null) {
+            List<String> resources =
+                    ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
+            resourceResolver.addResource(resources);
+            classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+        }
+        else
+            classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+        return classList;
     }
 
     public Set<Class<?>> getScannedClasses() {

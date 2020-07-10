@@ -15,7 +15,6 @@ import com.truthbean.logger.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author TruthBean
@@ -148,30 +147,35 @@ public class DebbieBeanInfoFactory {
         }
     }
 
+    private <T> void getDebbieBeanInfoList(final Class<T> type, final Set<DebbieBeanInfo<?>> beanInfoSet,
+                                           final List<DebbieBeanInfo<?>> list) {
+        for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
+            var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName())
+                    || (debbieBeanInfo.getBeanInterface() != null
+                    && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
+            if (flag) {
+                list.add(debbieBeanInfo);
+            }
+        }
+
+        if (list.isEmpty()) {
+            for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
+                var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
+                        || (debbieBeanInfo.getBeanInterface() != null
+                        && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                if (flag) {
+                    list.add(debbieBeanInfo);
+                }
+            }
+        }
+    }
+
     private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require,
                                                                      final Set<DebbieBeanInfo<?>> beanInfoSet) {
         List<DebbieBeanInfo<?>> list = new ArrayList<>();
 
         if (type != null) {
-            for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName())
-                        || (debbieBeanInfo.getBeanInterface() != null
-                        && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
-                if (flag) {
-                    list.add(debbieBeanInfo);
-                }
-            }
-
-            if (list.isEmpty()) {
-                for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                    var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                            || (debbieBeanInfo.getBeanInterface() != null
-                            && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
-                    if (flag) {
-                        list.add(debbieBeanInfo);
-                    }
-                }
-            }
+            getDebbieBeanInfoList(type, beanInfoSet, list);
 
             if (list.size() == 0) {
                 if (require) {
@@ -212,25 +216,7 @@ public class DebbieBeanInfoFactory {
 
         if (list.isEmpty()) {
             if (type != null) {
-                for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                    var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName())
-                            || (debbieBeanInfo.getBeanInterface() != null
-                            && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
-                    if (flag) {
-                        list.add(debbieBeanInfo);
-                    }
-                }
-
-                if (list.isEmpty()) {
-                    for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-                        var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                                || (debbieBeanInfo.getBeanInterface() != null
-                                && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
-                        if (flag) {
-                            list.add(debbieBeanInfo);
-                        }
-                    }
-                }
+                getDebbieBeanInfoList(type, beanInfoSet, list);
             }
 
             if (list.size() == 0) {

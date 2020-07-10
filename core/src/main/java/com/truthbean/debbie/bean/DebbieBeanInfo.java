@@ -9,11 +9,11 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.Serializable;
@@ -152,8 +152,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     }
 
 
-    public boolean isHasVirtualValue() {
-        return hasVirtualValue;
+    public boolean hasNoVirtualValue() {
+        return !hasVirtualValue;
     }
 
     public void setHasVirtualValue(boolean hasVirtualValue) {
@@ -379,7 +379,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     public DebbieBeanInfo<Bean> copy() {
         DebbieBeanInfo<Bean> beanInfo = new DebbieBeanInfo<>(getClazz());
 
-        if (beanNames != null && !beanNames.isEmpty()) {
+        if (!beanNames.isEmpty()) {
             beanInfo.beanNames.addAll(beanNames);
         }
         if (beanFactory != null) {

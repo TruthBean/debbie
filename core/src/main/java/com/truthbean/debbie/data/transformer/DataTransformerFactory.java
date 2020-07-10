@@ -9,11 +9,11 @@
  */
 package com.truthbean.debbie.data.transformer;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.data.transformer.text.DefaultTextTransformer;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Modifier;
@@ -188,29 +188,7 @@ public class DataTransformerFactory {
             boolean type0IsParameterizedType = argsType[0] instanceof ParameterizedType;
             boolean type1IsParameterizedType = argsType[1] instanceof ParameterizedType;
 
-            if (type0IsClass && type1IsParameterizedType) {
-                Class<?> type0 = (Class<?>) argsType[0];
-                ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
-                Class<?> rawType = (Class<?>) parameterizedType1.getRawType();
-                canTransform = type0.isAssignableFrom(newOriginType) && rawType.isAssignableFrom(newTarget);
-            } else if (type0IsParameterizedType && type1IsClass) {
-                Class<?> type1 = (Class<?>) argsType[1];
-                ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
-                Class<?> rawType = (Class<?>) parameterizedType0.getRawType();
-                canTransform = type1.isAssignableFrom(newTarget) && rawType.isAssignableFrom(newOriginType);
-            } else if (type0IsClass && type1IsClass) {
-                Class<?> type0 = (Class<?>) argsType[0];
-                Class<?> type1 = (Class<?>) argsType[1];
-                canTransform = type0.isAssignableFrom(newOriginType) && type1.isAssignableFrom(newTarget);
-            } else if (type1IsParameterizedType && type0IsParameterizedType){
-                ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
-                Class<?> rawType1 = (Class<?>) parameterizedType1.getRawType();
-
-                ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
-                Class<?> rawType0 = (Class<?>) parameterizedType0.getRawType();
-
-                canTransform = rawType1.isAssignableFrom(newTarget) && rawType0.isAssignableFrom(newOriginType);
-            }
+            canTransform = canTransform(argsType, newOriginType, newTarget, canTransform, type0IsClass, type1IsClass, type0IsParameterizedType, type1IsParameterizedType);
 
             if (canTransform) {
                 try {
@@ -228,29 +206,7 @@ public class DataTransformerFactory {
             }
 
             boolean canReverse = false;
-            if (type0IsClass && type1IsParameterizedType) {
-                Class<?> type0 = (Class<?>) argsType[0];
-                ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
-                Class<?> rawType = (Class<?>) parameterizedType1.getRawType();
-                canReverse = type0.isAssignableFrom(newTarget) && rawType.isAssignableFrom(newOriginType);
-            } else if (type0IsParameterizedType && type1IsClass) {
-                Class<?> type1 = (Class<?>) argsType[1];
-                ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
-                Class<?> rawType = (Class<?>) parameterizedType0.getRawType();
-                canReverse = type1.isAssignableFrom(newOriginType) && rawType.isAssignableFrom(newTarget);
-            } else if (type0IsClass && type1IsClass) {
-                Class<?> type0 = (Class<?>) argsType[0];
-                Class<?> type1 = (Class<?>) argsType[1];
-                canReverse = type0.isAssignableFrom(newTarget) && type1.isAssignableFrom(newOriginType);
-            } else if (type1IsParameterizedType && type0IsParameterizedType){
-                ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
-                Class<?> rawType1 = (Class<?>) parameterizedType1.getRawType();
-
-                ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
-                Class<?> rawType0 = (Class<?>) parameterizedType0.getRawType();
-
-                canReverse = rawType1.isAssignableFrom(newOriginType) && rawType0.isAssignableFrom(newTarget);
-            }
+            canReverse = canTransform(argsType, newTarget, newOriginType, canReverse, type0IsClass, type1IsClass, type0IsParameterizedType, type1IsParameterizedType);
 
             if (canReverse) {
                 try {
@@ -268,6 +224,36 @@ public class DataTransformerFactory {
             }
         }
         return null;
+    }
+
+    private static boolean canTransform(Type[] argsType,
+                                        Class<?> newOriginType, Class<?> newTarget, boolean canTransform,
+                                        boolean type0IsClass, boolean type1IsClass,
+                                        boolean type0IsParameterizedType, boolean type1IsParameterizedType) {
+        if (type0IsClass && type1IsParameterizedType) {
+            Class<?> type0 = (Class<?>) argsType[0];
+            ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
+            Class<?> rawType = (Class<?>) parameterizedType1.getRawType();
+            canTransform = type0.isAssignableFrom(newOriginType) && rawType.isAssignableFrom(newTarget);
+        } else if (type0IsParameterizedType && type1IsClass) {
+            Class<?> type1 = (Class<?>) argsType[1];
+            ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
+            Class<?> rawType = (Class<?>) parameterizedType0.getRawType();
+            canTransform = type1.isAssignableFrom(newTarget) && rawType.isAssignableFrom(newOriginType);
+        } else if (type0IsClass && type1IsClass) {
+            Class<?> type0 = (Class<?>) argsType[0];
+            Class<?> type1 = (Class<?>) argsType[1];
+            canTransform = type0.isAssignableFrom(newOriginType) && type1.isAssignableFrom(newTarget);
+        } else if (type1IsParameterizedType && type0IsParameterizedType){
+            ParameterizedType parameterizedType1 = (ParameterizedType) argsType[1];
+            Class<?> rawType1 = (Class<?>) parameterizedType1.getRawType();
+
+            ParameterizedType parameterizedType0 = (ParameterizedType) argsType[0];
+            Class<?> rawType0 = (Class<?>) parameterizedType0.getRawType();
+
+            canTransform = rawType1.isAssignableFrom(newTarget) && rawType0.isAssignableFrom(newOriginType);
+        }
+        return canTransform;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataTransformerFactory.class);

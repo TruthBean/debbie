@@ -1,7 +1,7 @@
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.Logger;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.logger.LoggerFactory;
 
 /**
@@ -9,7 +9,7 @@ import com.truthbean.logger.LoggerFactory;
  * @since 0.0.2
  */
 @EventBeanListener
-public class TestStartedEventListener extends AbstractDebbieStartedEventListener {
+public class TestStartedEventListener implements DebbieStartedEventListener {
     private final TestBean testBean;
 
     public TestStartedEventListener(@BeanInject TestBean testBean) {
@@ -18,7 +18,6 @@ public class TestStartedEventListener extends AbstractDebbieStartedEventListener
 
     @Override
     public void onEvent(DebbieStartedEvent event) {
-        super.onEvent(event);
         LOGGER.debug(() -> ">>>>>>>>>>>>>>>>>>>>>>>>>>>>> hello debbie >>>>>>>>>>>>>>>>>>>>>");
         LOGGER.debug(testBean::toString);
     }

@@ -283,6 +283,8 @@ public class RouterAnnotationInfo {
             return new RouterAnnotationInfo(connectRouter);
         }
 
+        // todo custom annotation
+
         return null;
     }
 

@@ -4,11 +4,10 @@ import com.truthbean.debbie.bean.inter.*;
 import com.truthbean.debbie.bean.lifecycle.LifecycleBeanTest;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 public class BeanConfigRegisterTest {
 
     @Test

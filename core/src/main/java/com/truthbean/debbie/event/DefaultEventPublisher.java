@@ -1,12 +1,10 @@
 package com.truthbean.debbie.event;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
-import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,7 +66,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventM
         publishEvent(event);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public <E extends AbstractDebbieEvent> void publishEvent(E event) {
         long start = System.currentTimeMillis();

@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.properties;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.util.HashMap;
@@ -77,7 +77,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
@@ -93,7 +93,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
@@ -119,15 +119,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
         if (configurations.containsKey(propertiesClass)) {
             return (C) configurations.get(propertiesClass);
         }
-        for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
-            var key = classObjectEntry.getKey();
-            var value = classObjectEntry.getValue();
-            if (configurationClass == value.getClass()) {
-                LOGGER.debug(() -> "configuration class: " + key.getName());
-                return (C) value;
-            }
-        }
-        return null;
+        return factory(configurationClass, applicationContext);
     }
 
     public void reset() {

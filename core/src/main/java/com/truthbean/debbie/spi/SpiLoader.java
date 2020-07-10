@@ -9,12 +9,12 @@
  */
 package com.truthbean.debbie.spi;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
@@ -115,7 +115,7 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(() -> url.toString());
+                LOGGER.debug(url::toString);
                 var protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());
@@ -159,6 +159,7 @@ public class SpiLoader {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static <A extends Annotation> Map<Class<A>, List<Class<? extends MethodProxyHandler>>> loadProxyHandler(ClassLoader classLoader) {
         Map<Class<A>, List<Class<? extends MethodProxyHandler>>> result = new HashMap<>();
 
@@ -185,7 +186,7 @@ public class SpiLoader {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <A extends Annotation> void resolveProxyHandlerClass
             (List<String> strings, Map<Class<A>, List<Class<? extends MethodProxyHandler>>> map, ClassLoader classLoader) {
         for (String string : strings) {

@@ -9,13 +9,14 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.debbie.util.NumericUtils;
+import com.truthbean.logger.LoggerFactory;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
 
+import java.lang.annotation.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -634,6 +635,14 @@ public final class TypeHelper {
             types[i] = Type.getType(classes[i]);
         }
         return types;
+    }
+
+    public static boolean filterAnnotation(Class<? extends Annotation> annotationType) {
+        return  !Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
+                !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
+                !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
+                !FunctionalInterface.class.equals(annotationType) &&
+                !SuppressWarnings.class.equals(annotationType) && !Override.class.equals(annotationType);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(TypeHelper.class);

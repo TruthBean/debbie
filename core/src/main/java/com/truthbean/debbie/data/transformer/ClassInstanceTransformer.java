@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.data.transformer;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 /**
@@ -30,10 +30,11 @@ public class ClassInstanceTransformer implements DataTransformer<Object, String>
         Class<?> clazz = null;
         try {
             clazz = defaultClassLoader.loadClass(className);
+            return ReflectionHelper.newInstance(clazz);
         } catch (ClassNotFoundException e) {
             logger.error("", e);
         }
-        return ReflectionHelper.newInstance(clazz);
+        return null;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ClassInstanceTransformer.class);

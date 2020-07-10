@@ -9,17 +9,15 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.Logger;
+import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -90,7 +88,8 @@ final class BeanRegisterCenter {
             if (annotations != null) {
                 for (Annotation annotation : annotations) {
                     var methodAnnotation = annotation.annotationType();
-                    METHOD_ANNOTATION.add(methodAnnotation);
+                    if (methodAnnotation != Override.class && methodAnnotation != Deprecated.class && methodAnnotation != SuppressWarnings.class)
+                        METHOD_ANNOTATION.add(methodAnnotation);
 
                     var annotationMethodBeans = ANNOTATION_METHOD_BEANS.computeIfAbsent(methodAnnotation, k -> new HashSet<>());
                     annotationMethodBeans.add(beanClassInfo);
@@ -103,7 +102,7 @@ final class BeanRegisterCenter {
             var annotations = classAnnotation.keySet();
 
             classAnnotation.forEach((type, annotation) -> {
-                if (filterAnnotation(type)) {
+                if (TypeHelper.filterAnnotation(type)) {
                     CLASS_ANNOTATION.add(type);
                 }
             });
@@ -119,10 +118,12 @@ final class BeanRegisterCenter {
         }
     }
 
-    boolean filterAnnotation(Class<? extends Annotation> annotationType) {
-        return annotationType != FunctionalInterface.class
-                && annotationType != Documented.class && annotationType != Retention.class && annotationType != Target.class
-                && annotationType != Override.class;
+    public static Set<Class<? extends Annotation>> getClassAnnotation() {
+        return CLASS_ANNOTATION;
+    }
+
+    public static Set<Class<? extends Annotation>> getMethodAnnotation() {
+        return METHOD_ANNOTATION;
     }
 
     @SuppressWarnings("unchecked")

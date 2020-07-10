@@ -13,19 +13,18 @@ package com.truthbean.debbie.event;
  * @author TruthBean
  * @since 0.0.2
  */
-public abstract class AbstractDebbieStartedEventListener implements GenericEventListener<DebbieStartedEvent> {
+public interface DebbieStartedEventListener extends GenericEventListener<DebbieStartedEvent> {
     @Override
-    public boolean supportsSourceType(Class<?> sourceType) {
+    default boolean supportsSourceType(Class<?> sourceType) {
         return sourceType == DebbieStartedEvent.class;
     }
 
     @Override
-    public Class<DebbieStartedEvent> getEventType() {
+    default Class<DebbieStartedEvent> getEventType() {
         return DebbieStartedEvent.class;
     }
 
-    @Override
-    public void onEvent(DebbieStartedEvent event) {
+    default void onEvent(DebbieStartedEvent event) {
         // do more
     }
 }

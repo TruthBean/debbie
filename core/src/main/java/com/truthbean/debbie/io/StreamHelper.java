@@ -1,8 +1,8 @@
 package com.truthbean.debbie.io;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
@@ -152,8 +152,13 @@ public final class StreamHelper {
 
     public static List<Class<?>> getClassFromJarByPackageName(String packageName, JarFile jarFile, String packageDirName,
                                                               ClassLoader classLoader) {
+        return getClassesByPackageName(packageName, packageDirName, classLoader, getFilesInJar(jarFile));
+    }
+
+    private static List<Class<?>> getClassesByPackageName(String packageName, String packageDirName,
+                                                          ClassLoader classLoader,
+                                                          List<JarEntry> filesInJar) {
         List<Class<?>> result = new ArrayList<>();
-        List<JarEntry> filesInJar = getFilesInJar(jarFile);
         for (JarEntry entry : filesInJar) {
             getClassesUnderPackageInJar(packageName, entry, packageDirName, classLoader, result);
         }
@@ -162,12 +167,7 @@ public final class StreamHelper {
 
     public static List<Class<?>> getClassFromJarByPackageName(String packageName, URL url, String packageDirName,
                                                               ClassLoader classLoader) {
-        List<Class<?>> result = new ArrayList<>();
-        List<JarEntry> filesInJar = getFilesInJar(url);
-        for (JarEntry entry : filesInJar) {
-            getClassesUnderPackageInJar(packageName, entry, packageDirName, classLoader, result);
-        }
-        return result;
+        return getClassesByPackageName(packageName, packageDirName, classLoader, getFilesInJar(url));
     }
 
     private static void getClassesUnderPackageInJar(String packageName, JarEntry entry, String packageDirName,

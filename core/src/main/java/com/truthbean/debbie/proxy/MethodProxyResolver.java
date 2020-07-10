@@ -30,18 +30,6 @@ public class MethodProxyResolver {
         this.classInfo = classInfo;
     }
 
-    public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method) {
-        List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
-        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
-        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap = methodProxyHandlerRegister.getAllMethodProxyHandlers();
-        if (classListMap != null && !classListMap.isEmpty()) {
-            classListMap.forEach((key, value) -> {
-                getMethodProxyHandler(method, key, value, methodProxyHandlers);
-            });
-        }
-        return methodProxyHandlers;
-    }
-
     public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method,
                                                                                 Collection<Annotation> annotations) {
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
@@ -50,7 +38,10 @@ public class MethodProxyResolver {
                 = methodProxyHandlerRegister.getAllMethodProxyHandlers();
         if (classListMap != null && !classListMap.isEmpty()) {
             classListMap.forEach((key, value) -> {
-                getMethodProxyHandler(method, key, value, methodProxyHandlers, annotations);
+                if (annotations != null)
+                    getMethodProxyHandler(method, key, value, methodProxyHandlers, annotations);
+                else
+                    getMethodProxyHandler(method, key, value, methodProxyHandlers);
             });
         }
         return methodProxyHandlers;
@@ -67,7 +58,7 @@ public class MethodProxyResolver {
         return methodProxyHandler;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void addMethodProxyHandler(Method method, Class<? extends Annotation> annotationType,
                                        List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
                                        Annotation annotation, List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {

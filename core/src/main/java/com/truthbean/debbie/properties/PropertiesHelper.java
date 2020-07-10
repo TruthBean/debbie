@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.properties;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.OsUtils;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
@@ -140,7 +140,7 @@ public final class PropertiesHelper {
     /**
      * properties变量名称正则
      */
-    private static Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\s*\\{?\\s*([._0-9a-zA-Z]+)\\s*}?");
 
     /**
      * replace property
@@ -253,7 +253,6 @@ public final class PropertiesHelper {
         if (!allowMultiFile) {
             // fall back to use method getResourceAsStream
             try {
-                ClassLoader classLoader = ClassLoaderUtils.getClassLoader(PropertiesHelper.class);
                 URL url = new URL(fileName);
                 InputStream inputStream = url.openStream();
                 var reader = new InputStreamReader(inputStream, charset);

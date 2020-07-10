@@ -77,7 +77,7 @@ public class UriComposition {
     }
 
     public static class Builder {
-        private UriComposition uriComposition;
+        private final UriComposition uriComposition;
 
         public Builder() {
             uriComposition = new UriComposition();

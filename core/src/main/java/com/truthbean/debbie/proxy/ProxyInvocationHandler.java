@@ -1,15 +1,16 @@
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -80,7 +81,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             targetMethod = method;
         }
         List<MethodProxyHandler<? extends Annotation>> methodInterceptors =
-                this.methodProxyResolver.getMethodProxyHandler(targetMethod);
+                this.methodProxyResolver.getMethodProxyHandler(targetMethod, (Collection<Annotation>) null);
         if (!methodInterceptors.isEmpty()) {
             methodInterceptors.sort(MethodProxyHandler::compareTo);
         }

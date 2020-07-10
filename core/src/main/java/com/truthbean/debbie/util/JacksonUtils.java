@@ -23,7 +23,6 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -294,6 +293,7 @@ public final class JacksonUtils {
         return null;
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T> List<T> jsonToCollectionBean(String jsonStr,
                                                    Class<? extends Collection> collectionType, Class<T> bean) {
         try {

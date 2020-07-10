@@ -1,11 +1,10 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 public class EventBeanTest {
 
     @Test

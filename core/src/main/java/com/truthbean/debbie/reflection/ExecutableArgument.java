@@ -13,6 +13,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @see java.lang.reflect.Executable
@@ -112,7 +113,7 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
             return false;
         }
         return (getName() != null ? getName().equals(that.getName()) : that.getName() == null)
-                && (annotations != null ? annotations.equals(that.annotations) : that.annotations == null);
+                && Objects.equals(annotations, that.annotations);
     }
 
     @Override

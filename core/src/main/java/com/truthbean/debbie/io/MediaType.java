@@ -133,7 +133,7 @@ public enum MediaType {
 
     // ===============================================================================================================
 
-    private String value;
+    private final String value;
 
     MediaType(String value) {
         this.value = value;

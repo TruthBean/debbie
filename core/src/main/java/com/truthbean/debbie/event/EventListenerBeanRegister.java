@@ -30,7 +30,7 @@ public class EventListenerBeanRegister {
         this.applicationContext = applicationContext;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void register() {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
@@ -45,14 +45,20 @@ public class EventListenerBeanRegister {
             Class<?> beanType = debbieBeanInfo.getBeanClass();
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
-                BeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
-                listenerBeanFactory.setGlobalBeanFactory(globalBeanFactory);
-                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), listenerBeanFactory);
+                if ((actualTypes == null || actualTypes.isEmpty()) && DebbieStartedEventListener.class.isAssignableFrom(beanType)) {
+                    BeanFactory<DebbieStartedEventListener> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
+                    listenerBeanFactory.setGlobalBeanFactory(globalBeanFactory);
+                    eventPublisher.addEventListener(DebbieStartedEvent.class, listenerBeanFactory);
+                } else if (actualTypes != null && !actualTypes.isEmpty()) {
+                    BeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
+                    listenerBeanFactory.setGlobalBeanFactory(globalBeanFactory);
+                    eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) actualTypes.get(0), listenerBeanFactory);
+                }
             }
         }
         // 处理 EventMethodListener
         Set<DebbieBeanInfo<?>> beanInfoList = beanInitialization.getAnnotatedMethodBean(EventMethodListener.class);
-        if (beanInfoList != null && beanInfoList.isEmpty()) {
+        if (beanInfoList != null && !beanInfoList.isEmpty()) {
             for (DebbieBeanInfo debbieBeanInfo : beanInfoList) {
                 Class<?> beanType = debbieBeanInfo.getBeanClass();
                 Object bean = globalBeanFactory.factory(beanType);
@@ -68,7 +74,6 @@ public class EventListenerBeanRegister {
                                 var listener = new EventMethodListenerFactory(bean, type, method);
                                 listener.setAsync(annotation.async());
 
-                                @SuppressWarnings("unchecked")
                                 DebbieBeanInfo listenerBeanInfo = new DebbieBeanInfo<>(EventMethodListenerFactory.class);
                                 listenerBeanInfo.setBean(listener);
 

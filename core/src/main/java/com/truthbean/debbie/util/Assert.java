@@ -25,12 +25,14 @@ public class Assert {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static void notEmpty(Collection collection, String message) {
         if (collection == null || collection.isEmpty()) {
             throw new IllegalArgumentException(message);
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static void notEmpty(Map map, String message) {
         if (map == null || map.isEmpty()) {
             throw new IllegalArgumentException(message);

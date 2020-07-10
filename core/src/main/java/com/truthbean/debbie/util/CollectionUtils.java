@@ -19,14 +19,14 @@ import java.util.List;
  */
 public class CollectionUtils {
 
-    public static final List EMPTY_LIST = Collections.EMPTY_LIST;
+    public static final List<?> EMPTY_LIST = Collections.EMPTY_LIST;
 
     public static boolean isEmpty(Collection<?> collection) {
         return (collection == null || collection.isEmpty());
     }
 
     @SuppressWarnings("unchecked")
-    public static final <T> List<T> emptyList() {
+    public static <T> List<T> emptyList() {
         return (List<T>) EMPTY_LIST;
     }
 }

@@ -27,10 +27,10 @@ public class MediaTypeInfo {
     private static final Pattern PARAMETER =
             Pattern.compile(";\\s*(?:" + TOKEN + "=(?:" + TOKEN + "|" + QUOTED + "))?");
 
-    private String mediaType;
-    private String type;
-    private String subtype;
-    private String charset;
+    private final String mediaType;
+    private final String type;
+    private final String subtype;
+    private final String charset;
 
     private MediaTypeInfo(String mediaType, String type, String subtype, String charset) {
         this.mediaType = mediaType;

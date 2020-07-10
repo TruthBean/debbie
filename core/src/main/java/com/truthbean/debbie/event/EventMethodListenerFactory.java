@@ -42,7 +42,7 @@ public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> imple
     }
 
     @Override
-    public boolean supportsSourceType(Class sourceType) {
+    public boolean supportsSourceType(Class<?> sourceType) {
         return sourceType == this.eventType;
     }
 

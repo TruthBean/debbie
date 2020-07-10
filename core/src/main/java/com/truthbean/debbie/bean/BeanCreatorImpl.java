@@ -29,7 +29,8 @@ import java.util.function.Supplier;
 public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private final Class<Bean> beanClass;
     private final DebbieBeanInfo<Bean> beanInfo;
-    private final Map<String, Method> beanMethods = new HashMap<>();
+    // todo inject by method
+    // private final Map<String, Method> beanMethods = new HashMap<>();
 
     private final DebbieBeanInfoFactory debbieBeanInfoFactory;
 
@@ -167,60 +168,9 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 Object[] values = new Object[parameters.length];
                 Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependence = new HashMap<>();
 
-                boolean initMethodInjectRequired = isInitMethodInjectRequired();
+                boolean initMethodInjectRequired = isInitExecutableInjectRequired(initMethod);
 
-                String[] names = new String[parameterCount];
-                for (int i = 0; i < parameterCount; i++) {
-                    Parameter parameter = parameters[i];
-
-                    var type = parameter.getType();
-                    boolean required = initMethodInjectRequired;
-                    String name = null;
-                    BeanInject annotation = parameter.getAnnotation(BeanInject.class);
-                    if (annotation != null) {
-                        name = annotation.name();
-                        if (name.isBlank()) {
-                            name = annotation.value();
-                        }
-                        if (name.isBlank()) {
-                            names[i] = type.getName();
-                        } else {
-                            names[i] = name;
-                        }
-                        required = annotation.require();
-                    }
-
-                    DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
-                    if (beanInfo == null && required) {
-                        throw new NoBeanException("no bean " + names[i] + " found .");
-                    } else if (beanInfo != null) {
-                        if (beanInfo.isPresent()) {
-                            values[i] = beanInfo.getBean();
-                        }
-                        if (beanInfo.hasBeanFactory()) {
-                            values[i] = beanInfo.getBeanFactory().getBean();
-                        }
-                        boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
-                        if (flag && beanInfo.isSingleton()) {
-                            BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
-                            initMethodBeanDependence.put(i, beanCreator.beanInfo);
-                            if (beanCreator.isCreated()) {
-                                values[i] = beanCreator.getCreatedBean();
-                            }
-                        } else {
-                            initMethodBeanDependence.put(i, beanInfo);
-                        }
-                    }
-                }
-                boolean allParamsHasValue = false;
-                for (Object value : values) {
-                    if (value == null) {
-                        allParamsHasValue = false;
-                        break;
-                    } else {
-                        allParamsHasValue = true;
-                    }
-                }
+                boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters, parameterCount, values, initMethodBeanDependence, initMethodInjectRequired);
                 if (allParamsHasValue) {
                     this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
                 } else {
@@ -230,21 +180,77 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         }
     }
 
-    private boolean isInitMethodInjectRequired() {
-        boolean initMethodInjectRequired = false;
-        BeanInject beanInject = initMethod.getAnnotation(BeanInject.class);
-        if (beanInject != null) {
-            initMethodInjectRequired = beanInject.require();
-        } else {
-            Class<? extends Annotation> injectClass = injectedBeanFactory.getInjectType();
-            if (injectClass != null) {
-                Annotation inject = initMethod.getAnnotation(injectClass);
-                if (inject != null) {
-                    initMethodInjectRequired = true;
+    private boolean createPreparationByExecutable(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Parameter[] parameters, int parameterCount, Object[] values, Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependence, boolean initMethodInjectRequired) {
+        String[] names = new String[parameterCount];
+        for (int i = 0; i < parameterCount; i++) {
+            Parameter parameter = parameters[i];
+
+            var type = parameter.getType();
+            boolean required = initMethodInjectRequired;
+            String name = null;
+            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+            if (annotation != null) {
+                name = annotation.name();
+                if (name.isBlank()) {
+                    name = annotation.value();
+                }
+                if (name.isBlank()) {
+                    names[i] = type.getName();
+                } else {
+                    names[i] = name;
+                }
+                required = annotation.require();
+            }
+
+            DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
+            if (beanInfo == null && required) {
+                throw new NoBeanException("no bean " + names[i] + " found .");
+            } else if (beanInfo != null) {
+                if (beanInfo.isPresent()) {
+                    values[i] = beanInfo.getBean();
+                }
+                if (beanInfo.hasBeanFactory()) {
+                    values[i] = beanInfo.getBeanFactory().getBean();
+                }
+                boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
+                if (flag && beanInfo.isSingleton()) {
+                    BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
+                    initMethodBeanDependence.put(i, beanCreator.beanInfo);
+                    if (beanCreator.isCreated()) {
+                        values[i] = beanCreator.getCreatedBean();
+                    }
+                } else {
+                    initMethodBeanDependence.put(i, beanInfo);
                 }
             }
         }
-        return initMethodInjectRequired;
+        boolean allParamsHasValue = false;
+        for (Object value : values) {
+            if (value == null) {
+                allParamsHasValue = false;
+                break;
+            } else {
+                allParamsHasValue = true;
+            }
+        }
+        return allParamsHasValue;
+    }
+
+    private boolean isInitExecutableInjectRequired(Executable executable) {
+        boolean initExecutableInjectRequired = false;
+        BeanInject beanInject = executable.getAnnotation(BeanInject.class);
+        if (beanInject != null) {
+            initExecutableInjectRequired = beanInject.require();
+        } else {
+            Class<? extends Annotation> injectClass = injectedBeanFactory.getInjectType();
+            if (injectClass != null) {
+                Annotation inject = executable.getAnnotation(injectClass);
+                if (inject != null) {
+                    initExecutableInjectRequired = true;
+                }
+            }
+        }
+        return initExecutableInjectRequired;
     }
 
     // TODO cache
@@ -264,61 +270,10 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                     Object[] values = new Object[parameterCount];
                     Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent = new HashMap<>();
 
-                    boolean constructorInjectRequired = isConstructorInjectRequired(constructor);
+                    boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
 
                     Parameter[] parameters = constructor.getParameters();
-                    String[] names = new String[parameterCount];
-                    for (int i = 0; i < parameterCount; i++) {
-                        Parameter parameter = parameters[i];
-
-                        var type = parameter.getType();
-                        boolean required = constructorInjectRequired;
-                        String name = null;
-                        BeanInject annotation = parameter.getAnnotation(BeanInject.class);
-                        if (annotation != null) {
-                            name = annotation.name();
-                            if (name.isBlank()) {
-                                name = annotation.value();
-                            }
-                            if (name.isBlank()) {
-                                names[i] = type.getName();
-                            } else {
-                                names[i] = name;
-                            }
-                            required = annotation.require();
-                        }
-
-                        DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
-                        if (beanInfo == null && required) {
-                            throw new NoBeanException("no bean " + names[i] + " found .");
-                        } else if (beanInfo != null) {
-                            if (beanInfo.isPresent()) {
-                                values[i] = beanInfo.getBean();
-                            }
-                            if (beanInfo.hasBeanFactory()) {
-                                values[i] = beanInfo.getBeanFactory().getBean();
-                            }
-                            boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
-                            if (flag && beanInfo.isSingleton()) {
-                                BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
-                                constructorBeanDependent.put(i, beanCreator.beanInfo);
-                                if (beanCreator.isCreated()) {
-                                    values[i] = beanCreator.getCreatedBean();
-                                }
-                            } else {
-                                constructorBeanDependent.put(i, beanInfo);
-                            }
-                        }
-                    }
-                    boolean allParamsHasValue = false;
-                    for (Object value : values) {
-                        if (value == null) {
-                            allParamsHasValue = false;
-                            break;
-                        } else {
-                            allParamsHasValue = true;
-                        }
-                    }
+                    boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters, parameterCount, values, constructorBeanDependent, constructorInjectRequired);
                     if (allParamsHasValue) {
                         this.bean = constructor.newInstance(values);
                     } else {
@@ -331,23 +286,6 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by constructor error \n");
             BeanCreatedException.throwException(LOGGER, e);
         }
-    }
-
-    private boolean isConstructorInjectRequired(Constructor<Bean> constructor) {
-        boolean constructorInjectRequired = false;
-        BeanInject beanInject = constructor.getAnnotation(BeanInject.class);
-        if (beanInject != null) {
-            constructorInjectRequired = beanInject.require();
-        } else {
-            Class<? extends Annotation> injectClass = injectedBeanFactory.getInjectType();
-            if (injectClass != null) {
-                Annotation inject = constructor.getAnnotation(injectClass);
-                if (inject != null) {
-                    constructorInjectRequired = true;
-                }
-            }
-        }
-        return constructorInjectRequired;
     }
 
     private void createPreparationByDefaultConstructor(Constructor<Bean>[] constructors) {
@@ -369,7 +307,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private void createPreparationByInitMethodDependent() {
         Collection<DebbieBeanInfo<?>> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent().values();
         for (DebbieBeanInfo<?> debbieBeanInfo : initMethodBeanDependent) {
-            if ((debbieBeanInfo.optional().isEmpty() || !debbieBeanInfo.isHasVirtualValue())) {
+            if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo);
             }
@@ -387,7 +325,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private void createPreparationByConstructorDependent() {
         Collection<DebbieBeanInfo<?>> constructorBeanDependent = beanInfo.getConstructorBeanDependent().values();
         for (DebbieBeanInfo<?> debbieBeanInfo : constructorBeanDependent) {
-            if ((debbieBeanInfo.optional().isEmpty() || !debbieBeanInfo.isHasVirtualValue())) {
+            if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo);
             }
@@ -410,7 +348,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
         Object[] values = new Object[parameterCount];
 
-        boolean initMethodInjectRequired = isInitMethodInjectRequired();
+        boolean initMethodInjectRequired = isInitExecutableInjectRequired(initMethod);
 
         for (int i = 0; i < parameterCount; i++) {
             Parameter parameter = parameters[i];
@@ -424,7 +362,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
                     "dependent " + serviceName);
             Object beanValue = bean.getBean();
-            if (required && !bean.isHasVirtualValue() && beanValue == null) {
+            if (required && bean.hasNoVirtualValue() && beanValue == null) {
                 throw new NoBeanException("bean " + serviceName + " value is null .");
             }
             if (beanValue != null) {
@@ -451,7 +389,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
             Object[] values = new Object[parameterCount];
 
-            boolean constructorInjectRequired = isConstructorInjectRequired(constructor);
+            boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
 
             for (int i = 0; i < parameterCount; i++) {
                 Parameter parameter = parameters[i];
@@ -488,7 +426,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
     private void setMethods(Set<Method> methods) {
         methods.forEach(method -> {
-            beanMethods.put(method.getName(), method);
+            // beanMethods.put(method.getName(), method);
             if (method.getAnnotation(BeanInit.class) != null) {
                 initMethod = method;
                 beanInfo.setInitMethod(initMethod);
