@@ -6,6 +6,9 @@ import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class EventTest {
 
     @Test
@@ -42,5 +45,12 @@ public class EventTest {
         long end = System.currentTimeMillis();
         System.out.println(end - start1);
         System.out.println(end - start);
+    }
+
+    @Test
+    public void test() {
+        LocalDateTime dateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0);
+        long milli = dateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        System.out.println(milli);
     }
 }

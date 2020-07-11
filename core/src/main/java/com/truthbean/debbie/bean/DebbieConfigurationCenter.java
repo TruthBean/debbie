@@ -21,8 +21,13 @@ import java.util.Map;
 public class DebbieConfigurationCenter {
     private static final Map<Class<? extends DebbieConfiguration>, DebbieConfiguration> configurations = new HashMap<>();
 
-    public static <C extends DebbieConfiguration> void addConfiguration(C configuration) {
+    public static <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration,
+                                                                        BeanInitialization beanInitialization) {
         configurations.put(configuration.getClass(), configuration);
+        DebbieBeanInfo<C> beanInfo = new DebbieBeanInfo<>(configurationClass);
+        beanInfo.setBean(configuration);
+        beanInfo.setBeanType(BeanType.SINGLETON);
+        beanInitialization.initSingletonBean(beanInfo);
     }
 
     @SuppressWarnings("unchecked")

@@ -136,7 +136,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public <T> T execute(final Object object, final Class<T> returnType, final Object... args) {
+    public <R> R execute(final Object object, final Class<R> returnType, final Object... args) {
         final List<HttpClientResponse> result = new ArrayList<>();
         MediaTypeInfo responseType = MediaType.TEXT_ANY_UTF8.info();
 
@@ -240,7 +240,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> T getSingleResult(final HttpClientResponse response, Class<T> returnType, final MediaTypeInfo responseType) {
+    private <R> R getSingleResult(final HttpClientResponse response, Class<R> returnType,
+                                  final MediaTypeInfo responseType) {
         if (response != null) {
             final Object o = response.getBody();
             if (o instanceof String) {
@@ -252,11 +253,11 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                     return JacksonUtils.xmlToBean(str, returnType);
                 }
                 if (TypeHelper.isRawBaseType(returnType)) {
-                    returnType = (Class<T>) TypeHelper.getWrapperClass(returnType);
+                    returnType = (Class<R>) TypeHelper.getWrapperClass(returnType);
                 }
                 return DataTransformerFactory.transform(str, returnType);
             } else if (o instanceof InputStream) {
-                return (T) o;
+                return (R) o;
             } else {
                 throw new IllegalArgumentException("not support " + responseType + " yet! ");
             }
@@ -267,7 +268,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> T getResult(final List<HttpClientResponse> responseList, final Class<T> returnType, final MediaTypeInfo responseType) {
+    private <R> R getResult(final List<HttpClientResponse> responseList, final Class<R> returnType,
+                        final MediaTypeInfo responseType) {
         if (returnType == null || returnType == Void.class || responseList.isEmpty()) {
             return null;
         }
@@ -276,11 +278,11 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             final HttpClientResponse response = responseList.get(0);
             return getSingleResult(response, returnType, responseType);
         } else if (Iterable.class.isAssignableFrom(returnType) || returnType == Object.class) {
-            final List<T> result = new ArrayList<>();
+            final List<R> result = new ArrayList<>();
             for (final HttpClientResponse response : responseList) {
                 result.add(getSingleResult(response, returnType, responseType));
             }
-            return (T) result;
+            return (R) result;
         } else {
             throw new IllegalArgumentException("not support " + responseType + " yet! ");
         }

@@ -239,4 +239,8 @@ public class ClassInfo<C> implements Serializable {
     public boolean isArray() {
         return clazz.isArray();
     }
+
+    public boolean isAssignable(Class<?> superClass) {
+        return superClass.isAssignableFrom(clazz);
+    }
 }

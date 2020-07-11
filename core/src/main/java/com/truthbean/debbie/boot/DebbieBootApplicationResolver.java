@@ -41,7 +41,8 @@ class DebbieBootApplicationResolver {
             allClass.forEach(configuration::addScanClasses);
         }
 
-        DebbieConfigurationCenter.addConfiguration(configuration);
+        DebbieConfigurationCenter.addConfiguration(BeanScanConfiguration.class, configuration, applicationContext.getBeanInitialization());
+        applicationContext.refreshBeans();
     }
 
     void resolverClasses(DebbieScan scan, BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
@@ -72,7 +73,8 @@ class DebbieBootApplicationResolver {
                 configuration.addScanBasePackages(applicationClass.getPackageName());
             }
 
-            DebbieConfigurationCenter.addConfiguration(configuration);
+            DebbieConfigurationCenter.addConfiguration(BeanScanConfiguration.class, configuration, beanInitialization);
+            applicationContext.refreshBeans();
             return;
         }
 
@@ -90,7 +92,8 @@ class DebbieBootApplicationResolver {
             Class<? extends Annotation>[] injectTypes = debbieBootApplication.customInjectType();
             configuration.addCustomInjectType(injectTypes);
 
-            DebbieConfigurationCenter.addConfiguration(configuration);
+            DebbieConfigurationCenter.addConfiguration(BeanScanConfiguration.class, configuration, beanInitialization);
+            applicationContext.refreshBeans();
         } else {
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {

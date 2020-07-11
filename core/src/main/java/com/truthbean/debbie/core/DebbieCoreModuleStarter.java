@@ -11,31 +11,11 @@ package com.truthbean.debbie.core;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
-import com.truthbean.debbie.data.transformer.ClassTransformer;
-import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
-import com.truthbean.debbie.data.transformer.date.DefaultTimeTransformer;
-import com.truthbean.debbie.data.transformer.date.TimestampLongTransformer;
-import com.truthbean.debbie.data.transformer.jdbc.BlobToByteArrayTransformer;
-import com.truthbean.debbie.data.transformer.jdbc.BlobToStringTransformer;
-import com.truthbean.debbie.data.transformer.numeric.BigDecimalToLongTransformer;
-import com.truthbean.debbie.data.transformer.numeric.IntegerToBooleanTransformer;
-import com.truthbean.debbie.data.transformer.numeric.LongToIntegerTransformer;
-import com.truthbean.debbie.data.transformer.text.*;
-import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.data.transformer.DataTransformerRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
-import com.truthbean.debbie.proxy.DefaultMethodProxyHandler;
-import com.truthbean.debbie.proxy.MethodProxy;
-import com.truthbean.debbie.proxy.MethodProxyHandlerRegister;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URL;
-import java.sql.Blob;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * @author truthbean
@@ -50,16 +30,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
-        ResourceResolver resourceResolver = applicationContext.getResourceResolver();
-        beanInfo.setBean(resourceResolver);
-        beanInfo.addBeanName("resourceResolver");
-        beanInitialization.initSingletonBean(beanInfo);
-
-        registerTransformer(beanInitialization);
-
-        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
-        methodProxyHandlerRegister.register(MethodProxy.class, DefaultMethodProxyHandler.class);
+        DataTransformerRegister register = new DataTransformerRegister(beanInitialization);
+        register.registerTransformer();
     }
 
     @Override
@@ -79,35 +51,5 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
         executor.destroy();
-    }
-
-    private void registerTransformer(BeanInitialization beanInitialization) {
-
-        beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Date.class, String.class);
-        beanInitialization.registerDataTransformer(new TimestampLongTransformer(), Timestamp.class, Long.class);
-        try {
-            Class<?> jsonNode = getClass().getClassLoader().loadClass("com.fasterxml.jackson.databind.JsonNode");
-            beanInitialization.registerDataTransformer(new JsonNodeTransformer(), jsonNode, String.class);
-        } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
-        }
-        beanInitialization.registerDataTransformer(new UrlTransformer(), URL.class, String.class);
-
-        beanInitialization.registerDataTransformer(new BigDecimalTransformer(), BigDecimal.class, String.class);
-        beanInitialization.registerDataTransformer(new BigIntegerTransformer(), BigInteger.class, String.class);
-        beanInitialization.registerDataTransformer(new BooleanTransformer(), Boolean.class, String.class);
-        beanInitialization.registerDataTransformer(new FloatTransformer(), Float.class, String.class);
-        beanInitialization.registerDataTransformer(new IntegerTransformer(), Integer.class, String.class);
-        beanInitialization.registerDataTransformer(new LongTransformer(), Long.class, String.class);
-        beanInitialization.registerDataTransformer(new ShortTransformer(), Short.class, String.class);
-
-        beanInitialization.registerDataTransformer(new IntegerToBooleanTransformer(), Integer.class, Boolean.class);
-        beanInitialization.registerDataTransformer(new LongToIntegerTransformer(), Long.class, Integer.class);
-        beanInitialization.registerDataTransformer(new BigDecimalToLongTransformer(), BigDecimal.class, Long.class);
-
-        beanInitialization.registerDataTransformer(new SetStringTransformer());
-        beanInitialization.registerDataTransformer(new ClassTransformer(), Class.class, String.class);
-
-        beanInitialization.registerDataTransformer(new BlobToStringTransformer(), Blob.class, String.class);
-        beanInitialization.registerDataTransformer(new BlobToByteArrayTransformer(), Blob.class, byte[].class);
     }
 }

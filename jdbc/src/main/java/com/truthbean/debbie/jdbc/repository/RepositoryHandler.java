@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
@@ -11,6 +20,7 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
+import com.truthbean.debbie.lang.Callback;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.StringUtils;
@@ -19,7 +29,12 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.Date;
 
 /**
  * handle repository of curd
@@ -39,16 +54,6 @@ public class RepositoryHandler {
 
     public DataSourceDriverName getDriverName() {
         return driverName;
-    }
-
-    private void loggerSqlAndParameters(String sql, Object[][] args) {
-        LOGGER.debug("Preparing >>> " + sql);
-        LOGGER.debug("Parameters >>> " + Arrays.deepToString(args));
-    }
-
-    private void loggerSqlAndParameters(String sql, Object[] args) {
-        LOGGER.debug("Preparing >>> " + sql);
-        LOGGER.debug("Parameters >>> " + StringUtils.getParameterValueString(args));
     }
 
     public int[] batch(Connection connection, String sql, Object[][] args) throws TransactionException {
@@ -204,36 +209,55 @@ public class RepositoryHandler {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T queryOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
         List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
-        T result = null;
         if (selectResult.isEmpty()) {
             return null;
         }
         if (selectResult.size() <= 1) {
-            if (!TypeHelper.isBaseType(clazz)) {
+            List<ColumnInfo> row = selectResult.get(0);
+            ColumnInfo data = row.get(0);
+            return transform(data, clazz, (arg) -> {
                 List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
-                result = transformer(selectResult.get(0), declaredFields, clazz);
-            } else {
-                List<ColumnInfo> row = selectResult.get(0);
-                if (row.size() == 1) {
-                    ColumnInfo data = row.get(0);
-                    if (data.getJavaClass() == clazz) {
-                        result = clazz.cast(data.getValue());
-                    } else {
-                        Class<?> type = clazz;
-                        if (TypeHelper.isRawBaseType(type)) {
-                            type = TypeHelper.getWrapperClass(type);
-                        }
-                        return (T) DataTransformerFactory.transform(data.getValue(), type);
-                    }
-                }
-            }
+                return transformer(row, declaredFields, clazz);
+            });
         } else {
             throw new MoreRowException("Expect one row, but it has" + selectResult.size() + "rows.");
         }
-        return result;
+    }
+
+    private void loggerSqlAndParameters(String sql, Object[][] args) {
+        LOGGER.debug("Preparing >>> " + sql);
+        LOGGER.debug("Parameters >>> " + Arrays.deepToString(args));
+    }
+
+    private void loggerSqlAndParameters(String sql, Object[] args) {
+        LOGGER.debug("Preparing >>> " + sql);
+        LOGGER.debug("Parameters >>> " + StringUtils.getParameterValueString(args));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T transform(ColumnInfo data, Class<T> clazz, Callback<T> others) {
+        if (TypeHelper.isBaseType(clazz)) {
+            if (data.getJavaClass() == clazz) {
+                return clazz.cast(data.getValue());
+            } else {
+                Class<?> type = clazz;
+                if (TypeHelper.isRawBaseType(type)) {
+                    type = TypeHelper.getWrapperClass(type);
+                }
+                return (T) DataTransformerFactory.transform(data.getValue(), type);
+            }
+        } else if (TypeHelper.isTimeType(clazz)) {
+            Object value = data.getValue();
+            if (value instanceof Timestamp) {
+                Timestamp timestamp = (Timestamp) value;
+                return DataTransformerFactory.transform(timestamp, clazz);
+            }
+        } else {
+            return others.call();
+        }
+        return null;
     }
 
     private <T> T transformer(List<ColumnInfo> map, List<Field> declaredFields, Class<T> clazz) {
@@ -252,7 +276,7 @@ public class RepositoryHandler {
             for (var entry : map) {
                 if (columnName.equals(entry.getColumnName())) {
                     Class<?> type = field.getType();
-                    Class javaClass = entry.getJavaClass();
+                    Class<?> javaClass = entry.getJavaClass();
                     Object value = entry.getValue();
                     // todo check
                     if (javaClass != type) {

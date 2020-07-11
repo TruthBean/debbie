@@ -9,7 +9,7 @@ import com.truthbean.logger.LoggerFactory;
  * @since 0.0.2
  */
 @EventBeanListener
-public class TestStartedEventListener implements DebbieStartedEventListener {
+public class TestStartedEventListener implements ApplicationListener<DebbieStartedEvent> {
     private final TestBean testBean;
 
     public TestStartedEventListener(@BeanInject TestBean testBean) {
@@ -23,4 +23,10 @@ public class TestStartedEventListener implements DebbieStartedEventListener {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestStartedEventListener.class);
+
+    @Override
+    public void onApplicationEvent(DebbieStartedEvent event) {
+        LOGGER.debug(() -> ">>>>>>>>>>>>>>>>>>>>>>>>>>>>> hello debbie  >>>>>>>>>>>>>>>>>>>>>");
+        LOGGER.debug(testBean::toString);
+    }
 }

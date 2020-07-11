@@ -29,7 +29,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
     @SuppressWarnings({"rawtypes"})
     private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
-    private DebbieApplicationContext factoryHandler;
+    private DebbieApplicationContext applicationContext;
     private SingletonBeanRegister singletonBeanRegister;
 
     public DebbieConfigurationFactory() {
@@ -37,7 +37,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
 
     @Override
     public void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
-        this.factoryHandler = applicationContext;
+        this.applicationContext = applicationContext;
         this.singletonBeanRegister = new SingletonBeanRegister(applicationContext);
     }
 
@@ -45,11 +45,12 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
     public <P extends DebbieProperties, C extends DebbieConfiguration>
     void register(Class<P> propertiesClass, Class<C> configurationClass) {
         DebbieProperties<C> properties = (DebbieProperties<C>) ReflectionHelper.newInstance(propertiesClass);
-        C configuration = properties.toConfiguration(factoryHandler);
+        C configuration = properties.toConfiguration(applicationContext);
         var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
         this.singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
         configurations.put(propertiesClass, configuration);
-        DebbieConfigurationCenter.addConfiguration(configuration);
+        DebbieConfigurationCenter.addConfiguration(configurationClass, configuration, applicationContext.getBeanInitialization());
+        applicationContext.refreshBeans();
     }
 
     @SuppressWarnings("unchecked")

@@ -88,8 +88,8 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
         this.globalBeanFactory = globalBeanFactory;
     }
 
-    public <T> T factory(DebbieBeanInfo<T> beanInfo) {
-        BeanCreator<T> creator = createIfNotExist(beanInfo);
+    public <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
+        BeanCreator<T> creator = createIfNotExist(beanInfo, skipFactory);
         return factory(creator);
     }
 
@@ -113,7 +113,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
     }
 
     @SuppressWarnings({"unchecked"})
-    public <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo) {
+    public <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             BeanCreator<T> beanCreator = (BeanCreator<T>) singletonBeanCreatorMap.get(beanInfo);
             beanInfo.setBean(beanCreator.getCreatedBean());
@@ -126,7 +126,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
                 creator.create(beanInfo.getBean());
                 return creator;
             }
-            if (beanInfo.hasBeanFactory()) {
+            if (!skipFactory && beanInfo.hasBeanFactory()) {
                 creator.create(beanInfo.getBeanFactory().factoryBean());
                 return creator;
             }
@@ -172,7 +172,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
             if (name != null) {
                 var beanInfo = this.beanInfoFactory.getBeanInfo(name, beanClass, true);
                 if (beanInfo != null) {
-                    BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo);
+                    BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo, false);
                     aware.setBean(() -> value);
                 }
             } else if (values.size() == 1) {
@@ -216,7 +216,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
     }
 
     @SuppressWarnings({"unchecked"})
-    private <Bean> BeanCreator<Bean> createIfNotExist(DebbieBeanInfo<Bean> beanInfo) {
+    private <Bean> BeanCreator<Bean> createIfNotExist(DebbieBeanInfo<Bean> beanInfo, boolean skipFactory) {
         BeanCreator<Bean> creator = null;
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             creator = (BeanCreator<Bean>) singletonBeanCreatorMap.get(beanInfo);
@@ -226,7 +226,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
             if (preparations.containsKey(beanInfo)) {
                 creator = (BeanCreator<Bean>) preparations.get(beanInfo);
             } else {
-                creator = factoryBeanPreparation(beanInfo);
+                creator = factoryBeanPreparation(beanInfo, skipFactory);
             }
             if (beanInfo.isSingleton()) {
                 singletonBeanCreatorMap.put(beanInfo, creator);
@@ -278,7 +278,7 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
             if (fieldBeanInfo.isPresent()) {
                 value = fieldBeanInfo.getBean();
             } else {
-                BeanCreator<?> creator = createIfNotExist(fieldBeanInfo);
+                BeanCreator<?> creator = createIfNotExist(fieldBeanInfo, false);
                 if (creator.isCreated()) {
                     value = creator.getCreatedBean();
                     fieldBeanInfo.setBean(value);

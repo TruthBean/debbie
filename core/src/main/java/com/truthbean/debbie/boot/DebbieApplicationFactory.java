@@ -9,12 +9,11 @@
  */
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
-import com.truthbean.debbie.bean.AutoCreatedBeanFactory;
-import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationFactory;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -83,11 +82,20 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
         config(configuration);
     }
 
+    private void registerResourceResolver(ResourceResolver resourceResolver, BeanInitialization initialization) {
+        DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
+        beanInfo.setBean(resourceResolver);
+        beanInfo.addBeanName("resourceResolver");
+        initialization.initSingletonBean(beanInfo);
+    }
+
     public void config(BeanScanConfiguration configuration) {
-        var targetClasses = configuration.getTargetClasses(getResourceResolver());
+        ResourceResolver resourceResolver = getResourceResolver();
+        var targetClasses = configuration.getTargetClasses(resourceResolver);
         // beanInitialization
         var beanInitialization = super.getBeanInitialization();
         beanInitialization.init(targetClasses);
+        registerResourceResolver(resourceResolver, beanInitialization);
         super.getDebbieBeanInfoFactory().refreshBeans();
 
         debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);

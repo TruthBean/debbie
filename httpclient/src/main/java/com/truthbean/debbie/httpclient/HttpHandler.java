@@ -110,6 +110,7 @@ public class HttpHandler {
         return "";
     }
 
+    @SuppressWarnings("rawtypes")
     public HttpRequest.BodyPublisher ofMimeMultipartData(Map<String, List> params, String boundary) {
         if (params == null || params.isEmpty()) {
             return null;

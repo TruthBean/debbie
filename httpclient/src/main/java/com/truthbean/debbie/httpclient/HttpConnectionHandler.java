@@ -119,10 +119,10 @@ public class HttpConnectionHandler extends HttpHandler {
                             mediaType = MediaTypeInfo.parse(typeFromName);
                         }
                         var charset = mediaType.charset(Charset.defaultCharset());
-                        writer.append("--" + boundary).append(CRLF);
-                        writer.append("Content-Disposition: form-data; name=\"" + file.getName() + "\"; filename=\"" + binaryFile.getName() + "\"")
+                        writer.append("--").append(boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data; name=\"").append(file.getName()).append("\"; filename=\"").append(binaryFile.getName()).append("\"")
                                 .append(CRLF);
-                        writer.append("Content-Type: " + mediaType.toString()).append(CRLF);
+                        writer.append("Content-Type: ").append(mediaType.toString()).append(CRLF);
                         if (mediaType.isText()) {
                             // text file
                             BufferedReader reader = null;
@@ -163,7 +163,7 @@ public class HttpConnectionHandler extends HttpHandler {
                 // CRLF is important! It indicates end of binary boundary.
                 writer.append(CRLF).flush();
                 // End of multipart/form-data.
-                writer.append("--" + boundary + "--").append(CRLF).flush();
+                writer.append("--").append(boundary).append("--").append(CRLF).flush();
 
             } catch (IOException e) {
                 LOGGER.error("", e);
@@ -176,8 +176,7 @@ public class HttpConnectionHandler extends HttpHandler {
     }
 
     private HttpURLConnection prepare(String url, HttpMethod method) {
-        String nullStr = null;
-        return prepare(url, method, null, null, nullStr, null);
+        return prepare(url, method, null, null, (String) null, null);
     }
 
     private HttpURLConnection prepare(String url, HttpMethod method,

@@ -20,6 +20,11 @@ import java.lang.annotation.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -145,6 +150,19 @@ public final class TypeHelper {
         if (type instanceof Class) {
             Class<?> clazz = (Class<?>) type;
             return clazz == Set.class || clazz == Map.class || clazz == List.class;
+        } else if (type instanceof ParameterizedType) {
+            java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
+            return rawType == Set.class || rawType == Map.class || rawType == List.class;
+        }
+        return false;
+    }
+
+    public static boolean isTimeType(java.lang.reflect.Type type) {
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            return clazz == Date.class || clazz == Calendar.class
+                    || clazz == java.sql.Date.class || clazz == Timestamp.class || clazz == Time.class
+                    || (clazz.getPackageName().startsWith("java.time"));
         } else if (type instanceof ParameterizedType) {
             java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
             return rawType == Set.class || rawType == Map.class || rawType == List.class;
@@ -641,6 +659,7 @@ public final class TypeHelper {
         return  !Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
                 !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
                 !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
+                !Native.class.equals(annotationType) &&
                 !FunctionalInterface.class.equals(annotationType) &&
                 !SuppressWarnings.class.equals(annotationType) && !Override.class.equals(annotationType);
     }

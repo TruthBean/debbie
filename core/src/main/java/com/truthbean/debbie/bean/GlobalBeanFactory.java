@@ -124,7 +124,7 @@ public class GlobalBeanFactory {
                 return factoryBeanByFactory(beanInfo, beanFactory);
         }
 
-        return factoryBeanByDependenceProcessor(beanInfo);
+        return factoryBeanByDependenceProcessor(beanInfo, false);
     }
 
     protected <T> T factory(String serviceName, Class<T> type, boolean require, boolean throwException) {
@@ -147,8 +147,8 @@ public class GlobalBeanFactory {
         return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
     }
 
-    public <T> T factoryBeanByDependenceProcessor(DebbieBeanInfo<T> beanInfo) {
-        T bean = injectedBeanFactory.factory(beanInfo);
+    public <T> T factoryBeanByDependenceProcessor(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
+        T bean = injectedBeanFactory.factory(beanInfo, skipFactory);
         beanInfo.setBean(bean);
         return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
     }

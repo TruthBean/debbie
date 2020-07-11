@@ -21,6 +21,7 @@ public class MethodProxyHandlerRegister {
 
     public MethodProxyHandlerRegister() {
         classListMap = new LinkedHashMap<>();
+        register(MethodProxy.class, DefaultMethodProxyHandler.class);
     }
 
     public void register(Class<? extends Annotation> annotation,

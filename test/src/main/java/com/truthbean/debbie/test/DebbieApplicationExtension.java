@@ -139,6 +139,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     @Override
     public void beforeTestExecution(final ExtensionContext context) throws Exception {
+        logger.debug("beforeTestExecution ...");
         Optional<Object> instance = context.getTestInstance();
         instance.ifPresent(o -> {
             DebbieApplicationContext applicationContext = getApplicationContext(context);
@@ -151,6 +152,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
+        logger.debug("afterTestExecution ...");
         Method testMethod = context.getRequiredTestMethod();
         long startTime = getStore(context).remove(START_TIME, long.class);
         long duration = System.currentTimeMillis() - startTime;
@@ -165,7 +167,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        logger.debug("beforeTestExecution...");
+        logger.debug("beforeAll ...");
         Optional<Class<?>> testClass = context.getTestClass();
         Class<?> applicationClass = DebbieApplicationFactory.class;
         if (testClass.isPresent()) {
@@ -182,7 +184,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        logger.debug("afterTestExecution...");
+        logger.debug("afterAll...");
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
         DebbieApplication debbieApplication = store.getOrComputeIfAbsent(DebbieApplication.class);
         debbieApplication.exit();

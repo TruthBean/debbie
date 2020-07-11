@@ -1,7 +1,14 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.bean.BeanAware;
-import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
@@ -24,30 +31,30 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/4/3 23:23.
  */
-public class DmlRepositoryHandler<E, ID> extends RepositoryHandler implements BeanAware<DataSourceConfiguration> {
+public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     private Class<E> entityClass;
     private Class<ID> idClass;
     private EntityInfo<E> entityInfo;
+    private Class<?> repository;
 
     private final EntityResolver entityResolver;
 
-    // @BeanInject
-    private DataSourceConfiguration configuration;
-
-    @Override
-    public Class<DataSourceConfiguration> getBeanClass() {
-        return DataSourceConfiguration.class;
-    }
-
-    @Override
-    public void setBean(DataSourceConfiguration configuration) {
-        this.configuration = configuration;
-        super.setDriverName(configuration.getDriverName());
-    }
-
     public DmlRepositoryHandler() {
         entityResolver = new EntityResolver();
+    }
+
+    public DmlRepositoryHandler(DataSourceConfiguration configuration, Class<E> entityClass, Class<ID> idClass) {
+        entityResolver = new EntityResolver();
+        super.setDriverName(configuration.getDriverName());
+        this.entityClass = entityClass;
+        this.idClass = idClass;
+    }
+
+    public DmlRepositoryHandler(DataSourceConfiguration configuration, Class<?> repository) {
+        entityResolver = new EntityResolver();
+        super.setDriverName(configuration.getDriverName());
+        this.repository = repository;
     }
 
     public static <E, ID> DmlRepositoryHandler<E, ID> of(DataSourceDriverName driverName,
@@ -71,7 +78,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler implements Be
     protected Class<E> getEntityClass() {
         if (entityClass == null) {
             try {
-                var types = ReflectionHelper.getActualTypes(getClass());
+                Class<?> clazz = repository;
+                if (clazz == null) {
+                    clazz = getClass();
+                }
+                var types = ReflectionHelper.getActualTypes(clazz);
                 if (types != null && types.length > 0) {
                     entityClass = (Class<E>) types[0];
                 }
@@ -213,7 +224,6 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler implements Be
         return super.update(connection, sql);
     }
 
-    @SuppressWarnings("unchecked")
     public ID insert(DriverConnection driverConnection, E entity, boolean withNull) throws TransactionException {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
@@ -645,7 +655,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler implements Be
         return Optional.of(result);
     }
 
-    private class SqlAndArgs<T> {
+    private static class SqlAndArgs<T> {
         DynamicSqlBuilder sqlBuilder;
         Object[] args;
         Class<T> entityClass;

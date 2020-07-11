@@ -39,7 +39,7 @@ public class DataTransformerFactory {
         }
     }
 
-    public static  <DT> void registerDataTransformer(Class<DT> transformerClass) {
+    public static <DT> void registerDataTransformer(Class<DT> transformerClass) {
         var support = transformerClass != null && !transformerClass.isInterface()
                 && !transformerClass.isAnnotation() && !transformerClass.isEnum()
                 && !Modifier.isAbstract(transformerClass.getModifiers())
@@ -124,47 +124,7 @@ public class DataTransformerFactory {
         return cast(types, new ClassInstanceTransformer(), originType, target, origin);
     }
 
-    /*@SuppressWarnings("unchecked")
-    private static <O, T> T cast(Type[] argsType, DataTransformer transformer, final Class<?> originType,
-                         final Class<T> target, final O origin) {
-        if (argsType != null && argsType.length == 2) {
-            Class<?> newOriginType = originType;
-            boolean isOriginWrapped = false;
-            if (TypeHelper.isRawBaseType(originType)) {
-                newOriginType = TypeHelper.getWrapperClass(originType);
-                isOriginWrapped = true;
-            }
-            boolean isTargetWrapped = false;
-            Class<?> newTarget = target;
-            if (TypeHelper.isRawBaseType(target)) {
-                newTarget = TypeHelper.getWrapperClass(target);
-                isTargetWrapped = true;
-            }
-            if (argsType[0] == newOriginType && argsType[1] == newTarget) {
-                try {
-                    if (isOriginWrapped) {
-                        return (T) TypeHelper.unwarp(transformer.transform(origin));
-                    }
-                    return target.cast(transformer.transform(origin));
-                } catch (Exception e) {
-                    LOGGER.warn(e.getMessage());
-                }
-            }
-            if (argsType[1] == newOriginType && argsType[0] == newTarget) {
-                try {
-                    if (isTargetWrapped) {
-                        return (T) TypeHelper.unwarp(transformer.reverse(origin));
-                    }
-                    return target.cast(transformer.reverse(origin));
-                } catch (Exception e) {
-                    LOGGER.warn(e.getMessage());
-                }
-            }
-        }
-        return null;
-    }*/
-
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <O, T> T cast(Type[] argsType, DataTransformer transformer, final Class<?> originType,
                                  final Class<T> target, final O origin) {
         if (argsType != null && argsType.length == 2) {

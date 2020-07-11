@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *         http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 package com.truthbean.debbie.jdbc.datasource.pool;
 
 import com.truthbean.debbie.jdbc.datasource.DefaultDataSource;
@@ -17,7 +26,7 @@ import java.util.List;
  */
 public class DefaultConnectionPool {
 
-    private DefaultDataSource dataSource;
+    private final DefaultDataSource dataSource;
 
     private final List<ConnectionProxy> idleConnections = new ArrayList<>();
     private final List<ConnectionProxy> activeConnections = new ArrayList<>();
@@ -32,7 +41,7 @@ public class DefaultConnectionPool {
 
     private int expectedConnectionTypeCode;
 
-    private DefaultDataSourcePoolConfiguration configuration;
+    private final DefaultDataSourcePoolConfiguration configuration;
 
     public DefaultConnectionPool(DefaultDataSourcePoolConfiguration configuration) {
         this.configuration = configuration;

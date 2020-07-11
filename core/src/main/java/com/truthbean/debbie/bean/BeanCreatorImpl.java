@@ -309,7 +309,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         for (DebbieBeanInfo<?> debbieBeanInfo : initMethodBeanDependent) {
             if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
-                injectedBeanFactory.factory(debbieBeanInfo);
+                injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
         if (beanInfo.getBean() == null &&
@@ -327,7 +327,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         for (DebbieBeanInfo<?> debbieBeanInfo : constructorBeanDependent) {
             if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
-                injectedBeanFactory.factory(debbieBeanInfo);
+                injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
         if (beanInfo.getBean() == null &&

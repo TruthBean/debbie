@@ -46,7 +46,7 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
             return beanInfo.getBean();
         }
         if (canNew()) {
-            Bean bean = globalBeanFactory.factoryBeanByDependenceProcessor(beanInfo);
+            Bean bean = globalBeanFactory.factoryBeanByDependenceProcessor(beanInfo, true);
             beanInfo.setBean(bean);
             return bean;
         }
