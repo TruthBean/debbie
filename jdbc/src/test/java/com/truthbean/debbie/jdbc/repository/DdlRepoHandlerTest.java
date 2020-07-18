@@ -13,17 +13,16 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.entity.Surname;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.ExecutionException;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 public class DdlRepoHandlerTest {
 
     @Test
-    public void testCreateDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void testCreateDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                    @BeanInject DataSourceConfiguration configuration)
         throws ExecutionException, InterruptedException {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
@@ -36,7 +35,7 @@ public class DdlRepoHandlerTest {
     }
 
     @Test
-    public void testShowDatabases(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void testShowDatabases(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                   @BeanInject DataSourceConfiguration configuration) {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
         var transaction = factory.getTransaction();
@@ -48,7 +47,7 @@ public class DdlRepoHandlerTest {
     }
 
     @Test
-    public void testDropDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void testDropDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                  @BeanInject DataSourceConfiguration configuration) {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
         var transaction = factory.getTransaction();
@@ -60,7 +59,7 @@ public class DdlRepoHandlerTest {
     }
 
     @Test
-    public void testShowTables(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void testShowTables(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                @BeanInject DataSourceConfiguration configuration) {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
         var transaction = factory.getTransaction();
@@ -73,7 +72,7 @@ public class DdlRepoHandlerTest {
     }
 
     @Test
-    public void testCreateTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void testCreateTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                 @BeanInject DataSourceConfiguration configuration) {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
         var transaction = factory.getTransaction();
@@ -89,7 +88,7 @@ public class DdlRepoHandlerTest {
     }
 
     @Test
-    public void dropTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
+    void dropTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                           @BeanInject DataSourceConfiguration configuration) {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
         var transaction = factory.getTransaction();

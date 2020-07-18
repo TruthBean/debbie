@@ -75,18 +75,15 @@ public class DefaultDataSource implements DataSource {
             Class<?> driverType;
             ClassLoader driverClassLoader = ClassLoaderUtils.getClassLoader(DataSource.class);
             try {
-                var driver = dataSourceDriverName;
-                if (driver != null) {
-                    var driverName = driver.getDriverName();
-                    if (driverClassLoader != null) {
-                        driverType = Class.forName(driverName, true, driverClassLoader);
-                    } else {
-                        driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
-                    }
-                    Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
-                    DriverManager.registerDriver(driverInstance);
-                    REGISTERED_DRIVERS.put(driverName, driverInstance);
+                var driverName = dataSourceDriverName.getDriverName();
+                if (driverClassLoader != null) {
+                    driverType = Class.forName(driverName, true, driverClassLoader);
+                } else {
+                    driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
                 }
+                Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
+                DriverManager.registerDriver(driverInstance);
+                REGISTERED_DRIVERS.put(driverName, driverInstance);
             } catch (Exception e) {
                 throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);
             }

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 // @ExtendWith({DebbieApplicationExtension.class})
 // @DebbieBootApplication(customInjectType = Autowired.class)
 @DebbieApplicationTest(customInjectType = Autowired.class)
-public class DebbieTestSuitApplicationTest {
+class DebbieTestSuitApplicationTest {
 
     @Autowired
     private TestSuitService testSuitService;
@@ -26,7 +26,7 @@ public class DebbieTestSuitApplicationTest {
     }
 
     @Test
-    public void content() {
+    void content() {
         System.out.println("hello junit5");
         System.out.println(testSuitService.getId());
     }

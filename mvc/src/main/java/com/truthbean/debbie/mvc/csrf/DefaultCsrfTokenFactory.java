@@ -19,7 +19,7 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class DefaultCsrfTokenFactory implements CsrfTokenFactory {
-    private Map<String, CsrfToken> tokens = new HashMap<>();
+    private final Map<String, CsrfToken> tokens = new HashMap<>();
 
     @Override
     public CsrfToken loadToken(RouterRequest request) {
@@ -31,5 +31,9 @@ public class DefaultCsrfTokenFactory implements CsrfTokenFactory {
             tokens.put(id, token);
             return token;
         }
+    }
+
+    public void reset() {
+        tokens.clear();
     }
 }

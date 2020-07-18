@@ -150,9 +150,9 @@ public class DebbieBeanInfoFactory {
     private <T> void getDebbieBeanInfoList(final Class<T> type, final Set<DebbieBeanInfo<?>> beanInfoSet,
                                            final List<DebbieBeanInfo<?>> list) {
         for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
-            var flag = type.getName().equals(debbieBeanInfo.getBeanClass().getName())
+            var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
                     || (debbieBeanInfo.getBeanInterface() != null
-                    && type.getName().equals(debbieBeanInfo.getBeanInterface().getName()));
+                    && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
             if (flag) {
                 list.add(debbieBeanInfo);
             }
@@ -177,7 +177,7 @@ public class DebbieBeanInfoFactory {
         if (type != null) {
             getDebbieBeanInfoList(type, beanInfoSet, list);
 
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 if (require) {
                     throw new NoBeanException(type.getName() + " not found");
                 } else {
@@ -219,13 +219,13 @@ public class DebbieBeanInfoFactory {
                 getDebbieBeanInfoList(type, beanInfoSet, list);
             }
 
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 if (require) {
                     if ((serviceName == null || serviceName.isBlank()) && type != null) {
                         serviceName = type.getName();
                     }
                     if (throwException)
-                        throw new NoBeanException(serviceName + " not found");
+                        throw new NoBeanException("bean(" + serviceName + ") not found");
                     else
                         return null;
                 } else {

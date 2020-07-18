@@ -13,10 +13,9 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ import java.util.List;
  * @author TruthBean/Rogar·Q
  * @since Created on 2020-02-27 12:46
  */
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 class SurnameJdbcRepositoryTest {
 
     @BeanInject

@@ -25,11 +25,12 @@ public class DefaultMethodProxyHandler implements MethodProxyHandler<MethodProxy
     private int order;
 
     public DefaultMethodProxyHandler() {
+        // do nothing
     }
 
     @Override
     public void setMethod(Method method) {
-        methodName = method.getName();
+        methodName = method.toString();
     }
 
     @Override

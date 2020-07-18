@@ -12,7 +12,7 @@ package com.truthbean.debbie.httpclient;
 import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
  * @author TruthBean
@@ -22,10 +22,11 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
+        // do nothing
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(HttpClientProperties.class, HttpClientConfiguration.class);
 
         HttpClientBeanRegister register = new HttpClientBeanRegister(applicationContext);

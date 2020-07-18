@@ -23,6 +23,7 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
 
     private DmlRepositoryHandler<Entity, Id> repositoryHandler;
 
+    @Override
     void setRepositoryHandler(DmlRepositoryHandler<Entity, Id> repositoryHandler) {
         super.setRepositoryHandler(repositoryHandler);
         this.repositoryHandler = repositoryHandler;

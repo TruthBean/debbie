@@ -20,15 +20,19 @@ import com.truthbean.debbie.jdbc.repository.DdlRepository;
  * @since Created on 2020-04-13 13:51.
  */
 @DebbieBootApplication
+@JdbcTransactional
 public class DataSourceConfigurationTest {
 
-    @BeanInject
-    private DataSourceConfiguration configuration;
+    private final DataSourceConfiguration configuration;
 
-    @BeanInject
-    private DdlRepository ddlRepository;
+    private final DdlRepository ddlRepository;
 
-    @JdbcTransactional
+    public DataSourceConfigurationTest(@BeanInject DataSourceConfiguration configuration,
+                                       @BeanInject DdlRepository ddlRepository) {
+        this.configuration = configuration;
+        this.ddlRepository = ddlRepository;
+    }
+
     public void print() {
         System.out.println(configuration);
         System.out.println(ddlRepository.getDriverConnection().getDriverName());

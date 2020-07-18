@@ -3,15 +3,22 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.bean.BeanAliceFor;
+import com.truthbean.debbie.bean.BeanAliceForName;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author TruthBean
@@ -20,7 +27,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface EventBeanListener {
     /**
      * event bean name
@@ -29,12 +36,4 @@ public @interface EventBeanListener {
     @BeanAliceForName
     @BeanAliceFor(name = "name")
     String name() default "";
-
-    /**
-     * router always be singleton
-     * @return BeanType
-     */
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
-    BeanType type() default BeanType.SINGLETON;
 }

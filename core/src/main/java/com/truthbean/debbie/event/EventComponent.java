@@ -20,8 +20,8 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
-public @interface DebbieEvent {
+@BeanComponent(type = BeanType.NO_LIMIT, factory = DebbieEventBeanFactory.class)
+public @interface EventComponent {
 
     /**
      * event bean name
@@ -38,12 +38,4 @@ public @interface DebbieEvent {
     @BeanAliceForName
     @BeanAliceFor(name = "name")
     String name() default "";
-
-    /**
-     * router always be singleton
-     * @return BeanType
-     */
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
-    BeanType type() default BeanType.SINGLETON;
 }

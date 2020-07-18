@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -12,7 +12,7 @@ package com.truthbean.debbie.proxy.asm;
 import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.asm.AsmClassInfo;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
@@ -26,9 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,10 +40,18 @@ import java.util.function.Supplier;
 public class AsmProxy<B> extends AbstractProxy<B> {
 
     private static final Map<Class<?>, Class<?>> beanAndProxy = new ConcurrentHashMap<>();
+    
+    private static final String HANDLER = "handler";
+    private static final String TARGET = "target";
 
     public AsmProxy(Class<B> beanClass, ClassLoader classLoader, MethodProxyHandlerHandler handler,
                     Class<? extends Annotation> methodAnnotation) {
         super(beanClass, classLoader, handler, methodAnnotation);
+    }
+
+    public AsmProxy(ClassInfo<B> beanClassInfo, ClassLoader classLoader, MethodProxyHandlerHandler handler,
+                    Class<? extends Annotation> methodAnnotation) {
+        super(beanClassInfo, classLoader, handler, methodAnnotation);
     }
 
     @SuppressWarnings("unchecked")
@@ -93,7 +99,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         Set<AsmMethodInfo> methodInfoList = getMethodInfoList();
         for (AsmMethodInfo method : methodInfoList) {
             if (method.canOverride()) {
-                if (isAnnotationMethod(method.getMethod())) {
+                if (isAnnotatedMethod(method.getMethod())) {
                     proxyMethod(classWriter, superClassPath, classPath, handlerPath, method);
                 } else {
                     subMethod(classWriter, superClassPath, classPath, method);
@@ -107,7 +113,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         try {
             byte[] data = classWriter.toByteArray();
             String originPath = originClassName.replace(".", "/");
-            URL resource = classLoader.getResource( originPath + ".class");
+            URL resource = classLoader.getResource(originPath + ".class");
             if (resource != null) {
                 String path = resource.getFile();
                 if (OsUtils.isWinOs()) {
@@ -116,11 +122,11 @@ public class AsmProxy<B> extends AbstractProxy<B> {
                 int i = path.lastIndexOf(originPath);
                 path = path.substring(0, i);
 
-                File file = new File(path + "\\" + classPath + ".class");
+                File file = new File(path, classPath + ".class");
                 LOGGER.debug(() -> "AsmWrapper class created: " + file.getAbsolutePath());
-                FileOutputStream out = new FileOutputStream(file);
-                out.write(data);
-                out.close();
+                try (FileOutputStream out = new FileOutputStream(file)) {
+                    out.write(data);
+                }
             }
         } catch (IOException e) {
             LOGGER.error("", e);
@@ -133,10 +139,10 @@ public class AsmProxy<B> extends AbstractProxy<B> {
     }
 
     private B doProxy(Class<? extends B> proxyClass, Class<B> beanClass, Supplier<B> bean) {
-        B proxy = (B) ReflectionHelper.newInstance(proxyClass);
+        B proxy = ReflectionHelper.newInstance(proxyClass);
 
-        ReflectionHelper.invokeSetMethod(proxy, "handler", getHandler(), getHandlerClass());
-        ReflectionHelper.invokeSetMethod(proxy, "target", bean.get(), beanClass);
+        ReflectionHelper.invokeSetMethod(proxy, HANDLER, getHandler(), getHandlerClass());
+        ReflectionHelper.invokeSetMethod(proxy, TARGET, bean.get(), beanClass);
 
         return proxy;
     }
@@ -187,8 +193,8 @@ public class AsmProxy<B> extends AbstractProxy<B> {
     }
 
     private void buildTargetField(ClassWriter classWriter, String superClassPath) {
-        // "private " + targetClassName + " target;"
-        FieldVisitor targetFieldVisitor = classWriter.visitField(Opcodes.ACC_PRIVATE, "target", "L" + superClassPath + ";", null, null);
+        // "private " + targetClassName + " TARGET;"
+        FieldVisitor targetFieldVisitor = classWriter.visitField(Opcodes.ACC_PRIVATE, TARGET, "L" + superClassPath + ";", null, null);
         targetFieldVisitor.visitEnd();
     }
 
@@ -196,13 +202,13 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         // "private " + handlerClassName + " handler;"
         Class<MethodProxyHandlerHandler> handlerClass = getHandlerClass();
         String handlerPath = handlerClass.getName().replace('.', '/');
-        FieldVisitor handlerFieldVisitor = classWriter.visitField(Opcodes.ACC_PRIVATE, "handler", "L" + handlerPath + ";", null, null);
+        FieldVisitor handlerFieldVisitor = classWriter.visitField(Opcodes.ACC_PRIVATE, HANDLER, "L" + handlerPath + ";", null, null);
         handlerFieldVisitor.visitEnd();
         return handlerPath;
     }
 
     private void setTarget(ClassWriter classWriter, String superClassPath, String classPath) {
-        // "public void setTarget(" + targetClassName + " target) { this.target = target; }"
+        // "public void setTarget(" + targetClassName + " TARGET) { this.TARGET = TARGET; }"
         MethodVisitor setTargetMethodVisitor = classWriter.visitMethod(Opcodes.ACC_PUBLIC, "setTarget", "(L" + superClassPath + ";)V", null, null);
         // Code:
         setTargetMethodVisitor.visitCode();
@@ -210,8 +216,8 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         setTargetMethodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         // 1: aload_1
         setTargetMethodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-        // 2: putfield      #21                 // Field target
-        setTargetMethodVisitor.visitFieldInsn(Opcodes.PUTFIELD, classPath, "target", "L" + superClassPath + ";");
+        // 2: putfield      #21                 // Field TARGET
+        setTargetMethodVisitor.visitFieldInsn(Opcodes.PUTFIELD, classPath, TARGET, "L" + superClassPath + ";");
         // 5: return
         setTargetMethodVisitor.visitInsn(Opcodes.RETURN);
         setTargetMethodVisitor.visitMaxs(1, 0);
@@ -228,7 +234,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         // 1: aload_1
         setHandlerMethodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
         // 2: putfield      #25                 // Field handler
-        setHandlerMethodVisitor.visitFieldInsn(Opcodes.PUTFIELD, classPath, "handler", "L" + handlerPath + ";");
+        setHandlerMethodVisitor.visitFieldInsn(Opcodes.PUTFIELD, classPath, HANDLER, "L" + handlerPath + ";");
         // 5: return
         setHandlerMethodVisitor.visitInsn(Opcodes.RETURN);
         setHandlerMethodVisitor.visitMaxs(0, 0);
@@ -251,8 +257,8 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         methodVisitor.visitInsn(Opcodes.DUP);
         // 4: aload_0
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-        // 5: getfield      #21                 // Field target:
-        methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "target", "L" + superClassPath + ";");
+        // 5: getfield      #21                 // Field TARGET:
+        methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, TARGET, "L" + superClassPath + ";");
         // 8: ldc           #29                 // String "methodName"
         methodVisitor.visitLdcInsn(name);
         boolean hasParams = methodInfo.hasParams();
@@ -374,7 +380,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             // 35: aload_0
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             // 36: getfield      #25                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
-            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "handler", "L" + handlerPath + ";");
+            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, HANDLER, "L" + handlerPath + ";");
             // 39: aload_2
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
             // 40: invokevirtual #38                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
@@ -387,7 +393,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
             // 14: aload_0
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             // 15: getfield      #4                 // Field handler:Lcom/truthbean/debbie/proxy/MethodProxyHandlerHandler;
-            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "handler", "L" + handlerPath + ";");
+            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, HANDLER, "L" + handlerPath + ";");
             // 18: aload_1
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
             // 19: invokevirtual #10                 // Method com/truthbean/debbie/proxy/MethodProxyHandlerHandler.proxy:(Lcom/truthbean/debbie/proxy/MethodCallBack;)Ljava/lang/Object;
@@ -445,7 +451,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         // 0: aload_0
         subMethodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         // 1: getfield
-        subMethodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, "target", "L" + superClassPath + ";");
+        subMethodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, TARGET, "L" + superClassPath + ";");
         if (isInterface())
             // 4: invokeinterface #44,  1
             subMethodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, superClassPath, methodName, descriptor, true);

@@ -12,17 +12,16 @@ package com.truthbean.debbie.jdbc.transaction;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.repository.RepositoryCallback;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.sql.SQLException;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 class ResourceHolderTest {
 
     @Test
-    public void testTransaction(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
+    void testTransaction(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
         var transaction = factory.getTransaction();
         transaction.registerResourceHolder(new PrintResourceHolder());
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
@@ -33,7 +32,7 @@ class ResourceHolderTest {
     }
 
     @Test
-    public void testTransactionManager(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
+    void testTransactionManager(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
         var transaction = factory.getTransaction();
         TransactionManager.registerResourceHolder(new Print2ResourceHolder());
         TransactionManager.registerResourceHolder(new PrintResourceHolder());

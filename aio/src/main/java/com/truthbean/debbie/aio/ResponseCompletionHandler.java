@@ -81,7 +81,7 @@ public class ResponseCompletionHandler {
             //然后合并
             var merge = new byte[headerByteArray.length + ((byte[]) result).length];
             System.arraycopy(headerByteArray, 0, merge, 0, headerByteArray.length);
-            System.arraycopy((byte[])result, 0, merge, headerByteArray.length, ((byte[]) result).length);
+            System.arraycopy(result, 0, merge, headerByteArray.length, ((byte[]) result).length);
             future = channel.write(ByteBuffer.wrap(merge));
         } else {
             future = channel.write(ByteBuffer.wrap(resultStr.getBytes()));

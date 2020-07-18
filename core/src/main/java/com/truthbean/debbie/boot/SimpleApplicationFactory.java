@@ -10,7 +10,7 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.DebbieApplicationContext;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class SimpleApplicationFactory extends AbstractApplicationFactory {
     private final Logger logger = LoggerFactory.getLogger(SimpleApplicationFactory.class);
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, final DebbieApplicationContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationCenter factory, final DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         return new AbstractDebbieApplication(logger, applicationContext) {
 

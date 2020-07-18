@@ -20,16 +20,12 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface Filter {
 
     @BeanAliceForName
     @BeanAliceFor(name = "name")
     String name() default "";
-
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
-    BeanType type() default BeanType.SINGLETON;
 
     String[] value() default {};
 

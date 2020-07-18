@@ -13,7 +13,7 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.data.transformer.DataTransformerRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
@@ -35,18 +35,18 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(ClassesScanProperties.class, BeanScanConfiguration.class);
         new DebbieTaskConfigurer().configure(applicationContext);
     }
 
     @Override
-    public void starter(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public void starter(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         applicationContext.refreshBeans();
     }
 
     @Override
-    public void release(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public void release(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.reset();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");

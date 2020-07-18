@@ -32,11 +32,7 @@ public class HttpClientFactory {
 
     @SuppressWarnings("unchecked")
     public <HttpClientBean> HttpClientBean factory(Class<HttpClientBean> beanClass) {
-        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.get(beanClass);
-        if (interfaceProxyFactory == null) {
-            interfaceProxyFactory = new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader);
-            knownInterfaces.put(beanClass, interfaceProxyFactory);
-        }
+        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader));
 
         return  (HttpClientBean) interfaceProxyFactory.newInstance(this, HttpClientExecutor.class);
     }

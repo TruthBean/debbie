@@ -403,7 +403,7 @@ public class DefaultRouterRequest implements RouterRequest {
             this.cookies = new ArrayList<>(request.getCookies());
         }
 
-        this.session = session;
+        this.session = request.getSession();
 
         var parameters = request.getParameters();
         if (parameters == null) {

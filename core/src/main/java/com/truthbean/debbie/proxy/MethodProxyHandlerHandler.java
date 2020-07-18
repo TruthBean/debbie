@@ -84,9 +84,7 @@ public class MethodProxyHandlerHandler {
             }
         }
         if (!beforeInvokeExceptions.isEmpty()) {
-            beforeInvokeExceptions.forEach((key, value) -> {
-                interceptors.remove(key);
-            });
+            beforeInvokeExceptions.forEach((key, value) -> interceptors.remove(key));
         }
 
         if (interceptors.isEmpty()) {

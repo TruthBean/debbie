@@ -9,7 +9,6 @@
  */
 package com.truthbean.debbie.concurrent;
 
-import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.lang.Callback;
 
 import java.util.concurrent.*;
@@ -34,7 +33,7 @@ public class ThreadPooledExecutor implements Executor {
 
         this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
+                new LinkedBlockingQueue<>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
     }
 
     public ThreadPooledExecutor(int coreSize, int maximumPoolSize, ThreadFactory threadFactory) {
@@ -67,6 +66,7 @@ public class ThreadPooledExecutor implements Executor {
                 executorService.shutdown();
                 executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
+                e.printStackTrace();
                 executorService.shutdownNow();
             }
         }

@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.debbie.lang.NonNull;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,12 +21,12 @@ public class MethodProxyHandlerRegister {
 
     private final Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap;
 
-    public MethodProxyHandlerRegister() {
+    private MethodProxyHandlerRegister() {
         classListMap = new LinkedHashMap<>();
         register(MethodProxy.class, DefaultMethodProxyHandler.class);
     }
 
-    public void register(Class<? extends Annotation> annotation,
+    private void register(Class<? extends Annotation> annotation,
                          Class<? extends MethodProxyHandler<? extends Annotation>> methodProxyHandler) {
         List<Class<? extends MethodProxyHandler<? extends Annotation>>> classes;
 
@@ -42,7 +44,8 @@ public class MethodProxyHandlerRegister {
         classListMap.put(annotation, classes);
     }
 
-    public Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> getAllMethodProxyHandlers() {
+    @NonNull
+    private Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> getAllMethodProxyHandlers() {
         return classListMap;
     }
 

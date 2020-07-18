@@ -24,6 +24,9 @@ import java.sql.*;
  */
 public class ColumnTypeHandler {
 
+    private ColumnTypeHandler() {
+    }
+
     public static String getType(String dataType, int precision, int scale) {
         dataType = dataType.toLowerCase();
         if (dataType.contains("char")) {

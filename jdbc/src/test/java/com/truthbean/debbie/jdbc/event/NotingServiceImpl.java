@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.event;
 
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.proxy.MethodProxy;
 
 import java.util.List;
 
@@ -22,7 +23,9 @@ import java.util.List;
 @BeanComponent(value = "notingService", lazy = true, type = BeanType.SINGLETON)
 public class NotingServiceImpl implements NotingService<Void, Void> {
     @Override
+    @MethodProxy
     public List<Void> listAll() {
+        System.out.println("list noting");
         return null;
     }
 }

@@ -20,8 +20,8 @@ package com.truthbean.debbie.lang;
  */
 public class Snowflake {
 
-    private long workerId;
-    private long dataCenterId;
+    private final long workerId;
+    private final long dataCenterId;
     private long sequence = 0L;
 
     /**

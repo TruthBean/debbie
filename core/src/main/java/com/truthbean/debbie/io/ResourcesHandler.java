@@ -46,7 +46,7 @@ public final class ResourcesHandler {
     public static List<String> getAllClassPathResources(String resource, ClassLoader classLoader) {
         List<String> result = new ArrayList<>();
         // 是否循环迭代
-        var recursive = true;
+        // var recursive = true;
 
         if (classLoader == null)
             classLoader = ClassLoaderUtils.getClassLoader(ResourcesHandler.class);
@@ -108,16 +108,10 @@ public final class ResourcesHandler {
                 findAllResourcesInPackageByFile(newPackageName, file.getAbsolutePath(), resources);
             } else {
                 String fileName = file.getName();
-                if (StringUtils.isBlank(path)) {
-                    resources.add(fileName);
+                if (StringUtils.hasText(path)) {
+                    resources.add(path + "/" + fileName);
                 } else {
-                    String resource;
-                    if (StringUtils.hasText(path)) {
-                        resource = path + "/" + fileName;
-                    } else {
-                        resource = fileName;
-                    }
-                    resources.add(resource);
+                    resources.add(fileName);
                 }
             }
         }
@@ -145,25 +139,25 @@ public final class ResourcesHandler {
 
     public static List<Class<?>> getClassesByResources(Collection<String> resources, ClassLoader classLoader) {
         List<Class<?>> classes = new ArrayList<>();
-        if (resources != null && !resources.isEmpty()) {
-            for (String name : resources) {
-                // 如果是以/开头的
-                if (name.charAt(0) == '/') {
-                    // 获取后面的字符串
-                    name = name.substring(1);
-                }
-                if (name.startsWith("META-INF") || "module-info.class".equals(name) || "package-info.class".equals(name) || name.endsWith("/")) {
-                    continue;
-                }
-                if (name.endsWith(".class")) {
-                    var className = name.replace('/', '.').substring(0, name.length() - 6);
-                    try {
-                        // 添加到classes
-                        classes.add(classLoader.loadClass(className));
-                    } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                        if (LOGGER.isTraceEnabled())
-                            LOGGER.error(() -> "load class<" + className + "> error.\n", e);
-                    }
+        if (resources == null || resources.isEmpty())
+            return classes;
+        for (String name : resources) {
+            // 如果是以/开头的
+            if (name.charAt(0) == '/') {
+                // 获取后面的字符串
+                name = name.substring(1);
+            }
+            if (name.startsWith("META-INF") || "module-info.class".equals(name) || "package-info.class".equals(name) || name.endsWith("/")) {
+                continue;
+            }
+            if (name.endsWith(".class")) {
+                var className = name.replace('/', '.').substring(0, name.length() - 6);
+                try {
+                    // 添加到classes
+                    classes.add(classLoader.loadClass(className));
+                } catch (NoClassDefFoundError | ClassNotFoundException e) {
+                    if (LOGGER.isTraceEnabled())
+                        LOGGER.error(() -> "load class<" + className + "> error.\n", e);
                 }
             }
         }

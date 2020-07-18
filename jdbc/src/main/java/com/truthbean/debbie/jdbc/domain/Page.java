@@ -97,7 +97,7 @@ public class Page<T> implements Streamable<T> {
         long nextPage = nextPage(currentPage, totalPages);
         int offset = getOffset(pageSize, currentPage);
 
-        return new Page<T>(currentPage, offset, pageSize,
+        return new Page<>(currentPage, offset, pageSize,
                 totalCounts, content,
                 totalPages, previousPage, nextPage);
     }
@@ -120,7 +120,7 @@ public class Page<T> implements Streamable<T> {
         long nextPage = nextPage(currentPage, totalPages);
         int offset = pageRequest.getOffset();
 
-        return new Page<T>(currentPage, offset, pageSize,
+        return new Page<>(currentPage, offset, pageSize,
                 totalCounts, content,
                 totalPages, previousPage, nextPage);
     }

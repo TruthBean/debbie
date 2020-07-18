@@ -78,7 +78,7 @@ public class MethodHandler<T, R> {
             } else {
                 if (args != null && args.length > 0) {
                     if (args.length == 1)
-                    methodHandle.invoke((T) instance, args[0]);
+                        methodHandle.invoke((T) instance, args[0]);
                 } else {
                     methodHandle.invoke((T) instance);
                 }

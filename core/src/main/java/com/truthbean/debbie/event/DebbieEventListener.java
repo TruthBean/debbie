@@ -9,12 +9,15 @@
  */
 package com.truthbean.debbie.event;
 
+import com.truthbean.debbie.reflection.ReflectionHelper;
+
 import java.util.EventListener;
 
 /**
  * @author TruthBean
  * @since 0.0.2
  */
+@FunctionalInterface
 public interface DebbieEventListener<E extends AbstractDebbieEvent> extends EventListener {
 
     default boolean async() {
@@ -28,5 +31,23 @@ public interface DebbieEventListener<E extends AbstractDebbieEvent> extends Even
      */
     void onEvent(E event);
 
-    Class<E> getEventType();
+    /**
+     * Determine whether this listener actually supports the given source type.
+     *
+     * @param sourceType the source type, or {@code null} if no source
+     *
+     * @return boolean
+     */
+    default boolean supportsSourceType(Class<?> sourceType) {
+        return sourceType == getEventType();
+    }
+
+    @SuppressWarnings({"unchecked"})
+    default Class<E> getEventType() {
+        var types = ReflectionHelper.getActualTypes(getClass());
+        if (types != null && types.length > 0) {
+            return (Class<E>) types[0];
+        }
+        return null;
+    }
 }

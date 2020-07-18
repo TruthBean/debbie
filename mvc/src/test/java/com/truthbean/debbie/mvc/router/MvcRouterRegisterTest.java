@@ -12,7 +12,7 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.mvc.MvcConfiguration;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -26,7 +26,7 @@ public class MvcRouterRegisterTest {
         initialization.init(RouterInvokerTest.class);
         factory.refreshBeans();
 
-        DebbieConfigurationFactory configurationFactory = factory.getConfigurationFactory();
+        DebbieConfigurationCenter configurationFactory = factory.getConfigurationCenter();
         MvcConfiguration mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, factory);
 
         MvcRouterRegister.registerRouter(mvcConfiguration, factory);

@@ -20,8 +20,6 @@ public class MapUtils {
     }
 
     public static <K, V> void reverse(Map<K, V> source, Map<V, K> target) {
-        for (var key : source.keySet()) {
-            target.put(source.get(key), key);
-        }
+        source.forEach((key, value) -> target.put(value, key));
     }
 }

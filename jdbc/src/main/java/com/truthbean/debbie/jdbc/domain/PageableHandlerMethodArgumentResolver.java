@@ -228,7 +228,7 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
         // Limit lower bound
         ps = ps < 1 ? defaultOrFallback.getPageSize() : ps;
         // Limit upper bound
-        ps = ps > maxPageSize ? maxPageSize : ps;
+        ps = Math.min(ps, maxPageSize);
 
         Sort sort = sortResolver.getSort(executableArgument, originValues, validateFactory);
 
@@ -282,8 +282,8 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
     }
 
     private static PageRequest getDefaultPageRequestFrom(ExecutableArgument parameter, PageableDefault defaults) {
-        Integer defaultPageNumber = defaults.page();
-        Integer defaultPageSize = defaults.size();
+        int defaultPageNumber = defaults.page();
+        int defaultPageSize = defaults.size();
 
         if (defaultPageSize < 1) {
             throw new IllegalStateException(INVALID_DEFAULT_PAGE_SIZE);

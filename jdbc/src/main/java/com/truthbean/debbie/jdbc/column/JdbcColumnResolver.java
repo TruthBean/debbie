@@ -33,6 +33,9 @@ import java.util.UUID;
  */
 public class JdbcColumnResolver {
 
+    private JdbcColumnResolver() {
+    }
+
     public static List<List<ColumnInfo>> resolveResultSetValue(ResultSet resultSet, ColumnNameTransformer columnNameTransformer) {
         List<List<ColumnInfo>> columnLists = new ArrayList<>();
         try {

@@ -21,7 +21,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface HttpClientRouter {
     /**
      * bean name
@@ -30,14 +30,6 @@ public @interface HttpClientRouter {
     @BeanAliceForName
     @BeanAliceFor(name = "name")
     String value() default "";
-
-    /**
-     * bean type
-     * @return BeanType
-     */
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
-    BeanType type() default BeanType.SINGLETON;
 
     String[] baseUrl() default {""};
 }

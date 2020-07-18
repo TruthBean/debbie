@@ -12,7 +12,7 @@ package com.truthbean.debbie.mvc;
 import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
  * @author truthbean
@@ -24,7 +24,7 @@ public class MvcModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         configurationFactory.register(MvcProperties.class, MvcConfiguration.class);
     }
 

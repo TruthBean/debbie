@@ -55,10 +55,10 @@ public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
 
     public void doTask() {
         final ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
-        final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>(this.taskBeans);
+        final Set<DebbieBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
         taskThreadPool.execute(() -> {
             LOGGER.trace("do task....");
-            for (DebbieBeanInfo<?> taskBean : taskBeans) {
+            for (DebbieBeanInfo<?> taskBean : taskBeanSet) {
                 Object task = globalBeanFactory.factory(taskBean.getServiceName());
                 LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
                 Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);

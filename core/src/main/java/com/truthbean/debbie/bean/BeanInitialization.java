@@ -138,7 +138,7 @@ public class BeanInitialization {
         return beanRegisterCenter.getAnnotatedClass(annotationClass);
     }
 
-    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
+    public Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
         return beanRegisterCenter.getAnnotatedBeans();
     }
 

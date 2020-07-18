@@ -419,7 +419,7 @@ public class HttpHeader {
 
         ;
 
-        private String name;
+        private final String name;
 
         HttpHeaderNames(String name) {
             this.name = name;

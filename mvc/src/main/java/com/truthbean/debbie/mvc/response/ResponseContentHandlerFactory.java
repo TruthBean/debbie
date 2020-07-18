@@ -24,7 +24,7 @@ public class ResponseContentHandlerFactory {
         this.applicationContext = applicationContext;
     }
 
-    public <H extends AbstractResponseContentHandler> H factory(Class<H> handlerClass) {
+    public <H extends AbstractResponseContentHandler<?, ?>> H factory(Class<H> handlerClass) {
         H handler = ReflectionHelper.newInstance(handlerClass);
         handler.setApplicationContext(applicationContext);
         return handler;

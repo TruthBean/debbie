@@ -85,7 +85,7 @@ public enum HttpMethod {
         }
     }
 
-    private static String GET_HTTP_1_1 = "GET / HTTP/1.1";
+    private static final String GET_HTTP_1_1 = "GET / HTTP/1.1";
 
     public static HttpMethod of(String name) {
         HttpMethod[] values = values();

@@ -21,7 +21,7 @@ public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>, InjectedBeanFa
 
     DebbieBeanInfo<Bean> getBeanInfo();
 
-    void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
+    void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Object firstParamValue);
 
     void createPreparationByDependence();
 

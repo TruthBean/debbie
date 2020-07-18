@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-public class EventTest {
+class EventTest {
 
     @Test
-    public void testEvent() {
+    void testEvent() {
         long start = System.currentTimeMillis();
         ThreadPooledExecutor factory = new ThreadPooledExecutor();
         DebbieEventMulticaster eventMulticaster = new DefaultEventPublisher(factory);
@@ -28,7 +28,7 @@ public class EventTest {
     }
 
     @Test
-    public void testEventListenerBeans() {
+    void testEventListenerBeans() {
         long start = System.currentTimeMillis();
         DebbieApplicationFactory factory = DebbieApplicationFactory.configure(EventTest.class);
 
@@ -48,7 +48,7 @@ public class EventTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         LocalDateTime dateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0);
         long milli = dateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         System.out.println(milli);

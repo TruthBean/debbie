@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -44,8 +45,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
     private Method initMethod;
     private Method destroyMethod;
 
-    private Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent;
-    private Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependent;
+    private List<BeanExecutableDependence> constructorBeanDependent;
+    private List<BeanExecutableDependence> initMethodBeanDependent;
     private Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent;
     private boolean hasVirtualValue;
 
@@ -82,26 +83,26 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return destroyMethod;
     }
 
-    public void setConstructorBeanDependent(Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent) {
+    public void setConstructorBeanDependent(List<BeanExecutableDependence> constructorBeanDependent) {
         this.constructorBeanDependent = constructorBeanDependent;
     }
 
     public void addConstructorBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
         if (this.constructorBeanDependent == null) {
-            this.constructorBeanDependent = new HashMap<>();
+            this.constructorBeanDependent = new ArrayList<>();
         }
-        this.constructorBeanDependent.put(index, beanInfo);
+        this.constructorBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass()));
     }
 
-    public void setInitMethodBeanDependent(Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependent) {
+    public void setInitMethodBeanDependent(List<BeanExecutableDependence> initMethodBeanDependent) {
         this.initMethodBeanDependent = initMethodBeanDependent;
     }
 
     public void addInitMethodBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
         if (this.initMethodBeanDependent == null) {
-            this.initMethodBeanDependent = new HashMap<>();
+            this.initMethodBeanDependent = new ArrayList<>();
         }
-        this.initMethodBeanDependent.put(index, beanInfo);
+        this.initMethodBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass()));
     }
 
     public void setFieldBeanDependent(Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent) {
@@ -115,34 +116,33 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.fieldBeanDependent.put(new FieldInfo(field), debbieBeanInfo);
     }
 
-    public Map<Integer, DebbieBeanInfo<?>> getInitMethodBeanDependent() {
+    public List<BeanExecutableDependence> getInitMethodBeanDependent() {
         if (initMethodBeanDependent == null) {
-            initMethodBeanDependent = new HashMap<>();
+            initMethodBeanDependent = new ArrayList<>();
         }
         return initMethodBeanDependent;
     }
 
     public boolean isInitMethodBeanDependentHasValue() {
-        for (DebbieBeanInfo<?> value : initMethodBeanDependent.values()) {
-            if (!value.isPresent()) {
+        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
+            if (!dependence.isPresent()) {
                 return false;
             }
         }
         return true;
     }
 
-    public Map<Integer, DebbieBeanInfo<?>> getConstructorBeanDependent() {
+    public List<BeanExecutableDependence> getConstructorBeanDependent() {
         if (constructorBeanDependent == null) {
-            constructorBeanDependent = new HashMap<>();
+            constructorBeanDependent = new ArrayList<>();
         }
         return constructorBeanDependent;
     }
 
     public boolean isConstructorBeanDependentHasValue() {
-        for (DebbieBeanInfo<?> value : constructorBeanDependent.values()) {
-            if (value.bean == null) {
+        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+            if (dependence.getBeanInfo() != null && dependence.getBeanInfo().isEmpty())
                 return false;
-            }
         }
         return true;
     }
@@ -283,7 +283,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             } else {
                 beanInterface = interfaces[0];
                 noInterface = false;
-                if (beanInterface == Serializable.class) {
+                if (beanInterface.getPackageName().startsWith("java.")
+                        || beanInterface == JavaassistProxyBean.class) {
                     beanInterface = null;
                     noInterface = true;
                 }
@@ -366,7 +367,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         Set<String> beanNames = getBeanNames();
         Set<String> oBeanNames = beanInfo.getBeanNames();
         boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
-        if (beanNameEmpty && super.equals(o)) return true;
+        if (beanNameEmpty) return true;
         return Objects.equals(beanNames, oBeanNames);
     }
 

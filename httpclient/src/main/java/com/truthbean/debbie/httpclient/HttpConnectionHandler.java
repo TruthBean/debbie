@@ -83,7 +83,7 @@ public class HttpConnectionHandler extends HttpHandler {
         String boundary = Long.toHexString(System.currentTimeMillis());
         String contentType = "multipart/form-data; boundary=" + boundary;
         // Line separator required by multipart/form-data.
-        String CRLF = "\n";
+        final String CRLF = "\n";
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", contentType);
 
@@ -99,12 +99,12 @@ public class HttpConnectionHandler extends HttpHandler {
                     if (param instanceof TextFromDataParam) {
                         var text = (TextFromDataParam) param;
                         // normal param
-                        writer.append("--" + boundary).append(CRLF);
-                        writer.append("Content-Disposition: form-data;name=\"" + text.getName() + "\"").append(CRLF);
+                        writer.append("--").append(boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data;name=\"").append(text.getName()).append("\"").append(CRLF);
 
                         String charset = text.getCharset();
                         if (charset != null) {
-                            writer.append("Content-Type: text/plain; charset=" + charset).append(CRLF);
+                            writer.append("Content-Type: text/plain; charset=").append(charset).append(CRLF);
                         } else {
                             writer.append("Content-Type: text/plain").append(CRLF);
                         }
@@ -125,24 +125,18 @@ public class HttpConnectionHandler extends HttpHandler {
                         writer.append("Content-Type: ").append(mediaType.toString()).append(CRLF);
                         if (mediaType.isText()) {
                             // text file
-                            BufferedReader reader = null;
-                            try {
-                                reader = new BufferedReader(new InputStreamReader(new FileInputStream(binaryFile), charset));
+                            try(var fis = new FileInputStream(binaryFile);
+                                var isr = new InputStreamReader(fis, charset);
+                                BufferedReader reader = new BufferedReader(isr)) {
                                 for (String line; (line = reader.readLine()) != null;) {
                                     writer.append(line).append(CRLF);
                                 }
-                            } finally {
-                                if (reader != null)
-                                    try { reader.close(); }
-                                    catch (IOException logOrIgnore) {}
                             }
                         } else {
                             // binaryFile file
                             writer.append("Content-Transfer-Encoding: binary").append(CRLF);
                             writer.append(CRLF).flush();
-                            InputStream input = null;
-                            try {
-                                input = new FileInputStream(binaryFile);
+                            try (InputStream input = new FileInputStream(binaryFile)) {
                                 byte[] buffer = new byte[1024];
                                 for (int length = 0; (length = input.read(buffer)) > 0;) {
                                     output.write(buffer, 0, length);
@@ -150,10 +144,6 @@ public class HttpConnectionHandler extends HttpHandler {
                                 // Important! Output cannot be closed.
                                 // Close of writer will close output as well.
                                 output.flush();
-                            } finally {
-                                if (input != null)
-                                    try { input.close(); }
-                                    catch (IOException logOrIgnore) {}
                             }
                         }
                         writer.flush();

@@ -127,6 +127,6 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     @Override
     public void reset() {
-
+        // do nothing
     }
 }

@@ -12,11 +12,9 @@ package com.truthbean.debbie.bean;
 import com.truthbean.Logger;
 import com.truthbean.debbie.data.transformer.DataTransformerFactory;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.proxy.*;
 import com.truthbean.logger.LoggerFactory;
-
-import java.lang.annotation.Annotation;
 
 /**
  * @author TruthBean
@@ -26,8 +24,8 @@ import java.lang.annotation.Annotation;
 public class DebbieApplicationContext {
 
     private final BeanInitialization beanInitialization;
-    private final DebbieConfigurationFactory configurationFactory;
-    private final MethodProxyHandlerRegister methodProxyHandlerRegister;
+    private final DebbieConfigurationCenter configurationCenter;
+    // private final MethodProxyHandlerRegister methodProxyHandlerRegister;
 
     private final ClassLoader classLoader;
     private final ResourceResolver resourceResolver;
@@ -42,8 +40,8 @@ public class DebbieApplicationContext {
         synchronized (object) {
             resourceResolver = new ResourceResolver();
             beanInitialization = BeanInitialization.getInstance(classLoader, resourceResolver);
-            this.configurationFactory = new DebbieConfigurationFactory();
-            methodProxyHandlerRegister = new MethodProxyHandlerRegister();
+            this.configurationCenter = new DebbieConfigurationCenter();
+            // methodProxyHandlerRegister = new MethodProxyHandlerRegister();
 
             this.classLoader = classLoader;
 
@@ -54,7 +52,7 @@ public class DebbieApplicationContext {
     }
 
     protected void postConstructor() {
-        this.configurationFactory.setDebbieApplicationContext(this);
+        this.configurationCenter.setDebbieApplicationContext(this);
         this.injectedBeanFactory.setBeanFactoryContext(this);
 
         this.globalBeanFactory.setDebbieApplicationContext(this);
@@ -62,7 +60,7 @@ public class DebbieApplicationContext {
 
         this.injectedBeanFactory.setGlobalBeanFactory(this.globalBeanFactory);
 
-        this.configurationFactory.setDebbieApplicationContext(this);
+        this.configurationCenter.setDebbieApplicationContext(this);
     }
 
     public ClassLoader getClassLoader() {
@@ -81,13 +79,13 @@ public class DebbieApplicationContext {
         return debbieBeanInfoFactory;
     }
 
-    public DebbieConfigurationFactory getConfigurationFactory() {
-        return configurationFactory;
+    public DebbieConfigurationCenter getConfigurationCenter() {
+        return configurationCenter;
     }
 
-    public MethodProxyHandlerRegister getMethodProxyHandlerRegister() {
+    /*public MethodProxyHandlerRegister getMethodProxyHandlerRegister() {
         return methodProxyHandlerRegister;
-    }
+    }*/
 
     public InjectedBeanFactory getInjectedBeanFactory() {
         return injectedBeanFactory;

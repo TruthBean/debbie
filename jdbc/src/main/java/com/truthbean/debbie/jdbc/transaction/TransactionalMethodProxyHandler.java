@@ -15,7 +15,7 @@ import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -81,7 +81,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     public void before() {
         LOGGER.debug(() -> "running before method (" + transactionInfo.getMethod() + ") invoke ..");
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        DebbieConfigurationFactory configurationFactory = applicationContext.getConfigurationFactory();
+        DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
         DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, applicationContext);
 
         DataSourceFactory factory = beanInitialization.getRegisterBean(DataSourceFactory.class);

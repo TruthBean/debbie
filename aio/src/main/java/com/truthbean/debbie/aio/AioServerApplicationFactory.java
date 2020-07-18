@@ -14,7 +14,7 @@ import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
@@ -39,7 +39,7 @@ import java.util.concurrent.*;
 public class AioServerApplicationFactory extends AbstractWebServerApplicationFactory {
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationCenter factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, applicationContext);
         var beanInitialization = applicationContext.getBeanInitialization();

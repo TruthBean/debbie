@@ -7,23 +7,15 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.event;
 
 /**
- * @author truthbean
- * @since 0.0.2
+ * @author TruthBean/Rogar·Q
+ * @since 0.1.0
  */
-public interface GenericEventListener<E extends AbstractDebbieEvent> extends DebbieEventListener<E> {
+module com.truthbean.debbie.hikari {
+    requires com.truthbean.debbie.jdbc;
+    requires com.zaxxer.hikari;
 
-    /**
-     * Determine whether this listener actually supports the given source type.
-     *
-     * @param sourceType the source type, or {@code null} if no source
-     *
-     * @return boolean
-     */
-    default boolean supportsSourceType(Class<?> sourceType) {
-        return sourceType == getEventType();
-    }
-
+    provides com.truthbean.debbie.boot.DebbieModuleStarter
+            with com.truthbean.debbie.hikari.HikariModuleStarter;
 }

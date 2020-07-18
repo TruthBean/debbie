@@ -45,6 +45,6 @@ public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
 
     @Override
     public void destroy() {
-
+        // do noting
     }
 }

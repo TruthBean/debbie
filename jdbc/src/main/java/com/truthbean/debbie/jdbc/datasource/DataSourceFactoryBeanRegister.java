@@ -13,7 +13,7 @@ import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
@@ -26,11 +26,11 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
     private final DebbieApplicationContext applicationContext;
     private final BeanInitialization initialization;
-    private final DebbieConfigurationFactory configurationFactory;
+    private final DebbieConfigurationCenter configurationFactory;
 
     private final Logger logger = LoggerFactory.getLogger(DataSourceFactoryBeanRegister.class);
 
-    public DataSourceFactoryBeanRegister(DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext) {
+    public DataSourceFactoryBeanRegister(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
         super(applicationContext);
         this.applicationContext = applicationContext;
         this.initialization = applicationContext.getBeanInitialization();

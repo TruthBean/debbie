@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.annotation;
 
+import com.truthbean.debbie.jdbc.transaction.TransactionalMethodProxyHandler;
 import com.truthbean.debbie.proxy.MethodProxy;
 
 import java.lang.annotation.*;
@@ -25,7 +26,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@MethodProxy(order = 10)
+@MethodProxy(order = 10, proxyHandler = TransactionalMethodProxyHandler.class)
 public @interface JdbcTransactional {
 
     boolean readonly() default true;

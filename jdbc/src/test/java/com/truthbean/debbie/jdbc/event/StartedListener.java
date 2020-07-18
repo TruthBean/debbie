@@ -12,7 +12,8 @@ package com.truthbean.debbie.jdbc.event;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.event.DebbieStartedEvent;
-import com.truthbean.debbie.event.DebbieStartedEventListener;
+import com.truthbean.debbie.event.EventBeanListener;
+import com.truthbean.debbie.event.GenericStartedEventListener;
 import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.service.SurnameService;
 import com.truthbean.logger.LoggerFactory;
@@ -24,14 +25,17 @@ import java.util.List;
  * @since 0.0.2
  * Created on 2020-01-19 18:43.
  */
-// @EventBeanListener
-public class StartedListener implements DebbieStartedEventListener {
+@EventBeanListener
+public class StartedListener implements GenericStartedEventListener<DebbieStartedEvent> {
 
     @BeanInject
     private SurnameService surnameService;
 
+    @BeanInject
+    private NotingService notingService;
+
     @Override
-    public void onEvent(DebbieStartedEvent event) {
+    public void onApplicationEvent(DebbieStartedEvent event) {
         this.printStartInfo();
     }
 
@@ -39,6 +43,7 @@ public class StartedListener implements DebbieStartedEventListener {
         LOGGER.debug(() -> "！！！！！！！！！！！！！！");
         List<Surname> surnames = surnameService.list();
         System.out.println(surnames);
+        notingService.listAll();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StartedListener.class);

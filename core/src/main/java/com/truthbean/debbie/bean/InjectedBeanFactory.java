@@ -13,6 +13,7 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.PropertyInject;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.logger.LoggerFactory;
@@ -88,17 +89,31 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
         this.globalBeanFactory = globalBeanFactory;
     }
 
+    public <T> T factory(DebbieBeanInfo<T> beanInfo) {
+        BeanCreator<T> creator = createIfNotExist(beanInfo, false);
+        return factory(creator);
+    }
+
     public <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
         BeanCreator<T> creator = createIfNotExist(beanInfo, skipFactory);
         return factory(creator);
     }
 
+    public <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
+        BeanCreator<T> creator = createIfNotExist(beanInfo, skipFactory);
+        return factory(creator, firstParamValue);
+    }
+
     public <T> T factory(BeanCreator<T> creator) {
+        return factory(creator, null);
+    }
+
+    public <T> T factory(BeanCreator<T> creator, Object firstParamValue) {
         if (creator.isCreated()) {
             return creator.getCreatedBean();
         }
 
-        creator.createPreparation(singletonBeanCreatorMap);
+        creator.createPreparation(singletonBeanCreatorMap, firstParamValue);
 
         creator.createPreparationByDependence();
 
@@ -280,11 +295,11 @@ public class InjectedBeanFactory implements BeanFactoryContextAware, GlobalBeanF
             } else {
                 BeanCreator<?> creator = createIfNotExist(fieldBeanInfo, false);
                 if (creator.isCreated()) {
-                    value = creator.getCreatedBean();
-                    fieldBeanInfo.setBean(value);
+                    fieldBeanInfo.setBean(creator.getCreatedBean());
                 } else {
-                    value = factory(creator);
+                    fieldBeanInfo.setBean(factory(creator));
                 }
+                value = globalBeanFactory.factoryAfterCreatedByProxy(fieldBeanInfo, BeanProxyType.ASM);
             }
             ReflectionHelper.setField(beanInfo.getBean(), field, value);
         } else {

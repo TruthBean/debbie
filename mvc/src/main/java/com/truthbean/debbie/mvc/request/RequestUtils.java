@@ -42,7 +42,7 @@ public class RequestUtils {
      * @param nameIgnoreCase 忽略大小写头信息的KEY
      * @return header值
      */
-    public final static String getHeaderIgnoreCase(RouterRequest request, String nameIgnoreCase) {
+    public static String getHeaderIgnoreCase(RouterRequest request, String nameIgnoreCase) {
         HttpHeader httpHeader = request.getHeader();
         Set<String> names = httpHeader.getHeaders().keySet();
         for (String name : names) {

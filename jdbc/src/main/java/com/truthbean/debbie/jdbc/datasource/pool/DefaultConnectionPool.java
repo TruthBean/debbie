@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -309,36 +309,36 @@ public class DefaultConnectionPool {
         }
 
         if (result) {
-            if (configuration.isPingEnabled()) {
-                int poolPingConnectionsNotUsedFor = configuration.getPingConnectionNotUsedFor();
-                String poolPingQuery = configuration.getPingQuery();
-                if (poolPingConnectionsNotUsedFor >= 0 && conn.getTimeElapsedSinceLastUse() > poolPingConnectionsNotUsedFor) {
+            if (!configuration.isPingEnabled())
+                return true;
+            int poolPingConnectionsNotUsedFor = configuration.getPingConnectionNotUsedFor();
+            String poolPingQuery = configuration.getPingQuery();
+            if (poolPingConnectionsNotUsedFor >= 0 && conn.getTimeElapsedSinceLastUse() > poolPingConnectionsNotUsedFor) {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Testing connection " + conn.getRealHashCode() + " ...");
+                    }
+                    Connection realConn = conn.getRealConnection();
+                    try (Statement statement = realConn.createStatement()) {
+                        statement.executeQuery(poolPingQuery).close();
+                    }
+                    if (!realConn.getAutoCommit()) {
+                        realConn.rollback();
+                    }
+                    result = true;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Connection " + conn.getRealHashCode() + " is GOOD!");
+                    }
+                } catch (Exception e) {
+                    log.warn("Execution of ping query '" + poolPingQuery + "' failed: " + e.getMessage());
                     try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Testing connection " + conn.getRealHashCode() + " ...");
-                        }
-                        Connection realConn = conn.getRealConnection();
-                        try (Statement statement = realConn.createStatement()) {
-                            statement.executeQuery(poolPingQuery).close();
-                        }
-                        if (!realConn.getAutoCommit()) {
-                            realConn.rollback();
-                        }
-                        result = true;
-                        if (log.isDebugEnabled()) {
-                            log.debug("Connection " + conn.getRealHashCode() + " is GOOD!");
-                        }
-                    } catch (Exception e) {
-                        log.warn("Execution of ping query '" + poolPingQuery + "' failed: " + e.getMessage());
-                        try {
-                            conn.getRealConnection().close();
-                        } catch (Exception e2) {
-                            //ignore
-                        }
-                        result = false;
-                        if (log.isDebugEnabled()) {
-                            log.debug("Connection " + conn.getRealHashCode() + " is BAD: " + e.getMessage());
-                        }
+                        conn.getRealConnection().close();
+                    } catch (Exception e2) {
+                        //ignore
+                    }
+                    result = false;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Connection " + conn.getRealHashCode() + " is BAD: " + e.getMessage());
                     }
                 }
             }

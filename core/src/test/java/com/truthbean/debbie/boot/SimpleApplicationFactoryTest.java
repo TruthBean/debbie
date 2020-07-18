@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 class SimpleApplicationFactoryTest {
 
     @Test
-    public void testConfig() {
-        DebbieApplicationFactory beanFactoryHandler = DebbieApplicationFactory.configure(SimpleApplicationFactoryTest.class);
+    void testConfig() {
+        DebbieApplicationFactory.configure(SimpleApplicationFactoryTest.class);
     }
 
     @Test
-    public void testApplication() {
+    void testApplication() {
         var application = DebbieApplicationFactory.create(SimpleApplicationFactoryTest.class);
         application.start();
     }

@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -15,6 +15,7 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.Set;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieConfigurationFactory implements DebbieApplicationContextAware {
+public class DebbieConfigurationCenter implements DebbieApplicationContextAware {
 
     @SuppressWarnings({"rawtypes"})
     private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
@@ -32,13 +33,29 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
     private DebbieApplicationContext applicationContext;
     private SingletonBeanRegister singletonBeanRegister;
 
-    public DebbieConfigurationFactory() {
+    public DebbieConfigurationCenter() {
     }
+
 
     @Override
     public void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.singletonBeanRegister = new SingletonBeanRegister(applicationContext);
+    }
+
+    public static <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration,
+                                                                        BeanInitialization beanInitialization) {
+        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
+        DebbieBeanInfo<C> beanInfo = new DebbieBeanInfo<>(configurationClass);
+        beanInfo.setBean(configuration);
+        beanInfo.setBeanType(BeanType.SINGLETON);
+        beanInfo.addBeanName(beanName);
+        beanInitialization.initSingletonBean(beanInfo);
+    }
+
+    public <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration) {
+        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
+        singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -49,11 +66,10 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
         var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
         this.singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
         configurations.put(propertiesClass, configuration);
-        DebbieConfigurationCenter.addConfiguration(configurationClass, configuration, applicationContext.getBeanInitialization());
         applicationContext.refreshBeans();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C getConfigurationBySuperClassOrPropertiesClass(Class<C> superConfigurationClass, Class<P> propertiesClass,
                                                     DebbieApplicationContext applicationContext) {
@@ -98,7 +114,7 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
     public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
-            return null;
+            return new HashSet<>();
         }
         for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
@@ -123,13 +139,24 @@ public class DebbieConfigurationFactory implements DebbieApplicationContextAware
         return factory(configurationClass, applicationContext);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <C extends DebbieConfiguration> C getConfiguration(Class<C> configurationClass) {
+        Collection<DebbieConfiguration> values = configurations.values();
+        if (!values.isEmpty()) {
+            for (DebbieConfiguration value : values) {
+                if (configurationClass == value.getClass()) {
+                    return (C) value;
+                }
+            }
+        }
+        return null;
+    }
+
     public void reset() {
-        configurations.forEach((properties, configurations) -> {
-            configurations.reset();
-        });
+        configurations.forEach((properties, configurations) -> configurations.reset());
         configurations.clear();
         BaseProperties.reset();
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieConfigurationFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieConfigurationCenter.class);
 }

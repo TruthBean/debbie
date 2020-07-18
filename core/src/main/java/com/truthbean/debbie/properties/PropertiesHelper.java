@@ -242,7 +242,7 @@ public final class PropertiesHelper {
             LOGGER.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
 
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             if (!optional) {
                 LOGGER.warn("No " + fileName + " found on the class path.");
             }
@@ -254,9 +254,10 @@ public final class PropertiesHelper {
             // fall back to use method getResourceAsStream
             try {
                 URL url = new URL(fileName);
-                InputStream inputStream = url.openStream();
-                var reader = new InputStreamReader(inputStream, charset);
-                properties.load(reader);
+                try (InputStream inputStream = url.openStream()) {
+                    var reader = new InputStreamReader(inputStream, charset);
+                    properties.load(reader);
+                }
             } catch (Throwable e) {
                 LOGGER.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
             }
@@ -269,12 +270,9 @@ public final class PropertiesHelper {
         for (java.net.URL url : list) {
             try {
                 Properties p = new Properties();
-                InputStream input = url.openStream();
-                if (input != null) {
-                    try (input) {
-                        p.load(input);
-                        properties.putAll(p);
-                    }
+                try (InputStream input = url.openStream()) {
+                    p.load(input);
+                    properties.putAll(p);
                 }
             } catch (Throwable e) {
                 LOGGER.warn("Fail to load " + fileName + " file from " + url + "(ingore this file): " + e.getMessage(), e);

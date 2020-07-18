@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.net.uri;
 
+import com.truthbean.debbie.lang.DeepCloneable;
+
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -17,7 +19,7 @@ import java.util.regex.Pattern;
  * @since 0.0.1
  * Created on 2019/3/16 09:27.
  */
-public class UriPathFragment implements Cloneable {
+public class UriPathFragment implements DeepCloneable {
     /**
      * path fragment
      */
@@ -72,7 +74,6 @@ public class UriPathFragment implements Cloneable {
     }
 
     public UriPathVariable getUriPathVariable(String name) {
-        List<UriPathVariable> list = new ArrayList<>();
         Set<UriPathVariable> uriPathVariables = uriPathVariable.keySet();
         for (UriPathVariable variable : uriPathVariables) {
             if (variable.getName().equals(name)) {
@@ -112,17 +113,10 @@ public class UriPathFragment implements Cloneable {
     }
 
     @Override
-    public UriPathFragment clone() {
-        UriPathFragment fragment;
-        try {
-            fragment = (UriPathFragment) super.clone();
-        } catch (CloneNotSupportedException e) {
-            fragment = new UriPathFragment();
-            e.printStackTrace();
-        }
+    public UriPathFragment deepClone() {
+        UriPathFragment fragment = new UriPathFragment();
         fragment.fragment = this.fragment;
         fragment.pathVariable.putAll(this.pathVariable);
-
         return fragment;
     }
 

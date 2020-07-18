@@ -11,7 +11,6 @@ package com.truthbean.debbie.data.transformer;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.data.transformer.text.DefaultTextTransformer;
-import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.logger.LoggerFactory;
@@ -31,6 +30,9 @@ public class DataTransformerFactory {
 
     private static final Map<DataTransformer<?,?>, Type[]> cache = new LinkedHashMap<>();
 
+    private DataTransformerFactory() {
+    }
+
     public static void register(Collection<Class<?>> classes) {
         if (classes != null && !classes.isEmpty()) {
             for (Class<?> clazz : classes) {
@@ -46,7 +48,6 @@ public class DataTransformerFactory {
                 && DataTransformer.class.isAssignableFrom(transformerClass)
                 && transformerClass.getAnnotation(Transformer.class) != null;
         if (support) {
-            ClassInfo<DT> classInfo = new ClassInfo<>(transformerClass);
             DT transformer = ReflectionHelper.newInstance(transformerClass);
             Type[] argsType = ReflectionHelper.getActualTypes(transformerClass);
             DataTransformerFactory.register((DataTransformer<?, ?>) transformer, argsType);

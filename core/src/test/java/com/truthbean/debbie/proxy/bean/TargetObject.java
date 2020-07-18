@@ -20,6 +20,13 @@ public class TargetObject {
         throw new NullPointerException();
     }
 
+    @MethodProxy(order = 1)
+    public void code(String language, int index, final float f) {
+        System.out.println("逗逼程序猿在用" + language + "编程...");
+        System.out.println("index: " + index);
+        System.out.println("float: " + f);
+    }
+
     public void coding() {
         System.out.println("coding");
     }

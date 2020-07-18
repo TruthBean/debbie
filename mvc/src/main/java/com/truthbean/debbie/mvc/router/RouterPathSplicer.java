@@ -156,7 +156,7 @@ public class RouterPathSplicer {
                 if ("".equals(s)) continue;
                 String[] values = targetUrl.split(s);
                 List<String> list = new ArrayList<>();
-                if (values != null && values.length > 0) {
+                if (values.length > 0) {
                     for (String value : values) {
                         if ("".equals(value)) continue;
                         list.add(value);

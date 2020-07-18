@@ -40,16 +40,26 @@ public class DebbieStartedEventProcessor {
     }
 
     public void multicastEvent() {
-        final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this, applicationContext);
+        final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this);
+        startedEvent.setDebbieApplicationContext(applicationContext);
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        final List<DebbieStartedEventListener> beanInfoList = globalBeanFactory.getBeanList(DebbieStartedEventListener.class);
+        final List<GenericStartedEventListener<DebbieStartedEvent>> beanInfoList = globalBeanFactory.getBeanList(GenericStartedEventListener.class, true);
         this.multicastEventThreadPool.execute(() -> {
             if (beanInfoList != null) {
-                for (DebbieStartedEventListener startedEventListener : beanInfoList) {
-                    if (startedEventListener.async()) {
-                        startedEventThreadPool.execute(() -> startedEventListener.onEvent(startedEvent));
-                    } else
-                        startedEventListener.onEvent(startedEvent);
+                for (GenericStartedEventListener<DebbieStartedEvent> startedEventListener : beanInfoList) {
+                    Class<DebbieStartedEvent> eventType = startedEventListener.getEventType();
+                    if (eventType == DebbieStartedEvent.class) {
+                        if (startedEventListener.async()) {
+                            startedEventThreadPool.execute(() -> startedEventListener.onEvent(startedEvent));
+                        } else
+                            startedEventListener.onEvent(startedEvent);
+                    } else {
+                        DebbieStartedEvent event = globalBeanFactory.factory(eventType);
+                        if (startedEventListener.async()) {
+                            startedEventThreadPool.execute(() -> startedEventListener.onEvent(event));
+                        } else
+                            startedEventListener.onEvent(event);
+                    }
                 }
             }
         });

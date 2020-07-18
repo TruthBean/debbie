@@ -27,7 +27,7 @@ import java.util.stream.StreamSupport;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class Sort implements Streamable<Sort.Order> {
+public class Sort implements Streamable<Sort.Order>, Serializable {
 
     private static final Sort UNSORTED = Sort.by(new Order[0]);
 

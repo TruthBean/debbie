@@ -21,6 +21,9 @@ import java.nio.file.Path;
  */
 public class PathUtils {
 
+    private PathUtils() {
+    }
+
     public static String getUserDir(ClassLoader classLoader) {
         String path = null;
         var resource = classLoader.getResource("");

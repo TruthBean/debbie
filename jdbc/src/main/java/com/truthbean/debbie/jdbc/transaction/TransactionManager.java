@@ -26,6 +26,9 @@ public class TransactionManager {
     private static final ThreadLocal<LinkedHashMap<Object, Object>> resources = new ThreadLocal<>();
     private static final ThreadLocal<List<ResourceHolder>> resourceHolders = new ThreadLocal<>();
 
+    private TransactionManager() {
+    }
+
     public static void bindResource(Object key, Object value) {
         LinkedHashMap<Object, Object> resourcesMap = resources.get();
         if (resourcesMap == null) {
@@ -59,7 +62,7 @@ public class TransactionManager {
         TRANSACTION_DEQUE.offerFirst(transactionInfo);
     }
 
-    public synchronized static TransactionInfo peek() {
+    public static synchronized TransactionInfo peek() {
         TransactionInfo transactionInfo = TRANSACTION_DEQUE.peekFirst();
         if (transactionInfo != null)
             LOGGER.debug(() -> "peek transactionInfo " + transactionInfo.getId());
@@ -68,7 +71,7 @@ public class TransactionManager {
         return transactionInfo;
     }
 
-    public synchronized static void remove() {
+    public static synchronized void remove() {
         TransactionInfo transactionInfo = TRANSACTION_DEQUE.removeFirst();
         if (transactionInfo != null)
             LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
@@ -76,7 +79,7 @@ public class TransactionManager {
             LOGGER.debug(() -> "remove transactionInfo null.");
     }
 
-    public synchronized static void clear() {
+    public static synchronized void clear() {
         LinkedHashMap<Object, Object> resourcesMap = resources.get();
         if (resourcesMap != null) {
             resourcesMap.clear();

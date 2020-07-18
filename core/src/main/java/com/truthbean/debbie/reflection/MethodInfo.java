@@ -43,6 +43,10 @@ public class MethodInfo {
         this.declaringClass = method.getDeclaringClass();
     }
 
+    public Class<?> getDeclaringClass() {
+        return declaringClass;
+    }
+
     public Annotation[] getAnnotations() {
         return annotations;
     }

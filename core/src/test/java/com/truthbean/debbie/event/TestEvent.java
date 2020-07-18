@@ -2,15 +2,10 @@ package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.BeanInject;
 
-@DebbieEvent("test")
+@EventComponent("test")
 public class TestEvent extends AbstractDebbieEvent {
 
     private String event;
-
-    public TestEvent(@BeanInject TestEventListener eventListener) {
-        super(eventListener);
-        this.event = "test";
-    }
 
     /**
      * Constructs a prototypical Event.
@@ -18,10 +13,10 @@ public class TestEvent extends AbstractDebbieEvent {
      * @param source the object on which the Event initially occurred
      * @throws IllegalArgumentException if source is null
      */
-    /*public TestEvent(Object source, String event) {
+    public TestEvent(Object source, @BeanInject TestEventListener eventListener) {
         super(source);
-        this.event = event;
-    }*/
+        this.event = "test";
+    }
 
     public String getEvent() {
         return event;

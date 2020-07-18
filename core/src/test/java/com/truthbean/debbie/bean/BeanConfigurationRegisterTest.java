@@ -10,8 +10,8 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.PropertiesConfigurationTest;
 import org.junit.jupiter.api.*;
 
-// @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
-class BeanConfigurationRegisterTest {
+@DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
+public class BeanConfigurationRegisterTest {
 
     private static DebbieApplicationFactory factory;
 

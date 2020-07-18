@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
  * @since 0.0.1
  * Created on 2019/4/4 21:57.
  */
-public class DmlRepositoryHandlerTest {
+class DmlRepositoryHandlerTest {
     private static SurnameRepository surnameRepository;
 
     @BeforeAll
@@ -52,7 +52,7 @@ public class DmlRepositoryHandlerTest {
     }
 
     @Test
-    public void testInsert() throws MalformedURLException {
+    void testInsert() throws MalformedURLException {
         var q = new Surname();
         q.setBegin(new Timestamp(System.currentTimeMillis()));
         q.setOrigin("姬");
@@ -64,13 +64,13 @@ public class DmlRepositoryHandlerTest {
     }
 
     @Test
-    public void testFindById() {
+    void testFindById() {
         Optional<Surname> surname = surnameRepository.findById(2L);
         System.out.println(surname);
     }
 
     @Test
-    public void testTransaction() throws MalformedURLException {
+    void testTransaction() throws MalformedURLException {
         var q = new Surname();
         q.setBegin(new Timestamp(System.currentTimeMillis()));
         q.setOrigin("姬");
@@ -81,7 +81,7 @@ public class DmlRepositoryHandlerTest {
     }
 
     @Test
-    public void testUpdate() throws MalformedURLException {
+    void testUpdate() throws MalformedURLException {
         Optional<Surname> surnameOptional = surnameRepository.findById(1L);
         Surname surname = surnameOptional.get();
         System.out.println(surname);
@@ -92,13 +92,13 @@ public class DmlRepositoryHandlerTest {
     }
 
     @Test
-    public void testDeleteById() {
+    void testDeleteById() {
         var b = surnameRepository.delete(1L);
         System.out.println(b);
     }
 
     @Test
-    public void findList() {
+    void findList() {
         var l = surnameRepository.findAll();
         try {
             System.out.println(l.get());
@@ -109,19 +109,19 @@ public class DmlRepositoryHandlerTest {
     }
 
     @Test
-    public void count() {
+    void count() {
         var l = surnameRepository.count();
         System.out.println(l);
     }
 
     @Test
-    public void findPaged() {
+    void findPaged() {
         var l = surnameRepository.findPaged(PageRequest.of(0, 10));
         System.out.println(l);
     }
 
     @Test
-    public void existsById() {
+    void existsById() {
         Boolean exists = surnameRepository.exists(4L);
         System.out.println(exists);
     }

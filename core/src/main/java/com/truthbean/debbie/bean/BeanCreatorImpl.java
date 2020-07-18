@@ -11,9 +11,11 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -70,14 +72,15 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @Override
-    public synchronized void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
+    public synchronized void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+                                               Object firstParamValue) {
         if (!preparationCreated) {
             if (initMethod != null) {
                 LOGGER.trace(() -> "create " + beanClass + " preparation by init method");
-                createPreparationByInitMethod(singletonBeanCreatorMap);
+                createPreparationByInitMethod(singletonBeanCreatorMap, firstParamValue);
             } else {
                 LOGGER.trace(() -> "create " + beanClass + " preparation by constructor");
-                createPreparationByConstructor(singletonBeanCreatorMap);
+                createPreparationByConstructor(singletonBeanCreatorMap, firstParamValue);
             }
             preparationCreated = true;
         }
@@ -158,7 +161,8 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @SuppressWarnings("unchecked")
-    private void createPreparationByInitMethod(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
+    private void createPreparationByInitMethod(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+                                               Object firstParamValue) {
         if (Modifier.isStatic(initMethod.getModifiers())) {
             Parameter[] parameters = initMethod.getParameters();
             if (parameters == null || parameters.length == 0) {
@@ -166,11 +170,24 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             } else {
                 int parameterCount = initMethod.getParameterCount();
                 Object[] values = new Object[parameters.length];
-                Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependence = new HashMap<>();
+                if (firstParamValue != null) {
+                    values[0] = firstParamValue;
+                    if (values.length == 1) {
+                        this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+                        return;
+                    }
+                }
+                List<BeanExecutableDependence> initMethodBeanDependence = new ArrayList<>();
+                if (firstParamValue != null) {
+                    DebbieBeanInfo<Object> info = new DebbieBeanInfo<>(Object.class);
+                    info.setBean(firstParamValue);
+                    initMethodBeanDependence.add(new BeanExecutableDependence(0, info, Object.class));
+                }
 
                 boolean initMethodInjectRequired = isInitExecutableInjectRequired(initMethod);
 
-                boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters, parameterCount, values, initMethodBeanDependence, initMethodInjectRequired);
+                boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters,
+                        parameterCount, values, initMethodBeanDependence, initMethodInjectRequired, firstParamValue);
                 if (allParamsHasValue) {
                     this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
                 } else {
@@ -180,13 +197,17 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         }
     }
 
-    private boolean createPreparationByExecutable(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Parameter[] parameters, int parameterCount, Object[] values, Map<Integer, DebbieBeanInfo<?>> initMethodBeanDependence, boolean initMethodInjectRequired) {
+    private boolean createPreparationByExecutable(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+                                                  Parameter[] parameters, int parameterCount, Object[] values,
+                                                  List<BeanExecutableDependence> dependence,
+                                                  boolean injectRequired, Object firstParameterValue) {
         String[] names = new String[parameterCount];
-        for (int i = 0; i < parameterCount; i++) {
+        int i = firstParameterValue == null ? 0 : 1;
+        for (; i < parameterCount; i++) {
             Parameter parameter = parameters[i];
 
             var type = parameter.getType();
-            boolean required = initMethodInjectRequired;
+            boolean required = injectRequired;
             String name = null;
             BeanInject annotation = parameter.getAnnotation(BeanInject.class);
             if (annotation != null) {
@@ -215,13 +236,15 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 boolean flag = singletonBeanCreatorMap.containsKey(beanInfo);
                 if (flag && beanInfo.isSingleton()) {
                     BeanCreatorImpl<?> beanCreator = (BeanCreatorImpl<?>) singletonBeanCreatorMap.get(beanInfo);
-                    initMethodBeanDependence.put(i, beanCreator.beanInfo);
+                    dependence.add(new BeanExecutableDependence(i, beanCreator.beanInfo, type));
                     if (beanCreator.isCreated()) {
                         values[i] = beanCreator.getCreatedBean();
                     }
                 } else {
-                    initMethodBeanDependence.put(i, beanInfo);
+                    dependence.add(new BeanExecutableDependence(i, beanInfo, type));
                 }
+            } else {
+                dependence.add(new BeanExecutableDependence(i, null, type));
             }
         }
         boolean allParamsHasValue = false;
@@ -254,7 +277,8 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     // TODO cache
-    private void createPreparationByConstructor(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
+    private void createPreparationByConstructor(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+                                                Object firstParamValue) {
         try {
             // get all constructor
             Constructor<Bean>[] constructors = beanInfo.getConstructors();
@@ -268,12 +292,23 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 int parameterCount = constructor.getParameterCount();
                 if (parameterCount > 0) {
                     Object[] values = new Object[parameterCount];
-                    Map<Integer, DebbieBeanInfo<?>> constructorBeanDependent = new HashMap<>();
+                    values[0] = firstParamValue;
+                    if (values.length == 1 && firstParamValue != null) {
+                        this.bean = constructor.newInstance(values);
+                        return;
+                    }
+                    List<BeanExecutableDependence> constructorBeanDependent = new ArrayList<>();
+                    if (firstParamValue != null) {
+                        DebbieBeanInfo<Object> info = new DebbieBeanInfo<>(Object.class);
+                        info.setBean(firstParamValue);
+                        constructorBeanDependent.add(new BeanExecutableDependence(0, info, Object.class));
+                    }
 
                     boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
 
                     Parameter[] parameters = constructor.getParameters();
-                    boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters, parameterCount, values, constructorBeanDependent, constructorInjectRequired);
+                    boolean allParamsHasValue = createPreparationByExecutable(singletonBeanCreatorMap, parameters,
+                            parameterCount, values, constructorBeanDependent, constructorInjectRequired, firstParamValue);
                     if (allParamsHasValue) {
                         this.bean = constructor.newInstance(values);
                     } else {
@@ -305,8 +340,11 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     private void createPreparationByInitMethodDependent() {
-        Collection<DebbieBeanInfo<?>> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent().values();
-        for (DebbieBeanInfo<?> debbieBeanInfo : initMethodBeanDependent) {
+        Collection<BeanExecutableDependence> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent();
+        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
+            DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
+            if (debbieBeanInfo == null)
+                continue;
             if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo, false);
@@ -323,8 +361,12 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     private void createPreparationByConstructorDependent() {
-        Collection<DebbieBeanInfo<?>> constructorBeanDependent = beanInfo.getConstructorBeanDependent().values();
-        for (DebbieBeanInfo<?> debbieBeanInfo : constructorBeanDependent) {
+        Collection<BeanExecutableDependence> constructorBeanDependent = beanInfo.getConstructorBeanDependent();
+        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+            DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
+            if (debbieBeanInfo == null) {
+                continue;
+            }
             if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo, false);
@@ -342,7 +384,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
     @SuppressWarnings({"unchecked"})
     private void createRawBeanByInitMethodDependent() {
-        Map<Integer, DebbieBeanInfo<?>> beanDependent = this.beanInfo.getInitMethodBeanDependent();
+        List<BeanExecutableDependence> beanDependent = this.beanInfo.getInitMethodBeanDependent();
         int parameterCount = initMethod.getParameterCount();
         Parameter[] parameters = initMethod.getParameters();
 
@@ -357,17 +399,22 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             if (annotation != null) {
                 required = annotation.require();
             }
-            var bean = beanDependent.get(i);
-            String serviceName = bean.getServiceName();
-            LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
-                    "dependent " + serviceName);
-            Object beanValue = bean.getBean();
-            if (required && bean.hasNoVirtualValue() && beanValue == null) {
-                throw new NoBeanException("bean " + serviceName + " value is null .");
-            }
-            if (beanValue != null) {
-                LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
-                values[i] = beanValue;
+            var dependence = beanDependent.get(i);
+            var bean = dependence.getBeanInfo();
+            if (bean != null) {
+                String serviceName = bean.getServiceName();
+                LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
+                        "dependent " + serviceName);
+                Object beanValue = bean.getBean();
+                if (required && bean.hasNoVirtualValue() && beanValue == null) {
+                    throw new NoBeanException("bean " + serviceName + " value is null .");
+                }
+                if (beanValue != null) {
+                    LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
+                    values[i] = beanValue;
+                }
+            }  else {
+                values[i] = ReflectionHelper.getDefaultValue(dependence.getType());
             }
         }
         try {
@@ -380,7 +427,7 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     private void createRawBeanByConstructorDependent() {
-        Map<Integer, DebbieBeanInfo<?>> beanDependent = this.beanInfo.getConstructorBeanDependent();
+        List<BeanExecutableDependence> beanDependent = this.beanInfo.getConstructorBeanDependent();
         Constructor<Bean>[] constructors = beanInfo.getConstructors();
         if (constructors != null && constructors.length > 0) {
             Constructor<Bean> constructor = constructors[0];
@@ -393,9 +440,6 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
             for (int i = 0; i < parameterCount; i++) {
                 Parameter parameter = parameters[i];
-                var bean = beanDependent.get(i);
-                String serviceName = bean.getServiceName();
-                LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
 
                 boolean required = constructorInjectRequired;
 
@@ -403,13 +447,24 @@ public class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 if (annotation != null) {
                     required = annotation.require();
                 }
-                Object beanValue = bean.getBean();
-                if (required && beanValue == null) {
-                    throw new NoBeanException("bean " + serviceName + " value is null .");
-                }
-                if (beanValue != null) {
-                    LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
-                    values[i] = beanValue;
+
+                var dependence = beanDependent.get(i);
+                var bean = dependence.getBeanInfo();
+                if (bean != null) {
+                    String serviceName = bean.getServiceName();
+                    LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
+                    Object beanValue = bean.getBean();
+                    if (required && beanValue == null) {
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
+                    }
+                    if (beanValue != null) {
+                        LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
+                        values[i] = beanValue;
+                    }
+                } else if (required) {
+                    throw new NoBeanException("bean " + parameter.getType() + " value is null .");
+                } else {
+                    values[i] = ReflectionHelper.getDefaultValue(dependence.getType());
                 }
             }
             try {

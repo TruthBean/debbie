@@ -56,7 +56,6 @@ subprojects {
 
     apply(plugin = "java")
     apply(plugin = "java-library")
-    apply(plugin = "maven")
 
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
@@ -67,7 +66,7 @@ subprojects {
     dependencies {
         if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
             val loggerVersion: String by project
-            "compileOnly"("com.truthbean.logger:core:$loggerVersion")
+            "implementation"("com.truthbean.logger:core:$loggerVersion")
         }
         if (project.name != "debbie-dependencies" && project.name != "debbie-test") {
             val jupiterVersion: String by project
@@ -92,11 +91,23 @@ subprojects {
             options.compilerArgs.add("-parameters")
             options.isDebug = true
             options.isFork = true
+
+            // doFirst {
+                // options.compilerArgs.add("--module-path")
+                // options.compilerArgs.add(classpath.asPath)
+                // classpath = files()
+            // }
         }
 
         configure<JavaPluginConvention> {
             sourceCompatibility = JavaVersion.VERSION_11
             targetCompatibility = JavaVersion.VERSION_11
+        }
+
+        plugins.withType<JavaPlugin>().configureEach {
+            configure<JavaPluginExtension> {
+                modularity.inferModulePath.set(true)
+            }
         }
 
         tasks.withType<Jar> {
@@ -138,9 +149,9 @@ subprojects {
         }
 
         tasks.withType<Delete> {
-            delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
-                include("**/$projectVersion/**")
-            })
+            // delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
+               // include("**/$projectVersion/**")
+            // })
             delete(File("$rootDir/$originName/out"))
             delete(File("$rootDir/$originName/build"))
         }

@@ -10,6 +10,7 @@
 package com.truthbean.debbie.util;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author TruthBean
@@ -51,7 +52,7 @@ public interface Constants {
     /**
      * Default character set (UTF-8)
      */
-    Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+    Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     String APPLICATION_PROPERTIES = "application.properties";
 

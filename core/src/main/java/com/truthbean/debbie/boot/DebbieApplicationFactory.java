@@ -15,7 +15,7 @@ import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.ClassesScanProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.debbie.task.TaskFactory;
@@ -106,7 +106,7 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
                 debbieModuleStarter.registerBean(this, beanInitialization);
             }
 
-            DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
+            DebbieConfigurationCenter configurationFactory = getConfigurationCenter();
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") configure");
                 debbieModuleStarter.configure(configurationFactory, this);
@@ -127,7 +127,7 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
         if (debbieModuleStarters == null) {
             debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         }
-        DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
+        DebbieConfigurationCenter configurationFactory = getConfigurationCenter();
         if (!debbieModuleStarters.isEmpty()) {
             debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
@@ -180,7 +180,7 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
         if (!debbieModuleStarters.isEmpty()) {
             List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
             list.sort(Comparator.reverseOrder());
-            DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
+            DebbieConfigurationCenter configurationFactory = getConfigurationCenter();
             for (DebbieModuleStarter debbieModuleStarter : list) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") release");
                 debbieModuleStarter.release(configurationFactory, this);
@@ -191,7 +191,7 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
 
     public DebbieApplication factoryApplication() {
         LOGGER.debug("create debbieApplication ...");
-        DebbieConfigurationFactory configurationFactory = getConfigurationFactory();
+        DebbieConfigurationCenter configurationFactory = getConfigurationCenter();
         return loadApplication().factory(configurationFactory, this, getClassLoader());
     }
 
@@ -199,8 +199,8 @@ public class DebbieApplicationFactory extends DebbieApplicationContext {
         return this;
     }
 
-    protected volatile static DebbieApplication debbieApplication;
-    protected volatile static DebbieApplicationFactory debbieApplicationFactory;
+    protected static volatile DebbieApplication debbieApplication;
+    protected static volatile DebbieApplicationFactory debbieApplicationFactory;
 
     public static DebbieApplication create(Class<?> applicationClass) {
         long beforeStartTime = System.currentTimeMillis();

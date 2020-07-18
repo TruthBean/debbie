@@ -3,17 +3,14 @@ package com.truthbean.debbie.undertow;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.boot.DebbieBootApplication;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean"))
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest(scan = @DebbieScan(basePackages = "com.truthbean"))
 public class UndertowApplicationTest {
 
     @Test
-    public void content() {
+    void content() {
         System.out.println("nothing");
     }
 

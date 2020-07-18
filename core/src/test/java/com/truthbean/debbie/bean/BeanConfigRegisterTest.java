@@ -8,10 +8,10 @@ import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
 @DebbieApplicationTest
-public class BeanConfigRegisterTest {
+class BeanConfigRegisterTest {
 
     @Test
-    public void register(@BeanInject("dataTransformer") DataTransformer<Integer, Character> dataTransformer,
+    void register(@BeanInject("dataTransformer") DataTransformer<Integer, Character> dataTransformer,
                          @BeanInject("hehe") Object hehe,
                          @BeanInject("狄青") Object 狄青,
                          @BeanInject("幽灵") Object 幽灵,
@@ -61,7 +61,7 @@ public class BeanConfigRegisterTest {
     }
 
     @Test
-    public void demo(@BeanInject DemoBeanComponent demoBeanComponent) {
+    void demo(@BeanInject DemoBeanComponent demoBeanComponent) {
         System.out.println(demoBeanComponent.getUuid());
         DemoBeanComponent.Demo2 demo1 = demoBeanComponent.getDemo1();
         demo1.setId((byte) 1, "111");
@@ -73,8 +73,13 @@ public class BeanConfigRegisterTest {
     }
 
     @Test
-    public void lifecycle(@BeanInject LifecycleBeanTest test, @BeanInject InjectTest injectTest) {
+    void lifecycle(@BeanInject LifecycleBeanTest test, @BeanInject InjectTest injectTest) {
         System.out.println(injectTest);
+    }
+
+    @Test
+    void getConfiguration(@BeanInject BeanScanConfiguration configuration) {
+        System.out.println(configuration);
     }
 
 }

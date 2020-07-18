@@ -48,7 +48,7 @@ public class ServletResponseHandler implements ResponseHandler {
     public void changeResponseWithoutContent(RouterResponse routerResponse) {
         var headers = routerResponse.getHeaders();
         if (!headers.isEmpty()) {
-            headers.forEach((key, value) -> response.setHeader(key, value));
+            headers.forEach(response::setHeader);
         }
         var cookies = routerResponse.getCookies();
         if (!cookies.isEmpty()) {
@@ -61,9 +61,7 @@ public class ServletResponseHandler implements ResponseHandler {
         try {
             Map<String, Object> modelAttributes = routerResponse.getModelAttributes();
             if (modelAttributes != null && !modelAttributes.isEmpty()) {
-                modelAttributes.forEach((key, value) -> {
-                    request.setAttribute(key, value);
-                });
+                modelAttributes.forEach(request::setAttribute);
             }
         } catch (Exception e) {
             LOGGER.error("request.setAttribute error", e);

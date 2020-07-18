@@ -23,16 +23,16 @@ import java.util.List;
  */
 public class DdlRepository implements TransactionService {
 
-    private final DataSourceConfiguration configuration;
+    // private final DataSourceConfiguration configuration;
     private final DdlRepositoryHandler handler;
 
     public DdlRepository(DataSourceConfiguration configuration) {
-        this.configuration = configuration;
+        // this.configuration = configuration;
         this.handler = new DdlRepositoryHandler();
         this.handler.setDriverName(configuration.getDriverName());
     }
 
-    public int createDatabase(String database) throws TransactionException {
+    public int createDatabase(String database) {
         var connection = getDriverConnection();
         return handler.createDatabase(connection, database);
     }
@@ -42,12 +42,12 @@ public class DdlRepository implements TransactionService {
         return handler.showDatabases(connection);
     }
 
-    public int dropDatabase(String database) throws TransactionException {
+    public int dropDatabase(String database) {
         var connection = getDriverConnection();
         return handler.dropDatabase(connection, database);
     }
 
-    public int useDatabase(String database) throws TransactionException {
+    public int useDatabase(String database) {
         var connection = getDriverConnection();
         return handler.dropDatabase(connection, database);
     }
@@ -57,17 +57,17 @@ public class DdlRepository implements TransactionService {
         return handler.showTables(connection);
     }
 
-    public <E> void createTable(Class<E> entity) throws TransactionException {
+    public <E> void createTable(Class<E> entity) {
         var connection = getDriverConnection();
         handler.createTable(connection, entity);
     }
 
-    public <E> void createTable(EntityInfo<E> entityInfo) throws TransactionException {
+    public <E> void createTable(EntityInfo<E> entityInfo) {
         var connection = getDriverConnection();
         handler.createTable(connection, entityInfo);
     }
 
-    public void dropTable(String table) throws TransactionException {
+    public void dropTable(String table) {
         var connection = getDriverConnection();
         handler.dropTable(connection, table);
     }

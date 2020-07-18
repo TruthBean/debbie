@@ -116,7 +116,7 @@ public class MvcRouterRegister {
                 if (requestType != MediaType.ANY) {
                     routerInfo.setRequestType(requestType);
                 } else {
-                    if (methodParams != null && !methodParams.isEmpty()) {
+                    if (!methodParams.isEmpty()) {
                         for (ExecutableArgument methodParam : methodParams) {
                             Map<Class<? extends Annotation>, Annotation> annotations = methodParam.getAnnotations();
                             if (annotations != null && !annotations.isEmpty()) {

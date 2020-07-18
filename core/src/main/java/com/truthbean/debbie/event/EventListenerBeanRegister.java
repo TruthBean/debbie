@@ -45,8 +45,9 @@ public class EventListenerBeanRegister {
             Class<?> beanType = debbieBeanInfo.getBeanClass();
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
-                if ((actualTypes == null || actualTypes.isEmpty()) && DebbieStartedEventListener.class.isAssignableFrom(beanType)) {
-                    BeanFactory<DebbieStartedEventListener> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
+                if ((actualTypes == null || actualTypes.isEmpty())
+                        && GenericStartedEventListener.class.isAssignableFrom(beanType)) {
+                    BeanFactory<? extends GenericStartedEventListener<? extends DebbieStartedEvent>> listenerBeanFactory = new DebbieBeanFactory<>(debbieBeanInfo);
                     listenerBeanFactory.setGlobalBeanFactory(globalBeanFactory);
                     eventPublisher.addEventListener(DebbieStartedEvent.class, listenerBeanFactory);
                 } else if (actualTypes != null && !actualTypes.isEmpty()) {

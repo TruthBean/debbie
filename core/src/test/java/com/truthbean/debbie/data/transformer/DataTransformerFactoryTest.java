@@ -1,8 +1,7 @@
 package com.truthbean.debbie.data.transformer;
 
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashSet;
 
@@ -10,7 +9,7 @@ import java.util.HashSet;
  * @author TruthBean/Rogar·Q
  * @since Created on 2020-03-04 10:17
  */
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 class DataTransformerFactoryTest {
 
     @Test

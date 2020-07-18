@@ -29,12 +29,7 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.*;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.Date;
 
 /**
  * handle repository of curd
@@ -56,7 +51,7 @@ public class RepositoryHandler {
         return driverName;
     }
 
-    public int[] batch(Connection connection, String sql, Object[][] args) throws TransactionException {
+    public int[] batch(Connection connection, String sql, Object[][] args) {
         loggerSqlAndParameters(sql, args);
 
         PreparedStatement preparedStatement = null;
@@ -82,13 +77,11 @@ public class RepositoryHandler {
         return rows;
     }
 
-    public Object insert(Connection connection, String sql, boolean generatedKeys, Object... args)
-            throws TransactionException {
+    public Object insert(Connection connection, String sql, boolean generatedKeys, Object... args) {
         return insert(connection, sql, generatedKeys, Object.class, args);
     }
 
-    public <K> K insert(Connection connection, String sql, boolean generatedKeys, Class<K> keyClass, Object... args)
-            throws TransactionException {
+    public <K> K insert(Connection connection, String sql, boolean generatedKeys, Class<K> keyClass, Object... args) {
 
         loggerSqlAndParameters(sql, args);
 
@@ -125,7 +118,7 @@ public class RepositoryHandler {
         return id;
     }
 
-    public int update(Connection connection, String sql, Object... args) throws TransactionException {
+    public int update(Connection connection, String sql, Object... args) {
         loggerSqlAndParameters(sql, args);
 
         PreparedStatement preparedStatement = null;
@@ -149,8 +142,7 @@ public class RepositoryHandler {
     public ResultSet executeQuery(Connection connection, String sql, Object... args) {
         loggerSqlAndParameters(sql, args);
 
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             if (args != null) {
                 for (int e = 0; e < args.length; ++e) {
                     ColumnTypeHandler.setSqlArgValue(driverName, preparedStatement, e + 1, args[e]);
@@ -185,7 +177,8 @@ public class RepositoryHandler {
                         if (TypeHelper.isRawBaseType(type)) {
                             type = TypeHelper.getWrapperClass(type);
                         }
-                        T t = (T) DataTransformerFactory.transform(data.getValue(), clazz);
+                        @SuppressWarnings("unchecked")
+                        T t = (T) DataTransformerFactory.transform(data.getValue(), type);
                         result.add(t);
                     }
                 }
@@ -217,7 +210,7 @@ public class RepositoryHandler {
         if (selectResult.size() <= 1) {
             List<ColumnInfo> row = selectResult.get(0);
             ColumnInfo data = row.get(0);
-            return transform(data, clazz, (arg) -> {
+            return transform(data, clazz, arg -> {
                 List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
                 return transformer(row, declaredFields, clazz);
             });

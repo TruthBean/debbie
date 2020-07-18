@@ -113,13 +113,13 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
-    public int deleteByIdIn(DriverConnection connection, List<ID> ids) throws TransactionException {
+    public int deleteByIdIn(DriverConnection connection, List<ID> ids) {
         var primaryKey = entityInfo.getPrimaryKey();
         return deleteByColumnIn(connection, primaryKey.getColumnName(), ids);
     }
 
-    public <C> int deleteByColumnIn(DriverConnection driverConnection, String columnName, List<C> values) throws TransactionException {
-        if (values == null || values.size() == 0) return 0;
+    public <C> int deleteByColumnIn(DriverConnection driverConnection, String columnName, List<C> values) {
+        if (values == null || values.isEmpty()) return 0;
 
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
@@ -132,7 +132,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, values.toArray());
     }
 
-    public boolean deleteById(DriverConnection driverConnection, ID id) throws TransactionException {
+    public boolean deleteById(DriverConnection driverConnection, ID id) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -143,7 +143,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql, id) > 0L;
     }
 
-    public boolean deleteByColumn(DriverConnection driverConnection, String columnName, Object value) throws TransactionException {
+    public boolean deleteByColumn(DriverConnection driverConnection, String columnName, Object value) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -190,7 +190,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return conditionAndValue;
     }
 
-    public int delete(DriverConnection driverConnection, E condition, boolean withNull) throws TransactionException {
+    public int delete(DriverConnection driverConnection, E condition, boolean withNull) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -211,7 +211,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
-    public int delete(DriverConnection driverConnection) throws TransactionException {
+    public int delete(DriverConnection driverConnection) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -224,7 +224,8 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sql);
     }
 
-    public ID insert(DriverConnection driverConnection, E entity, boolean withNull) throws TransactionException {
+    @SuppressWarnings("unchecked")
+    public ID insert(DriverConnection driverConnection, E entity, boolean withNull) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -255,7 +256,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return (ID) super.insert(connection, sql, false, null, columnValues.toArray());
     }
 
-    public int insert(DriverConnection driverConnection, Collection<E> entities, boolean withNull) throws TransactionException {
+    public int insert(DriverConnection driverConnection, Collection<E> entities, boolean withNull) {
         if (entities.isEmpty()) return 0;
 
         Connection connection = driverConnection.getConnection();
@@ -290,15 +291,13 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         List<Object> columnValues = new LinkedList<>();
 
-        columnSet.forEach((e) -> {
-            e.forEach(column -> {
-                var value = column.getValue();
-                var bool = withNull || value != null;
-                if (bool) {
-                    columnValues.add(value);
-                }
-            });
-        });
+        columnSet.forEach(e -> e.forEach(column -> {
+            var value = column.getValue();
+            var bool = withNull || value != null;
+            if (bool) {
+                columnValues.add(value);
+            }
+        }));
 
         var sqlBuilder = DynamicSqlBuilder.sql(driverName).insert().extra(table)
             .leftParenthesis().joinWith(",", columnNames).rightParenthesis()
@@ -313,7 +312,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.update(connection, sqlBuilder.builder(), columnValues.toArray());
     }
 
-    public boolean update(DriverConnection driverConnection, E entity, boolean withNull) throws TransactionException {
+    public boolean update(DriverConnection driverConnection, E entity, boolean withNull) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
@@ -372,7 +371,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
     @SuppressWarnings("unchecked")
     public <S extends E> S save(DriverConnection driverConnection, S entity) {
-        Connection connection = driverConnection.getConnection();
+        // Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, entity);

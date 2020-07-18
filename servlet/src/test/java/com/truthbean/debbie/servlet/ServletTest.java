@@ -1,14 +1,13 @@
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({DebbieApplicationExtension.class})
-public class ServletTest {
+@DebbieApplicationTest
+class ServletTest {
 
     @Test
-    public void content() {
+    void content() {
         System.out.println("nothing");
     }
 }

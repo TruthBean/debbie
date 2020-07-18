@@ -12,7 +12,6 @@ package com.truthbean.debbie.bean;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 
 import java.lang.annotation.*;
-import java.util.Set;
 
 /**
  * @see ClassesScanProperties

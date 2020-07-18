@@ -20,7 +20,7 @@ import java.util.Set;
  */
 public class SessionCsrfTokenFactory implements CsrfTokenFactory {
 
-    private RouterSession session;
+    private final RouterSession session;
 
     public SessionCsrfTokenFactory(RouterSession session) {
         this.session = session;

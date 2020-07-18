@@ -250,23 +250,9 @@ public final class UriUtils {
             builder.password(temp[1]);
 
             var hostAndPort = splitByAt[1];
-            if (hostAndPort.contains(":")) {
-                temp = hostAndPort.split(":");
-                builder.host(temp[0]);
-                builder.port(Integer.parseInt(temp[1]));
-            } else {
-                builder.host(hostAndPort);
-                builder.port(80);
-            }
+            buildHostAndPort(builder, hostAndPort);
         } else {
-            if (tmp.contains(":")) {
-                var temp = tmp.split(":");
-                builder.host(temp[0]);
-                builder.port(Integer.parseInt(temp[1]));
-            } else {
-                builder.host(tmp);
-                builder.port(80);
-            }
+            buildHostAndPort(builder, tmp);
         }
 
         var partLength = splitByPart.length;
@@ -309,6 +295,17 @@ public final class UriUtils {
         }
 
         return builder.build();
+    }
+
+    private static void buildHostAndPort(UriComposition.Builder builder, String tmp) {
+        if (tmp.contains(":")) {
+            var temp = tmp.split(":");
+            builder.host(temp[0]);
+            builder.port(Integer.parseInt(temp[1]));
+        } else {
+            builder.host(tmp);
+            builder.port(80);
+        }
     }
 
     public static Map<String, List<String>> resolveMatrixByPath(String path) {

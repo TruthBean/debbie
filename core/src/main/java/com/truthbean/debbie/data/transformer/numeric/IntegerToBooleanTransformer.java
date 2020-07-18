@@ -18,11 +18,11 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class IntegerToBooleanTransformer implements DataTransformer<Integer, Boolean> {
     @Override
     public Boolean transform(Integer integer) {
-        return integer != 0;
+        return integer != null && integer != 0;
     }
 
     @Override
     public Integer reverse(Boolean bool) {
-        return bool ? 1 : 0;
+        return bool != null && bool ? 1 : 0;
     }
 }

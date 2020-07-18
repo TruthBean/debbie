@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -52,30 +52,30 @@ final class BeanRegisterCenter {
     @SuppressWarnings({"unchecked", "rawtypes"})
     synchronized <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
-         if (BEAN_CLASSES.containsKey(beanClass)) {
-             // merge
-             DebbieBeanInfo beanInfo = BEAN_CLASSES.get(beanClass);
-             beanInfo.addBeanNames(beanClassInfo.getBeanNames());
+        if (BEAN_CLASSES.containsKey(beanClass)) {
+            // merge
+            DebbieBeanInfo beanInfo = BEAN_CLASSES.get(beanClass);
+            beanInfo.addBeanNames(beanClassInfo.getBeanNames());
 
-             // add bean alias name
-             // TODO if singleton, set order
-             if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
-                 beanInfo.setBeanType(BeanType.SINGLETON);
-                 if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
-                     beanInfo.setBean(beanClassInfo.getBean());
-                 }
-                 if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
-                     beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
-                 }
-                 return;
-             } else if ((beanInfo.getBeanType() == BeanType.NO_LIMIT || beanInfo.getBeanType() == null)
-                     && beanClassInfo.getBeanType() == BeanType.NO_LIMIT) {
-                 if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
-                     beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
-                 }
-                 return;
-             }
-         }
+            // add bean alias name
+            // TODO if singleton, set order
+            if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
+                beanInfo.setBeanType(BeanType.SINGLETON);
+                if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
+                    beanInfo.setBean(beanClassInfo.getBean());
+                }
+                if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                    beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                }
+                return;
+            } else if ((beanInfo.getBeanType() == BeanType.NO_LIMIT || beanInfo.getBeanType() == null)
+                    && beanClassInfo.getBeanType() == BeanType.NO_LIMIT) {
+                if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                    beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                }
+                return;
+            }
+        }
 
         DebbieBeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
         if (put == null) {
@@ -153,7 +153,7 @@ final class BeanRegisterCenter {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     synchronized void register(final Class<?> beanClass) {
         if (beanClass.isAnnotation()) {
             registerAnnotation((Class<? extends Annotation>) beanClass);
@@ -163,6 +163,15 @@ final class BeanRegisterCenter {
             var beanClassInfo = new DebbieBeanInfo<>(beanClass);
             if (beanClassInfo.getBeanType() == null) {
                 return;
+            }
+            BeanComponent beanComponent = beanClassInfo.getClassAnnotation(BeanComponent.class);
+            if (beanComponent != null) {
+                Class<? extends BeanFactory> factory = beanComponent.factory();
+                if (factory != BeanFactory.class) {
+                    BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
+                            new Object[]{beanClassInfo});
+                    beanClassInfo.setBeanFactory(beanFactory);
+                }
             }
             register(beanClassInfo);
         }
@@ -175,8 +184,8 @@ final class BeanRegisterCenter {
     }
 
     synchronized void register(Class<? extends Annotation> classAnnotation,
-                         String packageName, ClassLoader classLoader,
-                         ResourceResolver resourceResolver) {
+                               String packageName, ClassLoader classLoader,
+                               ResourceResolver resourceResolver) {
         var allClass = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
         if (!allClass.isEmpty()) {
             allClass.forEach(c -> {
@@ -188,8 +197,8 @@ final class BeanRegisterCenter {
     }
 
     void register(Class<? extends Annotation> classAnnotation,
-                         List<String> packageNames, ClassLoader classLoader,
-                         ResourceResolver resourceResolver) {
+                  List<String> packageNames, ClassLoader classLoader,
+                  ResourceResolver resourceResolver) {
         packageNames.forEach(packageName -> register(classAnnotation, packageName, classLoader, resourceResolver));
     }
 
@@ -225,7 +234,7 @@ final class BeanRegisterCenter {
         return result;
     }
 
-    <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
+    Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
         var classInfoSet = CLASS_INFO_SET;
         var beanAnnotations = BEAN_ANNOTATION;
 

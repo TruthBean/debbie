@@ -8,6 +8,8 @@
  * See the Mulan PSL v2 for more details.
  */
 dependencies {
+    // val graalvmVersion: String by project
+    // compileOnly("org.graalvm.sdk:graal-sdk:$graalvmVersion")
     val asmVersion: String by project
     compileOnly("org.ow2.asm:asm:$asmVersion")
 
@@ -17,7 +19,6 @@ dependencies {
     val jacksonVersion: String by project
     compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
-
 
     // test =========================================================================================================
 

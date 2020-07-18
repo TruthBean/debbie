@@ -141,12 +141,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     public void beforeTestExecution(final ExtensionContext context) throws Exception {
         logger.debug("beforeTestExecution ...");
         Optional<Object> instance = context.getTestInstance();
-        instance.ifPresent(o -> {
-            DebbieApplicationContext applicationContext = getApplicationContext(context);
-            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-            globalBeanFactory.factoryByRawBean(o);
-            logger.trace(() -> "test instance: " + o);
-        });
+        if (instance.isEmpty()) {
+            logger.debug(() -> "test instance is empty");
+        }
         getStore(context).put(START_TIME, System.currentTimeMillis());
     }
 
@@ -198,6 +195,13 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         logger.debug("beforeEach");
+        Optional<Object> instance = context.getTestInstance();
+        instance.ifPresent(o -> {
+            DebbieApplicationContext applicationContext = getApplicationContext(context);
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            globalBeanFactory.factoryByRawBean(o);
+            logger.trace(() -> "test instance: " + o);
+        });
     }
 
     @Override

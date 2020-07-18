@@ -11,7 +11,6 @@ package com.truthbean.debbie.data.transformer.date;
 
 import com.truthbean.debbie.data.transformer.DataTransformer;
 
-import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 

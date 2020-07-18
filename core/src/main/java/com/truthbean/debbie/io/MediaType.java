@@ -155,13 +155,13 @@ public enum MediaType {
         return other.isSameMediaType(this);
     }
 
-    public static String RESPONSE_TYPE = "Response-Type";
+    public static final String RESPONSE_TYPE = "Response-Type";
 
-    public static String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_TYPE = "Content-Type";
 
-    public static String RESPONSE_TYPE_WITH_APPLICATION_JSON = "Response-Type: application/json";
+    public static final String RESPONSE_TYPE_WITH_APPLICATION_JSON = "Response-Type: application/json";
 
-    public static String RESPONSE_TYPE_WITH_TEXT_HTML = "Response-Type: text/html";
+    public static final String RESPONSE_TYPE_WITH_TEXT_HTML = "Response-Type: text/html";
 
     public static MediaType of(String value) {
         var valueCopy = value;

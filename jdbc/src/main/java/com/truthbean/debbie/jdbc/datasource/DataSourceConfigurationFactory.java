@@ -12,7 +12,7 @@ package com.truthbean.debbie.jdbc.datasource;
 import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
@@ -26,7 +26,7 @@ public class DataSourceConfigurationFactory {
 
     @SuppressWarnings({"unchecked"})
     public static <Configuration extends DataSourceConfiguration> Configuration factory(
-            DebbieConfigurationFactory configurationFactory, DebbieApplicationContext applicationContext, Class<Configuration> configurationClass) {
+            DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext, Class<Configuration> configurationClass) {
         Set<Configuration> configurations = configurationFactory.getConfigurations(configurationClass, applicationContext);
         for (DataSourceConfiguration configuration : configurations) {
             LOGGER.debug("DataSourcePoolProperties : " + configurationClass);

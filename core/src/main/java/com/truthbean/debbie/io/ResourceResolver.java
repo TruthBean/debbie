@@ -23,13 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created on 2020-04-14 22:42
  */
 public class ResourceResolver {
-    private final Object VALUE = new Object();
+    private final Object value = new Object();
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public void addResource(Collection<String> resources) {
         for (String resource : resources) {
-            this.cache.put(resource, VALUE);
+            this.cache.put(resource, value);
         }
     }
 

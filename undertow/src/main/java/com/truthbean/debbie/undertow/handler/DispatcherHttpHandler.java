@@ -19,7 +19,6 @@ import com.truthbean.debbie.undertow.UndertowRouterRequest;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
-import io.undertow.util.HeaderMap;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
@@ -52,7 +51,7 @@ public class DispatcherHttpHandler implements HttpHandler {
             httpRequest = new UndertowRouterRequest(exchange);
         }
 
-        HeaderMap responseHeaders = exchange.getResponseHeaders();
+        // HeaderMap responseHeaders = exchange.getResponseHeaders();
         return httpRequest;
     }
 
@@ -72,7 +71,7 @@ public class DispatcherHttpHandler implements HttpHandler {
             sender.send(ByteBuffer.wrap(bytes));
         } else {
             RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
-            LOGGER.debug(() -> httpRequest.toString());
+            LOGGER.debug(httpRequest::toString);
 
             MvcRouterHandler.handleRouter(routerInfo, applicationContext);
 

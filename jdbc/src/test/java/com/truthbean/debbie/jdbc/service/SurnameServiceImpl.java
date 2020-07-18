@@ -15,6 +15,7 @@ import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.entity.Surname;
+import com.truthbean.debbie.jdbc.event.NotingService;
 import com.truthbean.debbie.jdbc.repository.SurnameJdbcRepository;
 import com.truthbean.debbie.proxy.MethodProxy;
 
@@ -28,13 +29,16 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
 
     private final DebbieEventPublisher eventPublisher;
 
+    @BeanInject
+    private NotingService notingService;
+
     public SurnameServiceImpl(@BeanInject SurnameJdbcRepository surnameJdbcRepository, DebbieEventPublisher eventPublisher) {
         super(surnameJdbcRepository);
         this.surnameJdbcRepository = surnameJdbcRepository;
         this.eventPublisher = eventPublisher;
     }
 
-    @MethodProxy(order = 99)
+    // @MethodProxy(order = 99)
     @JdbcTransactional(rollbackFor = ArithmeticException.class, forceCommit = false, readonly = false)
     public boolean save(Surname surname) {
         boolean result;
@@ -65,6 +69,7 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Optional<List<Surname>> getOptional() {
+        System.out.println("1");
         return Optional.empty();
     }
 
@@ -73,7 +78,9 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Map<String, List<Surname>> getMap() {
+        System.out.println("3");
         return emptyMap().orElseGet(() -> {
+            System.out.println("4");
             Map<String, List<Surname>> map = new HashMap<>();
             map.put("test", listAll());
             return map;
@@ -82,6 +89,7 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Optional<List<Surname>> getByKey(String key) {
+        System.out.println("2");
         return Optional.ofNullable(getMap().get(key));
     }
 

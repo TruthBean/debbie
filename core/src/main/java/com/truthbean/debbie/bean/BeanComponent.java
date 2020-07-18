@@ -41,4 +41,10 @@ public @interface BeanComponent {
      */
     boolean lazy() default true;
 
+    /**
+     * bean factory of the bean
+     * @return BeanFactory class
+     */
+    Class<? extends BeanFactory> factory() default BeanFactory.class;
+
 }

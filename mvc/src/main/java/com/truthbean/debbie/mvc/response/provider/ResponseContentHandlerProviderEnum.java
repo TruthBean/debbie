@@ -30,31 +30,31 @@ public enum ResponseContentHandlerProviderEnum {
     /**
      * json restful
      */
-    JSON_RESTFUL(new JsonResponseHandler()),
+    JSON_RESTFUL(new JsonResponseHandler<>()),
 
     /**
      * xml restful
      */
-    XML_RESTFUL(new XmlResponseHandler()),
+    XML_RESTFUL(new XmlResponseHandler<>()),
 
     /**
      * text restful
      */
-    TEXT_RESTFUL(new TextResponseHandler()),
+    TEXT_RESTFUL(new TextResponseHandler<>()),
 
     /**
      * template view
      */
     TEMPLATE_VIEW(templateViewFilter());
 
-    private AbstractResponseContentHandler provider;
+    private final AbstractResponseContentHandler<?, ?> provider;
 
-    ResponseContentHandlerProviderEnum(AbstractResponseContentHandler handlerFilter) {
+    ResponseContentHandlerProviderEnum(AbstractResponseContentHandler<?, ?> handlerFilter) {
         this.provider = handlerFilter;
     }
 
-    private static AbstractTemplateViewHandler templateViewFilter() {
-        AbstractTemplateViewHandler search;
+    private static AbstractTemplateViewHandler<?, ?> templateViewFilter() {
+        AbstractTemplateViewHandler<?, ?> search;
         var classLoader = ClassLoaderUtils.getClassLoader(ResponseContentHandlerProviderEnum.class);
         ServiceLoader<AbstractTemplateViewHandler> serviceLoader = ServiceLoader.load(AbstractTemplateViewHandler.class, classLoader);
         Iterator<AbstractTemplateViewHandler> handlerIterator = serviceLoader.iterator();
@@ -94,7 +94,7 @@ public enum ResponseContentHandlerProviderEnum {
         }
     }
 
-    public AbstractResponseContentHandler getProvider() {
+    public AbstractResponseContentHandler<?, ?> getProvider() {
         return provider;
     }
 }

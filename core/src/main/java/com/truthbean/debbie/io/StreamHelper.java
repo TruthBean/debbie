@@ -39,16 +39,15 @@ public final class StreamHelper {
         List<String> result = new ArrayList<>();
         try {
             if (file.exists() && file.isFile() && file.canRead()) {
-                FileReader reader = new FileReader(file);
-                BufferedReader bufferedReader = new BufferedReader(reader);
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (!line.isBlank()) {
-                        result.add(line.trim());
+                try (FileReader reader = new FileReader(file);
+                     BufferedReader bufferedReader = new BufferedReader(reader)){
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        if (!line.isBlank()) {
+                            result.add(line.trim());
+                        }
                     }
                 }
-                bufferedReader.close();
-                reader.close();
             }
         } catch (Exception e) {
             LOGGER.error("", e);

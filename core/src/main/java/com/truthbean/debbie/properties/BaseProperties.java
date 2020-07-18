@@ -58,9 +58,7 @@ public class BaseProperties {
                 File file = new File(applicationUrl);
                 if (file.exists()) {
                     LOGGER.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + file.getAbsolutePath());
-                    InputStream inputStream;
-                    try {
-                        inputStream = new FileInputStream(file);
+                    try (InputStream inputStream = new FileInputStream(file)) {
                         var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                         PROPERTIES.load(reader);
                     } catch (IOException e) {
@@ -68,15 +66,14 @@ public class BaseProperties {
                     }
                 } else {
                     // read via network
-                    InputStream inputStream;
                     try {
                         if (!applicationUrl.equals(Constants.APPLICATION_PROPERTIES)) {
-                            url = new URL(applicationUrl);
                             if (LOGGER.isDebugEnabled())
                                 LOGGER.debug(Constants.APPLICATION_PROPERTIES + " url: " + url);
-                            inputStream = url.openStream();
-                            var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                            PROPERTIES.load(reader);
+                            try (InputStream inputStream = url.openStream()) {
+                                var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                                PROPERTIES.load(reader);
+                            }
                         }
                     } catch (IOException e) {
                         LOGGER.error("load properties error", e);

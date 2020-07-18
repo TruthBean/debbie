@@ -3,11 +3,13 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.reflection;
+
+import com.truthbean.debbie.lang.NonNull;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -24,7 +26,7 @@ import java.util.*;
  */
 public class ClassInfo<C> implements Serializable {
     private final Class<C> clazz;
-    private final Map<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
+    private final HashMap<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
 
     private final int classModifiers;
     private Constructor<C>[] constructors;
@@ -54,9 +56,9 @@ public class ClassInfo<C> implements Serializable {
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
         getMethodAnnotationMap();
 
-        Type[] actualTypes = ReflectionHelper.getActualTypes(clazz);
-        if (actualTypes != null) {
-            this.actualTypes = Arrays.asList(actualTypes);
+        Type[] classActualTypes = ReflectionHelper.getActualTypes(clazz);
+        if (classActualTypes != null) {
+            this.actualTypes = Arrays.asList(classActualTypes);
         }
     }
 
@@ -82,31 +84,8 @@ public class ClassInfo<C> implements Serializable {
 
     private void getMethodAnnotationMap() {
         for (Method method : this.methods) {
-            Annotation[] annotations = method.getDeclaredAnnotations();
-
-            if (annotations.length > 0) {
-                Set<Annotation> methodAnnotations = new HashSet<>();
-                for (Annotation annotation : annotations) {
-                    Class<? extends Annotation> type = annotation.annotationType();
-                    if (type == Override.class || type == SuppressWarnings.class || type == Deprecated.class
-                            || type == SafeVarargs.class) {
-                        continue;
-                    }
-                    methodAnnotations.add(annotation);
-                    Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(type);
-                    if (!annotationInAnnotation.isEmpty()) {
-                        for (Annotation ann : annotationInAnnotation) {
-                            Class<? extends Annotation> annotationType = ann.annotationType();
-                            if (TypeHelper.filterAnnotation(annotationType)) {
-                                methodAnnotations.add(ann);
-                            }
-                        }
-                    }
-                    if (!methodAnnotations.isEmpty()) {
-                        this.methodAnnotationMap.put(method, methodAnnotations);
-                    }
-                }
-            }
+            Set<Annotation> methodAnnotations = ReflectionHelper.getMethodAnnotations(method);
+            this.methodAnnotationMap.put(method, methodAnnotations);
         }
     }
 
@@ -148,6 +127,7 @@ public class ClassInfo<C> implements Serializable {
         return false;
     }
 
+    @NonNull
     public Map<Method, Set<Annotation>> getMethodWithAnnotations() {
         return methodAnnotationMap;
     }
@@ -169,6 +149,25 @@ public class ClassInfo<C> implements Serializable {
         return null;
     }
 
+    public <T extends Annotation> boolean containClassAnnotation(Class<T> annotationClass) {
+        if (!classAnnotations.isEmpty()) {
+            return classAnnotations.containsKey(annotationClass);
+        }
+        return false;
+    }
+
+    public <T extends Annotation> boolean containMethodAnnotation(Class<T> annotationType, Method target) {
+        if (!methodAnnotationMap.isEmpty()) {
+            Set<Annotation> annotations = methodAnnotationMap.get(target);
+            for (Annotation annotation : annotations) {
+                if (annotationType.isInstance(annotation)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public <T extends Annotation> Annotation getAnnotatedClassAnnotation(Class<T> annotationClass) {
         if (!classAnnotations.isEmpty()) {
             for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
@@ -180,15 +179,29 @@ public class ClassInfo<C> implements Serializable {
         return null;
     }
 
-    public Set<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
-        Set<Method> methods = new HashSet<>();
-        for (Method method : this.methods) {
-            Annotation annotation = method.getAnnotation(annotationType);
-            if (annotation != null) {
-                methods.add(method);
+    public Map<Class<? extends Annotation>, Annotation> getClassAnnotatedAnnotationOrClassAnnotation(Class<? extends Annotation> annotationClass) {
+        Map<Class<? extends Annotation>, Annotation> result = new HashMap<>();
+        if (classAnnotations.isEmpty()) {
+            return result;
+        }
+        for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
+            if (entry.getKey().getAnnotation(annotationClass) != null || entry.getKey().isInstance(annotationClass)) {
+                result.put(entry.getKey(), entry.getValue());
             }
         }
-        return methods;
+        return result;
+    }
+
+    public Set<Method> getAnnotationMethod(Class<? extends Annotation> annotationType) {
+        final Set<Method> result = new HashSet<>();
+        this.methodAnnotationMap.forEach((method, annotations) -> {
+            for (Annotation annotation : annotations) {
+                if (annotationType.isInstance(annotation)) {
+                    result.add(method);
+                }
+            }
+        });
+        return result;
     }
 
     public List<FieldInfo> getFields() {
@@ -204,7 +217,7 @@ public class ClassInfo<C> implements Serializable {
             return false;
         }
         ClassInfo<?> classInfo = (ClassInfo<?>) o;
-        return clazz.getName().equals(classInfo.getClazz().getName());
+        return clazz.isAssignableFrom(classInfo.getClazz());
     }
 
     @Override

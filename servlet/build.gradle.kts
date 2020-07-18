@@ -18,11 +18,13 @@ dependencies {
 
     implementation("org.apache.taglibs:taglibs-standard-jstlel:$jstlVersion")
 
-    val fileuploadVersion: String by project
+    /*val fileuploadVersion: String by project
     implementation("commons-fileupload:commons-fileupload:$fileuploadVersion") {
         exclude(group = "javax.servlet", module = "servlet-api")
         exclude(group = "portlet-api", module = "portlet-api")
-    }
+    }*/
+    val commonsIoVersion: String by project
+    implementation("commons-io:commons-io:${commonsIoVersion}")
 
     testImplementation(project(":debbie-test"))
 

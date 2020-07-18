@@ -16,7 +16,7 @@ import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.undertow.handler.DispatcherHttpHandler;
 import com.truthbean.debbie.undertow.handler.HttpHandlerFilter;
@@ -46,7 +46,7 @@ public final class UndertowServerApplicationFactory extends AbstractWebServerApp
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationCenter factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         UndertowConfiguration configuration = factory.factory(UndertowConfiguration.class, applicationContext);
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();

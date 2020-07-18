@@ -172,8 +172,8 @@ public class RawRequestWrapper implements RouterRequest {
         // byte[] content = null
         MultipartFile multipartFile = null;
 
-        var textContent = "";
-        var rawContent = "";
+        var textContent = new StringBuilder();
+        var rawContent = new StringBuilder();
 
         List<String> content = headersAndGetContent();
 
@@ -238,10 +238,10 @@ public class RawRequestWrapper implements RouterRequest {
                 }
 
                 if (multipartFile != null || (contentType != null && contentType.isText())) {
-                    textContent += line;
+                    textContent.append(line);
                     continue;
                 } else {
-                    rawContent += line;
+                    rawContent.append(line);
                 }
 
                 if (Constants.EMPTY_STRING.equals(line)) {
@@ -277,8 +277,8 @@ public class RawRequestWrapper implements RouterRequest {
 //                }
 
         if (multipartFile != null) {
-            multipartFile.setContent(textContent.getBytes());
-            textContent = "";
+            multipartFile.setContent(textContent.toString().getBytes());
+            textContent = new StringBuilder();
             multipartFile.setContentType(contentType.toMediaType());
 
             if (paramName != null) {
@@ -295,12 +295,12 @@ public class RawRequestWrapper implements RouterRequest {
 
         }
 
-        if (!"".equals(textContent.trim())) {
-            this.routerRequestCache.setTextBody(textContent);
+        if (!"".equals(textContent.toString().trim())) {
+            this.routerRequestCache.setTextBody(textContent.toString());
         }
 
-        if (!"".equals(rawContent.trim())) {
-            this.routerRequestCache.setInputStreamBody(new ByteArrayInputStream(rawContent.getBytes()));
+        if (!"".equals(rawContent.toString().trim())) {
+            this.routerRequestCache.setInputStreamBody(new ByteArrayInputStream(rawContent.toString().getBytes()));
         }
 
         this.routerRequestCache.setParameters(params);

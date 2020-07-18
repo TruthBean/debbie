@@ -9,8 +9,6 @@
  */
 package com.truthbean.debbie.task;
 
-import com.truthbean.debbie.lang.Callback;
-
 /**
  * @author truthbean/Rogar·Q
  * @since 0.0.2

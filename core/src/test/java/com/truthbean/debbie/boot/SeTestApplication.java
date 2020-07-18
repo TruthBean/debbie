@@ -14,9 +14,9 @@ class SeTestApplication {
     }
 
     public static void main(String[] args) {
-        /*DebbieApplication application = DebbieApplicationFactory.create(SeTestApplication.class);
+        DebbieApplication application = DebbieApplicationFactory.create(SeTestApplication.class);
 
-        new Thread(() -> application.start(args)).start();*/
+        new Thread(() -> application.start(args)).start();
 
         Package pkg = SeTestApplication.class.getPackage();
         String result = pkg != null ? pkg.getImplementationVersion() : null;

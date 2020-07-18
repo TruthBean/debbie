@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
  * @since 0.0.2
  * Created on 2020-04-02 18:18.
  */
-public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> implements GenericEventListener<EVENT> {
+public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> implements DebbieEventListener<EVENT> {
 
     private final Class<EVENT> eventType;
     private final Object targetBean;

@@ -43,6 +43,20 @@ public abstract class AbstractProxy<B> {
     protected static final String JAVA_LANG_OBJECT = "java/lang/Object";
     protected static final String NAME_CTOR = "<init>";
 
+    public AbstractProxy(ClassInfo<B> beanClassInfo, ClassLoader classLoader, MethodProxyHandlerHandler handler,
+                         Class<? extends Annotation> methodAnnotation) {
+        this.handler = handler;
+
+        this.beanClassInfo = beanClassInfo;
+        this.handlerClass = MethodProxyHandlerHandler.class;
+
+        this.classLoader = classLoader;
+
+        this.methodAnnotation = methodAnnotation;
+
+        this.asmClassInfo = new AsmClassInfo(beanClassInfo.getClazz());
+    }
+
     public AbstractProxy(Class<B> beanClass, ClassLoader classLoader, MethodProxyHandlerHandler handler,
                           Class<? extends Annotation> methodAnnotation) {
         this.handler = handler;
@@ -88,7 +102,9 @@ public abstract class AbstractProxy<B> {
     public Set<Method> getProxyMethods() {
         Set<Method> declaredMethods = getMethods();
         return declaredMethods.stream()
-                .filter((method) -> methodAnnotation.isInstance(method.getAnnotation(methodAnnotation)))
+                .filter(method ->
+                        beanClassInfo.containMethodAnnotation(methodAnnotation, method)
+                                || beanClassInfo.containClassAnnotation(methodAnnotation))
                 .collect(Collectors.toSet());
     }
 
@@ -123,12 +139,14 @@ public abstract class AbstractProxy<B> {
         return methodAnnotation;
     }
 
-    public boolean isAnnotationMethod(Method method) {
-        return getMethodAnnotation() == methodAnnotation;
+    public boolean isAnnotatedMethod(Method method) {
+        return beanClassInfo.containMethodAnnotation(methodAnnotation, method)
+                || beanClassInfo.containClassAnnotation(methodAnnotation);
     }
 
-    public boolean isAnnotationMethod(AsmMethodInfo method) {
-        return getMethodAnnotation().isInstance(method.getAnnotation(methodAnnotation));
+    public boolean isAnnotatedMethod(AsmMethodInfo method) {
+        return beanClassInfo.containMethodAnnotation(methodAnnotation, method.getMethod())
+                || beanClassInfo.containClassAnnotation(methodAnnotation);
     }
 
     public B proxy(B bean) {

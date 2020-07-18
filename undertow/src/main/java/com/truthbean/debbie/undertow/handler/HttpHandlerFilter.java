@@ -112,9 +112,7 @@ public class HttpHandlerFilter implements HttpHandler {
             }
         }
 
-        if (!filter) {
-            handleServerExchangeRequest(exchange);
-        }
+        handleServerExchangeRequest(exchange);
     }
 
     private void handleServerExchangeRequest(final HttpServerExchange exchange) throws Exception {
@@ -122,7 +120,6 @@ public class HttpHandlerFilter implements HttpHandler {
             logger.trace("next is DispatcherHttpHandler");
             ((DispatcherHttpHandler) next).setRequest(request);
             next.handleRequest(exchange);
-            return;
         } else {
             next.handleRequest(exchange);
         }
@@ -165,7 +162,7 @@ public class HttpHandlerFilter implements HttpHandler {
             return true;
         }
 
-        return filter;
+        return false;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(HttpHandlerFilter.class);

@@ -25,7 +25,7 @@ public class RouterAnnotationInfo {
 
     private String name;
 
-    private BeanType type;
+    private final BeanType type = BeanType.SINGLETON;
 
     private String[] value;
 
@@ -50,7 +50,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(Router router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = router.method();
@@ -64,7 +63,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(ConnectRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.CONNECT};
@@ -78,7 +76,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(GetRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.GET};
@@ -92,7 +89,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(HeadRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.HEAD};
@@ -106,7 +102,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(OptionsRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.OPTIONS};
@@ -120,7 +115,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(PatchRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.PATCH};
@@ -134,7 +128,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(PostRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.POST};
@@ -148,7 +141,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(PutRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.PUT};
@@ -162,7 +154,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(DeleteRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.DELETE};
@@ -176,7 +167,6 @@ public class RouterAnnotationInfo {
 
     public RouterAnnotationInfo(TraceRouter router) {
         this.name = router.name();
-        this.type = router.type();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.DELETE};

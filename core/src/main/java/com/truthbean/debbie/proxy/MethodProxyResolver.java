@@ -31,31 +31,64 @@ public class MethodProxyResolver {
     }
 
     public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method,
-                                                                                Collection<Annotation> annotations) {
+                                                                                Collection<? extends Annotation> classAnnotation) {
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
-        MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
-        Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap
-                = methodProxyHandlerRegister.getAllMethodProxyHandlers();
-        if (classListMap != null && !classListMap.isEmpty()) {
-            classListMap.forEach((key, value) -> {
-                if (annotations != null)
-                    getMethodProxyHandler(method, key, value, methodProxyHandlers, annotations);
-                else
-                    getMethodProxyHandler(method, key, value, methodProxyHandlers);
-            });
+        Annotation[] methodAnnotations = method.getAnnotations();
+        Map<Class<? extends Annotation>, Annotation> methodAnnotationMap =
+                ReflectionHelper.getAnnotatedAnnotationOrAnnotation(Arrays.asList(methodAnnotations), MethodProxy.class);
+        if (methodAnnotationMap.isEmpty() && (classAnnotation == null || classAnnotation.isEmpty())) {
+            return methodProxyHandlers;
         }
+        if (classAnnotation != null && !classAnnotation.isEmpty()) {
+            Map<Class<? extends Annotation>, Annotation> annotations =
+                    ReflectionHelper.getAnnotatedAnnotationOrAnnotation(classAnnotation, MethodProxy.class);
+            methodAnnotationMap.putAll(annotations);
+        }
+        // MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
+        // Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> allMethodProxyHandlers
+        //         = methodProxyHandlerRegister.getAllMethodProxyHandlers();
+        // if (allMethodProxyHandlers.isEmpty()) {
+        //     return methodProxyHandlers;
+        // }
+//        allMethodProxyHandlers.forEach((key, value) -> {
+//            for (Annotation methodAnnotation : methodAnnotations) {
+//                if (key.isInstance(methodAnnotation)) {
+//                    getMethodProxyHandler(method, methodAnnotation, value, methodProxyHandlers);
+//                }
+//            }
+//            if (classAnnotation != null)
+//                getMethodProxyHandler(method, key, value, methodProxyHandlers, classAnnotation);
+//            else {
+//                getMethodProxyHandler(method, key, value, methodProxyHandlers);
+//            }
+//        });
+
+
+        methodAnnotationMap.forEach((annotationType, annotation) -> {
+            MethodProxyHandler<? extends Annotation> methodProxyHandler = buildMethodProxyHandler(method, annotation, annotationType);
+            methodProxyHandlers.add(methodProxyHandler);
+        });
         return methodProxyHandlers;
     }
 
     @SuppressWarnings("unchecked")
-    public MethodProxyHandler<MethodProxy> getMethodProxyHandler(Method method, MethodProxy methodProxy) {
+    public <A extends Annotation> MethodProxyHandler<? extends Annotation> getMethodProxyHandler(Method method, MethodProxy methodProxy,
+                                                                          A origin) {
         var proxyHandler = methodProxy.proxyHandler();
-        MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
-        methodProxyHandler.setMethodAnnotation(methodProxy);
+        MethodProxyHandler<A> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
+        methodProxyHandler.setMethodAnnotation(origin);
         methodProxyHandler.setMethod(method);
         methodProxyHandler.setOrder(methodProxy.order());
         methodProxyHandler.setApplicationContext(applicationContext);
         return methodProxyHandler;
+    }
+
+    public MethodProxyHandler<? extends Annotation> buildMethodProxyHandler(Method method, Annotation annotation,
+                                                                   Class<? extends Annotation> annotationClass) {
+        MethodProxy methodProxy = annotation instanceof MethodProxy
+                ? (MethodProxy) annotation
+                : annotationClass.getDeclaredAnnotation(MethodProxy.class);
+        return getMethodProxyHandler(method, methodProxy, annotation);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -63,25 +96,26 @@ public class MethodProxyResolver {
                                        List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
                                        Annotation annotation, List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {
         MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
-        if (methodProxy != null) {
-            List<MethodProxyHandler<? extends Annotation>> tmp = new ArrayList<>();
-            for (var proxyHandler : proxyHandlers) {
-                MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
-                handler.setOrder(methodProxy.order());
-                handler.setClassAnnotation(annotation);
-                handler.setApplicationContext(this.applicationContext);
-                handler.setMethod(method);
-                if (handler.exclusive()) {
-                    methodProxyHandlers.add(handler);
-                    tmp.clear();
-                    break;
-                } else {
-                    tmp.add(handler);
-                }
+        if (methodProxy == null) {
+            return;
+        }
+        List<MethodProxyHandler<? extends Annotation>> tmp = new ArrayList<>();
+        for (var proxyHandler : proxyHandlers) {
+            MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
+            handler.setOrder(methodProxy.order());
+            handler.setClassAnnotation(annotation);
+            handler.setApplicationContext(this.applicationContext);
+            handler.setMethod(method);
+            if (handler.exclusive()) {
+                methodProxyHandlers.add(handler);
+                tmp.clear();
+                break;
+            } else {
+                tmp.add(handler);
             }
-            if (!tmp.isEmpty()) {
-                methodProxyHandlers.addAll(tmp);
-            }
+        }
+        if (!tmp.isEmpty()) {
+            methodProxyHandlers.addAll(tmp);
         }
     }
 
@@ -93,7 +127,7 @@ public class MethodProxyResolver {
             for (Annotation annotation : declaredAnnotations) {
                 var annotationType = annotation.annotationType();
                 if (annotationType == MethodProxy.class) {
-                    methodProxyHandlers.add(getMethodProxyHandler(method, (MethodProxy) annotation));
+                    methodProxyHandlers.add(getMethodProxyHandler(method, (MethodProxy) annotation, annotation));
                 } else if (annotationClass == annotationType) {
                     addMethodProxyHandler(method, annotationType, proxyHandlers, annotation, methodProxyHandlers);
                 } else {

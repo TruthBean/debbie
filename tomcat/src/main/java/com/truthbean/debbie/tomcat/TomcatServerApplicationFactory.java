@@ -14,7 +14,7 @@ import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.AbstractDebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.io.PathUtils;
-import com.truthbean.debbie.properties.DebbieConfigurationFactory;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.server.AbstractWebServerApplicationFactory;
 import com.truthbean.debbie.util.StringUtils;
 import org.apache.catalina.LifecycleException;
@@ -185,7 +185,7 @@ public class TomcatServerApplicationFactory extends AbstractWebServerApplication
     }
 
     @Override
-    public DebbieApplication factory(DebbieConfigurationFactory factory, DebbieApplicationContext applicationContext,
+    public DebbieApplication factory(DebbieConfigurationCenter factory, DebbieApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         TomcatConfiguration configuration = factory.factory(TomcatConfiguration.class, applicationContext);
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();

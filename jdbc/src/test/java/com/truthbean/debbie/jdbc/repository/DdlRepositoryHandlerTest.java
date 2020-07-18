@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 
-public class DdlRepositoryHandlerTest {
+class DdlRepositoryHandlerTest {
     private static DdlRepositoryHandler ddlRepositoryHandler;
     private static DataSourceFactory factory;
 
@@ -44,7 +44,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testCreateDatabase() throws ExecutionException, InterruptedException {
+    void testCreateDatabase() throws ExecutionException, InterruptedException {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -54,7 +54,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testShowDatabases() {
+    void testShowDatabases() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.action(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -64,7 +64,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testDropDatabase() {
+    void testDropDatabase() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -74,7 +74,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testShowTables() {
+    void testShowTables() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -85,7 +85,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void testCreateTable() {
+    void testCreateTable() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -99,7 +99,7 @@ public class DdlRepositoryHandlerTest {
     }
 
     @Test
-    public void dropTable() {
+    void dropTable() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();

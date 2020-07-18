@@ -61,7 +61,7 @@ class SurnameServiceBeanTest {
     }
 
     @Test
-    public void select(@BeanInject ApiService apiService) {
+    void select(@BeanInject ApiService apiService) {
         System.out.println(apiService.selectAll());
     }
 

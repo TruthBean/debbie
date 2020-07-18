@@ -10,7 +10,6 @@
 package com.truthbean.debbie.bean;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**

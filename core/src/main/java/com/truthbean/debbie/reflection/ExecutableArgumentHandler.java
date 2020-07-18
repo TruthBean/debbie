@@ -9,7 +9,6 @@
  */
 package com.truthbean.debbie.reflection;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.io.MediaType;
@@ -37,10 +36,10 @@ public class ExecutableArgumentHandler {
         ExecutableArgument invokedParameter = new ExecutableArgument();
         Type genericType = field.getGenericType();
         if (genericType instanceof Class) {
-            invokedParameter.setType((Class<?>) genericType);
+            invokedParameter.setType(genericType);
         } else if (genericType instanceof ParameterizedType) {
             Type rawType = ((ParameterizedType) field.getGenericType()).getRawType();
-            invokedParameter.setType((Class<?>) rawType);
+            invokedParameter.setType(rawType);
         }
         invokedParameter.setName(field.getName());
         invokedParameter.setIndex(index);
@@ -80,10 +79,8 @@ public class ExecutableArgumentHandler {
             }
 
             String name = invokedParameter.getName();
-            if (!StringUtils.hasText(name)) {
-                if (parameter.isNamePresent()) {
-                    invokedParameter.setName(parameter.getName());
-                }
+            if (!StringUtils.hasText(name) && parameter.isNamePresent()) {
+                invokedParameter.setName(parameter.getName());
             }
 
             invokedParameter.setAnnotations(parameter.getAnnotations());

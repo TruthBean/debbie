@@ -21,7 +21,7 @@ public class TargetMethodInterceptor implements MethodInterceptor {
 
     @Override
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        MethodCallBack<Void> callBack = new MethodCallBack<Void>(target, method);
+        MethodCallBack<Void> callBack = new MethodCallBack<>(target, method);
         return handler.proxy(callBack);
     }
 }

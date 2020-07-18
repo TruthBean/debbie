@@ -25,7 +25,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface Router {
 
     /**
@@ -35,14 +35,6 @@ public @interface Router {
     @BeanAliceForName
     @BeanAliceFor(name = "name")
     String name() default "";
-
-    /**
-     * router always be singleton
-     * @return BeanType
-     */
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
-    BeanType type() default BeanType.SINGLETON;
 
     /**
      * same as path

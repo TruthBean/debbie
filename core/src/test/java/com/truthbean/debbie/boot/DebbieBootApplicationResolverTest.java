@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  * @since 0.0.2
  */
 @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean"))
-public class DebbieBootApplicationResolverTest {
+class DebbieBootApplicationResolverTest {
 
     private DebbieApplicationFactory factory;
 

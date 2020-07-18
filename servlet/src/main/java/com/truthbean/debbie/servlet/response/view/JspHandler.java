@@ -18,7 +18,7 @@ import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
  * @since 0.0.1
  * Created on 2019/3/10 21:13.
  */
-public class JspHandler extends AbstractTemplateViewHandler {
+public class JspHandler extends AbstractTemplateViewHandler<Object, Object> {
 
     @Override
     public Object transform(Object o) {

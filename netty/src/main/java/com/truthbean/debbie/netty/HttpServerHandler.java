@@ -125,17 +125,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 if (bytes != null) {
                     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                     HttpResponseStatus status = HttpResponseStatus.valueOf(routerResponse.getStatus().getStatus());
-                    FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
-
-                    handleResponseWithoutContent(response, routerRequest, routerResponse);
-
-                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-                    if (!keepAlive) {
-                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                    } else {
-                        response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                        ctx.writeAndFlush(response);
-                    }
+                    doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status);
                 } else {
                     RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
                     RouterResponse response = routerInfo.getResponse();
@@ -148,6 +138,20 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             }
         }
 
+    }
+
+    private void doHandleResponse(ChannelHandlerContext ctx, NettyRouterRequest routerRequest, RouterResponse routerResponse, ByteBuf byteBuf, HttpResponseStatus status) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
+
+        handleResponseWithoutContent(response, routerRequest, routerResponse);
+
+        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+        if (!keepAlive) {
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        } else {
+            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            ctx.writeAndFlush(response);
+        }
     }
 
     /**
@@ -168,7 +172,6 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             if (!filter.notFilter(request)) {
                 if (filter.preRouter(request, response)) {
                     LOGGER.trace(() -> filterType + " no pre filter");
-                    continue;
                 } else {
                     Boolean post = filter.postRouter(request, response);
                     if (post != null) {
@@ -189,7 +192,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         for (RouterFilterInfo filterInfo : filters) {
             var filter = new RouterFilterHandler(filterInfo, applicationContext);
             Boolean router = filter.postRouter(request, response);
-            if (router != null && router == true) {
+            if (router != null && router) {
                 break;
             }
         }
@@ -255,17 +258,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             httpStatus = HttpStatus.OK;
         }
         HttpResponseStatus status = HttpResponseStatus.valueOf(httpStatus.getStatus());
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
-
-        handleResponseWithoutContent(response, routerRequest, routerResponse);
-
-        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-        if (!keepAlive) {
-            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-        } else {
-            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.writeAndFlush(response);
-        }
+        doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status);
     }
 
     @Override

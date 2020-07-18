@@ -32,6 +32,6 @@ public class SetStringTransformer implements DataTransformer<Set<String>, String
             String[] split = s.split(",");
             return new HashSet<>(Arrays.asList(split));
         }
-        return null;
+        return new HashSet<>();
     }
 }

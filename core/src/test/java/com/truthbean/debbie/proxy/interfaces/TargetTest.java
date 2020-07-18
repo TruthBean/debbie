@@ -8,7 +8,7 @@ import com.truthbean.debbie.proxy.bean.TargetInterface;
 import com.truthbean.debbie.proxy.bean.TargetObject;
 import com.truthbean.debbie.proxy.interfaces.cglib.TargetMethodInterceptor;
 import com.truthbean.debbie.proxy.interfaces.jdk.JdkInvocationHandler;
-import com.truthbean.debbie.proxy.javaassist.JavassistProxy;
+// import com.truthbean.debbie.proxy.javaassist.JavassistProxy;
 
 import net.sf.cglib.proxy.Enhancer;
 import org.junit.jupiter.api.Test;
@@ -20,12 +20,12 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
-public class TargetTest {
+class TargetTest {
 
     private final ClassLoader classLoader = TargetTest.class.getClassLoader();
 
     @Test
-    public void direct() throws Exception {
+    void direct() throws Exception {
         TargetProxyHandler interceptor = new TargetProxyHandler();
         List<MethodProxyHandler<? extends Annotation>> list = List.of(interceptor);
         TargetObject target = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
@@ -39,7 +39,7 @@ public class TargetTest {
     }
 
     @Test
-    public void jdkProxy() {
+    void jdkProxy() {
         TargetInterface target = new TargetImplement();
         JdkInvocationHandler<TargetInterface> handler = new JdkInvocationHandler<>(TargetInterface.class, target);
         TargetInterface proxy = handler.newProxyInstance();
@@ -47,7 +47,7 @@ public class TargetTest {
     }
 
     @Test
-    public void cglibProxy() throws Exception {
+    void cglibProxy() throws Exception {
         Enhancer enhancer = new Enhancer();
         TargetObject target = new TargetObject("hello", 1, (char) 2, (byte) 3, (short) 4, 5L, 6.7F, 8.90D);
         enhancer.setCallback(new TargetMethodInterceptor(target, new TargetProxyHandler(), LOGGER));
@@ -57,7 +57,7 @@ public class TargetTest {
         proxy.code("c++");
     }
 
-    @Test
+    /*@Test
     public void javassistProxy() throws Exception {
         TargetProxyHandler interceptor = new TargetProxyHandler();
         MethodProxyHandlerHandler handler = new MethodProxyHandlerHandler(LOGGER);
@@ -72,7 +72,7 @@ public class TargetTest {
         System.out.println("++++++++++++++++++++++++++++++++++++++++++++++");
 
         proxy.code("java");
-    }
+    }*/
 
     @Test
     void testAsmProxy() throws Exception {

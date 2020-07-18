@@ -259,7 +259,7 @@ public class NetWorkUtils {
             // 获取此网络接口的全部或部分 InterfaceAddresses
             List<InterfaceAddress> list = NetworkInterface.getByInetAddress(ipAddress).getInterfaceAddresses();
             // 所组成的列表
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 int mask;
                 if (list.size() == 1) {
                     mask = list.get(0).getNetworkPrefixLength();

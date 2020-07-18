@@ -10,27 +10,33 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.bean.DebbieApplicationContextAware;
 
 /**
+ *  DebbieStartedEvent's subclass must annotated by @EventComponent if under debbie managed
+ *
  * @author TruthBean
  * @since 0.0.2
  */
-public class DebbieStartedEvent extends AbstractDebbieEvent {
+public class DebbieStartedEvent extends AbstractDebbieEvent implements DebbieApplicationContextAware {
 
-    private final DebbieApplicationContext applicationContext;
+    private DebbieApplicationContext debbieApplicationContext;
 
     /**
      * @see AbstractDebbieEvent#AbstractDebbieEvent(Object)
      *
      * @param source event source
-     * @param applicationContext bean factory handler
      */
-    public DebbieStartedEvent(Object source, DebbieApplicationContext applicationContext) {
+    public DebbieStartedEvent(Object source) {
         super(source);
-        this.applicationContext = applicationContext;
     }
 
-    public DebbieApplicationContext getApplicationContext() {
-        return applicationContext;
+    public DebbieApplicationContext getDebbieApplicationContext() {
+        return debbieApplicationContext;
+    }
+
+    @Override
+    public void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
+        this.debbieApplicationContext = applicationContext;
     }
 }

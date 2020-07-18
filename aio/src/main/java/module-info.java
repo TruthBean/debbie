@@ -7,24 +7,18 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.event;
 
 /**
- * @author TruthBean
- * @since 0.0.2
+ * @author TruthBean/Rogar·Q
+ * @since 0.1.0
  */
-public interface DebbieStartedEventListener extends GenericEventListener<DebbieStartedEvent> {
-    @Override
-    default boolean supportsSourceType(Class<?> sourceType) {
-        return sourceType == DebbieStartedEvent.class;
-    }
+module com.truthbean.debbie.aio {
+    requires transitive com.truthbean.debbie.server;
+    requires java.management;
 
-    @Override
-    default Class<DebbieStartedEvent> getEventType() {
-        return DebbieStartedEvent.class;
-    }
+    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
+            com.truthbean.debbie.aio.AioServerApplicationFactory;
 
-    default void onEvent(DebbieStartedEvent event) {
-        // do more
-    }
+    provides com.truthbean.debbie.boot.DebbieModuleStarter with
+            com.truthbean.debbie.aio.AioModuleStarter;
 }

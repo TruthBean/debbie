@@ -49,7 +49,7 @@ public class UndertowRouterSession implements RouterSession {
 
     @Override
     public Long getMaxInactiveInterval() {
-        return Long.valueOf(session.getMaxInactiveInterval());
+        return (long) session.getMaxInactiveInterval();
     }
 
     @Override

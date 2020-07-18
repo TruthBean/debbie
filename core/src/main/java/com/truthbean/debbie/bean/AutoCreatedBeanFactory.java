@@ -38,11 +38,11 @@ public class AutoCreatedBeanFactory {
     public void autoCreateBeans() {
         final Set<DebbieBeanInfo<?>> autoCreatedBean = beanInfoFactory.getAutoCreatedBean();
         autoCreatedBeanExecutor.execute(() -> {
-            for (DebbieBeanInfo beanInfo : autoCreatedBean) {
-                Boolean lazyCreate = beanInfo.getLazyCreate();
+            for (DebbieBeanInfo localBeanInfo : autoCreatedBean) {
+                Boolean lazyCreate = localBeanInfo.getLazyCreate();
                 if (lazyCreate != null && !lazyCreate) {
-                    beanInfo.setBean(globalBeanFactory.factory(beanInfo));
-                    beanInitialization.refreshBean(beanInfo);
+                    localBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
+                    beanInitialization.refreshBean(localBeanInfo);
                 }
             }
         });

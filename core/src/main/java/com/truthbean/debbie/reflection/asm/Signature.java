@@ -20,7 +20,6 @@ public class Signature {
     private final String desc;
 
     public Signature(String name, String desc) {
-        // TODO: better error checking
         if (name.indexOf('(') >= 0) {
             throw new IllegalArgumentException("Name '" + name + "' is invalid");
         }

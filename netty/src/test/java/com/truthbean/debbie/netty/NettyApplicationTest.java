@@ -3,14 +3,15 @@ package com.truthbean.debbie.netty;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieApplicationFactory;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.test.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 public class NettyApplicationTest {
 
     @Test
-    public void content() {
+    void content() {
         System.out.println("nothing");
     }
 

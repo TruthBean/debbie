@@ -35,6 +35,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class ReflectionHelper {
 
+    private ReflectionHelper() {
+    }
+
     public static <T> Constructor<T> getConstructorIfAvailable(Class<T> clazz, Class<?>... paramTypes) {
         try {
             return clazz.getConstructor(paramTypes);
@@ -93,28 +96,32 @@ public class ReflectionHelper {
             int n = parameterTypes.length;
             for (int i = 0; i < n; i++) {
                 Class<?> parameterType = parameterTypes[i];
-                if (parameterType == byte.class) {
-                    result[i] = (byte) 0;
-                } else if (parameterType == char.class) {
-                    result[i] = (char) 0;
-                } else if (parameterType == short.class) {
-                    result[i] = (short) 0;
-                } else if (parameterType == int.class) {
-                    result[i] = 0;
-                } else if (parameterType == long.class) {
-                    result[i] = 0L;
-                } else if (parameterType == float.class) {
-                    result[i] = 0.0F;
-                } else if (parameterType == double.class) {
-                    result[i] = 0.0D;
-                } else if (parameterType == boolean.class) {
-                    result[i] = false;
-                } else {
-                    result[i] = null;
-                }
+                result[i] = getDefaultValue(parameterType);
             }
         }
         return result;
+    }
+
+    public static Object getDefaultValue(Class<?> type) {
+        if (type == byte.class) {
+            return (byte) 0;
+        } else if (type == char.class) {
+            return (char) 0;
+        } else if (type == short.class) {
+            return (short) 0;
+        } else if (type == int.class) {
+            return 0;
+        } else if (type == long.class) {
+            return 0L;
+        } else if (type == float.class) {
+            return 0.0F;
+        } else if (type == double.class) {
+            return 0.0D;
+        } else if (type == boolean.class) {
+            return false;
+        } else {
+            return null;
+        }
     }
 
     public static Type[] getActualTypes(@SuppressWarnings("rawtypes") Class clazz, int typeNum) {
@@ -122,7 +129,7 @@ public class ReflectionHelper {
             return null;
         }
         Type[] types = clazz.getTypeParameters();
-        if (types != null && types.length >= typeNum) {
+        if (types.length >= typeNum) {
             return types;
         }
         Type genType = clazz.getGenericSuperclass();
@@ -181,8 +188,8 @@ public class ReflectionHelper {
                 String typeName = parameter.getType().getTypeName();
                 LOGGER.trace(() -> "parameter.getType().getTypeName() = " + typeName);
 
-                String typeName1 = parameter.getParameterizedType().getTypeName();
-                LOGGER.trace(() -> "parameter.getParameterizedType().getTypeName() = " + typeName);
+                String parameterizedTypeName = parameter.getParameterizedType().getTypeName();
+                LOGGER.trace(() -> "parameter.getParameterizedType().getTypeName() = " + parameterizedTypeName);
 
                 String genericParameterTypeName = genericParameterTypes[i].getTypeName();
                 LOGGER.trace(() -> "genericParameterTypes: " + genericParameterTypeName);
@@ -213,10 +220,10 @@ public class ReflectionHelper {
      */
     public static Type[] getActualTypes(Class<?> clazz) {
         if (clazz == null || clazz == Object.class || clazz == Void.class) {
-            return null;
+            return new Type[0];
         }
         Type[] types = clazz.getTypeParameters();
-        if (types != null && types.length > 0) {
+        if (types.length > 0) {
             return types;
         }
         Type genType = clazz.getGenericSuperclass();
@@ -502,6 +509,9 @@ public class ReflectionHelper {
     }
 
     public static Method getDeclaredMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+        if (parameterTypes == null) {
+            parameterTypes = new Class[0];
+        }
         for (var superClass = clazz; superClass != null && superClass != Object.class;
              superClass = superClass.getSuperclass()) {
             Method declaredMethod = getMethodByNameAndTypes(methodName, parameterTypes, superClass);
@@ -525,7 +535,7 @@ public class ReflectionHelper {
 
     private static Method getSuperClassMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
         Set<Method> interfaceDefaultMethods = getInterfaceDefaultMethods(clazz);
-        if (interfaceDefaultMethods.size() > 0) {
+        if (!interfaceDefaultMethods.isEmpty()) {
             for (Method declaredMethod : interfaceDefaultMethods) {
                 Class<?>[] parameterClass = declaredMethod.getParameterTypes();
                 if (methodName.equals(declaredMethod.getName()) && Arrays.equals(parameterClass, parameterTypes)) {
@@ -537,11 +547,54 @@ public class ReflectionHelper {
     }
 
     public static Method getMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+        if (parameterTypes == null) {
+            parameterTypes = new Class[0];
+        }
         for (var superClass = clazz; superClass != null; superClass = superClass.getSuperclass()) {
             Method declaredMethod = getMethodByNameAndTypes(methodName, parameterTypes, superClass);
             if (declaredMethod != null) return declaredMethod;
         }
         return getSuperClassMethod(clazz, methodName, parameterTypes);
+    }
+
+    public static Set<Annotation> getMethodAnnotations(Method method) {
+        Set<Annotation> methodAnnotations = new HashSet<>();
+        Annotation[] annotations = method.getDeclaredAnnotations();
+
+        if (annotations.length == 0)
+            return methodAnnotations;
+        for (Annotation annotation : annotations) {
+            Class<? extends Annotation> type = annotation.annotationType();
+            if (!TypeHelper.filterAnnotation(type)) {
+                continue;
+            }
+            methodAnnotations.add(annotation);
+            Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(type);
+            if (!annotationInAnnotation.isEmpty()) {
+                for (Annotation ann : annotationInAnnotation) {
+                    Class<? extends Annotation> annotationType = ann.annotationType();
+                    if (TypeHelper.filterAnnotation(annotationType)) {
+                        methodAnnotations.add(ann);
+                    }
+                }
+            }
+        }
+        return methodAnnotations;
+    }
+
+    public static Map<Class<? extends Annotation>, Annotation> getAnnotatedAnnotationOrAnnotation(Collection<? extends Annotation> annotations,
+                                                                                           Class<? extends Annotation> annotationClass) {
+        Map<Class<? extends Annotation>, Annotation> result = new HashMap<>();
+        if (annotations.isEmpty()) {
+            return result;
+        }
+        for (Annotation annotation : annotations) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (annotationType.getAnnotation(annotationClass) != null || annotationClass.isInstance(annotation)) {
+                result.put(annotationType, annotation);
+            }
+        }
+        return result;
     }
 
     public static Object invokeSetMethod(Object target, Field field, Object arg) {

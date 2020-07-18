@@ -32,6 +32,9 @@ public class SpiLoader {
     private static final String META_INF = "META-INF";
     private static final String SPI = "com.truthbean.debbie.spi";
 
+    private SpiLoader() {
+    }
+
     public static <S> S loadProvider(Class<S> serviceClass) {
         var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
         return loadProvider(serviceClass, classLoader);
@@ -201,17 +204,17 @@ public class SpiLoader {
             Class<? extends MethodProxyHandler> handlerClass = null;
             if (annotationType != null) {
                 try {
-                    handlerClass = (Class<MethodProxyHandler>) classLoader.loadClass(split[1]);
+                    handlerClass = (Class<MethodProxyHandler<?>>) classLoader.loadClass(split[1]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 if (handlerClass != null) {
-                    var classes = map.get(annotationType);
-                    if (classes == null) {
-                        classes = new ArrayList<>();
-                    }
-                    classes.add(handlerClass);
-                    map.put(annotationType, classes);
+                    Class<? extends MethodProxyHandler> finalHandlerClass = handlerClass;
+                    map.computeIfAbsent(annotationType, k -> {
+                        List<Class<? extends MethodProxyHandler>> classes = new ArrayList<>();
+                        classes.add(finalHandlerClass);
+                        return classes;
+                    });
                 }
 
             }

@@ -240,7 +240,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public MediaTypeInfo getDefaultContentType() {
-        if (this.defaultContentTypes != null && !this.defaultContentTypes.isEmpty())
+        if (!this.defaultContentTypes.isEmpty())
             return defaultContentTypes.iterator().next();
         else
             return MediaType.ANY.info();

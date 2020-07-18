@@ -9,9 +9,6 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
-
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.*;
@@ -144,6 +141,4 @@ public class HttpHandler {
         byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
 }

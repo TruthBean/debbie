@@ -10,10 +10,7 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**

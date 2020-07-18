@@ -22,9 +22,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -510,17 +507,17 @@ public final class TypeHelper {
     }
 
     public static boolean isSameList(Class<?> actualTypes, @SuppressWarnings("rawtypes") List value) {
-        if (value == null && value.isEmpty()) return true;
+        if (value == null || value.isEmpty()) return true;
 
         boolean result = true;
-        java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
+        // java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
         for (Object object : value) {
             if (object instanceof String) {
                 String str = (String) object;
                 // todo 需要改良这里的硬编码
                 if (str.contains(",")) {
                     String[] split = str.split(",");
-                    if (split != null && split.length > 0) {
+                    if (split.length > 0) {
                         for (String s : split) {
                             if (result) {
                                 result = isOrValueOf(actualTypes, s);
@@ -531,7 +528,7 @@ public final class TypeHelper {
                     }
                 } else if (str.contains(";")) {
                     String[] split = str.split(";");
-                    if (split != null && split.length > 0) {
+                    if (split.length > 0) {
                         for (String s : split) {
                             if (result) {
                                 result = isOrValueOf(actualTypes, s);
@@ -574,7 +571,7 @@ public final class TypeHelper {
     public static boolean isOrValueOf(java.lang.reflect.Type type, Object value) {
         boolean result = false;
         if (type instanceof Class) {
-            Class clazz = (Class) type;
+            Class<?> clazz = (Class<?>) type;
             if (value instanceof List) {
                 return isOrValueOf(clazz, (List) value);
             } else if (value instanceof String) {
@@ -622,7 +619,7 @@ public final class TypeHelper {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             return parameterizedType.getActualTypeArguments();
         }
-        return null;
+        return new java.lang.reflect.Type[0];
     }
 
     public static boolean isOrValueOf(Class<?> clazz, Object target) {
@@ -646,7 +643,7 @@ public final class TypeHelper {
 
     public static Type[] getTypes(@SuppressWarnings("rawtypes") Class[] classes) {
         if (classes == null) {
-            return null;
+            return new Type[0];
         }
         Type[] types = new Type[classes.length];
         for (int i = 0; i < classes.length; i++) {
@@ -659,7 +656,7 @@ public final class TypeHelper {
         return  !Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
                 !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
                 !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
-                !Native.class.equals(annotationType) &&
+                !Native.class.equals(annotationType) && !SafeVarargs.class.equals(annotationType) &&
                 !FunctionalInterface.class.equals(annotationType) &&
                 !SuppressWarnings.class.equals(annotationType) && !Override.class.equals(annotationType);
     }

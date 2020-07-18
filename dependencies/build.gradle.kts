@@ -92,6 +92,9 @@ dependencyManagement {
             exclude("portlet-api:portlet-api")
         }
 
+        val commonsIoVersion: String by project
+        dependency("commons-io:commons-io:${commonsIoVersion}")
+
         // tomcat
         val tomcatVersion: String by project
         dependency("org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion")
