@@ -16,12 +16,13 @@
  */
 package org.apache.commons.fileupload;
 
+import org.apache.commons.fileupload.util.mime.MimeUtility;
+import org.apache.commons.fileupload.util.mime.RFC2231Utility;
+
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import org.apache.commons.fileupload.util.mime.MimeUtility;
 
 /**
  * A simple parser intended to parse sequences of name/value pairs.
@@ -31,7 +32,7 @@ import org.apache.commons.fileupload.util.mime.MimeUtility;
  * Parameter values are optional and can be omitted.
  *
  * <p>
- *  <code>param1 = value; param2 = "anything goes; really"; param3</code>
+ *  {@code param1 = value; param2 = "anything goes; really"; param3}
  * </p>
  */
 public class ParameterParser {
@@ -119,7 +120,7 @@ public class ParameterParser {
     /**
      * Tests if the given character is present in the array of characters.
      *
-     * @param ch the character to test for presense in the array of characters
+     * @param ch the character to test for presence in the array of characters
      * @param charray the array of characters to test against
      *
      * @return {@code true} if the character is present in the array of
@@ -316,7 +317,8 @@ public class ParameterParser {
 
                 if (paramValue != null) {
                     try {
-                        paramValue = MimeUtility.decodeText(paramValue);
+                        paramValue = RFC2231Utility.hasEncodedValue(paramName) ? RFC2231Utility.decodeText(paramValue)
+                                : MimeUtility.decodeText(paramValue);
                     } catch (UnsupportedEncodingException e) {
                         // let's keep the original value in this case
                     }
@@ -326,10 +328,10 @@ public class ParameterParser {
                 pos++; // skip separator
             }
             if ((paramName != null) && (paramName.length() > 0)) {
+                paramName = RFC2231Utility.stripDelimiter(paramName);
                 if (this.lowerCaseNames) {
                     paramName = paramName.toLowerCase(Locale.ENGLISH);
                 }
-
                 params.put(paramName, paramValue);
             }
         }

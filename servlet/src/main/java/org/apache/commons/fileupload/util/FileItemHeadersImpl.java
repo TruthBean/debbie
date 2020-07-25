@@ -16,16 +16,10 @@
  */
 package org.apache.commons.fileupload.util;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import org.apache.commons.fileupload.FileItemHeaders;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Default implementation of the {@link FileItemHeaders} interface.
@@ -40,8 +34,8 @@ public class FileItemHeadersImpl implements FileItemHeaders, Serializable {
     private static final long serialVersionUID = -4455695752627032559L;
 
     /**
-     * Map of <code>String</code> keys to a <code>List</code> of
-     * <code>String</code> instances.
+     * Map of {@code String} keys to a {@code List} of
+     * {@code String} instances.
      */
     private final Map<String, List<String>> headerNameToValueListMap = new LinkedHashMap<String, List<String>>();
 

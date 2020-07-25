@@ -12,15 +12,6 @@
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  */
-module com.truthbean.debbie.undertow {
-    requires transitive com.truthbean.debbie.server;
-    requires java.management;
-    // not work
-    requires undertow.core;
-
-    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
-            com.truthbean.debbie.undertow.UndertowServerApplicationFactory;
-
-    provides com.truthbean.debbie.boot.DebbieModuleStarter with
-            com.truthbean.debbie.undertow.UndertowModuleStarter;
+module com.truthbean.debbie.boot {
+    requires transitive com.truthbean.debbie.core;
 }

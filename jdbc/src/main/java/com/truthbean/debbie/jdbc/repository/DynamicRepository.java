@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
+import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.util.StringUtils;
 
 import java.util.ArrayList;
@@ -22,60 +23,95 @@ import java.util.List;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DynamicSqlBuilder {
-    private StringBuilder dynamicSql = new StringBuilder();
-    private final DataSourceDriverName driverName;
+public class DynamicRepository {
+    private final StringBuilder dynamicSql = new StringBuilder();
+    private DataSourceDriverName driverName;
 
-    private DynamicSqlBuilder(DataSourceDriverName driverName) {
+    protected DynamicRepository(DataSourceDriverName driverName) {
         this.driverName = driverName;
     }
 
-    public static DynamicSqlBuilder sql(DataSourceDriverName driverName) {
-        return new DynamicSqlBuilder(driverName);
+    private static final int INSERT = 1;
+    public static final int UPDATE = 2;
+    public static final int DELETE = 3;
+    public static final int SELECT = 4;
+
+    /**
+     * 1: insert
+     * 2: update
+     * 3: delete
+     * 4: select
+     */
+    private int action;
+    private DriverConnection connection;
+    private DynamicRepository sqlBuilder;
+    private DynamicRepository(DynamicRepository sqlBuilder, DriverConnection connection, int action) {
+        this.connection = connection;
+        this.sqlBuilder = sqlBuilder;
+        this.action = action;
     }
 
-    public DynamicSqlBuilder show() {
+    public static DynamicRepository query(DriverConnection connection) {
+        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, SELECT);
+    }
+
+    public static DynamicRepository modify(DriverConnection connection) {
+        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, UPDATE);
+    }
+
+    public static DynamicRepository add(DriverConnection connection) {
+        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, INSERT);
+    }
+
+    public static DynamicRepository remove(DriverConnection connection) {
+        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, DELETE);
+    }
+
+    public static DynamicRepository sql(DataSourceDriverName driverName) {
+        return new DynamicRepository(driverName);
+    }
+
+    public DynamicRepository show() {
         dynamicSql.append("SHOW ");
         return this;
     }
 
-
-    public DynamicSqlBuilder databases() {
+    public DynamicRepository databases() {
         dynamicSql.append(" DATABASES ");
         return this;
     }
 
-    public DynamicSqlBuilder use(String database) {
+    public DynamicRepository use(String database) {
         dynamicSql.append("USE ").append(database).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder tables() {
+    public DynamicRepository tables() {
         dynamicSql.append(" TABLES ");
         return this;
     }
 
-    public DynamicSqlBuilder create() {
+    public DynamicRepository create() {
         dynamicSql.append("CREATE ");
         return this;
     }
 
-    public DynamicSqlBuilder database(String database) {
+    public DynamicRepository database(String database) {
         dynamicSql.append("DATABASE ").append(database).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder desc() {
-        dynamicSql.append("DESC ");
+    public DynamicRepository desc() {
+        dynamicSql.append(" DESC ");
         return this;
     }
 
-    public DynamicSqlBuilder drop() {
+    public DynamicRepository drop() {
         dynamicSql.append("DROP ");
         return this;
     }
 
-    public DynamicSqlBuilder tableIfExists(String table, boolean ifExists) {
+    public DynamicRepository tableIfExists(String table, boolean ifExists) {
         dynamicSql.append("TABLE ");
         if (ifExists) {
             dynamicSql.append("IF EXISTS");
@@ -84,7 +120,7 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder tableIfNotExists(String table, boolean ifNotExists) {
+    public DynamicRepository tableIfNotExists(String table, boolean ifNotExists) {
         dynamicSql.append("TABLE ");
         if (ifNotExists) {
             dynamicSql.append("IF NOT EXISTS");
@@ -93,43 +129,43 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder table(String table) {
+    public DynamicRepository table(String table) {
         dynamicSql.append("TABLE ").append(table).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder leftParenthesis() {
+    public DynamicRepository leftParenthesis() {
         dynamicSql.append("( ");
         return this;
     }
 
-    public DynamicSqlBuilder rightParenthesis() {
+    public DynamicRepository rightParenthesis() {
         dynamicSql.append(" )");
         return this;
     }
 
-    public DynamicSqlBuilder defaultValue(String defaultValue) {
+    public DynamicRepository defaultValue(String defaultValue) {
         dynamicSql.append(" DEFAULT ").append(defaultValue).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder comment(String comment) {
+    public DynamicRepository comment(String comment) {
         if (driverName != DataSourceDriverName.sqlite)
             dynamicSql.append(" COMMENT '").append(comment).append("' ");
         return this;
     }
 
-    public DynamicSqlBuilder nullSql() {
+    public DynamicRepository nullSql() {
         dynamicSql.append(" NULL ");
         return this;
     }
 
-    public DynamicSqlBuilder primaryKey() {
+    public DynamicRepository primaryKey() {
         dynamicSql.append(" PRIMARY KEY ");
         return this;
     }
 
-    public DynamicSqlBuilder autoIncrement() {
+    public DynamicRepository autoIncrement() {
         if (driverName == DataSourceDriverName.sqlite) {
             dynamicSql.append(" AUTOINCREMENT ");
         } else
@@ -137,84 +173,84 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder autoIncrement(int begin) {
+    public DynamicRepository autoIncrement(int begin) {
         dynamicSql.append(" AUTO_INCREMENT=").append(begin).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder engine(String engine) {
+    public DynamicRepository engine(String engine) {
         if (driverName != DataSourceDriverName.sqlite)
             dynamicSql.append(" ENGINE=").append(engine).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder defaultCharset(String charset) {
+    public DynamicRepository defaultCharset(String charset) {
         if (driverName != DataSourceDriverName.sqlite)
             dynamicSql.append(" DEFAULT CHARSET=").append(charset).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder unique() {
+    public DynamicRepository unique() {
         dynamicSql.append(" UNIQUE ");
         return this;
     }
 
-    public DynamicSqlBuilder ifSql() {
+    public DynamicRepository ifSql() {
         dynamicSql.append(" IF ");
         return this;
     }
 
-    public DynamicSqlBuilder not() {
+    public DynamicRepository not() {
         dynamicSql.append(" NOT ");
         return this;
     }
 
-    public DynamicSqlBuilder exists() {
+    public DynamicRepository exists() {
         dynamicSql.append(" EXISTS ");
         return this;
     }
 
-    public DynamicSqlBuilder tinyint() {
+    public DynamicRepository tinyint() {
         dynamicSql.append(" TINYINT ");
         return this;
     }
 
-    public DynamicSqlBuilder delete() {
+    public DynamicRepository delete() {
         dynamicSql.append("DELETE ");
         return this;
     }
 
-    public DynamicSqlBuilder insert() {
+    public DynamicRepository insert() {
         dynamicSql.append("INSERT INTO ");
         return this;
     }
 
-    public DynamicSqlBuilder update() {
+    public DynamicRepository update() {
         dynamicSql.append("UPDATE ");
         return this;
     }
 
-    public DynamicSqlBuilder update(String table) {
+    public DynamicRepository update(String table) {
         dynamicSql.append("UPDATE ").append(table).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder set() {
+    public DynamicRepository set() {
         dynamicSql.append(" SET ");
         return this;
     }
 
-    public DynamicSqlBuilder set(String columns, String value) {
+    public DynamicRepository set(String columns, String value) {
         dynamicSql.append(" SET ").append(columns).append("=").append(value).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder set(String columns) {
+    public DynamicRepository set(String columns) {
         dynamicSql.append(" SET ").append(columns).append("= ? ");
         return this;
     }
 
-    public DynamicSqlBuilder set(List<String> columns) {
+    public DynamicRepository set(List<String> columns) {
         dynamicSql.append(" SET ");
         int size;
         if (columns != null && (size = columns.size()) > 0) {
@@ -232,43 +268,49 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder select() {
+    public DynamicRepository select() {
         dynamicSql.append(" SELECT ");
         return this;
     }
 
-    public DynamicSqlBuilder select(List<String> columns) {
+    public DynamicRepository select(List<String> columns) {
         dynamicSql.append(" SELECT ");
         this.joinWith(",", columns);
         return this;
     }
 
-    public DynamicSqlBuilder select(String columns) {
+    public DynamicRepository select(String columns) {
         dynamicSql.append(" SELECT ").append(columns).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder selectAll() {
+    public DynamicRepository select(String... columns) {
+        dynamicSql.append(" SELECT ");
+        this.joinWith(",", columns);
+        return this;
+    }
+
+    public DynamicRepository selectAll() {
         dynamicSql.append(" SELECT * ");
         return this;
     }
 
-    public DynamicSqlBuilder distinct() {
+    public DynamicRepository distinct() {
         dynamicSql.append(" DISTINCT ");
         return this;
     }
 
-    public DynamicSqlBuilder count() {
+    public DynamicRepository count() {
         dynamicSql.append(" COUNT(*) ");
         return this;
     }
 
-    public DynamicSqlBuilder count(String column) {
+    public DynamicRepository count(String column) {
         dynamicSql.append(" COUNT(").append(column).append(") ");
         return this;
     }
 
-    public DynamicSqlBuilder joinWith(String split, List<String> columns) {
+    public DynamicRepository joinWith(String split, List<String> columns) {
         int size;
         if (columns != null && (size = columns.size()) > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -285,7 +327,7 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder joinWith(String split, String... columns) {
+    public DynamicRepository joinWith(String split, String... columns) {
         int size;
         if (columns != null && (size = columns.length) > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -302,14 +344,14 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder values(List<Object> values) {
+    public DynamicRepository values(List<Object> values) {
         dynamicSql.append(" VALUES (");
         value(values);
         dynamicSql.append(") ");
         return this;
     }
 
-    public DynamicSqlBuilder signs(int length) {
+    public DynamicRepository signs(int length) {
         List<String> signs = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             signs.set(i, "?");
@@ -317,7 +359,7 @@ public class DynamicSqlBuilder {
         return value(signs);
     }
 
-    public DynamicSqlBuilder value(List<?> values) {
+    public DynamicRepository value(List<?> values) {
         int size = 0;
         if (values != null && (size = values.size()) > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -334,7 +376,7 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder value(Object... values) {
+    public DynamicRepository value(Object... values) {
         int size;
         if (values != null && (size = values.length) > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -351,39 +393,49 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder from(String table) {
+    public DynamicRepository from(String table) {
         if (table != null) {
             dynamicSql.append(" FROM ").append(table).append(" ");
         }
         return this;
     }
 
-    public DynamicSqlBuilder where() {
+    public DynamicRepository where() {
         dynamicSql.append(" WHERE ");
         return this;
     }
 
-    public DynamicSqlBuilder and(String condition) {
+    public DynamicRepository and(String condition) {
         dynamicSql.append(" AND ").append(condition);
         return this;
     }
 
-    public DynamicSqlBuilder or(String condition) {
+    public DynamicRepository and() {
+        dynamicSql.append(" AND ");
+        return this;
+    }
+
+    public DynamicRepository or(String condition) {
         dynamicSql.append(" OR ").append(condition);
         return this;
     }
 
-    public DynamicSqlBuilder exist(String subSql) {
+    public DynamicRepository or() {
+        dynamicSql.append(" OR ");
+        return this;
+    }
+
+    public DynamicRepository exist(String subSql) {
         dynamicSql.append(" EXISTS( ").append(subSql).append(" ) ");
         return this;
     }
 
-    public DynamicSqlBuilder eq(String column, Object value) {
+    public DynamicRepository eq(String column, Object value) {
         dynamicSql.append(column).append(" = ").append(value);
         return this;
     }
 
-    public <T> DynamicSqlBuilder in(String column, int inValueSize) {
+    public <T> DynamicRepository in(String column, int inValueSize) {
         List<String> s = new ArrayList<>();
         for (int i = 0; i < inValueSize; i++) {
             s.add("?");
@@ -393,12 +445,12 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder extra(Object extra) {
+    public DynamicRepository extra(Object extra) {
         dynamicSql.append(extra);
         return this;
     }
 
-    public DynamicSqlBuilder foreach(String open, String close, Collection<?> collection, String separator) {
+    public DynamicRepository foreach(String open, String close, Collection<?> collection, String separator) {
         if (collection != null && !collection.isEmpty()) {
             dynamicSql.append(open);
             dynamicSql.append(StringUtils.joining(collection, separator));
@@ -407,23 +459,57 @@ public class DynamicSqlBuilder {
         return this;
     }
 
-    public DynamicSqlBuilder limit(int offset, int limit) {
+    public DynamicRepository left() {
+        dynamicSql.append(" LEFT ");
+        return this;
+    }
+
+    public DynamicRepository right() {
+        dynamicSql.append(" RIGHT ");
+        return this;
+    }
+
+    public DynamicRepository join() {
+        dynamicSql.append(" JOIN ");
+        return this;
+    }
+
+    public DynamicRepository join(String table) {
+        dynamicSql.append(" JOIN ").append(table).append(" ");
+        return this;
+    }
+
+    public DynamicRepository on() {
+        dynamicSql.append(" ON ");
+        return this;
+    }
+
+    public DynamicRepository limit(int offset, int limit) {
         dynamicSql.append(" LIMIT ").append(limit).append(" OFFSET ").append(offset).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder limit(int limit) {
+    public DynamicRepository limit(int limit) {
         dynamicSql.append(" LIMIT ").append(limit).append(" ");
         return this;
     }
 
-    public DynamicSqlBuilder orderBy(String column) {
+    public DynamicRepository orderBy(String column) {
         dynamicSql.append(" ORDER BY ").append(column);
         return this;
     }
 
     public String builder() {
         return dynamicSql.toString();
+    }
+
+    public <T> List<T> result(Class<T> resultClass) {
+        RepositoryHandler repositoryHandler = new RepositoryHandler();
+        repositoryHandler.setDriverName(driverName);
+        if (action == SELECT) {
+            return repositoryHandler.query(connection.getConnection(), dynamicSql.toString(), resultClass);
+        }
+        return new ArrayList<>();
     }
 
     @Override

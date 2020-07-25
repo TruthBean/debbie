@@ -129,15 +129,15 @@ public class Page<T> implements Streamable<T> {
      * 返回开始查询的地方
      */
     private static int getOffset(int pageSize, int currentPage) {
-        return (currentPage - 1) * pageSize;
+        return currentPage <= 1 ? 0: (currentPage - 1) * pageSize;
     }
 
     private static long nextPage(int currentPage, long totalPages) {
-        return (currentPage == totalPages) ? totalPages : (currentPage + 1);
+        return currentPage >= totalPages ? totalPages : (currentPage + 1);
     }
 
     private static int prePage(int currentPage) {
-        return (currentPage == 1) ? 1 : (currentPage - 1);
+        return currentPage <= 1 ? 1 : (currentPage - 1);
     }
 
     private static long totalPages(int pageSize, long totalCounts) {

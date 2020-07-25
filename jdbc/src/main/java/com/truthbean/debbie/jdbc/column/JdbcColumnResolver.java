@@ -14,7 +14,7 @@ import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
-import com.truthbean.debbie.jdbc.repository.DynamicSqlBuilder;
+import com.truthbean.debbie.jdbc.repository.DynamicRepository;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
@@ -120,7 +120,7 @@ public class JdbcColumnResolver {
         try {
             Connection connection = driverConnection.getConnection();
             DataSourceDriverName driverName = driverConnection.getDriverName();
-            var sql = DynamicSqlBuilder.sql(driverName).selectAll().from(tableName).builder();
+            var sql = DynamicRepository.sql(driverName).selectAll().from(tableName).builder();
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
 

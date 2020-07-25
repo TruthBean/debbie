@@ -118,7 +118,10 @@ public final class TypeHelper {
     public static boolean isBaseType(java.lang.reflect.Type type) {
         if (type instanceof Class) {
             Class<?> clazz = (Class<?>) type;
-            return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz) || isInt(clazz) || isLong(clazz) || isShort(clazz) || isChar(clazz) || isByte(clazz) || clazz == String.class || isObject(clazz);
+            return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz)
+                    || isInt(clazz) || isLong(clazz) || isShort(clazz)
+                    || isChar(clazz) || isByte(clazz)
+                    || clazz == String.class || isObject(clazz);
         }
         return false;
     }

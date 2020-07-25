@@ -45,12 +45,14 @@ dependencyManagement {
 
         // logs
         val loggerVersion: String by project
-        dependency("com.truthbean.logger:core:${loggerVersion}")
-        dependency("com.truthbean.logger:jdk:${loggerVersion}")
-        dependency("com.truthbean.logger:log4j:${loggerVersion}")
-        dependency("com.truthbean.logger:log4j2:${loggerVersion}")
-        dependency("com.truthbean.logger:slf4j:${loggerVersion}")
-        dependency("com.truthbean.logger:stdout:${loggerVersion}")
+        dependency("com.truthbean.logger:logger-core:${loggerVersion}")
+        dependency("com.truthbean.logger:jdk-adapter:${loggerVersion}")
+        dependency("com.truthbean.logger:log4j-adapter:${loggerVersion}")
+        dependency("com.truthbean.logger:log4j2-adapter:${loggerVersion}")
+        dependency("com.truthbean.logger:slf4j-adapter:${loggerVersion}")
+        dependency("com.truthbean.logger:stdout-adapter:${loggerVersion}")
+        dependency("com.truthbean.logger:log4j2-boot:${loggerVersion}")
+        dependency("com.truthbean.logger:slf4j-boot:${loggerVersion}")
         val log4j2Version: String by project
         dependency("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
         dependency("org.apache.logging.log4j:log4j-api:$log4j2Version")

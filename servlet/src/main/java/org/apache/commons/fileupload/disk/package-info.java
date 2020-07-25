@@ -30,8 +30,6 @@
  *      {@link org.apache.commons.fileupload.FileUpload FileUpload}
  *      implementation such as
  *      {@link org.apache.commons.fileupload.servlet.ServletFileUpload ServletFileUpload}
- *      or
- *      {@link org.apache.commons.fileupload.portlet.PortletFileUpload PortletFileUpload}.
  *    </p>
  *    <p>
  *      The following code fragment demonstrates this usage.

@@ -1,6 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItem.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItemFactory.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItemHeaders.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItemHeadersSupport.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItemIterator.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileItemStream.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileUpload.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileUploadBase.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/FileUploadException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/InvalidFileNameException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/MultipartStream.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/ParameterParser.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/ProgressListener.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/RequestContext.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/UploadContext.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/FileItemIteratorImpl.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/FileItemStreamImpl.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/FileSizeLimitExceededException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/FileUploadIOException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/IOFileUploadException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/InvalidContentTypeException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/SizeException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/SizeLimitExceededException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/impl/UnknownSizeException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/package-info.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/servlet/FileCleanerCleanup.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/servlet/ServletFileUpload.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/servlet/ServletRequestContext.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/servlet/package-info.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/Closeable.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/FileItemHeadersImpl.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/LimitedInputStream.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/Streams.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/Base64Decoder.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/MimeUtility.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/ParseException.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/QuotedPrintableDecoder.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/RFC2231Utility.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/mime/package-info.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/servlet/src/main/java/org/apache/commons/fileupload/util/package-info.java" charset="ISO-8859-1" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

@@ -164,6 +164,16 @@ public class RepositoryHandler {
         List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         List<T> result = new ArrayList<>();
         if (!TypeHelper.isBaseType(clazz)) {
+            if (clazz == Map.class) {
+                for (List<ColumnInfo> columns : selectResult) {
+                    Map<String, Object> columnMap = new HashMap<>();
+                    for (ColumnInfo column : columns) {
+                        columnMap.put(column.getColumnName(), column.getValue());
+                    }
+                    result.add((T) columnMap);
+                }
+                return result;
+            }
             List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
             selectResult.forEach(map -> result.add(transformer(map, declaredFields, clazz)));
         } else {

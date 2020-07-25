@@ -16,8 +16,8 @@
  */
 package org.apache.commons.fileupload;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * <p>Abstracts access to the request information needed for file uploads. This
@@ -41,15 +41,6 @@ public interface RequestContext {
      * @return The content type of the request.
      */
     String getContentType();
-
-    /**
-     * Retrieve the content length of the request.
-     *
-     * @return The content length of the request.
-     * @deprecated 1.3 Use {@link UploadContext#contentLength()} instead
-     */
-    @Deprecated
-    int getContentLength();
 
     /**
      * Retrieve the input stream for the request.

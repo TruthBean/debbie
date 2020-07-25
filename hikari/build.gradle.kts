@@ -9,6 +9,7 @@
  */
 dependencies {
     api(project(":debbie-jdbc"))
+    api(project(":debbie-metrics"))
 
     val slf4jVersion: String by project
     runtimeOnly("org.slf4j:slf4j-api:$slf4jVersion")

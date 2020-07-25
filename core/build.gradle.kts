@@ -7,6 +7,14 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
+/*plugins {
+    id("de.jjohannes.extra-java-module-info") version "0.1"
+}
+
+extraJavaModuleInfo {
+    val javassistVersion: String by project
+    module("javassist-${javassistVersion}.jar", "org.wildfly.common", javassistVersion)
+}*/
 dependencies {
     // val graalvmVersion: String by project
     // compileOnly("org.graalvm.sdk:graal-sdk:$graalvmVersion")
@@ -14,7 +22,7 @@ dependencies {
     compileOnly("org.ow2.asm:asm:$asmVersion")
 
     val javassistVersion: String by project
-    compileOnly("org.javassist:javassist:$javassistVersion")
+    // compileOnly("org.javassist:javassist:$javassistVersion")
 
     val jacksonVersion: String by project
     compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
@@ -23,10 +31,7 @@ dependencies {
     // test =========================================================================================================
 
     val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2:$loggerVersion")
-
-    val log4j2Version: String by project
-    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    testImplementation("com.truthbean.logger:log4j2-boot:$loggerVersion")
 
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")

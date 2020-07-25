@@ -18,7 +18,6 @@ import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.entity.SqlEntityNullException;
-import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -128,7 +127,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
-        String sql = DynamicSqlBuilder.sql(driverName).delete().from(table).where().in(columnName, length).builder();
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().in(columnName, length).builder();
         return super.update(connection, sql, values.toArray());
     }
 
@@ -139,7 +138,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
-        String sql = DynamicSqlBuilder.sql(driverName).delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
         return super.update(connection, sql, id) > 0L;
     }
 
@@ -149,7 +148,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
-        String sql = DynamicSqlBuilder.sql(driverName).delete().from(table).where().eq(columnName, "?").builder();
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(columnName, "?").builder();
         return super.update(connection, sql, value) > 0L;
     }
 
@@ -164,7 +163,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     private <T> ConditionAndValue resolveCondition(EntityInfo<T> entityInfo, boolean withNull) {
         List<ColumnInfo> columns = entityInfo.getColumnInfoList();
 
-        var sqlBuilder = DynamicSqlBuilder.sql(entityInfo.getDriverName());
+        var sqlBuilder = DynamicRepository.sql(entityInfo.getDriverName());
         List<Object> columnValues = new LinkedList<>();
 
         columns.forEach(column -> {
@@ -198,7 +197,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo, withNull);
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).delete().from(table);
+        var sqlBuilder = DynamicRepository.sql(driverName).delete().from(table);
         if (!conditionAndValue.isEmpty()) {
             sqlBuilder.where().extra(conditionAndValue.conditionSql);
 
@@ -218,7 +217,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).delete().from(table);
+        var sqlBuilder = DynamicRepository.sql(driverName).delete().from(table);
 
         var sql = sqlBuilder.builder();
         return super.update(connection, sql);
@@ -246,7 +245,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         });
 
-        var sql = DynamicSqlBuilder.sql(driverName).insert().extra(table).leftParenthesis()
+        var sql = DynamicRepository.sql(driverName).insert().extra(table).leftParenthesis()
             .joinWith(",", columnNames).rightParenthesis().values(signs).builder();
         var primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey != null) {
@@ -299,14 +298,14 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }));
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).insert().extra(table)
+        var sqlBuilder = DynamicRepository.sql(driverName).insert().extra(table)
             .leftParenthesis().joinWith(",", columnNames).rightParenthesis()
             .extra(" VALUES ");
 
         int size = entities.size();
         String[] values = new String[size];
         for (int i = 0; i < size; i++) {
-            values[i] = DynamicSqlBuilder.sql(driverName).leftParenthesis().joinWith(",", signs).rightParenthesis().builder();
+            values[i] = DynamicRepository.sql(driverName).leftParenthesis().joinWith(",", signs).rightParenthesis().builder();
         }
         sqlBuilder.joinWith(",", values);
         return super.update(connection, sqlBuilder.builder(), columnValues.toArray());
@@ -334,7 +333,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         columnValues.add(primaryKey.getValue());
 
-        var sql = DynamicSqlBuilder.sql(driverName).update(table).set(columnNames)
+        var sql = DynamicRepository.sql(driverName).update(table).set(columnNames)
             .where().eq(primaryKey.getColumnName(), "?").builder();
         return super.update(connection, sql, columnValues.toArray()) == 1;
     }
@@ -356,7 +355,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }
 
-        var sql = DynamicSqlBuilder.sql(driverName).update(table).set(columnNames);
+        var sql = DynamicRepository.sql(driverName).update(table).set(columnNames);
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
@@ -404,7 +403,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var sql = DynamicSqlBuilder.sql(driverName).select(columnNames).from(table);
+        var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
 
         var conditionAndValues = resolveCondition(driverName, condition, withNull);
         if (!conditionAndValues.isEmpty()) {
@@ -430,7 +429,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var sql = DynamicSqlBuilder.sql(driverName).select(columnNames).from(table);
+        var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
@@ -443,7 +442,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return super.queryOne(connection, sql.builder(), entityClass, args);
     }
 
-    protected <T> DynamicSqlBuilder select(DataSourceDriverName driverName, T entity) {
+    protected <T> DynamicRepository select(DataSourceDriverName driverName, T entity) {
         if (entity != null) {
             var entityInfo = entityResolver.resolveEntity(driverName, entity);
 
@@ -455,7 +454,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
                 columnNames.add(column.getColumnName());
             }
 
-            return DynamicSqlBuilder.sql(driverName).select(columnNames).from(table);
+            return DynamicRepository.sql(driverName).select(columnNames).from(table);
         }
         return null;
     }
@@ -472,7 +471,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).select(columnNames).from(table);
+        var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
         Object[] args = null;
 
         if (condition != null) {
@@ -503,7 +502,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).select(columnNames).from(table);
+        var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
@@ -587,7 +586,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var table = entityInfo.getTable();
 
-        var sqlBuilder = DynamicSqlBuilder.sql(driverName).select().count().from(table);
+        var sqlBuilder = DynamicRepository.sql(driverName).select().count().from(table);
         Object[] args = null;
 
         if (condition != null) {
@@ -608,7 +607,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
-        var sql = DynamicSqlBuilder.sql(driverName).select().count().from(table).builder();
+        var sql = DynamicRepository.sql(driverName).select().count().from(table).builder();
         return super.queryOne(connection, sql, Long.class);
     }
 
@@ -628,7 +627,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             columnNames.add(column.getColumnName());
         }
 
-        var sql = DynamicSqlBuilder.sql(driverName).select(columnNames).from(table)
+        var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
             .where().eq(primaryKey.getColumnName(), "?").builder();
         return super.queryOne(connection, sql, entityClass, id);
     }
@@ -640,9 +639,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
-        var subSql = DynamicSqlBuilder.sql(driverName).select(primaryKey.getColumnName()).from(table)
+        var subSql = DynamicRepository.sql(driverName).select(primaryKey.getColumnName()).from(table)
             .where().eq(primaryKey.getColumnName(), "?").builder();
-        var sql = DynamicSqlBuilder.sql(driverName).select().exist(subSql).builder();
+        var sql = DynamicRepository.sql(driverName).select().exist(subSql).builder();
         return super.queryOne(connection, sql, Long.class, id) > 0L;
     }
 
@@ -655,7 +654,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
     }
 
     private static class SqlAndArgs<T> {
-        DynamicSqlBuilder sqlBuilder;
+        DynamicRepository sqlBuilder;
         Object[] args;
         Class<T> entityClass;
     }

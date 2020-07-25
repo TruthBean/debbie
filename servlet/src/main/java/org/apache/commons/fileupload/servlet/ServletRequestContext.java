@@ -16,15 +16,14 @@
  */
 package org.apache.commons.fileupload.servlet;
 
-import static java.lang.String.format;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.UploadContext;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.UploadContext;
+import static java.lang.String.format;
 
 /**
  * <p>Provides access to the request information needed for a request made to
@@ -78,18 +77,6 @@ public class ServletRequestContext implements UploadContext {
      * Retrieve the content length of the request.
      *
      * @return The content length of the request.
-     * @deprecated 1.3 Use {@link #contentLength()} instead
-     */
-    @Override
-    @Deprecated
-    public int getContentLength() {
-        return request.getContentLength();
-    }
-
-    /**
-     * Retrieve the content length of the request.
-     *
-     * @return The content length of the request.
      * @since 1.3
      */
     @Override
@@ -122,9 +109,7 @@ public class ServletRequestContext implements UploadContext {
      */
     @Override
     public String toString() {
-        return format("ContentLength=%s, ContentType=%s",
-                Long.valueOf(this.contentLength()),
-                this.getContentType());
+        return format("ContentLength=%s, ContentType=%s", this.contentLength(), this.getContentType());
     }
 
 }

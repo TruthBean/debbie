@@ -23,9 +23,9 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.io.FileCleaningTracker;
 
 /**
- * <p>The default {@link FileItemFactory}
+ * <p>The default {@link org.apache.commons.fileupload.FileItemFactory}
  * implementation. This implementation creates
- * {@link FileItem} instances which keep their
+ * {@link org.apache.commons.fileupload.FileItem} instances which keep their
  * content either in memory, for smaller items, or in a temporary file on disk,
  * for larger items. The size threshold, above which content will be stored on
  * disk, is configurable, as is the directory in which temporary files will be
@@ -36,7 +36,7 @@ import org.apache.commons.io.FileCleaningTracker;
  * <ul>
  *   <li>Size threshold is 10KB.</li>
  *   <li>Repository is the system default temp directory, as returned by
- *       <code>System.getProperty("java.io.tmpdir")</code>.</li>
+ *       {@code System.getProperty("java.io.tmpdir")}.</li>
  * </ul>
  * <p>
  * <b>NOTE</b>: Files are created in the system default temp directory with
@@ -47,7 +47,7 @@ import org.apache.commons.io.FileCleaningTracker;
  * implementation in an environment with local, untrusted users,
  * {@link #setRepository(File)} MUST be used to configure a repository location
  * that is not publicly writable. In a Servlet container the location identified
- * by the ServletContext attribute <code>javax.servlet.context.tempdir</code>
+ * by the ServletContext attribute {@code javax.servlet.context.tempdir}
  * may be used.
  * </p>
  *
@@ -57,7 +57,7 @@ import org.apache.commons.io.FileCleaningTracker;
  * {@link DiskFileItemFactory}. However, if you do use such a tracker,
  * then you must consider the following: Temporary files are automatically
  * deleted as soon as they are no longer needed. (More precisely, when the
- * corresponding instance of {@link File} is garbage collected.)
+ * corresponding instance of {@link java.io.File} is garbage collected.)
  * This is done by the so-called reaper thread, which is started and stopped
  * automatically by the {@link FileCleaningTracker} when there are files to be
  * tracked.
@@ -134,7 +134,7 @@ public class DiskFileItemFactory implements FileItemFactory {
      *
      * @return The directory in which temporary files will be located.
      *
-     * @see #setRepository(File)
+     * @see #setRepository(java.io.File)
      *
      */
     public File getRepository() {
@@ -181,14 +181,14 @@ public class DiskFileItemFactory implements FileItemFactory {
     // --------------------------------------------------------- Public Methods
 
     /**
-     * Create a new {@link DiskFileItem}
+     * Create a new {@link org.apache.commons.fileupload.disk.DiskFileItem}
      * instance from the supplied parameters and the local factory
      * configuration.
      *
      * @param fieldName   The name of the form field.
      * @param contentType The content type of the form field.
-     * @param isFormField <code>true</code> if this is a plain form field;
-     *                    <code>false</code> otherwise.
+     * @param isFormField {@code true} if this is a plain form field;
+     *                    {@code false} otherwise.
      * @param fileName    The name of the uploaded file, if any, as supplied
      *                    by the browser or other client.
      *
@@ -196,7 +196,7 @@ public class DiskFileItemFactory implements FileItemFactory {
      */
     @Override
     public FileItem createItem(String fieldName, String contentType,
-            boolean isFormField, String fileName) {
+                               boolean isFormField, String fileName) {
         DiskFileItem result = new DiskFileItem(fieldName, contentType,
                 isFormField, fileName, sizeThreshold, repository);
         result.setDefaultCharset(defaultCharset);

@@ -7,6 +7,10 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
+plugins {
+    id("de.jjohannes.extra-java-module-info") version "0.1"
+}
+
 dependencies {
     api(project(":debbie-mvc"))
     api(project(":debbie-server"))
@@ -17,7 +21,7 @@ dependencies {
     testImplementation(project(":debbie-test"))
 
     val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2:$loggerVersion")
+    testImplementation("com.truthbean.logger:log4j2-adapter:$loggerVersion")
 
     val log4j2Version: String by project
     testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
@@ -25,4 +29,31 @@ dependencies {
     val jacksonVersion: String by project
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+}
+
+extraJavaModuleInfo {
+    val undertowVersion: String by project
+    module("undertow-core-${undertowVersion}.jar", "io.undertow.core", undertowVersion) {
+        exports("io.undertow")
+        exports("io.undertow.attribute")
+        exports("io.undertow.channels")
+        exports("io.undertow.client")
+        exports("io.undertow.conduits")
+        exports("io.undertow.connector")
+        exports("io.undertow.io")
+        exports("io.undertow.predicate")
+        exports("io.undertow.protocols")
+        exports("io.undertow.security")
+        exports("io.undertow.server")
+        exports("io.undertow.server.session")
+        exports("io.undertow.server.handlers")
+        exports("io.undertow.server.handlers.form")
+        exports("io.undertow.util")
+        exports("io.undertow.websockets")
+    }
+    module("jboss-threads-3.1.0.Final.jar", "org.jboss.threads", "3.1.0")
+    module("xnio-api-3.8.0.Final.jar", "org.xnio.api", "3.8.0")
+    module("xnio-nio-3.8.0.Final.jar", "org.xnio.nio", "3.8.0")
+    module("wildfly-client-config-1.0.1.Final.jar", "org.wildfly.client.config", "1.0.1")
+    module("wildfly-common-1.5.2.Final.jar", "org.wildfly.common", "1.5.2")
 }

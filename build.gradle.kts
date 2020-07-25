@@ -52,6 +52,14 @@ subprojects {
         maven("https://mirrors.huaweicloud.com/repository/maven/")
     }
 
+    buildscript {
+        repositories {
+            mavenLocal()
+            maven("https://mirrors.huaweicloud.com/repository/maven/")
+            maven("https://plugins.gradle.org/m2/")
+        }
+    }
+
     version = projectVersion
 
     apply(plugin = "java")
@@ -66,7 +74,7 @@ subprojects {
     dependencies {
         if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
             val loggerVersion: String by project
-            "implementation"("com.truthbean.logger:core:$loggerVersion")
+            "implementation"("com.truthbean.logger:logger-core:$loggerVersion")
         }
         if (project.name != "debbie-dependencies" && project.name != "debbie-test") {
             val jupiterVersion: String by project
@@ -125,27 +133,31 @@ subprojects {
             from(project.the<SourceSetContainer>()["main"].allSource)
         }
 
-        tasks.withType<Javadoc> {
-            options {
-                encoding = "UTF-8"
-                charset("UTF-8")
+        // javadoc
+        if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
+            tasks.withType<Javadoc> {
+                options {
+                    encoding = "UTF-8"
+                    charset("UTF-8")
+                }
+
+                if (JavaVersion.current().isJava9Compatible) {
+                    (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+                }
             }
 
-            if (JavaVersion.current().isJava9Compatible) {
-                (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+
+            val javadocJar by tasks.registering(Jar::class) {
+                group = "jar"
+                dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
+                archiveClassifier.set("javadoc")
+                from(tasks["javadoc"])
             }
-        }
 
-        val javadocJar by tasks.registering(Jar::class) {
-            group = "jar"
-            dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
-            archiveClassifier.set("javadoc")
-            from(tasks["javadoc"])
-        }
-
-        artifacts {
-            add("archives", javadocJar)
-            add("archives", sourcesJar)
+            artifacts {
+                add("archives", javadocJar)
+                add("archives", sourcesJar)
+            }
         }
 
         tasks.withType<Delete> {
@@ -164,7 +176,9 @@ subprojects {
                     version = projectVersion
                     from(components["java"])
                     artifact(tasks["sourcesJar"])
-                    artifact(tasks["javadocJar"])
+                    if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
+                        artifact(tasks["javadocJar"])
+                    }
                     versionMapping {
                         usage("java-api") {
                             fromResolutionOf("runtimeClasspath")

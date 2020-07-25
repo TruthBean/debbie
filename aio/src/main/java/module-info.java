@@ -13,6 +13,8 @@
  * @since 0.1.0
  */
 module com.truthbean.debbie.aio {
+    exports com.truthbean.debbie.aio to com.truthbean.debbie.core;
+
     requires transitive com.truthbean.debbie.server;
     requires java.management;
 

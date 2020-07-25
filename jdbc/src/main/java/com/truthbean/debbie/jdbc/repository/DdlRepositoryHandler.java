@@ -33,28 +33,28 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public int createDatabase(DriverConnection driverConnection, String database) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        String sql = DynamicSqlBuilder.sql(driverName).create().database(database).builder();
+        String sql = DynamicRepository.sql(driverName).create().database(database).builder();
         return super.update(connection, sql);
     }
 
     public List<String> showDatabases(DriverConnection driverConnection) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        String sql = DynamicSqlBuilder.sql(driverName).show().databases().builder();
+        String sql = DynamicRepository.sql(driverName).show().databases().builder();
         return super.query(connection, sql, String.class);
     }
 
     public int dropDatabase(DriverConnection driverConnection, String database) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        String sql = DynamicSqlBuilder.sql(driverName).drop().database(database).builder();
+        String sql = DynamicRepository.sql(driverName).drop().database(database).builder();
         return super.update(connection, sql);
     }
 
     public int useDatabase(DriverConnection driverConnection, String database) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        var use = DynamicSqlBuilder.sql(driverName).use(database).builder();
+        var use = DynamicRepository.sql(driverName).use(database).builder();
         LOGGER.debug(() -> use);
         return super.update(connection, use);
     }
@@ -62,7 +62,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public List<String> showTables(DriverConnection driverConnection) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        String sql = DynamicSqlBuilder.sql(driverName).show().tables().builder();
+        String sql = DynamicRepository.sql(driverName).show().tables().builder();
         return super.query(connection, sql, String.class);
     }
 
@@ -89,7 +89,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         DataSourceDriverName driverName = driverConnection.getDriverName();
 
         var columns = entityInfo.getColumnInfoList();
-        DynamicSqlBuilder sqlBuilder = DynamicSqlBuilder.sql(driverName).create()
+        DynamicRepository sqlBuilder = DynamicRepository.sql(driverName).create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
@@ -120,7 +120,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         super.update(connection, sql);
     }
 
-    private void buildCreateTableColumns(DynamicSqlBuilder sqlBuilder, ColumnInfo iColumn) {
+    private void buildCreateTableColumns(DynamicRepository sqlBuilder, ColumnInfo iColumn) {
         var type = iColumn.getJdbcType().getName();
         if (iColumn.getJdbcType().equals(JDBCType.VARCHAR)) {
             type = "VARCHAR(" + iColumn.getCharMaxLength() + ")";
@@ -166,7 +166,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public void dropTable(DriverConnection driverConnection, String table) {
         Connection connection = driverConnection.getConnection();
         DataSourceDriverName driverName = driverConnection.getDriverName();
-        String sql = DynamicSqlBuilder.sql(driverName).drop().tableIfExists(table, true).builder();
+        String sql = DynamicRepository.sql(driverName).drop().tableIfExists(table, true).builder();
         super.update(connection, sql);
     }
 

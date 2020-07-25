@@ -16,13 +16,12 @@
  */
 package org.apache.commons.fileupload.util;
 
+import org.apache.commons.fileupload.InvalidFileNameException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import org.apache.commons.fileupload.InvalidFileNameException;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for working with streams.
@@ -41,7 +40,7 @@ public final class Streams {
      * Default buffer size for use in
      * {@link #copy(InputStream, OutputStream, boolean)}.
      */
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
+    public static final int DEFAULT_BUFFER_SIZE = 8192;
 
     /**
      * Copies the contents of the given {@link InputStream}
@@ -56,10 +55,10 @@ public final class Streams {
      * @param outputStream The output stream, to which data should
      * be written. May be null, in which case the input streams
      * contents are simply discarded.
-     * @param closeOutputStream True guarantees, that {@link OutputStream#close()}
-     * is called on the stream. False indicates, that only
+     * @param closeOutputStream True guarantees, that
+     * {@link OutputStream#close()} is called on the stream.
+     * False indicates, that only
      * {@link OutputStream#flush()} should be called finally.
-     *
      * @return Number of bytes, which have been copied.
      * @throws IOException An I/O error occurred.
      */
@@ -87,8 +86,8 @@ public final class Streams {
      * @throws IOException An I/O error occurred.
      */
     public static long copy(InputStream inputStream,
-            OutputStream outputStream, boolean closeOutputStream,
-            byte[] buffer)
+                            OutputStream outputStream, boolean closeOutputStream,
+                            byte[] buffer)
     throws IOException {
         OutputStream out = outputStream;
         InputStream in = inputStream;
@@ -118,8 +117,9 @@ public final class Streams {
             in = null;
             return total;
         } finally {
-            in.close();
-            if (closeOutputStream) {
+            if (in != null)
+                in.close();
+            if (closeOutputStream && out != null) {
                 out.close();
             }
         }
@@ -153,7 +153,8 @@ public final class Streams {
      * @return The streams contents, as a string.
      * @throws IOException An I/O error occurred.
      */
-    public static String asString(InputStream inputStream, String encoding) throws IOException {
+    public static String asString(final InputStream inputStream, final String encoding)
+    		throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         copy(inputStream, baos, true);
         return baos.toString(encoding);

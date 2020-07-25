@@ -53,6 +53,7 @@ module com.truthbean.debbie.core {
     requires com.fasterxml.jackson.dataformat.yaml;
 
     uses com.truthbean.debbie.boot.DebbieModuleStarter;
+    uses com.truthbean.debbie.boot.AbstractApplicationFactory;
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter

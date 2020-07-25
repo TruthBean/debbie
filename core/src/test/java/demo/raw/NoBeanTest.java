@@ -17,7 +17,7 @@ import java.util.UUID;
  * Created on 2020-07-02 18:30.
  */
 public class NoBeanTest {
-    private String uuid;
+    private final String uuid;
     public NoBeanTest() {
         this.uuid = UUID.randomUUID().toString();
     }

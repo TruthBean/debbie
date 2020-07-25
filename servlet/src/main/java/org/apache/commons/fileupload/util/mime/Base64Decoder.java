@@ -138,7 +138,7 @@ final class Base64Decoder {
                     }
                 } else if (b4 != PAD_BYTE) { // if byte 3 is pad, byte 4 must be pad too
                     throw new // line wrap to avoid 120 char limit
-                    IOException("Invalid Base64 input: incorrect padding, 4th byte must be padding if 3rd byte is");
+                            IOException("Invalid Base64 input: incorrect padding, 4th byte must be padding if 3rd byte is");
                 }
                 cachedBytes = 0;
             }
