@@ -24,6 +24,7 @@ import java.sql.JDBCType;
 import java.util.List;
 
 /**
+ * DDL: Data Definition Language
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/4/3 23:31.
@@ -52,11 +53,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     }
 
     public int useDatabase(DriverConnection driverConnection, String database) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
-        var use = DynamicRepository.sql(driverName).use(database).builder();
-        LOGGER.debug(() -> use);
-        return super.update(connection, use);
+        return DynamicRepository.modify(driverConnection).use(database).execute();
     }
 
     public List<String> showTables(DriverConnection driverConnection) {
@@ -67,9 +64,6 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     }
 
     public <E> void createTable(DriverConnection driverConnection, Class<E> entity) {
-        // Connection connection = driverConnection.getConnection();
-        // DataSourceDriverName driverName = driverConnection.getDriverName();
-
         ClassInfo<E> classInfo = new ClassInfo<>(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
@@ -85,47 +79,43 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     }
 
     public <E> void createTable(DriverConnection driverConnection, EntityInfo<E> entityInfo) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
-
         var columns = entityInfo.getColumnInfoList();
-        DynamicRepository sqlBuilder = DynamicRepository.sql(driverName).create()
+        DynamicRepository repository = DynamicRepository.modify(driverConnection).create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    buildCreateTableColumns(sqlBuilder, iColumn);
-                    sqlBuilder.extra(", ");
+                    buildCreateTableColumns(repository, iColumn);
+                    repository.$(", ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                buildCreateTableColumns(sqlBuilder, iColumn);
+                buildCreateTableColumns(repository, iColumn);
             }
         }
-        sqlBuilder.rightParenthesis();
+        repository.rightParenthesis();
 
         var engine = entityInfo.getEngine();
         if (!engine.isBlank()) {
-            sqlBuilder.engine(engine);
+            repository.engine(engine);
         }
 
         var charset = entityInfo.getCharset();
         if (!charset.isBlank()) {
-            sqlBuilder.defaultCharset(charset);
+            repository.defaultCharset(charset);
         }
-        var sql = sqlBuilder.builder();
-        super.update(connection, sql);
+        repository.execute();
     }
 
     private void buildCreateTableColumns(DynamicRepository sqlBuilder, ColumnInfo iColumn) {
         var type = iColumn.getJdbcType().getName();
         if (iColumn.getJdbcType().equals(JDBCType.VARCHAR)) {
-            type = "VARCHAR(" + iColumn.getCharMaxLength() + ")";
+            type = SqlKeywords.VARCHAR.value() + "(" + iColumn.getCharMaxLength() + ")";
         }
-        sqlBuilder.extra("`").extra(iColumn.getColumnName()).extra("` ").extra(type).extra(" ");
+        sqlBuilder.$("`").appendWithNoSpace(iColumn.getColumnName()).appendWithNoSpace("` ").$(type);
         if (iColumn.isNullable() != null) {
             if (iColumn.isNullable()) {
                 sqlBuilder.nullSql();

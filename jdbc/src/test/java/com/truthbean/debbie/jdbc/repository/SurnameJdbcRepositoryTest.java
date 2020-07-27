@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -62,6 +63,10 @@ class SurnameJdbcRepositoryTest {
 
     @Test
     void count() {
+        Optional<Integer> count = DynamicRepository.queryTransactional()
+                .select().count().from("surname")
+                .single(int.class);
+        System.out.println(count);
     }
 
     @Test

@@ -19,19 +19,26 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 
 @DebbieApplicationTest
-public class DdlRepoHandlerTest {
+class DdlRepoHandlerTest {
 
     @Test
     void testCreateDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                    @BeanInject DataSourceConfiguration configuration)
         throws ExecutionException, InterruptedException {
         var ddlRepositoryHandler = new DdlRepositoryHandler();
-        var transaction = factory.getTransaction();
+        /*var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction, () -> {
-            var connection = transaction.getConnection();
-            return ddlRepositoryHandler.createDatabase(transaction.getDriverConnection(), "hello");
+            var connection = transaction.getDriverConnection();
+            return ddlRepositoryHandler.createDatabase(connection, "hello0");
         });
-        System.out.println(r.get());
+        System.out.println(r.get());*/
+
+        // CREATE DATABASE IF NOT EXISTS hello DEFAULT CHARACTER SET 'utf8' DEFAULT COLLATE 'utf8_general_ci';
+        String sql = DynamicRepository.modify(factory.getTransaction().getDriverConnection())
+                .create().database().ifNotExists().$("hello").defaultCharacterSet("utf8").defaultCollate("utf8_general_ci")
+                .toSql();
+        System.out.println(sql);
+        System.out.println("=========================================================");
     }
 
     @Test
@@ -78,13 +85,26 @@ public class DdlRepoHandlerTest {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
-            ddlRepositoryHandler.useDatabase(connection, "test");
+            ddlRepositoryHandler.useDatabase(connection, "hello");
             // beanInitialization.init(Surname.class);
             // beanFactoryHandler.refreshBeans();
             ddlRepositoryHandler.createTable(connection, Surname.class);
             return ddlRepositoryHandler.showTables(connection);
         });
         System.out.println(r);
+    }
+
+    @Test
+    void alterTable(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
+        var transaction = factory.getTransaction();
+        // use table
+        DynamicRepository.query(transaction.getDriverConnection())
+                .use("hello")
+                .execute();
+        // ALTER TABLE `surname` ADD COLUMN `test` INT NULL AFTER `name`;
+        DynamicRepository.modify(transaction.getDriverConnection())
+                .alter().table("`surname`").add().column("`test1`").intDeFaultNull().after("`name`")
+                .execute();
     }
 
     @Test

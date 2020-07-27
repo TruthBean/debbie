@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.Page;
@@ -97,6 +98,7 @@ public class SurnameRepository {
         });
     }
 
+    @JdbcTransactional
     public Long count() {
         var transaction = factory.getTransaction();
         return RepositoryCallback.action(transaction, () -> {

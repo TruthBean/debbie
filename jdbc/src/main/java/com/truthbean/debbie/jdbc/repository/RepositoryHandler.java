@@ -160,6 +160,7 @@ public class RepositoryHandler {
         return JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<T> query(Connection connection, String selectSql, Class<T> clazz, Object... args) {
         List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         List<T> result = new ArrayList<>();
@@ -212,6 +213,7 @@ public class RepositoryHandler {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T queryOne(Connection connection, String selectSql, Class<T> clazz, Object... args) {
         List<List<ColumnInfo>> selectResult = query(connection, selectSql, args);
         if (selectResult.isEmpty()) {
@@ -219,11 +221,23 @@ public class RepositoryHandler {
         }
         if (selectResult.size() <= 1) {
             List<ColumnInfo> row = selectResult.get(0);
-            ColumnInfo data = row.get(0);
-            return transform(data, clazz, arg -> {
+            if (clazz == Map.class) {
+                Map<String, Object> map = new HashMap<>();
+                for (ColumnInfo columnInfo : row) {
+                    map.put(columnInfo.getColumnName(), columnInfo.getValue());
+                }
+                return (T) map;
+            }
+            if (row.size() == 1) {
+                ColumnInfo data = row.get(0);
+                return transform(data, clazz, arg -> {
+                    List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
+                    return transformer(row, declaredFields, clazz);
+                });
+            } else {
                 List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
                 return transformer(row, declaredFields, clazz);
-            });
+            }
         } else {
             throw new MoreRowException("Expect one row, but it has" + selectResult.size() + "rows.");
         }

@@ -11,11 +11,14 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
+import com.truthbean.debbie.jdbc.transaction.TransactionException;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
+import static com.truthbean.debbie.jdbc.repository.SqlKeywords.*;
 
 /**
  * dynamic build sql
@@ -25,6 +28,7 @@ import java.util.List;
  */
 public class DynamicRepository {
     private final StringBuilder dynamicSql = new StringBuilder();
+    private final List<Object> args = new ArrayList<>();
     private DataSourceDriverName driverName;
 
     protected DynamicRepository(DataSourceDriverName driverName) {
@@ -44,175 +48,285 @@ public class DynamicRepository {
      */
     private int action;
     private DriverConnection connection;
-    private DynamicRepository sqlBuilder;
-    private DynamicRepository(DynamicRepository sqlBuilder, DriverConnection connection, int action) {
+    private DynamicRepository(DriverConnection connection, int action) {
         this.connection = connection;
-        this.sqlBuilder = sqlBuilder;
         this.action = action;
     }
 
     public static DynamicRepository query(DriverConnection connection) {
-        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, SELECT);
+        return new DynamicRepository(connection, SELECT);
     }
 
     public static DynamicRepository modify(DriverConnection connection) {
-        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, UPDATE);
+        return new DynamicRepository(connection, UPDATE);
     }
 
     public static DynamicRepository add(DriverConnection connection) {
-        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, INSERT);
+        return new DynamicRepository(connection, INSERT);
     }
 
     public static DynamicRepository remove(DriverConnection connection) {
-        return new DynamicRepository(DynamicRepository.sql(connection.getDriverName()), connection, DELETE);
+        return new DynamicRepository(connection, DELETE);
+    }
+
+    private static DriverConnection getConnection() {
+        TransactionInfo transactionInfo = TransactionManager.peek();
+        if (transactionInfo == null) {
+            throw new TransactionException("No debbie transaction");
+        }
+        return transactionInfo.getDriverConnection();
+    }
+
+    public static DynamicRepository queryTransactional() {
+        var connection = getConnection();
+        return new DynamicRepository(connection, SELECT);
+    }
+
+    public static DynamicRepository modifyTransactional() {
+        var connection = getConnection();
+        return new DynamicRepository(connection, UPDATE);
+    }
+
+    public static DynamicRepository addTransactional() {
+        var connection = getConnection();
+        return new DynamicRepository(connection, INSERT);
+    }
+
+    public static DynamicRepository removeTransactional() {
+        var connection = getConnection();
+        return new DynamicRepository(connection, DELETE);
     }
 
     public static DynamicRepository sql(DataSourceDriverName driverName) {
         return new DynamicRepository(driverName);
     }
 
-    public DynamicRepository show() {
-        dynamicSql.append("SHOW ");
+    private DynamicRepository addBlackSpace() {
+        if (dynamicSql.length() > 0 && (dynamicSql.lastIndexOf(" ") == -1 || dynamicSql.lastIndexOf(" ") != dynamicSql.length() - 1)) {
+            dynamicSql.append(" ");
+        }
         return this;
+    }
+
+    public DynamicRepository append(SqlKeywords keywords) {
+        addBlackSpace();
+        dynamicSql.append(keywords.value());
+        return this;
+    }
+
+    DynamicRepository appendBlackSpace() {
+        dynamicSql.append(" ");
+        return this;
+    }
+
+    DynamicRepository append(String str) {
+        addBlackSpace();
+        dynamicSql.append(str);
+        return this;
+    }
+
+    DynamicRepository append(Object object) {
+        addBlackSpace();
+        dynamicSql.append(object);
+        return this;
+    }
+
+    DynamicRepository appendWithNoSpace(Object object) {
+        dynamicSql.append(object);
+        return this;
+    }
+
+    public DynamicRepository show() {
+        return append(SHOW);
     }
 
     public DynamicRepository databases() {
-        dynamicSql.append(" DATABASES ");
-        return this;
+        return append(DATABASE);
     }
 
     public DynamicRepository use(String database) {
-        dynamicSql.append("USE ").append(database).append(" ");
-        return this;
+        return append(USE).append(database);
     }
 
     public DynamicRepository tables() {
-        dynamicSql.append(" TABLES ");
-        return this;
+        return append(TABLES);
     }
 
     public DynamicRepository create() {
-        dynamicSql.append("CREATE ");
-        return this;
+        return append(CREATE);
     }
 
     public DynamicRepository database(String database) {
-        dynamicSql.append("DATABASE ").append(database).append(" ");
+        return append(DATABASE).append(database);
+    }
+
+    public DynamicRepository database() {
+        return append(DATABASE);
+    }
+
+    public DynamicRepository ifExists() {
+        return addBlackSpace().append(IF).appendBlackSpace().append(EXISTS);
+    }
+
+    public DynamicRepository ifNotExists() {
+        return append(IF).append(NOT.value()).append(EXISTS);
+    }
+
+    public DynamicRepository createDatabaseIfNotExists(String database) {
+        addBlackSpace();
+        // return dynamicSql.append("CREATE ")
         return this;
     }
 
     public DynamicRepository desc() {
-        dynamicSql.append(" DESC ");
+        addBlackSpace();
+        dynamicSql.append(DESC.value());
         return this;
     }
 
     public DynamicRepository drop() {
-        dynamicSql.append("DROP ");
+        addBlackSpace();
+        dynamicSql.append(DROP.value());
         return this;
     }
 
+    public DynamicRepository alter() {
+        return append(ALTER);
+    }
+
     public DynamicRepository tableIfExists(String table, boolean ifExists) {
-        dynamicSql.append("TABLE ");
+        addBlackSpace();
+        dynamicSql.append(TABLE.value());
         if (ifExists) {
-            dynamicSql.append("IF EXISTS");
+            dynamicSql.append(" ").append(IF.value()).append(EXISTS.value());
         }
-        dynamicSql.append(" ").append(table).append(" ");
+        dynamicSql.append(" ").append(table);
         return this;
     }
 
     public DynamicRepository tableIfNotExists(String table, boolean ifNotExists) {
-        dynamicSql.append("TABLE ");
+        addBlackSpace();
+        dynamicSql.append(TABLE.value());
         if (ifNotExists) {
-            dynamicSql.append("IF NOT EXISTS");
+            ifNotExists();
         }
-        dynamicSql.append(" ").append(table).append(" ");
+        dynamicSql.append(" ").append(table);
         return this;
     }
 
     public DynamicRepository table(String table) {
-        dynamicSql.append("TABLE ").append(table).append(" ");
+        addBlackSpace();
+        dynamicSql.append(TABLE.value()).append(" ").append(table);
         return this;
     }
 
     public DynamicRepository leftParenthesis() {
-        dynamicSql.append("( ");
-        return this;
+        return append("(");
     }
 
     public DynamicRepository rightParenthesis() {
-        dynamicSql.append(" )");
-        return this;
+        return append(")");
+    }
+
+    public DynamicRepository add() {
+        return append(ADD);
+    }
+
+    public DynamicRepository column(String columnName) {
+        return append(columnName);
+    }
+
+    public DynamicRepository intDeFaultNull() {
+        return append(INT).append(NULL);
     }
 
     public DynamicRepository defaultValue(String defaultValue) {
-        dynamicSql.append(" DEFAULT ").append(defaultValue).append(" ");
+        addBlackSpace();
+        dynamicSql.append(DEFAULT.value()).append(" ").append(defaultValue);
         return this;
     }
 
     public DynamicRepository comment(String comment) {
+        addBlackSpace();
         if (driverName != DataSourceDriverName.sqlite)
-            dynamicSql.append(" COMMENT '").append(comment).append("' ");
+            dynamicSql.append(COMMENT.value()).append(" '").append(comment).append("'");
         return this;
     }
 
     public DynamicRepository nullSql() {
-        dynamicSql.append(" NULL ");
+        addBlackSpace();
+        dynamicSql.append(NULL.value());
         return this;
     }
 
     public DynamicRepository primaryKey() {
-        dynamicSql.append(" PRIMARY KEY ");
+        addBlackSpace();
+        dynamicSql.append(PRIMARY.value()).append(" ").append(KEY.value());
         return this;
     }
 
     public DynamicRepository autoIncrement() {
+        addBlackSpace();
         if (driverName == DataSourceDriverName.sqlite) {
-            dynamicSql.append(" AUTOINCREMENT ");
+            dynamicSql.append(AUTOINCREMENT.value());
         } else
-            dynamicSql.append(" AUTO_INCREMENT ");
+            dynamicSql.append(AUTO_INCREMENT.value());
         return this;
     }
 
     public DynamicRepository autoIncrement(int begin) {
-        dynamicSql.append(" AUTO_INCREMENT=").append(begin).append(" ");
-        return this;
+        return append(AUTO_INCREMENT).appendWithNoSpace("=").appendWithNoSpace(begin);
     }
 
     public DynamicRepository engine(String engine) {
-        if (driverName != DataSourceDriverName.sqlite)
-            dynamicSql.append(" ENGINE=").append(engine).append(" ");
+        if (driverName != DataSourceDriverName.sqlite) {
+            append(ENGINE).appendWithNoSpace("=").appendWithNoSpace(engine);
+        }
         return this;
     }
 
     public DynamicRepository defaultCharset(String charset) {
         if (driverName != DataSourceDriverName.sqlite)
-            dynamicSql.append(" DEFAULT CHARSET=").append(charset).append(" ");
+            append(DEFAULT).append(CHARSET).appendWithNoSpace("=").appendWithNoSpace(charset);
+        return this;
+    }
+
+    public DynamicRepository defaultCharacterSet(String charset) {
+        addBlackSpace();
+        if (driverName != DataSourceDriverName.sqlite)
+            dynamicSql.append(DEFAULT.value()).append(" ").append(CHARACTER.value()).append(" ").append(SET.value()).append(" ").append(charset);
+        return this;
+    }
+
+    public DynamicRepository defaultCollate(String collate) {
+        addBlackSpace();
+        dynamicSql.append(DEFAULT.value()).append(" ").append(COLLATE).append(" ").append(collate);
         return this;
     }
 
     public DynamicRepository unique() {
-        dynamicSql.append(" UNIQUE ");
-        return this;
+        return addBlackSpace().append(UNIQUE);
     }
 
     public DynamicRepository ifSql() {
-        dynamicSql.append(" IF ");
-        return this;
+        return addBlackSpace().append(IF);
     }
 
     public DynamicRepository not() {
-        dynamicSql.append(" NOT ");
-        return this;
+        return addBlackSpace().append(NOT);
     }
 
     public DynamicRepository exists() {
-        dynamicSql.append(" EXISTS ");
-        return this;
+        return addBlackSpace().append(EXISTS);
     }
 
     public DynamicRepository tinyint() {
         dynamicSql.append(" TINYINT ");
-        return this;
+        return addBlackSpace().append(T);
+    }
+
+    public DynamicRepository after(String columnName) {
+        return append(AFTER).append(columnName);
     }
 
     public DynamicRepository delete() {
@@ -241,7 +355,8 @@ public class DynamicRepository {
     }
 
     public DynamicRepository set(String columns, String value) {
-        dynamicSql.append(" SET ").append(columns).append("=").append(value).append(" ");
+        dynamicSql.append(" SET ").append(columns).append("= ? ");
+        args.add(value);
         return this;
     }
 
@@ -257,12 +372,12 @@ public class DynamicRepository {
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    dynamicSql.append("").append(iColumn).append(" = ?, ");
+                    dynamicSql.append(" ").append(iColumn).append(" = ?, ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                dynamicSql.append("").append(iColumn).append(" = ? ");
+                dynamicSql.append(" ").append(iColumn).append(" = ? ");
             }
         }
         return this;
@@ -431,11 +546,17 @@ public class DynamicRepository {
     }
 
     public DynamicRepository eq(String column, Object value) {
-        dynamicSql.append(column).append(" = ").append(value);
+        dynamicSql.append(column).append(" = ? ");
+        args.add(value);
         return this;
     }
 
-    public <T> DynamicRepository in(String column, int inValueSize) {
+    public DynamicRepository eq(String condition) {
+        dynamicSql.append(condition);
+        return this;
+    }
+
+    public DynamicRepository in(String column, int inValueSize) {
         List<String> s = new ArrayList<>();
         for (int i = 0; i < inValueSize; i++) {
             s.add("?");
@@ -445,9 +566,8 @@ public class DynamicRepository {
         return this;
     }
 
-    public DynamicRepository extra(Object extra) {
-        dynamicSql.append(extra);
-        return this;
+    public DynamicRepository $(Object extra) {
+        return append(extra);
     }
 
     public DynamicRepository foreach(String open, String close, Collection<?> collection, String separator) {
@@ -503,17 +623,53 @@ public class DynamicRepository {
         return dynamicSql.toString();
     }
 
-    public <T> List<T> result(Class<T> resultClass) {
+    public <T> List<T> toList(Class<T> resultClass) {
         RepositoryHandler repositoryHandler = new RepositoryHandler();
         repositoryHandler.setDriverName(driverName);
         if (action == SELECT) {
-            return repositoryHandler.query(connection.getConnection(), dynamicSql.toString(), resultClass);
+            return repositoryHandler.query(connection.getConnection(), dynamicSql.toString(), resultClass, args.toArray());
         }
         return new ArrayList<>();
     }
 
+    public List<Map<String, Object>> toMap() {
+        RepositoryHandler repositoryHandler = new RepositoryHandler();
+        repositoryHandler.setDriverName(driverName);
+        if (action == SELECT) {
+            return repositoryHandler.queryMap(connection.getConnection(), dynamicSql.toString(), args.toArray());
+        }
+        return new ArrayList<>();
+    }
+
+    public <T> Optional<T> single(Class<T> resultClass) {
+        RepositoryHandler repositoryHandler = new RepositoryHandler();
+        repositoryHandler.setDriverName(driverName);
+        if (action == SELECT) {
+            T result = repositoryHandler.queryOne(connection.getConnection(), dynamicSql.toString(), resultClass, args.toArray());
+            return Optional.ofNullable(result);
+        }
+        return Optional.empty();
+    }
+
+    public int execute() {
+        if (action != SELECT) {
+            RepositoryHandler repositoryHandler = new RepositoryHandler();
+            repositoryHandler.setDriverName(driverName);
+            return repositoryHandler.update(connection.getConnection(), dynamicSql.toString());
+        } else {
+            RepositoryHandler repositoryHandler = new RepositoryHandler();
+            repositoryHandler.setDriverName(driverName);
+            repositoryHandler.query(connection.getConnection(), dynamicSql.toString());
+        }
+        return 0;
+    }
+
     @Override
     public String toString() {
+        return dynamicSql.toString();
+    }
+
+    public String toSql() {
         return dynamicSql.toString();
     }
 }

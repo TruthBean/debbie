@@ -199,7 +199,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sqlBuilder = DynamicRepository.sql(driverName).delete().from(table);
         if (!conditionAndValue.isEmpty()) {
-            sqlBuilder.where().extra(conditionAndValue.conditionSql);
+            sqlBuilder.where().$(conditionAndValue.conditionSql);
 
             List<Object> columnValues = conditionAndValue.conditionValues;
             var sql = sqlBuilder.builder();
@@ -245,7 +245,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         });
 
-        var sql = DynamicRepository.sql(driverName).insert().extra(table).leftParenthesis()
+        var sql = DynamicRepository.sql(driverName).insert().$(table).leftParenthesis()
             .joinWith(",", columnNames).rightParenthesis().values(signs).builder();
         var primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey != null) {
@@ -298,9 +298,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }));
 
-        var sqlBuilder = DynamicRepository.sql(driverName).insert().extra(table)
+        var sqlBuilder = DynamicRepository.sql(driverName).insert().$(table)
             .leftParenthesis().joinWith(",", columnNames).rightParenthesis()
-            .extra(" VALUES ");
+            .$(" VALUES ");
 
         int size = entities.size();
         String[] values = new String[size];
@@ -359,9 +359,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
-                sql.extra(whereSql);
+                sql.$(whereSql);
             } else {
-                sql.where().extra(whereSql);
+                sql.where().$(whereSql);
             }
         }
 
@@ -407,7 +407,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var conditionAndValues = resolveCondition(driverName, condition, withNull);
         if (!conditionAndValues.isEmpty()) {
-            sql.where().extra(conditionAndValues.conditionSql);
+            sql.where().$(conditionAndValues.conditionSql);
             return super.queryOne(connection, sql.builder(), entityClass, conditionAndValues.conditionValues.toArray());
         } else {
             return super.queryOne(connection, sql.builder(), entityClass);
@@ -433,9 +433,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
-                sql.extra(whereSql);
+                sql.$(whereSql);
             } else {
-                sql.where().extra(whereSql);
+                sql.where().$(whereSql);
             }
         }
 
@@ -477,7 +477,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         if (condition != null) {
             var conditionAndValues = resolveCondition(driverName, condition, withNull);
             if (!conditionAndValues.isEmpty()) {
-                sqlBuilder.where().extra(conditionAndValues.conditionSql);
+                sqlBuilder.where().$(conditionAndValues.conditionSql);
                 args = conditionAndValues.conditionValues.toArray();
             }
         }
@@ -506,9 +506,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         if (whereSql != null && !whereSql.isBlank()) {
             var trimWhereSql = whereSql.trim();
             if (trimWhereSql.startsWith("where") || trimWhereSql.startsWith("WHERE")) {
-                sqlBuilder.extra(whereSql);
+                sqlBuilder.$(whereSql);
             } else {
-                sqlBuilder.where().extra(whereSql);
+                sqlBuilder.where().$(whereSql);
             }
         }
 
@@ -592,7 +592,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         if (condition != null) {
             var conditionAndValues = resolveCondition(driverName, condition, withNull);
             if (!conditionAndValues.isEmpty()) {
-                sqlBuilder.where().extra(conditionAndValues.conditionSql);
+                sqlBuilder.where().$(conditionAndValues.conditionSql);
                 args = conditionAndValues.conditionValues.toArray();
             }
         }
