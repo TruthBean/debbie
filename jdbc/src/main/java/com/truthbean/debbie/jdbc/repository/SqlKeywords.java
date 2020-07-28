@@ -197,6 +197,7 @@ public enum SqlKeywords {
     CYCLE,
     DATA,
     DATABASE,
+    DATABASES,
     DATALINK,
     DATE,
     DATETIME_INTERVAL_CODE,

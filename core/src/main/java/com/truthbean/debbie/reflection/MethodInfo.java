@@ -107,6 +107,10 @@ public class MethodInfo {
         return paramTypes != null && paramTypes.length > 0 && (paramTypes.length == 1 && paramTypes[0] != null);
     }
 
+    public int getParamSize() {
+        return paramTypes != null ? paramTypes.length : 0;
+    }
+
     public Class<?>[] getExceptionTypes() {
         return exceptionTypes;
     }

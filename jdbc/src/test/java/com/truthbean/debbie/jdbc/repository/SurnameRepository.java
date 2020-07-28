@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
@@ -33,7 +34,7 @@ public class SurnameRepository {
 
     private final DmlRepositoryHandler<Surname, Long> repositoryHandler;
 
-    public SurnameRepository(DataSourceFactory factory, DataSourceConfiguration configuration) {
+    public SurnameRepository(@BeanInject DataSourceFactory factory, @BeanInject DataSourceConfiguration configuration) {
         this.factory = factory;
         this.configuration = configuration;
         repositoryHandler = DmlRepositoryHandler.of(configuration.getDriverName(), Surname.class, Long.class);

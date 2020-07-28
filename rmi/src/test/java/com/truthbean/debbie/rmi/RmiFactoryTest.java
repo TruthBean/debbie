@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 public class RmiFactoryTest {
 
     @Test
-    public void test() {
+    public void test() throws InterruptedException {
         var application = DebbieApplicationFactory.create(RmiFactoryTest.class);
         application.start();
+        Thread.sleep(1000);
+        application.exit();
     }
 
     public static void main(String[] args) {

@@ -43,12 +43,12 @@ public class SeaweedfsTest {
             head.put("Authorization", "fb520b01-10d6-454e-a98f-6634f3c6b469");
             head.put("Content-Type", "application/json;charset=utf-8");
             head.put("Accept", "application/json, text/plain, */*");
-            String body = "[{\"groupId\":2,\"ids\":[";
+            StringBuilder body = new StringBuilder("[{\"groupId\":2,\"ids\":[");
             for (int j = 0; j < 9; j++) {
-                body = body + (i + j) + ",";
+                body.append(i + j).append(",");
             }
-            body = body + (i + 9) + "]}]";
-            String delete = test.httpClientHandler.delete(url, body, head, MediaType.APPLICATION_JSON_UTF8);
+            body.append(i + 9).append("]}]");
+            String delete = test.httpClientHandler.delete(url, body.toString(), head, MediaType.APPLICATION_JSON_UTF8);
             System.out.println(delete);
         }
 

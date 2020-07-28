@@ -452,6 +452,11 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         subMethodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         // 1: getfield
         subMethodVisitor.visitFieldInsn(Opcodes.GETFIELD, classPath, TARGET, "L" + superClassPath + ";");
+        int paramSize = methodInfo.getParamSize();
+        for (int i = 0; i < paramSize; i++) {
+            // aload_1 ... aload_n
+            subMethodVisitor.visitVarInsn(Opcodes.ALOAD, 1 + i);
+        }
         if (isInterface())
             // 4: invokeinterface #44,  1
             subMethodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, superClassPath, methodName, descriptor, true);
@@ -469,7 +474,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
         } else if (returnType == long.class) {
             subMethodVisitor.visitInsn(Opcodes.LRETURN);
         } else if (returnType == int.class || returnType == char.class || returnType == byte.class
-                || returnType == short.class) {
+                || returnType == short.class || returnType == boolean.class) {
             subMethodVisitor.visitInsn(Opcodes.IRETURN);
         } else {
             subMethodVisitor.visitInsn(Opcodes.ARETURN);

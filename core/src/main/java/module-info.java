@@ -45,7 +45,7 @@ module com.truthbean.debbie.core {
     requires transitive java.sql;
     requires java.management;
 
-    requires transitive com.truthbean.logger;
+    requires transitive com.truthbean.logger.core;
     requires org.objectweb.asm;
     // requires javassist;
     requires com.fasterxml.jackson.databind;

@@ -14,6 +14,12 @@ class SimpleApplicationFactoryTest {
     void testApplication() {
         var application = DebbieApplicationFactory.create(SimpleApplicationFactoryTest.class);
         application.start();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        application.exit();
     }
 
     @Test

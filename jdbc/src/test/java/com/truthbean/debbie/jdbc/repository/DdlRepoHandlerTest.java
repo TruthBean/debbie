@@ -85,7 +85,7 @@ class DdlRepoHandlerTest {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
-            ddlRepositoryHandler.useDatabase(connection, "hello");
+            ddlRepositoryHandler.useDatabase(connection, "test");
             // beanInitialization.init(Surname.class);
             // beanFactoryHandler.refreshBeans();
             ddlRepositoryHandler.createTable(connection, Surname.class);
@@ -119,5 +119,11 @@ class DdlRepoHandlerTest {
             return ddlRepositoryHandler.showTables(connection);
         });
         System.out.println(r);
+    }
+
+    @Test
+    void truncateTable(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
+        DynamicRepository.modify(factory.getTransaction().getDriverConnection())
+                .truncate().table("surname").execute();
     }
 }

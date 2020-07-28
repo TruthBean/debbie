@@ -141,7 +141,7 @@ public class DynamicRepository {
     }
 
     public DynamicRepository databases() {
-        return append(DATABASE);
+        return append(DATABASES);
     }
 
     public DynamicRepository use(String database) {
@@ -188,6 +188,10 @@ public class DynamicRepository {
         addBlackSpace();
         dynamicSql.append(DROP.value());
         return this;
+    }
+
+    public DynamicRepository truncate() {
+        return append(TRUNCATE);
     }
 
     public DynamicRepository alter() {
