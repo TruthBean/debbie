@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
@@ -32,9 +32,9 @@ public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = -8253171030384092538L;
     private final ServletConfiguration configuration;
-    private final DebbieApplicationContext handler;
+    private final ApplicationContext handler;
 
-    public DispatcherServlet(ServletConfiguration configuration, DebbieApplicationContext handler) {
+    public DispatcherServlet(ServletConfiguration configuration, ApplicationContext handler) {
         this.configuration = configuration;
         this.handler = handler;
     }

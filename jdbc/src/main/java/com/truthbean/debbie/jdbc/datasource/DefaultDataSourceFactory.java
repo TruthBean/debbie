@@ -50,5 +50,10 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
         return logger;
     }
 
+    @Override
+    public void destroy() {
+        logger.info("clean nothing!");
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultDataSourceFactory.class);
 }

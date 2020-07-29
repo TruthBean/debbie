@@ -10,7 +10,7 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;

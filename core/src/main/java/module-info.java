@@ -40,6 +40,7 @@ module com.truthbean.debbie.core {
     exports com.truthbean.debbie.task;
     exports com.truthbean.debbie.util;
     exports com.truthbean.debbie.watcher;
+    exports com.truthbean.debbie.proxy.asm;
 
     requires java.base;
     requires transitive java.sql;
@@ -53,7 +54,7 @@ module com.truthbean.debbie.core {
     requires com.fasterxml.jackson.dataformat.yaml;
 
     uses com.truthbean.debbie.boot.DebbieModuleStarter;
-    uses com.truthbean.debbie.boot.AbstractApplicationFactory;
+    uses com.truthbean.debbie.boot.AbstractApplication;
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter

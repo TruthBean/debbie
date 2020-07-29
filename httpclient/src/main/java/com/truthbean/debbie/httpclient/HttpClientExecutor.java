@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.internal.DataTransformerFactory;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
@@ -203,11 +203,13 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             paramName = requestParameter.name();
                         }
                         if (arg instanceof List) {
-                            request.addParameters(paramName, (List) arg);
+                            request.addParameters(paramName, (List<Object>) arg);
                         } else if (arg instanceof Map) {
-                            request.addParameters((Map<String, List>) arg);
+                            request.addParameters((Map<String, List<Object>>) arg);
                         } else {
-                            request.addParameters(paramName, List.of(arg));
+                            List<Object> list = new ArrayList<>();
+                            list.add(arg);
+                            request.addParameters(paramName, list);
                         }
                     } else if (type == RequestParameterType.BODY) {
                         if (arg instanceof File) {

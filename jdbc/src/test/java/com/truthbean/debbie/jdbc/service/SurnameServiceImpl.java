@@ -12,11 +12,11 @@ package com.truthbean.debbie.jdbc.service;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.check.jdbc.entity.Surname;
+import com.truthbean.debbie.check.jdbc.repository.SurnameJdbcRepository;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
-import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.event.NotingService;
-import com.truthbean.debbie.jdbc.repository.SurnameJdbcRepository;
 import com.truthbean.debbie.proxy.MethodProxy;
 
 import java.util.*;

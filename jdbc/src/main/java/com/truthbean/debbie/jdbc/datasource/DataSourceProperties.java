@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
@@ -125,7 +125,7 @@ public class DataSourceProperties extends BaseProperties implements DebbieProper
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
         return configuration;
     }
 }

@@ -45,7 +45,7 @@ public class RepositoryCallback {
             transaction.rollback();
         } finally {
             transaction.close();
-            TransactionManager.remove();
+            TransactionManager.remove(transaction);
         }
         return result;
     }
@@ -64,7 +64,7 @@ public class RepositoryCallback {
                 transaction.rollback();
             } finally {
                 transaction.close();
-                TransactionManager.remove();
+                TransactionManager.remove(transaction);
             }
             return result;
         };
@@ -95,7 +95,7 @@ public class RepositoryCallback {
         } finally {
             if (transaction != null) {
                 transaction.close();
-                TransactionManager.remove();
+                TransactionManager.remove(transaction);
             }
         }
         return result;
@@ -116,7 +116,7 @@ public class RepositoryCallback {
         } finally {
             if (transaction != null) {
                 transaction.close();
-                TransactionManager.remove();
+                TransactionManager.remove(transaction);
             }
         }
         return result;
@@ -135,7 +135,7 @@ public class RepositoryCallback {
             } finally {
                 if (transaction != null) {
                     transaction.close();
-                    TransactionManager.remove();
+                    TransactionManager.remove(transaction);
                 }
             }
             return result;

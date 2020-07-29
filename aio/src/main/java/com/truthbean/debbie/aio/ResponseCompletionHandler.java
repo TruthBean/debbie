@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -31,11 +31,11 @@ import java.util.concurrent.Future;
  */
 public class ResponseCompletionHandler {
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
     private final RouterRequest routerRequest;
 
-    public ResponseCompletionHandler(DebbieApplicationContext applicationContext, RouterRequest routerRequest,
+    public ResponseCompletionHandler(ApplicationContext applicationContext, RouterRequest routerRequest,
                                      AioServerConfiguration configuration) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;

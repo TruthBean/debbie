@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.core.AbstractApplicationFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -27,9 +27,9 @@ import java.util.Set;
  * Created on 2018-01-07 22:30.
  */
 @HandlesTypes(value = {Watcher.class})
-public class ServletApplicationInitializer extends DebbieApplicationFactory implements ServletContainerInitializer {
+public class ServletApplicationInitializer extends AbstractApplicationFactory implements ServletContainerInitializer {
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
     public ServletApplicationInitializer() {
         super(ServletApplicationInitializer.class);

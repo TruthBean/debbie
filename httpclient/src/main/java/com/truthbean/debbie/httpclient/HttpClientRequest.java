@@ -48,7 +48,7 @@ public class HttpClientRequest extends DefaultRouterRequest {
     }
 
     public void sortInvokedParameters() {
-        this.invokedParameters.sort(null);
+        this.invokedParameters.sort(ExecutableArgument::compareTo);
     }
 
     public void addInvokedParameters(Collection<ExecutableArgument> invokedParameters) {

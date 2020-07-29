@@ -139,7 +139,7 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     public void setParams(List<String> contentType) {
-        Map<String, List> parameters = new HashMap<>();
+        Map<String, List<Object>> parameters = new HashMap<>();
         exchange.getPathParameters().forEach((k, v) -> parameters.put(k, new ArrayList<>(v)));
 
         if (contentType != null && !contentType.isEmpty()) {
@@ -153,8 +153,8 @@ public class UndertowRouterRequest implements RouterRequest {
         routerRequestCache.setParameters(parameters);
     }
 
-    private Map<String, List> getFormData() {
-        Map<String, List> parameters = new HashMap<>();
+    private Map<String, List<Object>> getFormData() {
+        Map<String, List<Object>> parameters = new HashMap<>();
         try {
             FormParserFactory.Builder builder = FormParserFactory.builder();
 
@@ -276,7 +276,7 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List> getParameters() {
+    public Map<String, List<Object>> getParameters() {
         return routerRequestCache.getParameters();
     }
 
@@ -349,6 +349,10 @@ public class UndertowRouterRequest implements RouterRequest {
     @Override
     public void setCharacterEncoding(Charset charset) {
         this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

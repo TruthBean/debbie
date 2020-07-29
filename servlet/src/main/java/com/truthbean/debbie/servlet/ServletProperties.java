@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
 import com.truthbean.debbie.properties.ClassesScanProperties;
@@ -46,7 +46,7 @@ public class ServletProperties extends MvcProperties {
     }
 
     @Override
-    public ServletConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public ServletConfiguration toConfiguration(ApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
     }

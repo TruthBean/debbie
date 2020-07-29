@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
@@ -59,9 +59,9 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private final SessionManager sessionManager;
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, DebbieApplicationContext applicationContext) {
+    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, ApplicationContext applicationContext) {
         this.configuration = configuration;
         this.sessionManager = sessionManager;
         this.applicationContext = applicationContext;

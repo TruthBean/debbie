@@ -11,10 +11,10 @@ package com.truthbean.debbie.jdbc.event;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInject;
+import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.event.DebbieStartedEvent;
 import com.truthbean.debbie.event.EventBeanListener;
 import com.truthbean.debbie.event.GenericStartedEventListener;
-import com.truthbean.debbie.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.service.SurnameService;
 import com.truthbean.logger.LoggerFactory;
 

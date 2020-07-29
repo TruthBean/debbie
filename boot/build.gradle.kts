@@ -1,11 +1,15 @@
+plugins {
+    id("de.jjohannes.extra-java-module-info") version "0.1"
+}
+
+extraJavaModuleInfo {
+    module("jakarta.inject-api-1.0.jar", "jakarta.inject.api", "1.0")
+}
 dependencies {
     api(project(":debbie-core"))
 
     val asmVersion: String by project
     implementation("org.ow2.asm:asm:$asmVersion")
-
-    /*val javassistVersion: String by project
-    implementation("org.javassist:javassist:$javassistVersion")*/
 
     val jacksonVersion: String by project
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")

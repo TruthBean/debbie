@@ -10,7 +10,7 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.data.transformer.DataTransformerFactory;
+import com.truthbean.debbie.internal.DataTransformerFactory;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.io.StreamHelper;

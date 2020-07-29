@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationContextAware;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -18,9 +19,11 @@ import java.lang.reflect.Method;
  * @author truthbean
  * @since 0.0.1
  */
-public interface MethodProxyHandler<A extends Annotation> extends Comparable<MethodProxyHandler> {
+public interface MethodProxyHandler<A extends Annotation> extends Comparable<MethodProxyHandler>,
+        ApplicationContextAware {
 
-    default void setApplicationContext(DebbieApplicationContext applicationContext) {
+    @Override
+    default void setApplicationContext(ApplicationContext applicationContext) {
     }
 
     /**

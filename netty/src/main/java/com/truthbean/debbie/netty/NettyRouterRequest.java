@@ -12,6 +12,7 @@ package com.truthbean.debbie.netty;
 import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.request.HttpHeader;
@@ -124,13 +125,13 @@ public class NettyRouterRequest implements RouterRequest {
     public void setParameters(HttpHeaders trailingHeaders) {
         if (!trailingHeaders.isEmpty()) {
             for (CharSequence name : trailingHeaders.names()) {
-                this.routerRequestCache.addParameters((String) name, trailingHeaders.getAll(name));
+                this.routerRequestCache.addParameters((String) name, new ArrayList<>(trailingHeaders.getAll(name)));
             }
         }
     }
 
     public void setInputStreamBody(HttpContent httpContent) {
-        HttpContent copy = httpContent; //.duplicate();
+        final HttpContent copy = httpContent; //.duplicate();
         ByteBufInputStream byteBufInputStream = new ByteBufInputStream(copy.content());
         this.routerRequestCache.setInputStreamBody(byteBufInputStream);
     }
@@ -372,7 +373,7 @@ public class NettyRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List> getParameters() {
+    public Map<String, List<Object>> getParameters() {
         return routerRequestCache.getParameters();
     }
 
@@ -429,6 +430,10 @@ public class NettyRouterRequest implements RouterRequest {
     @Override
     public void setCharacterEncoding(Charset charset) {
         this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

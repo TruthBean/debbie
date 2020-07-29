@@ -10,7 +10,16 @@
 package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
@@ -25,20 +34,19 @@ import java.util.Set;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieConfigurationCenter implements DebbieApplicationContextAware {
+public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     @SuppressWarnings({"rawtypes"})
     private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
-    private DebbieApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
     private SingletonBeanRegister singletonBeanRegister;
 
     public DebbieConfigurationCenter() {
     }
 
-
     @Override
-    public void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.singletonBeanRegister = new SingletonBeanRegister(applicationContext);
     }
@@ -72,7 +80,7 @@ public class DebbieConfigurationCenter implements DebbieApplicationContextAware 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <P extends BaseProperties, C extends BeanScanConfiguration>
     C getConfigurationBySuperClassOrPropertiesClass(Class<C> superConfigurationClass, Class<P> propertiesClass,
-                                                    DebbieApplicationContext applicationContext) {
+                                                    ApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }
@@ -95,7 +103,7 @@ public class DebbieConfigurationCenter implements DebbieApplicationContextAware 
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
+    public <C extends DebbieConfiguration> C factory(Class<C> configurationClass, ApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }
@@ -111,7 +119,7 @@ public class DebbieConfigurationCenter implements DebbieApplicationContextAware 
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, DebbieApplicationContext applicationContext) {
+    public <C extends DebbieConfiguration> Set<C> getConfigurations(Class<C> configurationClass, ApplicationContext applicationContext) {
         Set<C> result = new HashSet<>();
         if (configurations.isEmpty()) {
             return new HashSet<>();
@@ -129,7 +137,7 @@ public class DebbieConfigurationCenter implements DebbieApplicationContextAware 
 
     @SuppressWarnings("unchecked")
     public <P extends BaseProperties, C extends BeanScanConfiguration>
-    C factory(Class<C> configurationClass, Class<P> propertiesClass, DebbieApplicationContext applicationContext) {
+    C factory(Class<C> configurationClass, Class<P> propertiesClass, ApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
         }

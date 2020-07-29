@@ -1,7 +1,7 @@
 package com.truthbean.debbie.reflection.javassist;
 
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import javassist.*;
+// import javassist.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class JavassistTest {
 
     @Test
     public void test() {
-        try {
+        /*try {
             ClassPool pool = ClassPool.getDefault();
             // 创建Programmer类
             CtClass cc = pool.makeClass("com.truthbean.debbie.reflection.javassist.Programmer");
@@ -27,6 +27,6 @@ public class JavassistTest {
             ReflectionHelper.invokeMethod(o, "code");
         } catch (CannotCompileException | IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

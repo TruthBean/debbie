@@ -41,8 +41,7 @@ public class ColumnInfo {
 
     private String optionType;
 
-    @SuppressWarnings("rawtypes")
-    private Class javaClass;
+    private Class<?> javaClass;
 
     private Object value;
 
@@ -148,12 +147,11 @@ public class ColumnInfo {
         this.value = value;
     }
 
-    @SuppressWarnings("rawtypes")
-    public Class getJavaClass() {
+    public Class<?> getJavaClass() {
         return javaClass;
     }
 
-    public void setJavaClass(@SuppressWarnings("rawtypes") Class javaClass) {
+    public void setJavaClass(Class<?> javaClass) {
         this.javaClass = javaClass;
     }
 

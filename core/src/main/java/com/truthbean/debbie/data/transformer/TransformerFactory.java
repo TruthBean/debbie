@@ -9,11 +9,15 @@
  */
 package com.truthbean.debbie.data.transformer;
 
+import com.truthbean.debbie.internal.DataTransformerFactory;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  */
-public interface TransformerFactory<O, T> {
+public interface TransformerFactory {
 
-    <S extends T> DataTransformer<O, S> getTransformer(Class<S> targetType);
+    static <O, T> T transform(final O origin, final Class<T> target) {
+        return DataTransformerFactory.transform(origin, target);
+    }
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class TransactionManager {
 
-    private static final Deque<TransactionInfo> TRANSACTION_DEQUE = new LinkedBlockingDeque<>(1024);
+    private static final ThreadLocal<Deque<TransactionInfo>> TRANSACTION_DEQUE = new ThreadLocal<>();
 
     private static final ThreadLocal<LinkedHashMap<Object, Object>> resources = new ThreadLocal<>();
     private static final ThreadLocal<List<ResourceHolder>> resourceHolders = new ThreadLocal<>();
@@ -59,27 +59,65 @@ public class TransactionManager {
         resources.remove();
         resourceHolders.remove();
 
-        TRANSACTION_DEQUE.offerFirst(transactionInfo);
+        getOrCreateIfAbsent().offerFirst(transactionInfo);
     }
 
     public static synchronized TransactionInfo peek() {
-        TransactionInfo transactionInfo = TRANSACTION_DEQUE.peekFirst();
+        var deque = TRANSACTION_DEQUE.get();
+        TransactionInfo transactionInfo = null;
+        if (deque != null) {
+            transactionInfo = deque.peekFirst();
+        }
         if (transactionInfo != null)
-            LOGGER.debug(() -> "peek transactionInfo " + transactionInfo.getId());
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("peek transactionInfo " + transactionInfo.getId());
         else
             LOGGER.warn("peek transactionInfo null.");
         return transactionInfo;
     }
 
     public static synchronized void remove() {
-        TransactionInfo transactionInfo = TRANSACTION_DEQUE.removeFirst();
-        if (transactionInfo != null)
-            LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
-        else
+        var deque = TRANSACTION_DEQUE.get();
+        if (deque != null) {
+            TransactionInfo transactionInfo = deque.removeFirst();
+            if (transactionInfo != null)
+                LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
+            else
+                LOGGER.debug(() -> "remove transactionInfo null.");
+        } else {
             LOGGER.debug(() -> "remove transactionInfo null.");
+        }
+    }
+
+    public static synchronized void remove(TransactionInfo transactionInfo) {
+        if (transactionInfo == null) {
+            LOGGER.debug(() -> "remove transactionInfo null.");
+            return;
+        }
+
+        var deque = TRANSACTION_DEQUE.get();
+        if (deque != null) {
+            boolean bool = deque.remove(transactionInfo);
+            if (bool)
+                LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
+            else
+                LOGGER.debug(() -> "remove transactionInfo null.");
+        } else {
+            LOGGER.debug(() -> "remove transactionInfo null.");
+        }
     }
 
     public static synchronized void clear() {
+        LOGGER.info("clean transactions.");
+        var deque = TRANSACTION_DEQUE.get();
+        if (deque != null) {
+            for (TransactionInfo transactionInfo : deque) {
+                LOGGER.debug(() -> "remove transactionInfo " + transactionInfo.getId());
+                transactionInfo.close();
+            }
+            deque.clear();
+        }
+
         LinkedHashMap<Object, Object> resourcesMap = resources.get();
         if (resourcesMap != null) {
             resourcesMap.clear();
@@ -92,7 +130,15 @@ public class TransactionManager {
         }
         resourceHolders.remove();
 
-        TRANSACTION_DEQUE.clear();
+        TRANSACTION_DEQUE.remove();
+    }
+
+    private static Deque<TransactionInfo> getOrCreateIfAbsent() {
+        Deque<TransactionInfo> deque = TRANSACTION_DEQUE.get();
+        if (deque == null) {
+            TRANSACTION_DEQUE.set(new LinkedBlockingDeque<>(1024));
+        }
+        return TRANSACTION_DEQUE.get();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionManager.class);

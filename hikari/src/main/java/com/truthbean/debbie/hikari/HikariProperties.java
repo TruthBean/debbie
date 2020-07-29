@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.hikari;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
@@ -40,7 +40,7 @@ public class HikariProperties extends DataSourceProperties implements DebbieProp
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(final DebbieApplicationContext applicationContext) {
+    public DataSourceConfiguration toConfiguration(final ApplicationContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }

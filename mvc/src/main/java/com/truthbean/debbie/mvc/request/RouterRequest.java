@@ -10,6 +10,7 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -26,10 +27,23 @@ import java.util.Map;
  */
 public interface RouterRequest {
 
+    /**
+     * request id, like uuid
+     * @return request id
+     */
     String getId();
 
+    /**
+     * request http method, eg: POST, GET, etc.
+     * @see HttpMethod
+     * @return httpMethod
+     */
     HttpMethod getMethod();
 
+    /**
+     * request url, eg: /echo
+     * @return string
+     */
     String getUrl();
 
     /**
@@ -58,6 +72,14 @@ public interface RouterRequest {
      */
     Map<String, Object> getAttributes();
 
+    /**
+     * get request url content;
+     * eg:
+     *  url: /hello/1
+     *  pattern: /hello/{id}
+     *  id = 1
+     * @return map
+     */
     Map<String, List<String>> getPathAttributes();
 
     void setPathAttributes(Map<String, List<String>> map);
@@ -80,7 +102,7 @@ public interface RouterRequest {
 
     RouterSession getSession();
 
-    Map<String, List> getParameters();
+    Map<String, List<Object>> getParameters();
 
     Object getParameter(String name);
 

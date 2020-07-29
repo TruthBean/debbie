@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanClosure;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -35,7 +35,7 @@ public interface DataSourceFactory extends BeanClosure {
      * @return DataSourceFactory
      */
     static <Configuration extends DataSourceConfiguration> DataSourceFactory factory(
-            DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext, Class<Configuration> configurationClass) {
+            DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext, Class<Configuration> configurationClass) {
         var config = DataSourceConfigurationFactory.factory(configurationFactory, applicationContext, configurationClass);
         return loadFactory(config);
     }
@@ -76,10 +76,8 @@ public interface DataSourceFactory extends BeanClosure {
         try {
             DataSourceDriverName driverName = getDriverName();
             TransactionInfo transactionInfo = new TransactionInfo();
-            DriverConnection connection = new DriverConnection();
-            connection.setConnection(getDataSource().getConnection());
-            connection.setDriverName(driverName);
-            transactionInfo.setConnection(connection);
+            transactionInfo.setConnection(getDataSource().getConnection());
+            transactionInfo.setDriverName(driverName);
             return transactionInfo;
         } catch (SQLException e) {
             getLogger().error("", e);

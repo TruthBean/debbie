@@ -10,6 +10,7 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;
@@ -42,7 +43,7 @@ public class DefaultRouterRequest implements RouterRequest {
 
     private RouterSession session;
 
-    private Map<String, List> parameters;
+    private Map<String, List<Object>> parameters;
 
     private Map<String, List<String>> queries;
 
@@ -172,7 +173,7 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     @Override
-    public Map<String, List> getParameters() {
+    public Map<String, List<Object>> getParameters() {
         return parameters;
     }
 
@@ -187,7 +188,7 @@ public class DefaultRouterRequest implements RouterRequest {
         return null;
     }
 
-    public List getParameterValues(String name) {
+    public List<Object> getParameterValues(String name) {
         if (parameters != null && !parameters.isEmpty()) {
             var values = parameters.get(name);
             if (values != null && !values.isEmpty()) {
@@ -197,34 +198,33 @@ public class DefaultRouterRequest implements RouterRequest {
         return null;
     }
 
-    public void setParameters(Map<String, List> parameters) {
+    public void setParameters(Map<String, List<Object>> parameters) {
         this.parameters = parameters;
     }
 
-    public void addParameters(Map<String, List> parameters) {
+    public void addParameters(Map<String, List<Object>> parameters) {
         if (this.parameters == null) {
             this.parameters = new HashMap<>();
         }
         this.parameters.putAll(parameters);
     }
 
-    public void addParameters(String name, List value) {
+    public void addParameters(String name, List<Object> value) {
         if (this.parameters == null) {
             this.parameters = new HashMap<>();
         }
         this.parameters.put(name, value);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public void addParameter(String name, Object value) {
         if (this.parameters == null) {
             this.parameters = new HashMap<>();
         }
-        List list;
+        List<Object> list;
         if (this.parameters.containsKey(name)) {
             list = this.parameters.get(name);
         } else {
-            list = new ArrayList();
+            list = new ArrayList<>();
         }
         list.add(value);
         this.parameters.put(name, list);
@@ -320,6 +320,14 @@ public class DefaultRouterRequest implements RouterRequest {
 
     public void setFileBody(File fileBody) {
         this.fileBody = fileBody;
+    }
+
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

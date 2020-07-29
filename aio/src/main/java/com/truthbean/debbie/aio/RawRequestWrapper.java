@@ -147,7 +147,6 @@ public class RawRequestWrapper implements RouterRequest {
                     if (line.startsWith(prefix)) {
                         boundary = "--" + line.substring(prefix.length());
                     }
-                    continue;
                 } else {
                     headerOver = true;
                 }
@@ -159,7 +158,7 @@ public class RawRequestWrapper implements RouterRequest {
     }
 
     private void setRequestResult() {
-        Map<String, List> params = new HashMap<>();
+        Map<String, List<Object>> params = new HashMap<>();
 
         MediaTypeInfo responseType = MediaType.ANY.info();
 
@@ -200,7 +199,10 @@ public class RawRequestWrapper implements RouterRequest {
                 if (MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)) {
                     var decoder = new QueryStringDecoder("/?" + line);
                     if (decoder.hasParams()) {
-                        decoder.parameters().forEach(params::put);
+                        decoder.parameters().forEach((key, value) -> {
+                            List<Object> values = new ArrayList<>(value);
+                            params.put(key, values);
+                        });
                         continue;
                     }
                 }
@@ -257,17 +259,16 @@ public class RawRequestWrapper implements RouterRequest {
 
                 if (hasValue && paramName != null) {
                     hasValue = false;
-                    List list;
+                    List<Object> list;
                     if (params.containsKey(paramName)) {
                         list = params.get(paramName);
                         list.add(line);
                     } else {
-                        list = new ArrayList();
+                        list = new ArrayList<>();
                         list.add(line);
                     }
                     params.put(paramName, list);
                     paramName = null;
-                    continue;
                 }
             }
         }
@@ -282,12 +283,12 @@ public class RawRequestWrapper implements RouterRequest {
             multipartFile.setContentType(contentType.toMediaType());
 
             if (paramName != null) {
-                List list;
+                List<Object> list;
                 if (params.containsKey(paramName)) {
                     list = params.get(paramName);
                     list.add(multipartFile);
                 } else {
-                    list = new ArrayList();
+                    list = new ArrayList<>();
                     list.add(multipartFile);
                 }
                 params.put(paramName, list);
@@ -303,7 +304,7 @@ public class RawRequestWrapper implements RouterRequest {
             this.routerRequestCache.setInputStreamBody(new ByteArrayInputStream(rawContent.toString().getBytes()));
         }
 
-        this.routerRequestCache.setParameters(params);
+        this.routerRequestCache.addParameters(params);
     }
 
     @Override
@@ -317,7 +318,7 @@ public class RawRequestWrapper implements RouterRequest {
     }
 
     @Override
-    public Map<String, List> getParameters() {
+    public Map<String, List<Object>> getParameters() {
         return this.routerRequestCache.getParameters();
     }
 

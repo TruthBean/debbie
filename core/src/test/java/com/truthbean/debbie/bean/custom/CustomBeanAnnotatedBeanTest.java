@@ -1,11 +1,9 @@
 package com.truthbean.debbie.bean.custom;
 
-import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationFactory;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -19,8 +17,9 @@ class CustomBeanAnnotatedBeanTest {
 //        GlobalBeanFactory globalBeanFactory = applicationFactory.getGlobalBeanFactory();
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
-                DebbieApplicationFactory applicationFactory = DebbieApplicationFactory.configure(CustomBeanAnnotatedBeanTest.class);
-                GlobalBeanFactory globalBeanFactory = applicationFactory.getGlobalBeanFactory();
+                ApplicationFactory applicationFactory = ApplicationFactory.configure(CustomBeanAnnotatedBeanTest.class);
+                ApplicationContext context = applicationFactory.getApplicationContext();
+                GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
                 CustomBeanAnnotatedBean bean = globalBeanFactory.factory(CustomBeanAnnotatedBean.class);
                 System.out.println(bean.getA());
             }).start();

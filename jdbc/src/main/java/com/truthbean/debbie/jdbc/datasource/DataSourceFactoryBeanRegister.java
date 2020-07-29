@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -24,13 +24,13 @@ import com.truthbean.logger.LoggerFactory;
 @SuppressWarnings({"unchecked"})
 public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final BeanInitialization initialization;
     private final DebbieConfigurationCenter configurationFactory;
 
     private final Logger logger = LoggerFactory.getLogger(DataSourceFactoryBeanRegister.class);
 
-    public DataSourceFactoryBeanRegister(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public DataSourceFactoryBeanRegister(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         super(applicationContext);
         this.applicationContext = applicationContext;
         this.initialization = applicationContext.getBeanInitialization();

@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.undertow.handler;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
 import com.truthbean.debbie.undertow.UndertowConfiguration;
@@ -35,10 +35,10 @@ public class HttpHandlerFilter implements HttpHandler {
     private final HttpHandler next;
     private final RouterFilterInfo filterInfo;
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final UndertowConfiguration configuration;
 
-    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo, DebbieApplicationContext applicationContext,
+    public HttpHandlerFilter(final HttpHandler next, RouterFilterInfo filterInfo, ApplicationContext applicationContext,
                              UndertowConfiguration configuration) {
         this.next = next;
         this.filterInfo = filterInfo;

@@ -10,7 +10,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
-import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
@@ -47,54 +46,54 @@ public class DynamicRepository {
      * 4: select
      */
     private int action;
-    private DriverConnection connection;
-    private DynamicRepository(DriverConnection connection, int action) {
-        this.connection = connection;
+    private TransactionInfo transaction;
+    private DynamicRepository(TransactionInfo transaction, int action) {
+        this.transaction = transaction;
         this.action = action;
     }
 
-    public static DynamicRepository query(DriverConnection connection) {
-        return new DynamicRepository(connection, SELECT);
+    public static DynamicRepository query(TransactionInfo transaction) {
+        return new DynamicRepository(transaction, SELECT);
     }
 
-    public static DynamicRepository modify(DriverConnection connection) {
-        return new DynamicRepository(connection, UPDATE);
+    public static DynamicRepository modify(TransactionInfo transaction) {
+        return new DynamicRepository(transaction, UPDATE);
     }
 
-    public static DynamicRepository add(DriverConnection connection) {
-        return new DynamicRepository(connection, INSERT);
+    public static DynamicRepository add(TransactionInfo transaction) {
+        return new DynamicRepository(transaction, INSERT);
     }
 
-    public static DynamicRepository remove(DriverConnection connection) {
-        return new DynamicRepository(connection, DELETE);
+    public static DynamicRepository remove(TransactionInfo transaction) {
+        return new DynamicRepository(transaction, DELETE);
     }
 
-    private static DriverConnection getConnection() {
+    private static TransactionInfo getTransaction() {
         TransactionInfo transactionInfo = TransactionManager.peek();
         if (transactionInfo == null) {
             throw new TransactionException("No debbie transaction");
         }
-        return transactionInfo.getDriverConnection();
+        return transactionInfo;
     }
 
     public static DynamicRepository queryTransactional() {
-        var connection = getConnection();
-        return new DynamicRepository(connection, SELECT);
+        var transaction = getTransaction();
+        return new DynamicRepository(transaction, SELECT);
     }
 
     public static DynamicRepository modifyTransactional() {
-        var connection = getConnection();
-        return new DynamicRepository(connection, UPDATE);
+        var transaction = getTransaction();
+        return new DynamicRepository(transaction, UPDATE);
     }
 
     public static DynamicRepository addTransactional() {
-        var connection = getConnection();
-        return new DynamicRepository(connection, INSERT);
+        var transaction = getTransaction();
+        return new DynamicRepository(transaction, INSERT);
     }
 
     public static DynamicRepository removeTransactional() {
-        var connection = getConnection();
-        return new DynamicRepository(connection, DELETE);
+        var transaction = getTransaction();
+        return new DynamicRepository(transaction, DELETE);
     }
 
     public static DynamicRepository sql(DataSourceDriverName driverName) {
@@ -631,7 +630,7 @@ public class DynamicRepository {
         RepositoryHandler repositoryHandler = new RepositoryHandler();
         repositoryHandler.setDriverName(driverName);
         if (action == SELECT) {
-            return repositoryHandler.query(connection.getConnection(), dynamicSql.toString(), resultClass, args.toArray());
+            return repositoryHandler.query(transaction, dynamicSql.toString(), resultClass, args.toArray());
         }
         return new ArrayList<>();
     }
@@ -640,7 +639,7 @@ public class DynamicRepository {
         RepositoryHandler repositoryHandler = new RepositoryHandler();
         repositoryHandler.setDriverName(driverName);
         if (action == SELECT) {
-            return repositoryHandler.queryMap(connection.getConnection(), dynamicSql.toString(), args.toArray());
+            return repositoryHandler.queryMap(transaction, dynamicSql.toString(), args.toArray());
         }
         return new ArrayList<>();
     }
@@ -649,7 +648,7 @@ public class DynamicRepository {
         RepositoryHandler repositoryHandler = new RepositoryHandler();
         repositoryHandler.setDriverName(driverName);
         if (action == SELECT) {
-            T result = repositoryHandler.queryOne(connection.getConnection(), dynamicSql.toString(), resultClass, args.toArray());
+            T result = repositoryHandler.queryOne(transaction, dynamicSql.toString(), resultClass, args.toArray());
             return Optional.ofNullable(result);
         }
         return Optional.empty();
@@ -659,11 +658,11 @@ public class DynamicRepository {
         if (action != SELECT) {
             RepositoryHandler repositoryHandler = new RepositoryHandler();
             repositoryHandler.setDriverName(driverName);
-            return repositoryHandler.update(connection.getConnection(), dynamicSql.toString());
+            return repositoryHandler.update(transaction, dynamicSql.toString());
         } else {
             RepositoryHandler repositoryHandler = new RepositoryHandler();
             repositoryHandler.setDriverName(driverName);
-            repositoryHandler.query(connection.getConnection(), dynamicSql.toString());
+            repositoryHandler.query(transaction, dynamicSql.toString());
         }
         return 0;
     }

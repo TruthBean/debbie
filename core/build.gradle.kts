@@ -13,7 +13,8 @@
 
 extraJavaModuleInfo {
     val javassistVersion: String by project
-    module("javassist-${javassistVersion}.jar", "org.wildfly.common", javassistVersion)
+    module("javassist-${javassistVersion}.jar", "javassist", javassistVersion)
+    // module("jakarta.inject-api-${javassistVersion}.jar", "jakarta.inject.api", "1.0")
 }*/
 dependencies {
     // val graalvmVersion: String by project
@@ -45,5 +46,5 @@ dependencies {
     testImplementation("cglib:cglib:$cglibVersion")
 
     val injectVersion: String by project
-    testImplementation("javax.inject:javax.inject:$injectVersion")
+    testImplementation("jakarta.inject:jakarta.inject-api:1.0")
 }

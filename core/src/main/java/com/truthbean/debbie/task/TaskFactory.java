@@ -12,6 +12,8 @@ package com.truthbean.debbie.task;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -28,14 +30,14 @@ import java.util.concurrent.ThreadFactory;
  * @author TruthBean
  * @since 0.0.2
  */
-public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
+public class TaskFactory implements ApplicationContextAware, BeanClosure {
 
-    private DebbieApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
     private GlobalBeanFactory globalBeanFactory;
     private volatile boolean taskRunning;
 
     @Override
-    public void setBeanFactoryContext(DebbieApplicationContext applicationContext) {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }
@@ -100,7 +102,7 @@ public class TaskFactory implements BeanFactoryContextAware, BeanClosure {
     }
 
     @Override
-    public void destroy() {
+    public synchronized void destroy() {
         if (!isTaskRunning()) {
             LOGGER.info("destroy tasks bean");
             taskThreadPool.destroy();

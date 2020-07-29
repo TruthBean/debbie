@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -23,16 +24,13 @@ import java.util.*;
  * Created on 2019/3/16 08:33.
  */
 public class RouterRequestValues {
-    @SuppressWarnings({"rawtypes"})
-    private Map<String, List> pathAttributes;
+    private Map<String, List<String>> pathAttributes;
     private Map<String, List<String>> matrixAttributes;
 
     private Map<String, List<String>> queries;
-    @SuppressWarnings({"rawtypes"})
-    private Map<String, List> params;
+    private Map<String, List<Object>> params;
     private Map<String, List<String>> headers;
-    @SuppressWarnings({"rawtypes"})
-    private Map<String, List> cookieAttributes;
+    private Map<String, List<Object>> cookieAttributes;
     private Map<String, Object> sessionAttributes;
     private Map<String, Object> innerAttributes;
     private InputStream body;
@@ -42,8 +40,7 @@ public class RouterRequestValues {
     private final RouterRequest routerRequest;
     private final RouterResponse routerResponse;
 
-    @SuppressWarnings({"rawtypes"})
-    private final Map<String, List> mixValues = new HashMap<>();
+    private final Map<String, List<Object>> mixValues = new HashMap<>();
 
     public RouterRequestValues(RouterRequest routerRequest, RouterResponse routerResponse) {
 
@@ -52,8 +49,7 @@ public class RouterRequestValues {
         this.routerResponse = routerResponse;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getQueries() {
+    public Map<String, List<String>> getQueries() {
         if (queries == null) {
             queries = new HashMap<>();
             var requestQueries = routerRequest.getQueries();
@@ -63,8 +59,7 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(queries);
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getMatrixAttributes() {
+    public Map<String, List<String>> getMatrixAttributes() {
         if (matrixAttributes == null) {
             matrixAttributes = new HashMap<>();
             Map<String, List<String>> matrix = routerRequest.getMatrix();
@@ -86,16 +81,14 @@ public class RouterRequestValues {
         return routerResponse;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getParams() {
+    public Map<String, List<Object>> getParams() {
         if (params == null) {
             params = routerRequest.getParameters();
         }
         return params;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         if (headers == null) {
             headers = new HashMap<>();
             var requestHeaders = routerRequest.getHeader().getHeaders();;
@@ -105,8 +98,7 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(headers);
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getCookieAttributes() {
+    public Map<String, List<Object>> getCookieAttributes() {
         if (cookieAttributes == null) {
             cookieAttributes = new HashMap<>();
             List<HttpCookie> cookies = routerRequest.getCookies();
@@ -116,11 +108,10 @@ public class RouterRequestValues {
         return Collections.unmodifiableMap(cookieAttributes);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setCookieAttributes(List<HttpCookie> cookies) {
         for (int i = 0; i < cookies.size(); i++) {
             HttpCookie iCookie = cookies.get(i);
-            List value = new ArrayList();
+            List<Object> value = new ArrayList<>();
             for (int j = i; j < cookies.size(); j++) {
                 HttpCookie httpCookie = cookies.get(j);
                 if (iCookie.getName().equalsIgnoreCase(httpCookie.getName())) {
@@ -163,8 +154,7 @@ public class RouterRequestValues {
         return textBody;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getPathAttributes() {
+    public Map<String, List<String>> getPathAttributes() {
         if (pathAttributes == null) {
             pathAttributes = new HashMap<>();
             Map<String, List<String>> pathAttributes = routerRequest.getPathAttributes();
@@ -177,7 +167,7 @@ public class RouterRequestValues {
     private void setMixValues() {
         var queries = getQueries();
         if (queries != null && !queries.isEmpty()) {
-            mixValues.putAll(queries);
+            queries.forEach(this::addMixValue);
         }
 
         var params = getParams();
@@ -187,7 +177,7 @@ public class RouterRequestValues {
 
         var headers = getHeaders();
         if (headers != null && !headers.isEmpty()) {
-            mixValues.putAll(headers);
+            headers.forEach(this::addMixValue);
         }
 
         var cookieAttributes = getCookieAttributes();
@@ -204,12 +194,12 @@ public class RouterRequestValues {
 
         var pathAttributes = getPathAttributes();
         if (pathAttributes != null && !pathAttributes.isEmpty()) {
-            mixValues.putAll(pathAttributes);
+            pathAttributes.forEach(this::addMixValue);
         }
 
         var matrixAttributes = getMatrixAttributes();
         if (matrixAttributes != null && !matrixAttributes.isEmpty()) {
-            mixValues.putAll(matrixAttributes);
+            matrixAttributes.forEach(this::addMixValue);
         }
 
         var innerAttributes = getInnerAttributes();
@@ -220,11 +210,15 @@ public class RouterRequestValues {
         }
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Map<String, List> getMixValues() {
+    public Map<String, List<Object>> getMixValues() {
         if (mixValues.isEmpty()) {
             setMixValues();
         }
         return Collections.unmodifiableMap(mixValues);
+    }
+
+    private void addMixValue(String name, List<?> value) {
+        List<Object> values = new ArrayList<>(value);
+        mixValues.put(name, values);
     }
 }

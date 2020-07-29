@@ -8,6 +8,8 @@
  * See the Mulan PSL v2 for more details.
  */
 
+import com.truthbean.debbie.undertow.UndertowServerApplication;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -18,8 +20,8 @@ module com.truthbean.debbie.undertow {
     // not work
     requires io.undertow.core;
 
-    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
-            com.truthbean.debbie.undertow.UndertowServerApplicationFactory;
+    provides com.truthbean.debbie.boot.AbstractApplication with
+            UndertowServerApplication;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter with
             com.truthbean.debbie.undertow.UndertowModuleStarter;

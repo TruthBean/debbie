@@ -8,6 +8,8 @@
  * See the Mulan PSL v2 for more details.
  */
 
+import com.truthbean.debbie.netty.NettyServerApplication;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -25,8 +27,8 @@ module com.truthbean.debbie.netty {
     requires jdk.accessibility;
     requires jdk.unsupported;
 
-    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
-            com.truthbean.debbie.netty.NettyServerApplicationFactory;
+    provides com.truthbean.debbie.boot.AbstractApplication with
+            NettyServerApplication;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter with
             com.truthbean.debbie.netty.NettyModuleStarter;

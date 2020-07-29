@@ -28,85 +28,85 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
     }
 
     public boolean deleteById(Id id) {
-        var connection = getDriverConnection();
-        return repositoryHandler.deleteById(connection, id);
+        var transaction = getTransaction();
+        return repositoryHandler.deleteById(transaction, id);
     }
 
     public boolean deleteByColumn(String columnName, Object value) {
-        var connection = getDriverConnection();
-        return repositoryHandler.deleteByColumn(connection, columnName, value);
+        var transaction = getTransaction();
+        return repositoryHandler.deleteByColumn(transaction, columnName, value);
     }
 
     public int deleteByIdIn(List<Id> ids) {
-        var connection = getDriverConnection();
-        return repositoryHandler.deleteByIdIn(connection, ids);
+        var transaction = getTransaction();
+        return repositoryHandler.deleteByIdIn(transaction, ids);
     }
 
     public <C> int deleteByColumnIn(String columnName, List<C> values) {
-        var connection = getDriverConnection();
-        return repositoryHandler.deleteByColumnIn(connection, columnName, values);
+        var transaction = getTransaction();
+        return repositoryHandler.deleteByColumnIn(transaction, columnName, values);
     }
 
     public int delete(Entity condition, boolean withConditionNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.delete(connection, condition, withConditionNull);
+        var transaction = getTransaction();
+        return repositoryHandler.delete(transaction, condition, withConditionNull);
     }
 
     public int deleteAll() {
-        var connection = getDriverConnection();
-        return repositoryHandler.delete(connection);
+        var transaction = getTransaction();
+        return repositoryHandler.delete(transaction);
     }
 
     public Id insert(Entity entity, boolean withEntityPropertyNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.insert(connection, entity, withEntityPropertyNull);
+        var transaction = getTransaction();
+        return repositoryHandler.insert(transaction, entity, withEntityPropertyNull);
     }
 
     public int insert(Collection<Entity> entities, boolean withEntityPropertyNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.insert(connection, entities, withEntityPropertyNull);
+        var transaction = getTransaction();
+        return repositoryHandler.insert(transaction, entities, withEntityPropertyNull);
     }
 
     public boolean update(Entity entity, boolean withEntityPropertyNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.update(connection, entity, withEntityPropertyNull);
+        var transaction = getTransaction();
+        return repositoryHandler.update(transaction, entity, withEntityPropertyNull);
     }
 
     public int update(Entity entity, boolean withEntityPropertyNull, String whereSql, Object...args) {
-        var connection = getDriverConnection();
-        return repositoryHandler.update(connection, entity, withEntityPropertyNull, whereSql, args);
+        var transaction = getTransaction();
+        return repositoryHandler.update(transaction, entity, withEntityPropertyNull, whereSql, args);
     }
 
     public <S extends Entity> S save(S entity) {
-        var connection = getDriverConnection();
-        return repositoryHandler.save(connection, entity);
+        var transaction = getTransaction();
+        return repositoryHandler.save(transaction, entity);
     }
 
     public Entity findByColumn(String columnName, Object value) {
-        var connection = getDriverConnection();
+        var transaction = getTransaction();
         String whereSql = columnName + " = ?";
-        return repositoryHandler.selectOne(connection, whereSql, value);
+        return repositoryHandler.selectOne(transaction, whereSql, value);
     }
 
     public List<Entity> findListByColumn(String columnName, Object value) {
-        var connection = getDriverConnection();
+        var transaction = getTransaction();
         String whereSql = columnName + " = ?";
-        return repositoryHandler.selectList(connection, whereSql, value);
+        return repositoryHandler.selectList(transaction, whereSql, value);
     }
 
     public Entity findOne(Entity condition, boolean withConditionNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectOne(connection, condition, withConditionNull);
+        var transaction = getTransaction();
+        return repositoryHandler.selectOne(transaction, condition, withConditionNull);
     }
 
     public Entity findOne(String whereSql, Object...args) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectOne(connection, whereSql, args);
+        var transaction = getTransaction();
+        return repositoryHandler.selectOne(transaction, whereSql, args);
     }
 
     public Optional<Entity> findOptional(Entity condition, boolean withConditionNull) {
-        var connection = getDriverConnection();
-        var entity = repositoryHandler.selectOne(connection, condition, withConditionNull);
+        var transaction = getTransaction();
+        var entity = repositoryHandler.selectOne(transaction, condition, withConditionNull);
         if (entity == null)
             return Optional.empty();
         else
@@ -114,8 +114,8 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
     }
 
     public Optional<Entity> findOptional(String whereSql, Object...args) {
-        var connection = getDriverConnection();
-        var entity = repositoryHandler.selectOne(connection, whereSql, args);
+        var transaction = getTransaction();
+        var entity = repositoryHandler.selectOne(transaction, whereSql, args);
         if (entity == null)
             return Optional.empty();
         else
@@ -123,33 +123,33 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
     }
 
     public List<Entity> findList(Entity condition, boolean withConditionNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectList(connection, condition, withConditionNull);
+        var transaction = getTransaction();
+        return repositoryHandler.selectList(transaction, condition, withConditionNull);
     }
 
     public List<Entity> findList(String whereSql, Object...args) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectList(connection, whereSql, args);
+        var transaction = getTransaction();
+        return repositoryHandler.selectList(transaction, whereSql, args);
     }
 
     public Page<Entity> findPaged(Entity condition, boolean withConditionNull, PageRequest pageable) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectPaged(connection, condition, withConditionNull, pageable);
+        var transaction = getTransaction();
+        return repositoryHandler.selectPaged(transaction, condition, withConditionNull, pageable);
     }
 
     public Page<Entity> findPaged(PageRequest pageable, String whereSql, Object...args) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectPaged(connection, pageable, whereSql, args);
+        var transaction = getTransaction();
+        return repositoryHandler.selectPaged(transaction, pageable, whereSql, args);
     }
 
     public Page<Entity> findPaged(PageRequest pageable) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectPaged(connection, pageable, null);
+        var transaction = getTransaction();
+        return repositoryHandler.selectPaged(transaction, pageable, null);
     }
 
     public List<Entity> findAll() {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectAll(connection);
+        var transaction = getTransaction();
+        return repositoryHandler.selectAll(transaction);
     }
 
     public List<Entity> findAllById(Iterable<Id> ids) {
@@ -158,36 +158,36 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         }
 
         List<Entity> result = new ArrayList<>();
-        var connection = getDriverConnection();
+        var transaction = getTransaction();
         for (Id id : ids) {
-            result.add(repositoryHandler.selectById(connection, id));
+            result.add(repositoryHandler.selectById(transaction, id));
         }
         return result;
     }
 
     public Long count(Entity condition, boolean withConditionNull) {
-        var connection = getDriverConnection();
-        return repositoryHandler.count(connection, condition, withConditionNull);
+        var transaction = getTransaction();
+        return repositoryHandler.count(transaction, condition, withConditionNull);
     }
 
     public Long count() {
-        var connection = getDriverConnection();
-        return repositoryHandler.count(connection);
+        var transaction = getTransaction();
+        return repositoryHandler.count(transaction);
     }
 
     public Entity findById(Id id) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectById(connection, id);
+        var transaction = getTransaction();
+        return repositoryHandler.selectById(transaction, id);
     }
 
     public boolean existsById(Id id) {
-        var connection = getDriverConnection();
-        return repositoryHandler.existsById(connection, id);
+        var transaction = getTransaction();
+        return repositoryHandler.existsById(transaction, id);
     }
 
     public Optional<Entity> queryOptionalById(Id id) {
-        var connection = getDriverConnection();
-        return repositoryHandler.selectOptionalById(connection, id);
+        var transaction = getTransaction();
+        return repositoryHandler.selectOptionalById(transaction, id);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import org.junit.jupiter.api.Test;
 
 public class RmiFactoryTest {

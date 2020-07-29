@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 
 import java.util.Set;
@@ -23,10 +23,10 @@ import java.util.Set;
  */
 public class HttpClientBeanRegister extends SingletonBeanRegister {
     private final HttpClientFactory handler;
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final BeanInitialization initialization;
 
-    public HttpClientBeanRegister(DebbieApplicationContext applicationContext) {
+    public HttpClientBeanRegister(ApplicationContext applicationContext) {
         super(applicationContext);
         handler = new HttpClientFactory(applicationContext.getClassLoader());
         this.applicationContext = applicationContext;

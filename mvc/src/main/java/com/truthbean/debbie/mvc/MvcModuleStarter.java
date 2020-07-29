@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
@@ -20,11 +20,11 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public class MvcModuleStarter implements DebbieModuleStarter {
     @Override
-    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.register(MvcProperties.class, MvcConfiguration.class);
     }
 

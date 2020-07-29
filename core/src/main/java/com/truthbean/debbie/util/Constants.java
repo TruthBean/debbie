@@ -67,8 +67,7 @@ public interface Constants {
     char UPPERCASE_A = 'A';
     char UPPERCASE_F = 'F';
 
-    @SuppressWarnings("rawtypes")
-    Class[] EMPTY_CLASS_ARRAY = {};
+    Class<?>[] EMPTY_CLASS_ARRAY = {};
 
     String CONFIG_LOCATION_DELIMITERS = ",; \t\n";
 }

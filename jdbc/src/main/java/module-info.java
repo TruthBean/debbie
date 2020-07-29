@@ -15,9 +15,11 @@
 module com.truthbean.debbie.jdbc {
     exports com.truthbean.debbie.jdbc.annotation;
     exports com.truthbean.debbie.jdbc.datasource;
+    exports com.truthbean.debbie.jdbc.datasource.pool to com.truthbean.debbie.core;
     exports com.truthbean.debbie.jdbc.domain;
     exports com.truthbean.debbie.jdbc.repository;
     exports com.truthbean.debbie.jdbc.transaction;
+    exports com.truthbean.debbie.jdbc.column;
 
     requires transitive com.truthbean.debbie.core;
 

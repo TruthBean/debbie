@@ -91,7 +91,28 @@ public class ExecutableArgumentHandler {
         return result;
     }
 
-    public void handleFiled(Map<String, List> map,
+    public void handleObjectFiled(Map<String, List<Object>> map,
+                            Object newInstance, Field field, ExecutableArgument invokedParameter,
+                            boolean ignoreCase) {
+
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+        if (newInstance == null) {
+            handleObjectParam(map, invokedParameter, ignoreCase);
+        } else {
+            if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
+                handleObjectParam(map, invokedParameter, ignoreCase);
+                if (invokedParameter.getValue() != null) {
+                    //set value to filed
+                    ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
+                            invokedParameter.getRawType());
+                }
+            }
+        }
+    }
+
+    public void handleFiled(Map<String, List<String>> map,
                             Object newInstance, Field field, ExecutableArgument invokedParameter,
                             boolean ignoreCase) {
 
@@ -133,9 +154,36 @@ public class ExecutableArgumentHandler {
 
     }
 
-    public void handleParam(Map<String, List> map, ExecutableArgument invokedParameter, boolean ignoreCase) {
+    public void handleObjectParam(Map<String, List<Object>> map, ExecutableArgument invokedParameter, boolean ignoreCase) {
         if (map != null && !map.isEmpty()) {
-            for (Map.Entry<String, List> entry : map.entrySet()) {
+            for (Map.Entry<String, List<Object>> entry : map.entrySet()) {
+                boolean flag;
+                if (ignoreCase) {
+                    flag = (invokedParameter.getName() == null || invokedParameter.getName().equalsIgnoreCase(entry.getKey())) &&
+                            TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+                } else {
+                    flag = (invokedParameter.getName() == null || invokedParameter.getName().equals(entry.getKey())) &&
+                            TypeHelper.isOrValueOf(invokedParameter.getType(), entry.getValue());
+                }
+
+                if (flag) {
+                    Object value;
+                    if (TypeHelper.isArrayType(invokedParameter.getType())) {
+                        value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue());
+                    } else {
+                        value = TypeHelper.valueOf(invokedParameter.getType(), entry.getValue().get(0));
+                    }
+                    invokedParameter.setName(entry.getKey());
+                    invokedParameter.setValue(value);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void handleParam(Map<String, List<String>> map, ExecutableArgument invokedParameter, boolean ignoreCase) {
+        if (map != null && !map.isEmpty()) {
+            for (Map.Entry<String, List<String>> entry : map.entrySet()) {
                 boolean flag;
                 if (ignoreCase) {
                     flag = (invokedParameter.getName() == null || invokedParameter.getName().equalsIgnoreCase(entry.getKey())) &&

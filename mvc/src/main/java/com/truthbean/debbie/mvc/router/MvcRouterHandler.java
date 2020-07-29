@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.ResourcesHandler;
@@ -357,7 +357,7 @@ public class MvcRouterHandler {
         return false;
     }
 
-    public static RouterResponse handleRouter(RouterInfo routerInfo, DebbieApplicationContext applicationContext) {
+    public static RouterResponse handleRouter(RouterInfo routerInfo, ApplicationContext applicationContext) {
         RouterResponse routerResponse = routerInfo.getResponse();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         ErrorResponseCallback callback = globalBeanFactory.factoryIfPresent(ErrorResponseCallback.class);

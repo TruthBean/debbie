@@ -33,42 +33,42 @@ public class DdlRepository implements TransactionService {
     }
 
     public int createDatabase(String database) {
-        var connection = getDriverConnection();
-        return handler.createDatabase(connection, database);
+        var transaction = getTransaction();
+        return handler.createDatabase(transaction, database);
     }
 
     public List<String> showDatabases() {
-        var connection = getDriverConnection();
-        return handler.showDatabases(connection);
+        var transaction = getTransaction();
+        return handler.showDatabases(transaction);
     }
 
     public int dropDatabase(String database) {
-        var connection = getDriverConnection();
-        return handler.dropDatabase(connection, database);
+        var transaction = getTransaction();
+        return handler.dropDatabase(transaction, database);
     }
 
     public int useDatabase(String database) {
-        var connection = getDriverConnection();
-        return handler.dropDatabase(connection, database);
+        var transaction = getTransaction();
+        return handler.dropDatabase(transaction, database);
     }
 
     public List<String> showTables() {
-        var connection = getDriverConnection();
-        return handler.showTables(connection);
+        var transaction = getTransaction();
+        return handler.showTables(transaction);
     }
 
     public <E> void createTable(Class<E> entity) {
-        var connection = getDriverConnection();
-        handler.createTable(connection, entity);
+        var transaction = getTransaction();
+        handler.createTable(transaction, entity);
     }
 
     public <E> void createTable(EntityInfo<E> entityInfo) {
-        var connection = getDriverConnection();
-        handler.createTable(connection, entityInfo);
+        var transaction = getTransaction();
+        handler.createTable(transaction, entityInfo);
     }
 
     public void dropTable(String table) {
-        var connection = getDriverConnection();
-        handler.dropTable(connection, table);
+        var transaction = getTransaction();
+        handler.dropTable(transaction, table);
     }
 }

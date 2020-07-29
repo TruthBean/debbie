@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 import java.util.LinkedHashSet;
@@ -25,11 +25,11 @@ import java.util.Set;
 public class RmiModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.register(RmiServerProperties.class, RmiServerConfiguration.class);
 
         RmiServerConfiguration configuration = configurationFactory.factory(RmiServerConfiguration.class, applicationContext);
@@ -62,7 +62,7 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         // todo
     }
 }

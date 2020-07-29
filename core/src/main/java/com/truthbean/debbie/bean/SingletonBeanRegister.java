@@ -9,15 +9,17 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  */
 public class SingletonBeanRegister {
-    private final DebbieBeanInfoFactory beanInfoFactory;
+    private final BeanInfoFactory beanInfoFactory;
     private final BeanInitialization initialization;
 
-    public SingletonBeanRegister(DebbieApplicationContext applicationContext) {
+    public SingletonBeanRegister(ApplicationContext applicationContext) {
         this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
         initialization = applicationContext.getBeanInitialization();
     }

@@ -1,8 +1,8 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.logger.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     private final MethodProxyHandlerHandler handler;
     private final MethodProxyResolver methodProxyResolver;
 
-    public ProxyInvocationHandler(Class<Target> targetClass, DebbieApplicationContext applicationContext) {
+    public ProxyInvocationHandler(Class<Target> targetClass, ApplicationContext applicationContext) {
         var target = ReflectionHelper.newInstance(targetClass);
         classInfo = new DebbieBeanInfo<>(targetClass);
         if (target == null) {
@@ -42,7 +42,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public ProxyInvocationHandler(Target target, DebbieApplicationContext applicationContext) {
+    public ProxyInvocationHandler(Target target, ApplicationContext applicationContext) {
         LOGGER.debug(() -> "init ProxyInvocationHandler with " + target);
         this.target = target;
         Class<Target> targetClass = (Class<Target>) target.getClass();

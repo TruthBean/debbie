@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.tomcat;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.server.BaseServerProperties;
 import com.truthbean.Logger;
@@ -43,7 +43,7 @@ public class TomcatProperties extends BaseServerProperties<TomcatConfiguration> 
     private TomcatConfiguration configuration;
 
     @Override
-    public TomcatConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public TomcatConfiguration toConfiguration(ApplicationContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }

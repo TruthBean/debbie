@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -20,4 +22,12 @@ public interface DebbieApplication {
     void start(String... args);
 
     void exit(String... args);
+
+    static void run(Class<?> applicationClass, String... args) {
+        DebbieApplicationFactory.create(applicationClass).start(args);
+    }
+
+    static DebbieApplication create(Class<?> applicationClass) {
+        return DebbieApplicationFactory.create(applicationClass);
+    }
 }

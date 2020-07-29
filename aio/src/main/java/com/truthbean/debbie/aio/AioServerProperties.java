@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
 import com.truthbean.debbie.properties.ClassesScanProperties;
@@ -31,7 +31,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     // ===========================================================================
 
     @Override
-    public AioServerConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public AioServerConfiguration toConfiguration(ApplicationContext applicationContext) {
         if (configuration != null) {
             return configuration;
         }

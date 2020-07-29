@@ -23,7 +23,7 @@ public class ThreadWork implements Runnable {
 
     /**
      * do work in thread
-     * @param args
+     * @param args args
      */
     public void doWork(Object...args) {
         // do nothing

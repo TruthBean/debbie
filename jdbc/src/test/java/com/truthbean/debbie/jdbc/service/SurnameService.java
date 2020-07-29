@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.service;
 
-import com.truthbean.debbie.jdbc.entity.Surname;
+
+import com.truthbean.debbie.check.jdbc.entity.Surname;
 
 import java.util.List;
 import java.util.Map;

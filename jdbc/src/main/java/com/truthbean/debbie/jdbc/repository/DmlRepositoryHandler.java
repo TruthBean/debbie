@@ -18,6 +18,7 @@ import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.entity.SqlEntityNullException;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -112,44 +113,41 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
-    public int deleteByIdIn(DriverConnection connection, List<ID> ids) {
+    public int deleteByIdIn(TransactionInfo transaction, List<ID> ids) {
         var primaryKey = entityInfo.getPrimaryKey();
-        return deleteByColumnIn(connection, primaryKey.getColumnName(), ids);
+        return deleteByColumnIn(transaction, primaryKey.getColumnName(), ids);
     }
 
-    public <C> int deleteByColumnIn(DriverConnection driverConnection, String columnName, List<C> values) {
+    public <C> int deleteByColumnIn(TransactionInfo transaction, String columnName, List<C> values) {
         if (values == null || values.isEmpty()) return 0;
 
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+        DataSourceDriverName driverName = transaction.getDriverName();
         int length = values.size();
-        if (length == 1) return deleteByColumn(driverConnection, columnName, values.get(0)) ? 1 : 0;
+        if (length == 1) return deleteByColumn(transaction, columnName, values.get(0)) ? 1 : 0;
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         String sql = DynamicRepository.sql(driverName).delete().from(table).where().in(columnName, length).builder();
-        return super.update(connection, sql, values.toArray());
+        return super.update(transaction, sql, values.toArray());
     }
 
-    public boolean deleteById(DriverConnection driverConnection, ID id) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public boolean deleteById(TransactionInfo transaction, ID id) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
         String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.update(connection, sql, id) > 0L;
+        return super.update(transaction, sql, id) > 0L;
     }
 
-    public boolean deleteByColumn(DriverConnection driverConnection, String columnName, Object value) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public boolean deleteByColumn(TransactionInfo transaction, String columnName, Object value) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(columnName, "?").builder();
-        return super.update(connection, sql, value) > 0L;
+        return super.update(transaction, sql, value) > 0L;
     }
 
     protected <T> ConditionAndValue resolveCondition(DataSourceDriverName driverName, T condition, boolean withNull) {
@@ -189,9 +187,8 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return conditionAndValue;
     }
 
-    public int delete(DriverConnection driverConnection, E condition, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public int delete(TransactionInfo transaction, E condition, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, condition);
         var table = entityInfo.getTable();
@@ -203,16 +200,15 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
             List<Object> columnValues = conditionAndValue.conditionValues;
             var sql = sqlBuilder.builder();
-            return super.update(connection, sql, columnValues.toArray());
+            return super.update(transaction, sql, columnValues.toArray());
         } else {
             var sql = sqlBuilder.builder();
-            return super.update(connection, sql);
+            return super.update(transaction, sql);
         }
     }
 
-    public int delete(DriverConnection driverConnection) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public int delete(TransactionInfo transaction) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
@@ -220,13 +216,12 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var sqlBuilder = DynamicRepository.sql(driverName).delete().from(table);
 
         var sql = sqlBuilder.builder();
-        return super.update(connection, sql);
+        return super.update(transaction, sql);
     }
 
     @SuppressWarnings("unchecked")
-    public ID insert(DriverConnection driverConnection, E entity, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public ID insert(TransactionInfo transaction, E entity, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
@@ -250,16 +245,15 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey != null) {
             var generatedKeys = primaryKey.getPrimaryKeyType() != null;
-            return (ID) super.insert(connection, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+            return (ID) super.insert(transaction, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
         }
-        return (ID) super.insert(connection, sql, false, null, columnValues.toArray());
+        return (ID) super.insert(transaction, sql, false, null, columnValues.toArray());
     }
 
-    public int insert(DriverConnection driverConnection, Collection<E> entities, boolean withNull) {
+    public int insert(TransactionInfo transaction, Collection<E> entities, boolean withNull) {
         if (entities.isEmpty()) return 0;
 
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         Iterator<E> iterator = entities.iterator();
         E entity = iterator.next();
@@ -308,12 +302,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             values[i] = DynamicRepository.sql(driverName).leftParenthesis().joinWith(",", signs).rightParenthesis().builder();
         }
         sqlBuilder.joinWith(",", values);
-        return super.update(connection, sqlBuilder.builder(), columnValues.toArray());
+        return super.update(transaction, sqlBuilder.builder(), columnValues.toArray());
     }
 
-    public boolean update(DriverConnection driverConnection, E entity, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public boolean update(TransactionInfo transaction, E entity, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
@@ -335,12 +328,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = DynamicRepository.sql(driverName).update(table).set(columnNames)
             .where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.update(connection, sql, columnValues.toArray()) == 1;
+        return super.update(transaction, sql, columnValues.toArray()) == 1;
     }
 
-    public int update(DriverConnection driverConnection, E entity, boolean withNull, String whereSql, Object... args) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public int update(TransactionInfo transaction, E entity, boolean withNull, String whereSql, Object... args) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
@@ -365,32 +357,30 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }
 
-        return super.update(connection, sql.builder(), args);
+        return super.update(transaction, sql.builder(), args);
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends E> S save(DriverConnection driverConnection, S entity) {
-        // Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public <S extends E> S save(TransactionInfo transaction, S entity) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = entityResolver.resolveEntity(driverName, entity);
         ColumnInfo primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey.getValue() != null) {
-            var bool = update(driverConnection, entity, true);
+            var bool = update(transaction, entity, true);
             if (bool) {
-                return (S) selectOne(driverConnection, entity, false);
+                return (S) selectOne(transaction, entity, false);
             } else {
                 return entity;
             }
         } else {
-            ID insert = insert(driverConnection, entity, true);
-            return (S) selectById(driverConnection, insert);
+            ID insert = insert(transaction, entity, true);
+            return (S) selectById(transaction, insert);
         }
     }
 
-    public E selectOne(DriverConnection driverConnection, E condition, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public E selectOne(TransactionInfo transaction, E condition, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
@@ -408,15 +398,14 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var conditionAndValues = resolveCondition(driverName, condition, withNull);
         if (!conditionAndValues.isEmpty()) {
             sql.where().$(conditionAndValues.conditionSql);
-            return super.queryOne(connection, sql.builder(), entityClass, conditionAndValues.conditionValues.toArray());
+            return super.queryOne(transaction, sql.builder(), entityClass, conditionAndValues.conditionValues.toArray());
         } else {
-            return super.queryOne(connection, sql.builder(), entityClass);
+            return super.queryOne(transaction, sql.builder(), entityClass);
         }
     }
 
-    public E selectOne(DriverConnection driverConnection, String whereSql, Object... args) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public E selectOne(TransactionInfo transaction, String whereSql, Object... args) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var entityClass = entityInfo.getJavaType();
@@ -439,7 +428,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }
 
-        return super.queryOne(connection, sql.builder(), entityClass, args);
+        return super.queryOne(transaction, sql.builder(), entityClass, args);
     }
 
     protected <T> DynamicRepository select(DataSourceDriverName driverName, T entity) {
@@ -520,67 +509,61 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
-    public List<E> selectList(DriverConnection driverConnection, E condition, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public List<E> selectList(TransactionInfo transaction, E condition, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, condition, withNull);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public List<E> selectList(DriverConnection driverConnection, String whereSql, Object... args) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public List<E> selectList(TransactionInfo transaction, String whereSql, Object... args) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, whereSql, args);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Page<E> selectPaged(DriverConnection driverConnection, E condition, boolean withNull, PageRequest pageable) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public Page<E> selectPaged(TransactionInfo transaction, E condition, boolean withNull, PageRequest pageable) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, condition, withNull);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
 
-        var count = count(driverConnection, condition, withNull);
-        List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        var count = count(transaction, condition, withNull);
+        List<E> content = super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public Page<E> selectPaged(DriverConnection driverConnection, PageRequest pageable, String whereSql, Object... args) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public Page<E> selectPaged(TransactionInfo transaction, PageRequest pageable, String whereSql, Object... args) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, whereSql, args);
 
         var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
 
-        var count = count(driverConnection);
-        List<E> content = super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        var count = count(transaction);
+        List<E> content = super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
         return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
     }
 
-    public Page<E> selectPaged(DriverConnection connection, PageRequest pageable) {
-        return selectPaged(connection, pageable, null);
+    public Page<E> selectPaged(TransactionInfo transaction, PageRequest pageable) {
+        return selectPaged(transaction, pageable, null);
     }
 
-    public List<E> selectAll(DriverConnection driverConnection) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public List<E> selectAll(TransactionInfo transaction) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, null, false);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(connection, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
     }
 
-    public Long count(DriverConnection driverConnection, E condition, boolean withNull) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public Long count(TransactionInfo transaction, E condition, boolean withNull) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
 
@@ -598,22 +581,20 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var sql = sqlBuilder.builder();
-        return super.queryOne(connection, sql, Long.class, args);
+        return super.queryOne(transaction, sql, Long.class, args);
     }
 
-    public Long count(DriverConnection driverConnection) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public Long count(TransactionInfo transaction) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var sql = DynamicRepository.sql(driverName).select().count().from(table).builder();
-        return super.queryOne(connection, sql, Long.class);
+        return super.queryOne(transaction, sql, Long.class);
     }
 
-    public E selectById(DriverConnection driverConnection, ID id) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public E selectById(TransactionInfo transaction, ID id) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityClass = getEntityClass();
         var entityInfo = entityResolver.resolveEntityClass(entityClass);
@@ -629,12 +610,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
             .where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.queryOne(connection, sql, entityClass, id);
+        return super.queryOne(transaction, sql, entityClass, id);
     }
 
-    public Boolean existsById(DriverConnection driverConnection, ID id) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public Boolean existsById(TransactionInfo transaction, ID id) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
@@ -642,11 +622,11 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var subSql = DynamicRepository.sql(driverName).select(primaryKey.getColumnName()).from(table)
             .where().eq(primaryKey.getColumnName(), "?").builder();
         var sql = DynamicRepository.sql(driverName).select().exist(subSql).builder();
-        return super.queryOne(connection, sql, Long.class, id) > 0L;
+        return super.queryOne(transaction, sql, Long.class, id) > 0L;
     }
 
-    public Optional<E> selectOptionalById(DriverConnection driverConnection, ID id) {
-        E result = selectById(driverConnection, id);
+    public Optional<E> selectOptionalById(TransactionInfo transaction, ID id) {
+        E result = selectById(transaction, id);
         if (result == null) {
             return Optional.empty();
         }

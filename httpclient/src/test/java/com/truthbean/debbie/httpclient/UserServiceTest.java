@@ -9,9 +9,8 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import org.junit.jupiter.api.Test;
 
 class UserServiceTest {

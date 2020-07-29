@@ -74,8 +74,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     // charset
     private Charset charset;
 
-    @SuppressWarnings({"rawtypes"})
-    private Class<? extends AbstractResponseContentHandler> responseContentHandler;
+    private Class<? extends AbstractResponseContentHandler<?, ?>> responseContentHandler;
 
     public MvcConfiguration(ClassLoader classLoader) {
         super(classLoader);
@@ -196,13 +195,11 @@ public class MvcConfiguration extends BeanScanConfiguration {
         this.charset = charset;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public Class<? extends AbstractResponseContentHandler> getResponseContentHandler() {
+    public Class<? extends AbstractResponseContentHandler<?, ?>> getResponseContentHandler() {
         return responseContentHandler;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public void setResponseContentHandler(Class<? extends AbstractResponseContentHandler> responseContentHandler) {
+    public void setResponseContentHandler(Class<? extends AbstractResponseContentHandler<?, ?>> responseContentHandler) {
         this.responseContentHandler = responseContentHandler;
     }
 
@@ -299,8 +296,8 @@ public class MvcConfiguration extends BeanScanConfiguration {
             return this;
         }
 
-        @SuppressWarnings({"rawtypes"})
-        public Builder template(String suffix, String prefix, Class<? extends AbstractResponseContentHandler> responseContentHandler) {
+        public Builder template(String suffix, String prefix,
+                                Class<? extends AbstractResponseContentHandler<?, ?>> responseContentHandler) {
             configuration.templateSuffix = suffix;
             configuration.templatePrefix = prefix;
             configuration.responseContentHandler = responseContentHandler;

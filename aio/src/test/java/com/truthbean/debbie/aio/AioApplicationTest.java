@@ -10,8 +10,8 @@
 package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.test.DebbieApplicationTest;
+import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Callable;
@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 public class AioApplicationTest {
 
     public static void main(String[] args) {
-        var application = DebbieApplicationFactory.create(AioApplicationTest.class);
+        var application = ApplicationFactory.create(AioApplicationTest.class);
         application.start(args);
         application.exit(args);
     }

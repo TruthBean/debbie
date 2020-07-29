@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.event;
 
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.test.DebbieApplicationTest;
+import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 @DebbieApplicationTest
 public class TransactionTest {
     public static void main(String[] args) {
-        var application = DebbieApplicationFactory.create(TransactionTest.class);
+        var application = ApplicationFactory.create(TransactionTest.class);
         application.start(args);
     }
 

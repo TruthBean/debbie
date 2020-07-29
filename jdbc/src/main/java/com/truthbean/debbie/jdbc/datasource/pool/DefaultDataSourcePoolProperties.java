@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.datasource.pool;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 
@@ -60,7 +60,7 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties {
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
         if (unpool) {
             return super.getConfiguration();
         }

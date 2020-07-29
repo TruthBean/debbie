@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
@@ -20,7 +20,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 public class NettyModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.register(NettyProperties.class, NettyConfiguration.class);
     }
 

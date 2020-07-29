@@ -1,5 +1,6 @@
 dependencies {
     api(project(":debbie-core"))
+    api(project(":debbie-boot"))
 
     val jupiterVersion: String by project
     "implementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")

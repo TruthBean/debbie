@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.properties;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -72,7 +72,7 @@ public class ClassesScanProperties extends BaseProperties implements DebbiePrope
     }
 
     @Override
-    public BeanScanConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public BeanScanConfiguration toConfiguration(ApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
     }

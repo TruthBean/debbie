@@ -15,6 +15,7 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -31,39 +32,35 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
-    public int createDatabase(DriverConnection driverConnection, String database) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public int createDatabase(TransactionInfo transaction, String database) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).create().database(database).builder();
-        return super.update(connection, sql);
+        return super.update(transaction, sql);
     }
 
-    public List<String> showDatabases(DriverConnection driverConnection) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public List<String> showDatabases(TransactionInfo transaction) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).show().databases().builder();
-        return super.query(connection, sql, String.class);
+        return super.query(transaction, sql, String.class);
     }
 
-    public int dropDatabase(DriverConnection driverConnection, String database) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public int dropDatabase(TransactionInfo transaction, String database) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).drop().database(database).builder();
-        return super.update(connection, sql);
+        return super.update(transaction, sql);
     }
 
-    public int useDatabase(DriverConnection driverConnection, String database) {
-        return DynamicRepository.modify(driverConnection).use(database).execute();
+    public int useDatabase(TransactionInfo transaction, String database) {
+        return DynamicRepository.modify(transaction).use(database).execute();
     }
 
-    public List<String> showTables(DriverConnection driverConnection) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public List<String> showTables(TransactionInfo transaction) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).show().tables().builder();
-        return super.query(connection, sql, String.class);
+        return super.query(transaction, sql, String.class);
     }
 
-    public <E> void createTable(DriverConnection driverConnection, Class<E> entity) {
+    public <E> void createTable(TransactionInfo transaction, Class<E> entity) {
         ClassInfo<E> classInfo = new ClassInfo<>(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
@@ -75,12 +72,12 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
         var columns = EntityResolver.resolveClassInfo(classInfo);
         entityInfo.setColumnInfoList(columns);
-        createTable(driverConnection, entityInfo);
+        createTable(transaction, entityInfo);
     }
 
-    public <E> void createTable(DriverConnection driverConnection, EntityInfo<E> entityInfo) {
+    public <E> void createTable(TransactionInfo transaction, EntityInfo<E> entityInfo) {
         var columns = entityInfo.getColumnInfoList();
-        DynamicRepository repository = DynamicRepository.modify(driverConnection).create()
+        DynamicRepository repository = DynamicRepository.modify(transaction).create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
@@ -153,11 +150,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public void dropTable(DriverConnection driverConnection, String table) {
-        Connection connection = driverConnection.getConnection();
-        DataSourceDriverName driverName = driverConnection.getDriverName();
+    public void dropTable(TransactionInfo transaction, String table) {
+        DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).drop().tableIfExists(table, true).builder();
-        super.update(connection, sql);
+        super.update(transaction, sql);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandler.class);

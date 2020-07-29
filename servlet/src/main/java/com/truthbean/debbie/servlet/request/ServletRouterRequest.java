@@ -109,12 +109,13 @@ public class ServletRouterRequest extends DefaultRouterRequest {
     }
 
     private void setParams() {
-        Map<String, List> map = new HashMap<>();
+        Map<String, List<Object>> map = new HashMap<>();
         var parameterNames = request.getParameterNames();
         while (parameterNames.hasMoreElements()) {
             var name = parameterNames.nextElement();
             var values = request.getParameterValues(name);
-            map.put(name, Arrays.asList(values));
+            List<Object> objects = new ArrayList<>(Arrays.asList(values));
+            map.put(name, objects);
         }
         var paramsInBody = getParamsInBody();
         if (!paramsInBody.isEmpty()) {
@@ -123,7 +124,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         setParameters(map);
     }
 
-    private Map<String, List> getParamsInBody() {
+    private Map<String, List<Object>> getParamsInBody() {
         var headers = getHeader();
         String type = MediaType.ANY.getValue();
         if (headers.getHeader(MediaType.CONTENT_TYPE) != null) {
@@ -135,8 +136,8 @@ public class ServletRouterRequest extends DefaultRouterRequest {
                 var content = requestBody.getContent();
                 if (content != null && !content.isEmpty()) {
                     var queries = queries(content.get(0));
-                    Map<String, List> map = new HashMap<>();
-                    queries.forEach(map::put);
+                    Map<String, List<Object>> map = new HashMap<>();
+                    queries.forEach((key, value) -> map.put(key, new ArrayList<>(value)));
                     return map;
                 }
             } catch (IOException e) {
@@ -147,8 +148,8 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         return getMultipartParams();
     }
 
-    private Map<String, List> getMultipartParams() {
-        Map<String, List> map = new HashMap<>();
+    private Map<String, List<Object>> getMultipartParams() {
+        Map<String, List<Object>> map = new HashMap<>();
         if (ServletFileUpload.isMultipartContent(request)) {
             var maxMemorySize = 1024 * 1024 * 1024;
             var tempDirectory = new File(System.getProperty("java.io.tmpdir"));
@@ -178,7 +179,7 @@ public class ServletRouterRequest extends DefaultRouterRequest {
         return map;
     }
 
-    private void processFormField(Map<String, List<FileItem>> items, Map<String, List> map) {
+    private void processFormField(Map<String, List<FileItem>> items, Map<String, List<Object>> map) {
         items.forEach((key, value) -> {
             List<Object> values = new ArrayList<>();
             value.forEach(fileItem -> {

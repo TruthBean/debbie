@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.Logger;
@@ -28,11 +28,11 @@ import java.nio.channels.CompletionHandler;
 public class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketChannel, AsynchronousServerSocketChannel> {
 
     private final AsynchronousServerSocketChannel listener;
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
 
     public ServerCompletionHandler(AioServerConfiguration configuration, SessionManager sessionManager,
-                                   final DebbieApplicationContext applicationContext,
+                                   final ApplicationContext applicationContext,
                                    final AsynchronousServerSocketChannel listener) {
         this.listener = listener;
         this.applicationContext = applicationContext;

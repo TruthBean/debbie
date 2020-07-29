@@ -17,7 +17,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MethodProxyHandlerRegister {
+/**
+ * @author TruthBean/Rogar·Q
+ * @since 0.1.0
+ */
+class MethodProxyHandlerRegister {
 
     private final Map<Class<? extends Annotation>, List<Class<? extends MethodProxyHandler<? extends Annotation>>>> classListMap;
 

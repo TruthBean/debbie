@@ -1,11 +1,9 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
-import com.truthbean.debbie.test.DebbieApplicationTest;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @DebbieApplicationTest
 public class NettyApplicationTest {

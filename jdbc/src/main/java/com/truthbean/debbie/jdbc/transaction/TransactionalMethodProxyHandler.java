@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.transaction;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
@@ -35,7 +35,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     private int order;
 
-    private DebbieApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
     private boolean autoCommit;
 
     public TransactionalMethodProxyHandler() {
@@ -43,7 +43,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     }
 
     @Override
-    public void setApplicationContext(DebbieApplicationContext applicationContext) {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
@@ -74,7 +74,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void setMethod(Method method) {
-        transactionInfo.setMethod(method);
+        transactionInfo.bindMethod(method);
     }
 
     @Override
@@ -85,10 +85,8 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         DataSourceConfiguration configuration = configurationFactory.factory(DataSourceConfiguration.class, applicationContext);
 
         DataSourceFactory factory = beanInitialization.getRegisterBean(DataSourceFactory.class);
-        DriverConnection driverConnection = new DriverConnection();
-        driverConnection.setDriverName(configuration.getDriverName());
-        driverConnection.setConnection(factory.getConnection());
-        transactionInfo.setConnection(driverConnection);
+        transactionInfo.setDriverName(configuration.getDriverName());
+        transactionInfo.setConnection(factory.getConnection());
 
         if (jdbcTransactional == null && classJdbcTransactional == null) {
             throw new MethodNoJdbcTransactionalException();
@@ -141,7 +139,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     public void finallyRun() {
         LOGGER.debug(() -> "running when method (" + transactionInfo.getMethod() + ") invoked and run to finally ..");
         transactionInfo.close();
-        TransactionManager.remove();
+        TransactionManager.remove(transactionInfo);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalMethodProxyHandler.class);

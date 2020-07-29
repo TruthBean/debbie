@@ -18,8 +18,8 @@ module com.truthbean.debbie.aio {
     requires transitive com.truthbean.debbie.server;
     requires java.management;
 
-    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
-            com.truthbean.debbie.aio.AioServerApplicationFactory;
+    provides com.truthbean.debbie.boot.AbstractApplication with
+            com.truthbean.debbie.aio.AioServerApplication;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter with
             com.truthbean.debbie.aio.AioModuleStarter;

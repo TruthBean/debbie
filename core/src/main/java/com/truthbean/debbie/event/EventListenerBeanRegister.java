@@ -11,6 +11,7 @@ package com.truthbean.debbie.event;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -24,9 +25,9 @@ import java.util.Set;
  */
 public class EventListenerBeanRegister {
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    public EventListenerBeanRegister(DebbieApplicationContext applicationContext) {
+    public EventListenerBeanRegister(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

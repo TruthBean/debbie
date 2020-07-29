@@ -16,7 +16,7 @@ import java.util.Map;
  * @since 0.0.2
  * Created on 2019-11-23 00:09.
  */
-public class MapToBeanTransformer<M extends Map<String, Object>, Bean> implements DataTransformer<M, Bean> {
+class MapToBeanTransformer<M extends Map<String, Object>, Bean> implements DataTransformer<M, Bean> {
 
     @Override
     public Bean transform(M original) {

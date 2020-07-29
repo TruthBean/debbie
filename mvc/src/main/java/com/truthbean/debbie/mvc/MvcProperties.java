@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
@@ -91,8 +91,8 @@ public class MvcProperties extends BaseProperties implements DebbieProperties<Mv
         }
 
         var nothingResponseHandler = "com.truthbean.debbie.mvc.response.provider.NothingResponseHandler";
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        var responseContentHandler = (Class<? extends AbstractResponseContentHandler>) properties.getClassValue(DEFAULT_RESPONSE_HANDLER, nothingResponseHandler);
+        @SuppressWarnings({"unchecked"})
+        var responseContentHandler = (Class<? extends AbstractResponseContentHandler<?, ?>>) properties.getClassValue(DEFAULT_RESPONSE_HANDLER, nothingResponseHandler);
         builder.template(properties.getValue(WEB_VIEW_TEMPLATE_SUFFIX), properties.getValue(WEB_VIEW_TEMPLATE_PREFIX), responseContentHandler);
 
         boolean csrf = properties.getBooleanValue(SERVER_CSRF, false);
@@ -133,7 +133,7 @@ public class MvcProperties extends BaseProperties implements DebbieProperties<Mv
     }
 
     @Override
-    public MvcConfiguration toConfiguration(DebbieApplicationContext applicationContext) {
+    public MvcConfiguration toConfiguration(ApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
     }

@@ -60,8 +60,8 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
 
         switch (requestParameter.paramType()) {
             case MIX:
-                Map<String, List> mixValues = parameters.getMixValues();
-                handler.handleParam(mixValues, parameter, false);
+                Map<String, List<Object>> mixValues = parameters.getMixValues();
+                handler.handleObjectParam(mixValues, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -88,7 +88,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case MATRIX:
-                Map<String, List> matrix = parameters.getMatrixAttributes();
+                Map<String, List<String>> matrix = parameters.getMatrixAttributes();
                 handler.handleParam(matrix, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
@@ -98,8 +98,8 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case PARAM:
-                Map<String, List> params = parameters.getParams();
-                handler.handleParam(params, parameter, false);
+                Map<String, List<Object>> params = parameters.getParams();
+                handler.handleObjectParam(params, parameter, false);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;
@@ -124,7 +124,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case HEAD:
-                Map<String, List> headers = parameters.getHeaders();
+                Map<String, List<String>> headers = parameters.getHeaders();
                 handler.handleParam(headers, parameter, true);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
@@ -134,8 +134,8 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
                 }
                 break;
             case COOKIE:
-                Map<String, List> cookieAttributes = parameters.getCookieAttributes();
-                handler.handleParam(cookieAttributes, parameter, true);
+                Map<String, List<Object>> cookieAttributes = parameters.getCookieAttributes();
+                handler.handleObjectParam(cookieAttributes, parameter, true);
                 if (parameter.getValue() == null) {
                     if (TypeHelper.isBaseType(parameter.getType())) {
                         break;

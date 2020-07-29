@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.transaction;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -25,10 +26,11 @@ import java.util.*;
  */
 public class TransactionInfo implements Closeable {
     private String id;
+    private volatile boolean using;
 
-    private Method method;
+    private final String method = "method";
 
-    private DriverConnection driverConnection;
+    private DataSourceDriverName driverName;
     private Connection connection;
 
     private boolean forceCommit;
@@ -39,6 +41,7 @@ public class TransactionInfo implements Closeable {
 
     public TransactionInfo() {
         this.id = UUID.randomUUID().toString();
+        this.using = false;
     }
 
     public String getId() {
@@ -49,25 +52,38 @@ public class TransactionInfo implements Closeable {
         this.id = id;
     }
 
-    public Method getMethod() {
-        return method;
+    public void setUsing(boolean using) {
+        this.using = using;
     }
 
-    public void setMethod(Method method) {
-        this.method = method;
+    public boolean isUsing() {
+        return using;
+    }
+
+    public Method getMethod() {
+        if (hasMethod())
+            return (Method) this.resources.get(this.method);
+        return null;
+    }
+
+    private boolean hasMethod() {
+        return this.resources.containsKey(this.method);
     }
 
     public Connection getConnection() {
         return connection;
     }
 
-    public DriverConnection getDriverConnection() {
-        return driverConnection;
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 
-    public void setConnection(DriverConnection driverConnection) {
-        this.driverConnection = driverConnection;
-        this.connection = driverConnection.getConnection();
+    public DataSourceDriverName getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(DataSourceDriverName driverName) {
+        this.driverName = driverName;
     }
 
     public boolean isForceCommit() {
@@ -93,6 +109,10 @@ public class TransactionInfo implements Closeable {
     public void bindResources(Map<Object, Object> resources) {
         if (resources != null && !resources.isEmpty())
             this.resources.putAll(resources);
+    }
+
+    public void bindMethod(Method method) {
+        this.resources.put(this.method, method);
     }
 
     public void clearResource() {
@@ -239,7 +259,10 @@ public class TransactionInfo implements Closeable {
             return;
         }
 
-        LOGGER.debug(() -> "close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
+        if (hasMethod())
+            LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ")  and remove it. ");
+        else
+            LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
         try {
             if (!connection.isClosed()) {
                 connection.close();

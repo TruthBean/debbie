@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
@@ -19,21 +19,21 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
 
-    default void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    default void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
         // do nothing
     }
 
-    default void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    default void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         // do nothing
     }
 
-    default void starter(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    default void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         // do nothing
     }
 
     int getOrder();
 
-    default void release(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    default void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         // do nothing
     }
 

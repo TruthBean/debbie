@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
@@ -30,34 +32,34 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
     }
 
     public int[] batch(String sql, Object[][] args) {
-        Connection connection = getConnection();
-        return repositoryHandler.batch(connection, sql, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.batch(transaction, sql, args);
     }
 
     public int update(String sql, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.update(connection, sql, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.update(transaction, sql, args);
     }
 
     public int insert(String sql, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.update(connection, sql, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.update(transaction, sql, args);
     }
 
     public int delete(String sql, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.update(connection, sql, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.update(transaction, sql, args);
     }
 
     public List<Entity> selectEntityList(String selectSql, Object... args) {
-        Connection connection = getConnection();
+        TransactionInfo transaction = getTransaction();
         var entityClass = repositoryHandler.getEntityClass();
-        return repositoryHandler.query(connection, selectSql, entityClass, args);
+        return repositoryHandler.query(transaction, selectSql, entityClass, args);
     }
 
     public <T> List<T> select(String selectSql, Class<T> clazz, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.query(connection, selectSql, clazz, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.query(transaction, selectSql, clazz, args);
     }
 
     public <T> Set<T> selectSet(String selectSql, Class<T> clazz, Object... args) {
@@ -66,13 +68,13 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
     }
 
     public List<Map<String, Object>> selectListMap(String selectSql, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.queryMap(connection, selectSql, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.queryMap(transaction, selectSql, args);
     }
 
     public Map<String, Object> selectMap(String selectSql, Object... args) {
-        Connection connection = getConnection();
-        List<Map<String, Object>> maps = repositoryHandler.queryMap(connection, selectSql, args);
+        TransactionInfo transaction = getTransaction();
+        List<Map<String, Object>> maps = repositoryHandler.queryMap(transaction, selectSql, args);
         if (maps.size() == 1) {
             return maps.get(0);
         } else {
@@ -81,13 +83,13 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
     }
 
     public <T> T selectOne(String sql, Class<T> clazz, Object... args) {
-        Connection connection = getConnection();
-        return repositoryHandler.queryOne(connection, sql, clazz, args);
+        TransactionInfo transaction = getTransaction();
+        return repositoryHandler.queryOne(transaction, sql, clazz, args);
     }
 
     public Entity selectEntity(String selectSql, Object... args) {
-        Connection connection = getConnection();
+        TransactionInfo transaction = getTransaction();
         var entityClass = repositoryHandler.getEntityClass();
-        return repositoryHandler.queryOne(connection, selectSql, entityClass, args);
+        return repositoryHandler.queryOne(transaction, selectSql, entityClass, args);
     }
 }

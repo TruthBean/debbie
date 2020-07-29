@@ -13,8 +13,9 @@
  * @since 0.1.0
  */
 module com.truthbean.debbie.hikari {
-    requires com.truthbean.debbie.jdbc;
-    requires com.zaxxer.hikari;
+    requires transitive com.truthbean.debbie.jdbc;
+    requires transitive com.zaxxer.hikari;
+    // requires transitive com.truthbean.debbie.metrics;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.hikari.HikariModuleStarter;

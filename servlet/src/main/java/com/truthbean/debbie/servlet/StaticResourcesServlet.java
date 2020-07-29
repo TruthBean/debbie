@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.servlet.request.ServletRouterRequest;
 import com.truthbean.Logger;
@@ -27,11 +27,11 @@ import java.io.IOException;
  */
 public class StaticResourcesServlet extends HttpServlet {
     private final ServletConfiguration configuration;
-    private final DebbieApplicationContext handler;
+    private final ApplicationContext applicationContext;
 
-    public StaticResourcesServlet(ServletConfiguration configuration, DebbieApplicationContext handler) {
+    public StaticResourcesServlet(ServletConfiguration configuration, ApplicationContext applicationContext) {
         this.configuration = configuration;
-        this.handler = handler;
+        this.applicationContext = applicationContext;
     }
 
     @Override

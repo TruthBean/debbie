@@ -11,7 +11,6 @@ package com.truthbean.debbie.core;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
-import com.truthbean.debbie.data.transformer.DataTransformerRegister;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
@@ -29,24 +28,24 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(DebbieApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
         DataTransformerRegister register = new DataTransformerRegister(beanInitialization);
         register.registerTransformer();
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.register(ClassesScanProperties.class, BeanScanConfiguration.class);
         new DebbieTaskConfigurer().configure(applicationContext);
     }
 
     @Override
-    public void starter(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         applicationContext.refreshBeans();
     }
 
     @Override
-    public void release(DebbieConfigurationCenter configurationFactory, DebbieApplicationContext applicationContext) {
+    public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.reset();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");

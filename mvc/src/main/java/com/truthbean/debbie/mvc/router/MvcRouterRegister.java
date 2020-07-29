@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.BodyParameter;
@@ -39,7 +39,7 @@ import java.util.*;
 public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
-    public static void registerRouter(MvcConfiguration webConfiguration, DebbieApplicationContext applicationContext) {
+    public static void registerRouter(MvcConfiguration webConfiguration, ApplicationContext applicationContext) {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
         for (DebbieBeanInfo<?> classInfo : classInfoSet) {
@@ -57,7 +57,7 @@ public class MvcRouterRegister {
 
     private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
                                        ClassInfo<?> classInfo, MvcConfiguration webConfiguration,
-                                       DebbieApplicationContext applicationContext) {
+                                       ApplicationContext applicationContext) {
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();

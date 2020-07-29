@@ -107,8 +107,7 @@ public class HttpHandler {
         return "";
     }
 
-    @SuppressWarnings("rawtypes")
-    public HttpRequest.BodyPublisher ofMimeMultipartData(Map<String, List> params, String boundary) {
+    public HttpRequest.BodyPublisher ofMimeMultipartData(Map<String, List<Object>> params, String boundary) {
         if (params == null || params.isEmpty()) {
             return null;
         }

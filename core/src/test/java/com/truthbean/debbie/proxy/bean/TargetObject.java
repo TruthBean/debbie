@@ -17,7 +17,7 @@ public class TargetObject {
     @MethodProxy(order = 1)
     public void code(String language) throws Exception {
         System.out.println("逗逼程序猿在用" + language + "编程...");
-        throw new NullPointerException();
+        // throw new NullPointerException();
     }
 
     @MethodProxy(order = 1)

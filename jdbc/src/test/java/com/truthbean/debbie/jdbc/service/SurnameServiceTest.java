@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.jdbc.service;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfigurationTest;
-import com.truthbean.debbie.jdbc.entity.Surname;
+import com.truthbean.debbie.check.jdbc.datasource.DataSourceConfigurationTest;
+import com.truthbean.debbie.check.jdbc.entity.Surname;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +26,9 @@ class SurnameServiceTest {
 
     @BeforeAll
     static void before() {
-        var factory = DebbieApplicationFactory.configure(DataSourceConfigurationTest.class);
+        var factory = ApplicationFactory.configure(DataSourceConfigurationTest.class);
 
-        DebbieApplicationContext applicationContext = factory.getApplicationContext();
+        ApplicationContext applicationContext = factory.getApplicationContext();
         var beanFactory = applicationContext.getGlobalBeanFactory();
         surnameService = beanFactory.factory("surnameService");
     }

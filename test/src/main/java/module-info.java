@@ -13,6 +13,9 @@
  * @since 0.0.2
  */
 module com.truthbean.debbie.test {
+    exports com.truthbean.debbie.test to org.junit.platform.commons;
+    exports com.truthbean.debbie.test.annotation;
+
     requires transitive com.truthbean.debbie.core;
 
     requires transitive org.junit.jupiter.api;

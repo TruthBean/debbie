@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.servlet;
 
-import com.truthbean.debbie.bean.DebbieApplicationContext;
 import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.filter.*;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -29,12 +29,12 @@ import java.util.Set;
  */
 public class ServletContextHandler {
 
-    private final DebbieApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     private final BeanInitialization beanInitialization;
 
     private final ClassLoader classLoader;
 
-    public ServletContextHandler(ServletContext servletContext, DebbieApplicationContext handler) {
+    public ServletContextHandler(ServletContext servletContext, ApplicationContext handler) {
         setServletConfiguration();
 
         beanInitialization = handler.getBeanInitialization();

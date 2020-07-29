@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * @since 0.1.0
  * Created on 2020-06-24 09:59.
  */
-public interface BeanCreator<Bean> extends BaseBeanCreator<Bean>, InjectedBeanFactoryAware {
+public interface BeanCreator<Bean> extends BaseBeanCreator<Bean> {
 
     DebbieBeanInfo<Bean> getBeanInfo();
 

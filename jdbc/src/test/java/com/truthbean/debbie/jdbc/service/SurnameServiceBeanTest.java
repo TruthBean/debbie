@@ -10,16 +10,15 @@
 package com.truthbean.debbie.jdbc.service;
 
 import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.jdbc.entity.Surname;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.check.jdbc.entity.Surname;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Timestamp;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 class SurnameServiceBeanTest {
 
     @Test

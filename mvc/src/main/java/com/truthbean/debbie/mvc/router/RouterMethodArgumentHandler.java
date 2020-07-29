@@ -99,13 +99,13 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             // query
             handleParam(parameters.getQueries(), invokedParameter, false);
             // param
-            handleParam(parameters.getParams(), invokedParameter, false);
+            // handleParam(parameters.getParams(), invokedParameter, false);
             // header
             handleParam(parameters.getHeaders(), invokedParameter, true);
             // path
             handleParam(parameters.getPathAttributes(), invokedParameter, false);
             // cookie
-            handleParam(parameters.getCookieAttributes(), invokedParameter, true);
+            handleObjectParam(parameters.getCookieAttributes(), invokedParameter, true);
             // session
             handleObject(parameters.getSessionAttributes(), invokedParameter);
             // inner
@@ -124,27 +124,27 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                 if (!TypeHelper.isBaseType(parameter.getType()) && parameter.getType() != MultipartFile.class) {
                     handleInstance(parameters, newInstance, invokedParameter);
                 } else {
-                    Map<String, List> queries = parameters.getQueries();
+                    Map<String, List<String>> queries = parameters.getQueries();
                     if (queries != null && !queries.isEmpty()) {
                         handleFiled(queries, newInstance, fields.get(i), parameter, false);
                     }
-                    Map<String, List> params = parameters.getParams();
-                    if (params != null && !params.isEmpty()) {
-                        handleFiled(params, newInstance, fields.get(i), parameter, false);
-                    }
+                    // Map<String, List> params = parameters.getParams();
+//                    if (params != null && !params.isEmpty()) {
+//                        handleFiled(params, newInstance, fields.get(i), parameter, false);
+//                    }
                     if (parameters.getBody() != null) {
                                 /*handleObjectFiled(parameters.getBody(), requestParam.requestType(), newInstance,
                                         fields.get(i), parameter);*/
                         // todo
                     }
 
-                    Map<String, List> headers = parameters.getHeaders();
+                    Map<String, List<String>> headers = parameters.getHeaders();
                     if (headers != null && !headers.isEmpty()) {
                         handleFiled(headers, newInstance, fields.get(i), parameter, true);
                     }
-                    Map<String, List> cookieAttributes = parameters.getCookieAttributes();
+                    Map<String, List<Object>> cookieAttributes = parameters.getCookieAttributes();
                     if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
-                        handleFiled(cookieAttributes, newInstance, fields.get(i), parameter, true);
+                        handleObjectFiled(cookieAttributes, newInstance, fields.get(i), parameter, true);
                     }
                     Map<String, Object> sessionAttributes = parameters.getSessionAttributes();
                     if (sessionAttributes != null && !sessionAttributes.isEmpty()) {
@@ -166,7 +166,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
     public boolean doHandleParam(RouterRequestValues parameters, ExecutableArgument invokedParameter, MediaType requestType) {
         boolean result = false;
 
-        Map<String, List> mixValues = parameters.getMixValues();
+        Map<String, List<Object>> mixValues = parameters.getMixValues();
 
         var dataValidateFactory = new DefaultDataValidateFactory();
 
@@ -188,7 +188,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         } else {
             if (!mixValues.isEmpty()) {
                 LOGGER.debug(() -> "mixValues: " + mixValues);
-                handleParam(mixValues, invokedParameter, false);
+                handleObjectParam(mixValues, invokedParameter, false);
             } else {
                 LOGGER.debug("args is empty");
             }
@@ -240,10 +240,9 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         doHandleParam(parameters, invokedParameter, requestType);
     }
 
-    @SuppressWarnings("rawtypes")
     public void doHandleFiled(RouterRequestValues parameters, Object instance, Field field,
                               ExecutableArgument invokedParameter, MediaType requestType) {
-        Map<String, List> mixValues = parameters.getMixValues();
+        Map<String, List<Object>> mixValues = parameters.getMixValues();
 
         RequestParameterInfo requestParameter = RequestParameterInfo.fromExecutableArgumentAnnotation(invokedParameter);
         if (requestParameter != null) {
@@ -251,32 +250,32 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
             switch (requestParameter.paramType()) {
                 case MIX:
                     if (!mixValues.isEmpty()) {
-                        handleFiled(mixValues, instance, field, invokedParameter, false);
+                        handleObjectFiled(mixValues, instance, field, invokedParameter, false);
                     }
                     break;
                 case QUERY:
-                    Map<String, List> queries = parameters.getQueries();
+                    Map<String, List<String>> queries = parameters.getQueries();
                     if (queries != null && !queries.isEmpty()) {
                         handleFiled(queries, instance, field, invokedParameter, false);
                     }
                     break;
                 case PATH:
-                    Map<String, List> paths = parameters.getPathAttributes();
+                    Map<String, List<String>> paths = parameters.getPathAttributes();
                     if (paths != null && !paths.isEmpty()) {
                         handleFiled(paths, instance, field, invokedParameter, false);
                     }
                     break;
                 case MATRIX:
-                    Map<String, List> matrix = parameters.getMatrixAttributes();
+                    Map<String, List<String>> matrix = parameters.getMatrixAttributes();
                     if (matrix != null && !matrix.isEmpty()) {
                         handleFiled(matrix, instance, field, invokedParameter, false);
                     }
                     break;
                 case PARAM:
-                    Map<String, List> params = parameters.getParams();
+                    /*Map<String, List> params = parameters.getParams();
                     if (params != null && !params.isEmpty()) {
                         handleFiled(params, instance, field, invokedParameter, false);
-                    }
+                    }*/
                     break;
                 case BODY:
                     var type = requestParameter.bodyType();
@@ -286,15 +285,15 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     handleObjectFiled(parameters.getBody(), type, instance, field, invokedParameter);
                     break;
                 case HEAD:
-                    Map<String, List> headers = parameters.getHeaders();
+                    Map<String, List<String>> headers = parameters.getHeaders();
                     if (headers != null && !headers.isEmpty()) {
                         handleFiled(headers, instance, field, invokedParameter, true);
                     }
                     break;
                 case COOKIE:
-                    Map<String, List> cookieAttributes = parameters.getCookieAttributes();
+                    Map<String, List<Object>> cookieAttributes = parameters.getCookieAttributes();
                     if (cookieAttributes != null && !cookieAttributes.isEmpty()) {
-                        handleFiled(cookieAttributes, instance, field, invokedParameter, true);
+                        handleObjectFiled(cookieAttributes, instance, field, invokedParameter, true);
                     }
                     break;
                 case SESSION:
@@ -313,7 +312,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     break;
             }
         } else {
-            handleFiled(mixValues, instance, field, invokedParameter, false);
+            handleObjectFiled(mixValues, instance, field, invokedParameter, false);
         }
     }
 

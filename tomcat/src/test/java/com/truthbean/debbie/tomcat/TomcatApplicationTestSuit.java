@@ -1,7 +1,7 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.boot.DebbieApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import org.junit.jupiter.api.Test;
 

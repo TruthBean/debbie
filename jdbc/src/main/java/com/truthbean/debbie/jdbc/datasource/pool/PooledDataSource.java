@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.datasource.pool;
 
+import com.truthbean.logger.LoggerFactory;
+
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.ref.Cleaner;
@@ -89,6 +91,9 @@ public class PooledDataSource implements DataSource, AutoCloseable {
 
     @Override
     public void close() {
+        LOGGER.info("clean pooled dataSource.");
         cleanable.clean();
     }
+
+    public static final com.truthbean.Logger LOGGER = LoggerFactory.getLogger(PooledDataSource.class);
 }
