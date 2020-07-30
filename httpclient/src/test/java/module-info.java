@@ -7,17 +7,13 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-
 /**
- * @author TruthBean/Rogar·Q
- * @since 0.0.2
+ * @author truthbean/Rogar·Q
+ * @since 0.1.0
  */
-module com.truthbean.debbie.test {
-    exports com.truthbean.debbie.test to org.junit.platform.commons;
-    exports com.truthbean.debbie.test.annotation;
+open module com.truthbean.debbie.httpclient.test {
+    requires com.truthbean.debbie.test;
+    requires com.truthbean.debbie.httpclient;
 
-    requires transitive com.truthbean.debbie.core;
-    requires transitive com.truthbean.debbie.boot;
-
-    requires transitive org.junit.jupiter.api;
+    requires com.fasterxml.jackson.databind;
 }

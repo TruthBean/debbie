@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -201,13 +202,14 @@ public final class JacksonUtils {
     }
 
     public static <T> T jsonToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
+        T obj = null;
         try {
-            JacksonUtils.OBJECT_MAPPER.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
+            obj = JacksonUtils.OBJECT_MAPPER.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
                     .constructParametricType(rawType, parameterClasses));
         } catch (IOException e) {
             LOGGER.error("", e);
         }
-        return null;
+        return obj;
     }
 
     /**

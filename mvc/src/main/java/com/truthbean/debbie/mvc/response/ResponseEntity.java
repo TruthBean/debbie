@@ -43,7 +43,7 @@ public class ResponseEntity<D> {
         this.message = message;
     }
 
-    public Object getData() {
+    public D getData() {
         return data;
     }
 

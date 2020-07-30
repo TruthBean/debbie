@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * Created on 2018-03-11 11:03
  */
 public final class StringUtils {
-    private static final Pattern CHINESE = Pattern.compile("^[\\u4e00-\\u9fa5]*$");
+    private static final Pattern CHINESE = Pattern.compile("^[\\u4e00-\\u9FEF]*$");
     private static final Pattern PATTERN = Pattern.compile("[0-9]*");
 
     private StringUtils() {

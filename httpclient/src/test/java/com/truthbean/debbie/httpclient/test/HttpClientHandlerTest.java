@@ -7,10 +7,19 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.httpclient;
+package com.truthbean.debbie.httpclient.test;
 
+import com.truthbean.debbie.httpclient.HttpClientHandler;
+import com.truthbean.debbie.httpclient.HttpClientProperties;
+import com.truthbean.debbie.httpclient.model.Ticket;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.request.HttpHeader;
+import com.truthbean.debbie.mvc.response.ResponseEntity;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.tools.ChineseNameHelper;
+import com.truthbean.tools.ChineseNationalIdHelper;
+import com.truthbean.tools.ChinesePhoneNumberHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -118,6 +127,43 @@ public class HttpClientHandlerTest {
             header.put("Authorization", "b34c891c-76ca-4c8d-9a85-0771b1cbcd1d");
             var r = httpClientHandler.delete("http://192.168.1.2:31202/cameras/" + (i), header);
             System.out.println(r);
+        }
+    }
+
+    @Test
+    public void ping() {
+        var ping = httpClientHandler.get("http://192.168.1.11:8098/ping");
+        System.out.println(ping);
+    }
+
+    @Test
+    public void ticketList() {
+        var ticketList = httpClientHandler.get("http://192.168.1.146:8098/ticket/list?pageSize=100");
+        @SuppressWarnings("unchecked")
+        ResponseEntity<Ticket[]> responseEntity =
+                JacksonUtils.jsonToParametricBean(ticketList, ResponseEntity.class, Ticket[].class);
+        if (responseEntity != null && responseEntity.getData() != null) {
+            // System.out.println(ticketList);
+            Random random = new Random();
+
+            var data = responseEntity.getData();
+            for (var ticket : data) {
+                ticket.setId(null);
+                ticket.setIdNumber(ChineseNationalIdHelper.generateRandomId());
+                ticket.setName(ChineseNameHelper.getRandomChineseName());
+                ticket.setPhoneNumber(ChinesePhoneNumberHelper.getRandomPhoneNumber());
+                ticket.setSeatId(random.nextInt(28) + 1);
+                ticket.setCarriageId(1);
+                ticket.setLeaveScheduleId(random.nextInt(8) + 1);
+            }
+
+            Map<String, String> header = new HashMap<>();
+            header.put(HttpHeader.HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.APPLICATION_JSON_UTF8.getValue());
+            var json = JacksonUtils.toJson(data);
+            // var json = responseEntity.getData().toString();
+            // var json = "{\"id\":1,\"name\":\"张思\",\"phoneNumber\":\"13444441234\",\"idNumber\":\"420000199605206600\",\"trainId\":1,\"carriageId\":1,\"leaveScheduleId\":2,\"arriveScheduleId\":6,\"seatId\":2,\"image\":\"70,095963b0018993\",\"feature\":[],\"createTime\":1594973736000,\"updateTime\":1594973736000,\"date\":\"2020年01月01日\",\"dateValue\":1577808000000,\"trainScheduleId\":null,\"trainName\":\"X196\",\"startingStationId\":null,\"startingStation\":null,\"leaveStationId\":4,\"leaveStationName\":\"淄博\",\"leaveStationTime\":\"2020年01月01日 11:05\",\"leaveStationTimeValue\":1577847900000,\"arriveStationId\":7,\"arriveStationName\":\"天津南\",\"arriveStationTime\":\"2020年01月01日 12:30\",\"arriveStationTimeValue\":1577853000000,\"terminalStationId\":null,\"terminalStation\":null,\"time\":\"11:05\",\"timeValue\":1577847900000,\"carriageName\":\"01车\",\"seatName\":\"02A号\",\"createTimestamp\":\"2020-07-17 16:15:36.0\",\"updateTimestamp\":\"2020-07-17 16:15:36.0\",\"deleted\":null}";
+            var sync = httpClientHandler.post("http://192.168.1.146:8098/ticket/sync", json, header);
+            // System.out.println(sync);
         }
     }
 }

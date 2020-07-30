@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.internal.DataTransformerFactory;
+import com.truthbean.debbie.data.transformer.TransformerFactory;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
@@ -226,7 +226,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                                 request.setTextBody(JacksonUtils.toXml(arg));
                             } else {
                                 try {
-                                    request.setTextBody(DataTransformerFactory.transform(arg, String.class));
+                                    request.setTextBody(TransformerFactory.transform(arg, String.class));
                                 } catch (final Exception e) {
                                     request.setTextBody(arg.toString());
                                 }
@@ -257,7 +257,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 if (TypeHelper.isRawBaseType(returnType)) {
                     returnType = (Class<R>) TypeHelper.getWrapperClass(returnType);
                 }
-                return DataTransformerFactory.transform(str, returnType);
+                return TransformerFactory.transform(str, returnType);
             } else if (o instanceof InputStream) {
                 return (R) o;
             } else {
