@@ -21,6 +21,9 @@ import com.truthbean.logger.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author TruthBean
@@ -30,11 +33,12 @@ import java.util.*;
 final class BeanRegisterCenter {
     BeanRegisterCenter() {
     }
+    public static final Object value = new Object();
 
     private static final Set<Class<? extends Annotation>> BEAN_ANNOTATION = new LinkedHashSet<>();
 
     private static final Map<Class<?>, DebbieBeanInfo<?>> BEAN_CLASSES = new HashMap<>();
-    private static final Set<DebbieBeanInfo<?>> CLASS_INFO_SET = new HashSet<>();
+    private static final Map<DebbieBeanInfo<?>, Object> CLASS_INFO_SET = new ConcurrentHashMap<>();
 
     private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Map<Class<?>, Set<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
@@ -82,7 +86,7 @@ final class BeanRegisterCenter {
         if (put == null) {
             LOGGER.trace(() -> "register class " + beanClass.getName() + " with bean name " + beanClassInfo.getServiceName());
         }
-        CLASS_INFO_SET.add(beanClassInfo);
+        CLASS_INFO_SET.put(beanClassInfo, value);
 
         Map<Method, Set<Annotation>> methodWithAnnotations = beanClassInfo.getMethodWithAnnotations();
         methodWithAnnotations.forEach((method, annotations) -> {
@@ -224,7 +228,7 @@ final class BeanRegisterCenter {
     }
 
     <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass) {
-        var classInfoSet = CLASS_INFO_SET;
+        Set<DebbieBeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
 
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
 
@@ -236,7 +240,7 @@ final class BeanRegisterCenter {
     }
 
     Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
-        var classInfoSet = CLASS_INFO_SET;
+        Set<DebbieBeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
         var beanAnnotations = BEAN_ANNOTATION;
 
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
@@ -316,6 +320,7 @@ final class BeanRegisterCenter {
     }
 
     void reset() {
+        BEAN_ANNOTATION.clear();
         BEAN_CLASSES.clear();
         CLASS_INFO_SET.clear();
         CLASS_ANNOTATION.clear();

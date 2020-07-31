@@ -7,19 +7,23 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie;
+package com.truthbean.debbie.mvc.router.test;
+
+import com.truthbean.debbie.mvc.request.QueryParameter;
+import com.truthbean.debbie.mvc.router.Router;
+
+import java.util.List;
 
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
- * Created on 2020-05-05 14:20
+ * Created on 2019-12-03 12:07
  */
-public final class DebbieVersion {
-    private DebbieVersion() {
-    }
+public class AbstractRouterTest<C extends List> {
 
-    public static String getVersion() {
-        Package pkg = DebbieVersion.class.getPackage();
-        return pkg != null ? pkg.getImplementationVersion() : "0.1.0-RELEASE";
+    @Router(urlPatterns = "/hehe")
+    public CharSequence testPathAttribute0(
+            @QueryParameter(name = "hehe", require = false, defaultValue = "0") C id) {
+        return "<html><head><title>" + id + "</title></head><body><p>this is a path attribute test</p></body></html>";
     }
 }

@@ -7,11 +7,13 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.mvc.router.test;
 
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.mvc.MvcConfiguration;
+import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import org.junit.jupiter.api.Test;
 
@@ -21,15 +23,16 @@ public class MvcRouterRegisterTest {
 
     @Test
     public void testRegisterRouter() {
-        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(MvcRouterRegisterTest.class);
-        BeanInitialization initialization = factory.getBeanInitialization();
+        ApplicationFactory factory = ApplicationFactory.configure(MvcRouterRegisterTest.class);
+        var context = factory.getApplicationContext();
+        BeanInitialization initialization = context.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
-        factory.refreshBeans();
+        context.refreshBeans();
 
-        DebbieConfigurationCenter configurationFactory = factory.getConfigurationCenter();
-        MvcConfiguration mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, factory);
+        DebbieConfigurationCenter configurationFactory = context.getConfigurationCenter();
+        MvcConfiguration mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, context);
 
-        MvcRouterRegister.registerRouter(mvcConfiguration, factory);
+        MvcRouterRegister.registerRouter(mvcConfiguration, context);
 
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         Set<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInfoFactory;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
@@ -7,6 +8,7 @@ import com.truthbean.debbie.bean.InjectedBeanFactory;
 import com.truthbean.debbie.bean.inter.Abc;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.logger.LoggerFactory;
 import demo.raw.NoBeanTest;
 import org.junit.jupiter.api.Test;
 
@@ -17,34 +19,59 @@ import org.junit.jupiter.api.Test;
 class InjectedBeanFactoryTest {
 
     @Test
+    void configure() {
+        for (int i = 0; i < 10; i++) {
+            ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
+            applicationFactory.release();
+            System.out.println("-------------------------------------------------------------");
+        }
+    }
+
+    @Test
     void factory() {
-        ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
-        ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-        BeanInfoFactory beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
-        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        for (int i = 0; i < 10; i++) {
+            System.out.println(i);
+            ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
+            ApplicationContext applicationContext = applicationFactory.getApplicationContext();
+            BeanInfoFactory beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+            InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
-        DebbieBeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
-        System.out.println("------------------------------------------------------------------------------");
-        Abc factory = globalBeanFactory.factory(Abc.class);
-        System.out.println(factory.toString());
-        System.out.println("------------------------------------------------------------------------------");
+            DebbieBeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
+            System.out.println("------------------------------------------------------------------------------");
+            Abc factory = globalBeanFactory.factory(Abc.class);
+            System.out.println(factory.toString());
+            System.out.println("------------------------------------------------------------------------------");
 
-        factory = injectedBeanFactory.factory(beanInfo);
-        System.out.println(factory.toString());
+            factory = injectedBeanFactory.factory(beanInfo);
+            System.out.println(factory.toString());
 
-        Abc abc = globalBeanFactory.factory(Abc.class);
-        System.out.println(abc.toString());
+            Abc abc = globalBeanFactory.factory(Abc.class);
+            System.out.println(abc.toString());
+            applicationFactory.release();
+        }
     }
 
     @Test
     void factoryNoBean() {
-        ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
-        ApplicationContext applicationContext = applicationFactory.getApplicationContext();
+        for (int i = 0; i < 100; i++) {
+            new Thread(() -> {
+                var applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
+                var applicationContext = applicationFactory.getApplicationContext();
 
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+                var globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
-        NoBeanTest test = globalBeanFactory.factoryByNoBean(NoBeanTest.class);
-        System.out.println(test);
+                var test = globalBeanFactory.factoryByNoBean(NoBeanTest.class);
+                applicationFactory.release();
+                logger.info(() -> String.valueOf(test));
+            }).start();
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            logger.error("", e);
+        }
     }
+
+    public static final Logger logger = LoggerFactory.getLogger(InjectedBeanFactoryTest.class);
 }

@@ -3,17 +3,17 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.Logger;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
@@ -82,7 +82,7 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
      * @return DebbieApplication implement
      */
     public abstract DebbieApplication init(DebbieConfigurationCenter configurationCenter, ApplicationContext applicationContext,
-                                 ClassLoader classLoader);
+                                           ClassLoader classLoader);
 
     public void setBeforeStartTime(long beforeStartTime) {
         this.beforeStartTime = beforeStartTime;
@@ -97,7 +97,7 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
     @Override
     public final void start(String... args) {
         startupShutdownThreadPool.execute(() -> {
-            logger.debug("debbie ("+ DebbieVersion.getVersion() +") application start in thread ...");
+            logger.debug("debbie (" + DebbieVersion.getVersion() + ") application start in thread ...");
             if (running.compareAndSet(false, true) && exited.get()) {
                 registerShutdownHook();
                 start(beforeStartTime, args);
@@ -140,8 +140,8 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
         }
     }
 
-    private synchronized void beforeExit(ApplicationContext handler, String... args) {
-        handler.release(args);
+    private synchronized void beforeExit(ApplicationContext applicationContext, String... args) {
+        applicationContext.release(args);
     }
 
     @Override

@@ -31,9 +31,6 @@ dependencies {
 
     // test =========================================================================================================
 
-    val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2-boot:$loggerVersion")
-
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 

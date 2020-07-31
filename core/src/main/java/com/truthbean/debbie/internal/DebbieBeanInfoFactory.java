@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -16,6 +16,8 @@ import com.truthbean.logger.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author TruthBean
@@ -23,7 +25,8 @@ import java.util.*;
  * Created on 2019/06/02 16:37.
  */
 class DebbieBeanInfoFactory implements BeanInfoFactory {
-    private final Set<DebbieBeanInfo<?>> beanServiceInfoSet = new HashSet<>();
+    public static final Object value = new Object();
+    private final Map<DebbieBeanInfo<?>, Object> beanServiceInfoSet = new ConcurrentHashMap<>();
 
     private final BeanInitialization beanInitialization;
 
@@ -33,114 +36,111 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
 
     @Override
     public void refreshBeans() {
-        synchronized (beanServiceInfoSet) {
-            // 重新计算hashcode，因为map的key存的是最开始put进去的值的hashcode，但是key更新的话，hashcode并没有更新
-            Set<DebbieBeanInfo<?>> copy = new HashSet<>(beanServiceInfoSet);
-            beanServiceInfoSet.clear();
+        // 重新计算hashcode，因为map的key存的是最开始put进去的值的hashcode，但是key更新的话，hashcode并没有更新
+        Map<DebbieBeanInfo<?>, Object> copy = new ConcurrentHashMap<>(beanServiceInfoSet);
+        beanServiceInfoSet.clear();
 
-            copy.addAll(beanInitialization.getRegisteredBeans());
-            var beanServiceInfoList = beanInitialization.getAnnotatedBeans();
-
-            Set<Class<? extends Annotation>> beanAnnotations = beanInitialization.getBeanAnnotations();
-            beanAnnotations.forEach((annotationType) -> {
-                Set<DebbieBeanInfo<?>> annotatedClass = beanInitialization.getAnnotatedClass(annotationType);
-                copy.addAll(annotatedClass);
-            });
-
-            beanServiceInfoList.forEach((i) -> {
-                var clazz = i.getClazz();
-                if (clazz.isAnnotation()) {
-                    @SuppressWarnings("unchecked") var annotation = (Class<? extends Annotation>) clazz;
-                    var set = beanInitialization.getAnnotatedClass(annotation);
-                    copy.addAll(set);
-
-                } else {
-                    var beanFactory = i.getBeanFactory();
-                    if (beanFactory != null) {
-                        copy.add(i);
-                    } else if (clazz.isInterface()) {
-                        copy.addAll(beanInitialization.getBeanByInterface(clazz));
-                    } else if (Modifier.isAbstract(i.getClazz().getModifiers())) {
-                        copy.addAll(beanInitialization.getBeanByAbstractSuper(clazz));
-                    } else {
-                        copy.add(i);
-                    }
-                }
-            });
-
-            beanServiceInfoSet.addAll(copy);
+        var registeredBeans = beanInitialization.getRegisteredBeans();
+        for (DebbieBeanInfo<?> registeredBean : registeredBeans) {
+            copy.put(registeredBean, value);
         }
+
+        var beanServiceInfoList = beanInitialization.getAnnotatedBeans();
+
+        Set<Class<? extends Annotation>> beanAnnotations = new CopyOnWriteArraySet<>(beanInitialization.getBeanAnnotations());
+        beanAnnotations.forEach((annotationType) -> {
+            var annotatedClass = beanInitialization.getAnnotatedClass(annotationType);
+            for (DebbieBeanInfo<?> beanInfo : annotatedClass) {
+                copy.put(beanInfo, value);
+            }
+        });
+
+        beanServiceInfoList.forEach((i) -> {
+            var clazz = i.getClazz();
+            if (clazz.isAnnotation()) {
+                @SuppressWarnings("unchecked") var annotation = (Class<? extends Annotation>) clazz;
+                var set = beanInitialization.getAnnotatedClass(annotation);
+                for (DebbieBeanInfo<?> beanInfo : set) {
+                    copy.put(beanInfo, value);
+                }
+
+            } else {
+                var beanFactory = i.getBeanFactory();
+                if (beanFactory != null) {
+                    copy.put(i, value);
+                } else if (clazz.isInterface()) {
+                    var beans = beanInitialization.getBeanByInterface(clazz);
+                    for (DebbieBeanInfo<?> beanInfo : beans) {
+                        copy.put(beanInfo, value);
+                    }
+                } else if (Modifier.isAbstract(i.getClazz().getModifiers())) {
+                    var beans = beanInitialization.getBeanByAbstractSuper(clazz);
+                    for (DebbieBeanInfo<?> beanInfo : beans) {
+                        copy.put(beanInfo, value);
+                    }
+                } else {
+                    copy.put(i, value);
+                }
+            }
+        });
+        beanServiceInfoSet.putAll(copy);
     }
 
     @Override
     public void autoCreateSingletonBeans(GlobalBeanFactory beanFactory) {
-        synchronized (beanServiceInfoSet) {
-            beanServiceInfoSet.forEach(i -> {
-                Boolean lazyCreate = i.getLazyCreate();
-                if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
-                    i.setBean(beanFactory.factory(i.getServiceName()));
-                    beanInitialization.refreshBean(i);
-                }
-            });
-        }
+        beanServiceInfoSet.forEach((i, value) -> {
+            Boolean lazyCreate = i.getLazyCreate();
+            if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
+                i.setBean(beanFactory.factory(i.getServiceName()));
+                beanInitialization.refreshBean(i);
+            }
+        });
     }
 
     Set<DebbieBeanInfo<?>> getAutoCreatedBean() {
-        synchronized (beanServiceInfoSet) {
-            Set<DebbieBeanInfo<?>> result = new HashSet<>();
-            for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet) {
-                Boolean lazyCreate = beanInfo.getLazyCreate();
-                if (lazyCreate != null && !lazyCreate) {
-                    result.add(beanInfo);
-                }
+        Set<DebbieBeanInfo<?>> result = new HashSet<>();
+        for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet.keySet()) {
+            Boolean lazyCreate = beanInfo.getLazyCreate();
+            if (lazyCreate != null && !lazyCreate) {
+                result.add(beanInfo);
             }
-            return result;
         }
+        return result;
     }
 
     @Override
     public Set<DebbieBeanInfo<?>> getAllDebbieBeanInfo() {
-        synchronized (beanServiceInfoSet) {
-            return Set.copyOf(beanServiceInfoSet);
-        }
+        return Set.copyOf(beanServiceInfoSet.keySet());
     }
 
     @Override
     public <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require) {
-        synchronized (beanServiceInfoSet) {
-            return getBeanInfoList(type, require, beanServiceInfoSet);
-        }
+        return getBeanInfoList(type, require, beanServiceInfoSet.keySet());
     }
 
     @Override
     public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
-        synchronized (beanServiceInfoSet) {
-            try {
-                return getBeanInfo(serviceName, type, require, beanServiceInfoSet, true);
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage());
-            }
-            return null;
+        try {
+            return getBeanInfo(serviceName, type, require, beanServiceInfoSet.keySet(), true);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
         }
+        return null;
     }
 
     @Override
     public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException) {
-        synchronized (beanServiceInfoSet) {
-            return getBeanInfo(serviceName, type, require, beanServiceInfoSet, throwException);
-        }
+        return getBeanInfo(serviceName, type, require, beanServiceInfoSet.keySet(), throwException);
     }
 
     @Override
     public void destroy(DebbieBeanInfo<?> beanInfo) {
-        synchronized (beanServiceInfoSet) {
-            beanServiceInfoSet.remove(beanInfo);
-        }
+        beanServiceInfoSet.remove(beanInfo);
     }
 
     protected void releaseBeans() {
-        synchronized (beanServiceInfoSet) {
-            destroyBeans(beanServiceInfoSet);
+        synchronized (DebbieBeanInfoFactory.class) {
+            destroyBeans(beanServiceInfoSet.keySet());
 
             beanServiceInfoSet.clear();
         }

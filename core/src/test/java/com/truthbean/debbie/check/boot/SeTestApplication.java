@@ -24,23 +24,23 @@ class SeTestApplication {
         String result = pkg != null ? pkg.getImplementationVersion() : null;
         System.out.println(result);
 
-        /* new Thread(() -> application.start(args)).start();
-        application.start(args);*/
-        /*new Thread(() -> application.start(args)).start();
+        new Thread(() -> application.start(args)).start();
+        application.start(args);
+        new Thread(() -> application.start(args)).start();
         new Thread(() -> application.start(args)).start();
         new Thread(() -> application.start(args)).start();
 
         new Thread(() -> application.exit(args)).start();
         application.exit(args);
-        new Thread(() -> application.exit(args)).start();*/
+        new Thread(() -> application.exit(args)).start();
 
-        /*try {
+        try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        application.exit(args);*/
-        /*new Thread(() -> application.exit(args)).start();*/
+        application.exit(args);
+        new Thread(() -> application.exit(args)).start();
     }
 }

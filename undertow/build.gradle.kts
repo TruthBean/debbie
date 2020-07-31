@@ -42,17 +42,27 @@ extraJavaModuleInfo {
         exports("io.undertow.connector")
         exports("io.undertow.io")
         exports("io.undertow.predicate")
-        exports("io.undertow.protocols")
-        exports("io.undertow.security")
+        // exports("io.undertow.protocols")
+        // exports("io.undertow.protocols")
         exports("io.undertow.server")
         exports("io.undertow.server.session")
         exports("io.undertow.server.handlers")
         exports("io.undertow.server.handlers.form")
         exports("io.undertow.util")
         exports("io.undertow.websockets")
+        requires("org.jboss.logging")
+        requires("org.xnio.api")
+    }
+    module("jboss-logging-3.4.1.Final.jar", "org.jboss.logging", "3.4.1") {
+        exports("org.jboss.logging")
+        requires("java.logging")
     }
     module("jboss-threads-3.1.0.Final.jar", "org.jboss.threads", "3.1.0")
-    module("xnio-api-3.8.0.Final.jar", "org.xnio.api", "3.8.0")
+    module("xnio-api-3.8.0.Final.jar", "org.xnio.api", "3.8.0") {
+        exports("org.xnio")
+        requires("org.jboss.logging")
+        // uses("org.xnio.XnioProvider")
+    }
     module("xnio-nio-3.8.0.Final.jar", "org.xnio.nio", "3.8.0")
     module("wildfly-client-config-1.0.1.Final.jar", "org.wildfly.client.config", "1.0.1")
     module("wildfly-common-1.5.2.Final.jar", "org.wildfly.common", "1.5.2")

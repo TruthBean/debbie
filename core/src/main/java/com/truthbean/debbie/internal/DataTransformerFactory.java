@@ -221,5 +221,9 @@ public class DataTransformerFactory {
         return canTransform;
     }
 
+    public static void reset() {
+        cache.clear();
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DataTransformerFactory.class);
 }

@@ -326,6 +326,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     public void destroy() {
         preparations.clear();
         singletonBeanCreatorMap.clear();
+        injectTypes.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieInjectedBeanFactory.class);

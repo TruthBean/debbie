@@ -12,6 +12,7 @@
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  */
-module com.truthbean.debbie.aio.test {
+open module com.truthbean.debbie.aio.test {
     requires com.truthbean.debbie.test;
+    requires com.truthbean.debbie.aio;
 }

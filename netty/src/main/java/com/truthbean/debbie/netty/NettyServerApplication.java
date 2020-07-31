@@ -70,8 +70,8 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private ChannelFuture channelFuture = null;
 
-    private void run(NettyConfiguration configuration, SessionManager sessionManager,
-                     ApplicationContext applicationContext,
+    private void run(final NettyConfiguration configuration, final SessionManager sessionManager,
+                     final ApplicationContext applicationContext,
                      long beforeStartTime) {
         try {
             // (2)
@@ -140,12 +140,12 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    public void start(long beforeStartTime, String... args) {
+    protected void start(long beforeStartTime, String... args) {
         run(configuration, sessionManager, applicationContext, beforeStartTime);
     }
 
     @Override
-    public void exit(long beforeStartTime, String... args) {
+    protected void exit(long beforeStartTime, String... args) {
         shutdown();
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) +

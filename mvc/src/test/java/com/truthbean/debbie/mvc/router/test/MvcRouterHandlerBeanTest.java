@@ -7,17 +7,19 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.mvc.router.test;
 
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
-import com.truthbean.debbie.test.DebbieApplicationExtension;
+import com.truthbean.debbie.mvc.router.MvcRouterHandler;
+import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.mvc.router.RouterInfo;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.Set;
 
-@ExtendWith({DebbieApplicationExtension.class})
+@DebbieApplicationTest
 class MvcRouterHandlerBeanTest {
 
     @Test

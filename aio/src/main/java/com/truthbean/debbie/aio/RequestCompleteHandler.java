@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * @since 0.0.2
  * Created on 2019-12-17 20:13
  */
-public class RequestCompleteHandler {
+class RequestCompleteHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestCompleteHandler.class);
 
     RouterRequest handle(AsynchronousSocketChannel channel) {

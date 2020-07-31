@@ -22,7 +22,7 @@ import com.truthbean.logger.LoggerFactory;
  * @since 0.0.1
  * Created on 2019/3/23 11:32.
  */
-public class DebbieApplicationContext implements ApplicationContext {
+class DebbieApplicationContext implements ApplicationContext {
 
     private final BeanInitialization beanInitialization;
     private final DebbieConfigurationCenter configurationCenter;
@@ -129,13 +129,16 @@ public class DebbieApplicationContext implements ApplicationContext {
     }
 
     protected void releaseBeans() {
-        injectedBeanFactory.destroy();
+        synchronized (DebbieApplicationContext.class) {
+            injectedBeanFactory.destroy();
 
-        this.debbieBeanInfoFactory.releaseBeans();
+            this.debbieBeanInfoFactory.releaseBeans();
 
-        beanInitialization.reset();
-        resourceResolver.cleanResources();
-        LOGGER.info("release all bean.");
+            beanInitialization.reset();
+            resourceResolver.cleanResources();
+            DataTransformerFactory.reset();
+            LOGGER.info("release all bean.");
+        }
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DebbieApplicationContext.class);

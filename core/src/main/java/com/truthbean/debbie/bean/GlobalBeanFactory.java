@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -23,6 +24,8 @@ public interface GlobalBeanFactory {
     <T> T factory(Class<T> type);
 
     <T> T factoryIfPresent(Class<T> type);
+
+    <T> Optional<T> factoryIfPresent(String beanName);
 
     <T> void factoryByRawBean(T rawBean);
 

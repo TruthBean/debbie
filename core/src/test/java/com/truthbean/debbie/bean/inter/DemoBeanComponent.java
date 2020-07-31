@@ -14,8 +14,6 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.proxy.MethodProxy;
 
-import javax.inject.Inject;
-import java.util.Random;
 import java.util.UUID;
 
 @BeanComponent(type = BeanType.NO_LIMIT)
@@ -23,7 +21,7 @@ public class DemoBeanComponent {
 
     private final String uuid;
 
-    @Inject
+    @BeanInject
     private Demo2 demo1;
     private final Demo2 demo2;
 

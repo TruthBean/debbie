@@ -1,8 +1,10 @@
 package com.truthbean.debbie.bean.custom;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.logger.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,7 +23,8 @@ class CustomBeanAnnotatedBeanTest {
                 ApplicationContext context = applicationFactory.getApplicationContext();
                 GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
                 CustomBeanAnnotatedBean bean = globalBeanFactory.factory(CustomBeanAnnotatedBean.class);
-                System.out.println(bean.getA());
+                LOGGER.info(String.valueOf(bean.getA()));
+                applicationFactory.release();
             }).start();
         }
 
@@ -33,4 +36,6 @@ class CustomBeanAnnotatedBeanTest {
         System.out.println("-----------------------------------------------------------------------------------------");
 
     }
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(CustomBeanAnnotatedBeanTest.class);
 }

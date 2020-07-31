@@ -15,10 +15,12 @@ import com.truthbean.debbie.undertow.UndertowServerApplication;
  * @since 0.1.0
  */
 module com.truthbean.debbie.undertow {
+    exports com.truthbean.debbie.undertow to com.truthbean.debbie.core;
     requires transitive com.truthbean.debbie.server;
-    requires java.management;
+    requires transitive java.management;
     // not work
-    requires io.undertow.core;
+    requires transitive io.undertow.core;
+    requires transitive org.xnio.api;
 
     provides com.truthbean.debbie.boot.AbstractApplication with
             UndertowServerApplication;

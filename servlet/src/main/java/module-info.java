@@ -13,9 +13,12 @@
  * @since 0.1.0
  */
 module com.truthbean.debbie.servlet {
+    exports com.truthbean.debbie.servlet;
+    exports com.truthbean.debbie.servlet.response.view;
+
     requires transitive com.truthbean.debbie.mvc;
-    requires java.servlet;
-    requires org.apache.commons.io;
+    requires static java.servlet;
+    requires static org.apache.commons.io;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.servlet.ServletModuleStarter;

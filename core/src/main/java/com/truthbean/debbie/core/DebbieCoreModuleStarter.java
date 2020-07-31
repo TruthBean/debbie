@@ -16,6 +16,8 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 
+import java.util.Optional;
+
 /**
  * @author truthbean
  * @since 0.0.2
@@ -46,9 +48,11 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.reset();
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
-        executor.destroy();
+        synchronized (DebbieCoreModuleStarter.class) {
+            configurationFactory.reset();
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            Optional<ThreadPooledExecutor> executor = globalBeanFactory.factoryIfPresent("threadPooledExecutor");
+            executor.ifPresent(ThreadPooledExecutor::destroy);
+        }
     }
 }

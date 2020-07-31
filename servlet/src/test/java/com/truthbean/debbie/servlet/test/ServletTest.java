@@ -1,4 +1,4 @@
-package com.truthbean.debbie.servlet;
+package com.truthbean.debbie.servlet.test;
 
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;

@@ -28,6 +28,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -69,6 +70,12 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
     public <T> T factoryIfPresent(Class<T> type) {
         LOGGER.trace(() -> "factory bean with type " + type.getName() + " if present");
         return factory(null, type, false, false);
+    }
+
+    @Override
+    public <T> Optional<T> factoryIfPresent(String beanName) {
+        LOGGER.trace(() -> "factory bean with name " + beanName + " if present");
+        return Optional.ofNullable(factory(beanName, null, false, false));
     }
 
     @Override

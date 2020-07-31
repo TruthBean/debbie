@@ -91,7 +91,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     private final ThreadPooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     @Override
-    public void start(long beforeStartTime, String... args) {
+    protected void start(long beforeStartTime, String... args) {
         LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
         printlnWebUrl(LOGGER, configuration.getPort());
         double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
@@ -102,7 +102,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     }
 
     @Override
-    public void exit(long beforeStartTime, String... args) {
+    protected void exit(long beforeStartTime, String... args) {
         LOGGER.debug(() -> "destroy running thread");
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");

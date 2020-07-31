@@ -10,6 +10,7 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.data.transformer.TransformerFactory;
 import com.truthbean.debbie.internal.DataTransformerFactory;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
@@ -635,7 +636,7 @@ public class ReflectionHelper {
             if (TypeHelper.isRawBaseType(fieldType)) {
                 fieldType = TypeHelper.getWrapperClass(fieldType);
             }
-            return method.invoke(target, DataTransformerFactory.transform(arg, fieldType));
+            return method.invoke(target, TransformerFactory.transform(arg, fieldType));
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
@@ -1059,7 +1060,7 @@ public class ReflectionHelper {
      * @param resourceResolver resource resolver
      * @return class list
      */
-    public static List<Class<?>> getAllClassByPackageName(String packageName, ClassLoader classLoader,
+    public static List<Class<?>> getAllClassByPackageName(String packageName, final ClassLoader classLoader,
                                                           ResourceResolver resourceResolver) {
         LOGGER.trace(() -> "packageName: " + packageName);
         var packageDirName = packageName.replace('.', '/');
@@ -1082,43 +1083,6 @@ public class ReflectionHelper {
         var packageDirName = packageName.replace('.', '/');
         List<String> resources = ResourcesHandler.getAllClassPathResources(packageDirName, classLoader);
         return ResourcesHandler.getClassesByResources(resources, classLoader);
-
-        /*// 第一个class类的集合
-        List<Class<?>> classes = new ArrayList<>();
-        // 是否循环迭代
-        var recursive = true;
-        // 获取包的名字 并进行替换
-        var packageDirName = packageName.replace('.', '/');
-
-        if (classLoader == null)
-            classLoader = ClassLoaderUtils.getClassLoader(ReflectionHelper.class);
-
-        // 定义一个枚举的集合 并进行循环来处理这个目录下的things
-        Enumeration<URL> dirs;
-        try {
-            dirs = classLoader.getResources(packageDirName);
-            // 循环迭代下去
-            while (dirs.hasMoreElements()) {
-                // 获取下一个元素
-                var url = dirs.nextElement();
-                // 得到协议的名称
-                var protocol = url.getProtocol();
-                // 如果是以文件的形式保存在服务器上
-                if ("file".equals(protocol)) {
-                    // 获取包的物理路径
-                    var filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
-                    // 以文件的方式扫描整个包下的文件 并添加到集合中
-                    findAndAddClassesInPackageByFile(classLoader, packageName, filePath, recursive, classes);
-                } else if ("jar".equals(protocol)) {
-                    var tmp = StreamHelper.getClassFromJarByPackageName(packageName, url, packageDirName, classLoader);
-                    classes.addAll(tmp);
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-
-        return classes;*/
     }
 
     /**

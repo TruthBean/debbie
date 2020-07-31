@@ -15,7 +15,7 @@ import com.truthbean.debbie.internal.DebbieApplicationFactory;
  * @author TruthBean
  * @since 0.1.0
  */
-public abstract class AbstractApplicationFactory extends DebbieApplicationFactory implements ApplicationFactory {
+public abstract class AbstractApplicationFactory extends DebbieApplicationFactory {
 
     protected AbstractApplicationFactory(Class<?> applicationClass) {
         super(applicationClass);

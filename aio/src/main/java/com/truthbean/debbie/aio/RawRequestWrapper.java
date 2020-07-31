@@ -35,7 +35,7 @@ import java.util.*;
  * @since 0.0.2
  * Created on 2019-12-17 19:09
  */
-public class RawRequestWrapper implements RouterRequest {
+class RawRequestWrapper implements RouterRequest {
 
     private final List<String> raw;
 

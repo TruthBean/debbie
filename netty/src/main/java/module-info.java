@@ -15,6 +15,8 @@ import com.truthbean.debbie.netty.NettyServerApplication;
  * @since 0.1.0
  */
 module com.truthbean.debbie.netty {
+    exports com.truthbean.debbie.netty;
+
     requires transitive com.truthbean.debbie.server;
 
     requires io.netty.transport;
@@ -26,6 +28,7 @@ module com.truthbean.debbie.netty {
     requires java.base;
     requires jdk.accessibility;
     requires jdk.unsupported;
+    requires jdk.nio.mapmode;
 
     provides com.truthbean.debbie.boot.AbstractApplication with
             NettyServerApplication;

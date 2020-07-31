@@ -14,4 +14,6 @@
  */
 module com.truthbean.debbie.boot {
     requires transitive com.truthbean.debbie.core;
+    requires jakarta.activation;
+    requires static org.slf4j;
 }

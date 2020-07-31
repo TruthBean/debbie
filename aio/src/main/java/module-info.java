@@ -16,7 +16,7 @@ module com.truthbean.debbie.aio {
     exports com.truthbean.debbie.aio to com.truthbean.debbie.core;
 
     requires transitive com.truthbean.debbie.server;
-    requires java.management;
+    requires transitive java.management;
 
     provides com.truthbean.debbie.boot.AbstractApplication with
             com.truthbean.debbie.aio.AioServerApplication;

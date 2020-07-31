@@ -136,6 +136,7 @@ subprojects {
         // javadoc
         if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
             tasks.withType<Javadoc> {
+                isFailOnError = false
                 options {
                     encoding = "UTF-8"
                     charset("UTF-8")

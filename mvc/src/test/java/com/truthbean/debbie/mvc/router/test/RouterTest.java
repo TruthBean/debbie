@@ -7,10 +7,11 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.mvc.router.test;
 
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
+import com.truthbean.debbie.mvc.router.Router;
 
 import java.util.ArrayList;
 import java.util.List;

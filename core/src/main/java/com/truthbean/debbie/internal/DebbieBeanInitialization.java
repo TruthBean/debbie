@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author TruthBean
@@ -138,7 +139,7 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public void init(Set<Class<?>> beanClasses) {
+    public synchronized void init(final Set<Class<?>> beanClasses) {
         if (beanClasses != null && !beanClasses.isEmpty()) {
             beanClasses.forEach(this::init);
         }
@@ -208,7 +209,7 @@ class DebbieBeanInitialization implements BeanInitialization {
     @Override
     public Set<DebbieBeanInfo<?>> getRegisteredBeans() {
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
-        Collection<DebbieBeanInfo<?>> registerRawBeans = beanRegisterCenter.getRegisterRawBeans();
+        Collection<DebbieBeanInfo<?>> registerRawBeans = new CopyOnWriteArrayList<>(beanRegisterCenter.getRegisterRawBeans());
         if (!registerRawBeans.isEmpty()) {
             for (DebbieBeanInfo<?> registerRawBean : registerRawBeans) {
                 if (registerRawBean.isPresent() || registerRawBean.getBeanFactory() != null) {
@@ -247,5 +248,9 @@ class DebbieBeanInitialization implements BeanInitialization {
     @Override
     public void reset() {
         beanRegisterCenter.reset();
+        if (resourceResolver != null)
+            resourceResolver.cleanResources();
+        initialization = null;
+        resourceResolver = null;
     }
 }

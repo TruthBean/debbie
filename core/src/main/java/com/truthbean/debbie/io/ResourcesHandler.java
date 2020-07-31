@@ -137,9 +137,10 @@ public final class ResourcesHandler {
         }
     }
 
-    public static List<Class<?>> getClassesByResources(Collection<String> resources, ClassLoader classLoader) {
-        List<Class<?>> classes = new ArrayList<>();
-        if (resources == null || resources.isEmpty())
+    public static synchronized List<Class<?>> getClassesByResources(final Collection<String> resources,
+                                                       final ClassLoader classLoader) {
+        final List<Class<?>> classes = new ArrayList<>();
+        if (resources == null || resources.isEmpty() || classLoader == null)
             return classes;
         for (String name : resources) {
             // 如果是以/开头的

@@ -1,8 +1,8 @@
-package com.truthbean.debbie.undertow;
+package com.truthbean.debbie.undertow.test;
 
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ public class UndertowApplicationTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplicationFactory.create(UndertowApplicationTest.class);
+        DebbieApplication application = ApplicationFactory.create(UndertowApplicationTest.class);
         application.start(args);
         application.exit(args);
     }

@@ -39,7 +39,7 @@ public class ServletApplicationInitializer extends AbstractApplicationFactory im
             super.config(ServletApplicationInitializer.class);
             super.callStarter();
         } else {
-            applicationContext = debbieApplicationFactory;
+            applicationContext = debbieApplicationFactory.getApplicationContext();
         }
     }
 

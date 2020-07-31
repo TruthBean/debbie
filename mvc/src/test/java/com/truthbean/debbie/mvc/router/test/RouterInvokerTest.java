@@ -7,11 +7,12 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.mvc.router.test;
 
 import com.truthbean.debbie.bean.BeanInfoFactory;
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.mvc.router.Router;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import org.junit.jupiter.api.Test;
 
@@ -24,11 +25,12 @@ public class RouterInvokerTest {
 
     @Test
     public void testRouterInvoke() {
-        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(RouterInvokerTest.class);
-        BeanInitialization initialization = factory.getBeanInitialization();
-        BeanInfoFactory beanInfoFactory = factory.getDebbieBeanInfoFactory();
+        ApplicationFactory factory = ApplicationFactory.configure(RouterInvokerTest.class);
+        var context = factory.getApplicationContext();
+        BeanInitialization initialization = context.getBeanInitialization();
+        BeanInfoFactory beanInfoFactory = context.getDebbieBeanInfoFactory();
         initialization.init(RouterInvokerTest.class);
-        factory.refreshBeans();
+        context.refreshBeans();
         // var router = factory.factoryBeanInvoker(RouterInvokerTest.class);
         var params = new Object[]{"哈哈"};
         // var result = router.invokeMethod(Router.class, "router", params);

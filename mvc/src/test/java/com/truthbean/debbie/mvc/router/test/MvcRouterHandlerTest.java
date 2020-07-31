@@ -7,13 +7,17 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.mvc.router;
+package com.truthbean.debbie.mvc.router.test;
 
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
+import com.truthbean.debbie.mvc.router.MvcRouterHandler;
+import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,15 +31,16 @@ class MvcRouterHandlerTest {
 
     @BeforeEach
     public void before() {
-        DebbieApplicationFactory factory = DebbieApplicationFactory.configure(MvcRouterHandlerTest.class);
-        BeanInitialization initialization = factory.getBeanInitialization();
+        ApplicationFactory factory = ApplicationFactory.configure(MvcRouterHandlerTest.class);
+        ApplicationContext applicationContext = factory.getApplicationContext();
+        BeanInitialization initialization = applicationContext.getBeanInitialization();
         initialization.init(RouterInvokerTest.class);
-        factory.refreshBeans();
+        applicationContext.refreshBeans();
 
-        DebbieConfigurationCenter configurationFactory = factory.getConfigurationCenter();
-        mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, factory);
+        DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
+        mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, applicationContext);
 
-        MvcRouterRegister.registerRouter(mvcConfiguration, factory);
+        MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
     }
 
     @Test

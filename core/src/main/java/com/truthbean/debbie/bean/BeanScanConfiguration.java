@@ -9,11 +9,13 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -33,7 +35,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<Class<?>> scannedClasses;
     private final Set<Class<? extends Annotation>> customInjectType;
 
-    private ClassLoader classLoader;
+    private volatile ClassLoader classLoader;
 
     public BeanScanConfiguration() {
         this.scanClasses = new HashSet<>();
@@ -187,8 +189,12 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         return Collections.unmodifiableSet(scannedClasses);
     }
 
-    private List<Class<?>> scanClasses(ResourceResolver resourceResolver, String packageName) {
-        List<Class<?>> classList;
+    private synchronized List<Class<?>> scanClasses(final ResourceResolver resourceResolver, final String packageName) {
+        List<Class<?>> classList = new ArrayList<>();
+        if (classLoader == null) {
+            LOGGER.error("classLoader is null!");
+            return classList;
+        }
         if (resourceResolver != null) {
             List<String> resources =
                     ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
@@ -214,4 +220,6 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.customInjectType.clear();
         this.classLoader = null;
     }
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(BeanScanConfiguration.class);
 }

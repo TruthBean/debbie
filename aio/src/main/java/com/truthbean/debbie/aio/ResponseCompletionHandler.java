@@ -29,13 +29,13 @@ import java.util.concurrent.Future;
  * @since 0.0.2
  * Created on 2019-12-17 20:19
  */
-public class ResponseCompletionHandler {
+class ResponseCompletionHandler {
 
     private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
     private final RouterRequest routerRequest;
 
-    public ResponseCompletionHandler(ApplicationContext applicationContext, RouterRequest routerRequest,
+    ResponseCompletionHandler(ApplicationContext applicationContext, RouterRequest routerRequest,
                                      AioServerConfiguration configuration) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;

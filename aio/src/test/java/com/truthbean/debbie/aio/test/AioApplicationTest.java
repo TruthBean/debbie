@@ -7,7 +7,7 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.aio;
+package com.truthbean.debbie.aio.test;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -27,7 +27,7 @@ public class AioApplicationTest {
     public static void main(String[] args) {
         var application = ApplicationFactory.create(AioApplicationTest.class);
         application.start(args);
-        application.exit(args);
+        // application.exit(args);
     }
 
     @Test
