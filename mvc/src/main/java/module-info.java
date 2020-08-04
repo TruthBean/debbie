@@ -16,10 +16,12 @@ module com.truthbean.debbie.mvc {
     exports com.truthbean.debbie.mvc;
     exports com.truthbean.debbie.mvc.router;
     exports com.truthbean.debbie.mvc.response;
+    exports com.truthbean.debbie.mvc.response.provider;
+    exports com.truthbean.debbie.mvc.response.view;
     exports com.truthbean.debbie.mvc.csrf;
     exports com.truthbean.debbie.mvc.filter;
     exports com.truthbean.debbie.mvc.request;
-    exports com.truthbean.debbie.mvc.response.view;
+    exports com.truthbean.debbie.mvc.url;
 
     requires transitive com.truthbean.debbie.core;
 

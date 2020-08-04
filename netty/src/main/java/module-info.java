@@ -28,7 +28,6 @@ module com.truthbean.debbie.netty {
     requires java.base;
     requires jdk.accessibility;
     requires jdk.unsupported;
-    requires jdk.nio.mapmode;
 
     provides com.truthbean.debbie.boot.AbstractApplication with
             NettyServerApplication;
