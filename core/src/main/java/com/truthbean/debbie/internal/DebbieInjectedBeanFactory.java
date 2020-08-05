@@ -86,7 +86,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
     public void setApplicationContext(DebbieApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+        this.beanInfoFactory = applicationContext.getBeanInfoFactory();
     }
 
     public void setGlobalBeanFactory(DebbieGlobalBeanFactory globalBeanFactory) {

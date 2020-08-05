@@ -66,7 +66,7 @@ class DebbieBootApplicationResolver {
         DebbieBeanInfo<?> applicationClassBeanInfo = new DebbieBeanInfo<>(applicationClass);
         applicationClassBeanInfo.setBeanType(BeanType.SINGLETON);
         beanInitialization.initBean(applicationClassBeanInfo);
-        this.applicationContext.getDebbieBeanInfoFactory().refreshBeans();
+        this.applicationContext.getBeanInfoFactory().refreshBeans();
 
         Annotation annotation = applicationClassBeanInfo.getAnnotatedClassAnnotation(DebbieBootApplication.class);
         if (annotation != null) {

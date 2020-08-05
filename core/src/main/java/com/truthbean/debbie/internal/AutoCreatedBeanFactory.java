@@ -29,7 +29,7 @@ class AutoCreatedBeanFactory {
     private final DebbieBeanInfoFactory beanInfoFactory;
     private final BeanInitialization beanInitialization;
     AutoCreatedBeanFactory(DebbieApplicationContext applicationContext) {
-        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+        this.beanInfoFactory = applicationContext.getBeanInfoFactory();
         this.beanInitialization = applicationContext.getBeanInitialization();
         this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
     }

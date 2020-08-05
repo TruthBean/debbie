@@ -33,7 +33,7 @@ class InjectedBeanFactoryTest {
             System.out.println(i);
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-            BeanInfoFactory beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+            BeanInfoFactory beanInfoFactory = applicationContext.getBeanInfoFactory();
             InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
             GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 

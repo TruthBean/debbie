@@ -80,7 +80,7 @@ class DebbieApplicationContext implements ApplicationContext {
     }
 
     @Override
-    public DebbieBeanInfoFactory getDebbieBeanInfoFactory() {
+    public DebbieBeanInfoFactory getBeanInfoFactory() {
         return debbieBeanInfoFactory;
     }
 

@@ -28,7 +28,7 @@ public class RouterInvokerTest {
         ApplicationFactory factory = ApplicationFactory.configure(RouterInvokerTest.class);
         var context = factory.getApplicationContext();
         BeanInitialization initialization = context.getBeanInitialization();
-        BeanInfoFactory beanInfoFactory = context.getDebbieBeanInfoFactory();
+        BeanInfoFactory beanInfoFactory = context.getBeanInfoFactory();
         initialization.init(RouterInvokerTest.class);
         context.refreshBeans();
         // var router = factory.factoryBeanInvoker(RouterInvokerTest.class);

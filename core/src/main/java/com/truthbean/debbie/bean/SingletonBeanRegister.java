@@ -20,7 +20,7 @@ public class SingletonBeanRegister {
     private final BeanInitialization initialization;
 
     public SingletonBeanRegister(ApplicationContext applicationContext) {
-        this.beanInfoFactory = applicationContext.getDebbieBeanInfoFactory();
+        this.beanInfoFactory = applicationContext.getBeanInfoFactory();
         initialization = applicationContext.getBeanInitialization();
     }
 

@@ -28,7 +28,7 @@ public interface ApplicationContext {
 
     BeanInitialization getBeanInitialization();
 
-    BeanInfoFactory getDebbieBeanInfoFactory();
+    BeanInfoFactory getBeanInfoFactory();
 
     DebbieConfigurationCenter getConfigurationCenter();
 

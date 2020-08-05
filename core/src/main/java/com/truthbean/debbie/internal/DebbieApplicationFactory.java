@@ -107,7 +107,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         var beanInitialization = applicationContext.getBeanInitialization();
         beanInitialization.init(targetClasses);
         registerResourceResolver(resourceResolver, beanInitialization);
-        applicationContext.getDebbieBeanInfoFactory().refreshBeans();
+        applicationContext.getBeanInfoFactory().refreshBeans();
 
         debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         if (!debbieModuleStarters.isEmpty()) {
@@ -126,7 +126,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
         // beanConfiguration
         beanInitialization.registerBeanConfiguration(targetClasses);
-        applicationContext.getDebbieBeanInfoFactory().refreshBeans();
+        applicationContext.getBeanInfoFactory().refreshBeans();
         // transformer
         DataTransformerFactory.register(targetClasses);
         // event
