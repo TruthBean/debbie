@@ -25,11 +25,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ResourceResolver {
     private final Object value = new Object();
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Object> classCache = new ConcurrentHashMap<>();
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public void addResource(Collection<String> resources) {
         for (String resource : resources) {
             this.cache.put(resource, value);
+            try {
+                this.classCache.put(Class.forName(resource), value);
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -44,7 +49,12 @@ public class ResourceResolver {
         return result;
     }
 
+    public Set<Class<?>> getCachedClasses() {
+        return this.classCache.keySet();
+    }
+
     public void cleanResources() {
         cache.clear();
+        this.classCache.clear();
     }
 }

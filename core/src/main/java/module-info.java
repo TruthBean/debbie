@@ -22,6 +22,10 @@ module com.truthbean.debbie.core {
     exports com.truthbean.debbie.data.validate;
     exports com.truthbean.debbie.data.transformer;
     exports com.truthbean.debbie.data.transformer.text;
+    exports com.truthbean.debbie.data.transformer.collection;
+    exports com.truthbean.debbie.data.transformer.date;
+    exports com.truthbean.debbie.data.transformer.jdbc;
+    exports com.truthbean.debbie.data.transformer.numeric;
 
     exports com.truthbean.debbie.event;
     exports com.truthbean.debbie.io;

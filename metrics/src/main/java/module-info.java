@@ -14,7 +14,7 @@
 module com.truthbean.debbie.metrics {
     exports com.truthbean.debbie.metrics;
 
-    requires transitive micrometer.core;
+    requires micrometer.core;
     requires transitive io.dropwizard.metrics.healthchecks;
     requires transitive io.prometheus.simpleclient;
 }
