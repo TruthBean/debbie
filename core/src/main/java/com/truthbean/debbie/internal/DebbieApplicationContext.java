@@ -12,9 +12,11 @@ package com.truthbean.debbie.internal;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.task.TaskFactory;
 import com.truthbean.logger.LoggerFactory;
 
 /**
@@ -62,6 +64,40 @@ class DebbieApplicationContext implements ApplicationContext {
         this.injectedBeanFactory.setGlobalBeanFactory(this.globalBeanFactory);
 
         this.configurationCenter.setApplicationContext(this);
+    }
+
+    private volatile AutoCreatedBeanFactory autoCreatedBeanFactory;
+
+    synchronized void postCallStarter() {
+        // create not lazy beans
+        if (this.autoCreatedBeanFactory == null) {
+            autoCreatedBeanFactory = new AutoCreatedBeanFactory(this);
+        }
+        autoCreatedBeanFactory.autoCreateBeans();
+        // do startedEvent
+        multicastEvent(this);
+        // do task
+        TaskFactory taskFactory = globalBeanFactory.factory("taskFactory");
+        taskFactory.prepare();
+        taskFactory.doTask();
+    }
+
+    private volatile DebbieStartedEventProcessor processor;
+
+    private void multicastEvent(ApplicationContext applicationContext) {
+        if (this.processor == null) {
+            this.processor = new DebbieStartedEventProcessor(applicationContext);
+        }
+        processor.multicastEvent();
+    }
+
+    synchronized void beforeRelease() {
+        if (this.autoCreatedBeanFactory != null) {
+            this.autoCreatedBeanFactory.stopAll();
+        }
+        if (this.processor != null) {
+            processor.stopAll();
+        }
     }
 
     @Override

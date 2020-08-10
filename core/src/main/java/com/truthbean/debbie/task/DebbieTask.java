@@ -23,4 +23,13 @@ public @interface DebbieTask {
     int order() default Integer.MAX_VALUE;
 
     boolean async() default true;
+
+    /**
+     * Execute the annotated method with a fixed period in milliseconds between
+     * invocations.
+     * @return the period in milliseconds
+     */
+    long fixedRate() default -1;
+
+    String cron() default "";
 }

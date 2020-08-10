@@ -25,13 +25,15 @@ public class TaskServiceTest {
     @BeanInject
     private ThreadPooledExecutor threadPooledExecutor;
 
-    @BeanInject
-    private demo.raw.OtherPackageBean otherPackageBean;
-
     @Test
     void context() {
         System.out.println("context");
         System.out.println(bean.toString());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

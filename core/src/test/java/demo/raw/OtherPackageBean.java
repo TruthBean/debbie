@@ -10,6 +10,7 @@
 package demo.raw;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.task.DebbieTask;
 
 /**
  * @author truthbean/Rogar·Q
@@ -17,4 +18,9 @@ import com.truthbean.debbie.bean.BeanComponent;
  */
 @BeanComponent
 public class OtherPackageBean {
+
+    @DebbieTask(fixedRate = 1000)
+    public void task() {
+        System.out.println("123");
+    }
 }

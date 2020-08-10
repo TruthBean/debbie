@@ -15,6 +15,7 @@ import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
@@ -25,10 +26,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author truthbean/Rogar·Q
  * @since 0.0.1
  */
-public abstract class AbstractApplication implements DebbieApplication, ApplicationContextAware {
+public abstract class AbstractApplication implements DebbieApplication {
     private Logger logger;
     private long beforeStartTime;
     private ApplicationContext applicationContext;
+    private ApplicationFactory applicationFactory;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean exited = new AtomicBoolean(true);
@@ -63,9 +65,9 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
         return false;
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public void setApplicationFactory(ApplicationFactory applicationFactory) {
+        this.applicationFactory = applicationFactory;
+        this.applicationContext = applicationFactory.getApplicationContext();
     }
 
     protected void setLogger(Logger logger) {
@@ -89,8 +91,8 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
     }
 
     protected void postBeforeStart() {
-        if (applicationContext instanceof DebbieApplicationFactory) {
-            ((DebbieApplicationFactory) applicationContext).postCallStarter();
+        if (applicationFactory instanceof DebbieApplicationFactory) {
+            ((DebbieApplicationFactory) applicationFactory).postCallStarter();
         }
     }
 
@@ -166,6 +168,9 @@ public abstract class AbstractApplication implements DebbieApplication, Applicat
     public final void doExit(String... args) {
         synchronized (this.startupShutdownMonitor) {
             exit(beforeStartTime, args);
+            if (applicationFactory instanceof DebbieApplicationFactory) {
+                applicationFactory.release(args);
+            }
             // If we registered a JVM shutdown hook, we don't need it anymore now:
             // We've already explicitly closed the context.
             if (this.shutdownHook != null) {

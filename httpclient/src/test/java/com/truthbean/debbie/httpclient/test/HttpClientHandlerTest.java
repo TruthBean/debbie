@@ -138,32 +138,34 @@ public class HttpClientHandlerTest {
 
     @Test
     public void ticketList() {
-        var ticketList = httpClientHandler.get("http://192.168.1.146:8098/ticket/list?pageSize=100");
-        @SuppressWarnings("unchecked")
-        ResponseEntity<Ticket[]> responseEntity =
-                JacksonUtils.jsonToParametricBean(ticketList, ResponseEntity.class, Ticket[].class);
-        if (responseEntity != null && responseEntity.getData() != null) {
-            // System.out.println(ticketList);
-            Random random = new Random();
+        for (int i = 0; i < 100; i++) {
+            var ticketList = httpClientHandler.get("http://192.168.1.139:8098/ticket/list?pageSize=100");
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Ticket[]> responseEntity =
+                    JacksonUtils.jsonToParametricBean(ticketList, ResponseEntity.class, Ticket[].class);
+            if (responseEntity != null && responseEntity.getData() != null) {
+                // System.out.println(ticketList);
+                Random random = new Random();
 
-            var data = responseEntity.getData();
-            for (var ticket : data) {
-                ticket.setId(null);
-                ticket.setIdNumber(ChineseNationalIdHelper.generateRandomId());
-                ticket.setName(ChineseNameHelper.getRandomChineseName());
-                ticket.setPhoneNumber(ChinesePhoneNumberHelper.getRandomPhoneNumber());
-                ticket.setSeatId(random.nextInt(28) + 1);
-                ticket.setCarriageId(1);
-                ticket.setLeaveScheduleId(random.nextInt(8) + 1);
+                var data = responseEntity.getData();
+                for (var ticket : data) {
+                    ticket.setId(null);
+                    ticket.setIdNumber(ChineseNationalIdHelper.generateRandomId());
+                    ticket.setName(ChineseNameHelper.getRandomChineseName());
+                    ticket.setPhoneNumber(ChinesePhoneNumberHelper.getRandomPhoneNumber());
+                    ticket.setSeatId(random.nextInt(28) + 1);
+                    ticket.setCarriageId(1);
+                    ticket.setLeaveScheduleId(random.nextInt(8) + 1);
+                }
+
+                Map<String, String> header = new HashMap<>();
+                header.put(HttpHeader.HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.APPLICATION_JSON_UTF8.getValue());
+                var json = JacksonUtils.toJson(data);
+                // var json = responseEntity.getData().toString();
+                // var json = "{\"id\":1,\"name\":\"张思\",\"phoneNumber\":\"13444441234\",\"idNumber\":\"420000199605206600\",\"trainId\":1,\"carriageId\":1,\"leaveScheduleId\":2,\"arriveScheduleId\":6,\"seatId\":2,\"image\":\"70,095963b0018993\",\"feature\":[],\"createTime\":1594973736000,\"updateTime\":1594973736000,\"date\":\"2020年01月01日\",\"dateValue\":1577808000000,\"trainScheduleId\":null,\"trainName\":\"X196\",\"startingStationId\":null,\"startingStation\":null,\"leaveStationId\":4,\"leaveStationName\":\"淄博\",\"leaveStationTime\":\"2020年01月01日 11:05\",\"leaveStationTimeValue\":1577847900000,\"arriveStationId\":7,\"arriveStationName\":\"天津南\",\"arriveStationTime\":\"2020年01月01日 12:30\",\"arriveStationTimeValue\":1577853000000,\"terminalStationId\":null,\"terminalStation\":null,\"time\":\"11:05\",\"timeValue\":1577847900000,\"carriageName\":\"01车\",\"seatName\":\"02A号\",\"createTimestamp\":\"2020-07-17 16:15:36.0\",\"updateTimestamp\":\"2020-07-17 16:15:36.0\",\"deleted\":null}";
+                var sync = httpClientHandler.post("http://192.168.1.139:8098/ticket/sync", json, header);
+                // System.out.println(sync);
             }
-
-            Map<String, String> header = new HashMap<>();
-            header.put(HttpHeader.HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.APPLICATION_JSON_UTF8.getValue());
-            var json = JacksonUtils.toJson(data);
-            // var json = responseEntity.getData().toString();
-            // var json = "{\"id\":1,\"name\":\"张思\",\"phoneNumber\":\"13444441234\",\"idNumber\":\"420000199605206600\",\"trainId\":1,\"carriageId\":1,\"leaveScheduleId\":2,\"arriveScheduleId\":6,\"seatId\":2,\"image\":\"70,095963b0018993\",\"feature\":[],\"createTime\":1594973736000,\"updateTime\":1594973736000,\"date\":\"2020年01月01日\",\"dateValue\":1577808000000,\"trainScheduleId\":null,\"trainName\":\"X196\",\"startingStationId\":null,\"startingStation\":null,\"leaveStationId\":4,\"leaveStationName\":\"淄博\",\"leaveStationTime\":\"2020年01月01日 11:05\",\"leaveStationTimeValue\":1577847900000,\"arriveStationId\":7,\"arriveStationName\":\"天津南\",\"arriveStationTime\":\"2020年01月01日 12:30\",\"arriveStationTimeValue\":1577853000000,\"terminalStationId\":null,\"terminalStation\":null,\"time\":\"11:05\",\"timeValue\":1577847900000,\"carriageName\":\"01车\",\"seatName\":\"02A号\",\"createTimestamp\":\"2020-07-17 16:15:36.0\",\"updateTimestamp\":\"2020-07-17 16:15:36.0\",\"deleted\":null}";
-            var sync = httpClientHandler.post("http://192.168.1.146:8098/ticket/sync", json, header);
-            // System.out.println(sync);
         }
     }
 }

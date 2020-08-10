@@ -18,12 +18,11 @@ import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
+import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -36,6 +35,9 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     private GlobalBeanFactory globalBeanFactory;
     private volatile boolean taskRunning;
 
+    TaskFactory() {
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -43,8 +45,9 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     }
 
     private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
+    private final Set<MethodTaskInfo> taskList = new LinkedHashSet<>();
 
-    public void registerTask() {
+    void registerTask() {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         Set<DebbieBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
         if (tasks != null && !tasks.isEmpty()) {
@@ -54,46 +57,76 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
 
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieTask", true);
     private final ThreadPooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
+    private final Timer timer = new Timer();
+
+    public void prepare() {
+        final Set<DebbieBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
+        for (DebbieBeanInfo<?> taskBean : taskBeanSet) {
+            Object task = globalBeanFactory.factory(taskBean.getServiceName());
+            LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
+            Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
+            for (Method method : methods) {
+                DebbieTask annotation = method.getAnnotation(DebbieTask.class);
+                taskList.add(new MethodTaskInfo(() -> task, method, annotation));
+            }
+        }
+    }
 
     public void doTask() {
         final ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
-        final Set<DebbieBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
+        final Set<MethodTaskInfo> taskSet = new LinkedHashSet<>(this.taskList);
         taskThreadPool.execute(() -> {
             LOGGER.trace("do task....");
-            for (DebbieBeanInfo<?> taskBean : taskBeanSet) {
-                Object task = globalBeanFactory.factory(taskBean.getServiceName());
-                LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
-                Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
-                for (Method method : methods) {
-                    DebbieTask annotation = method.getAnnotation(DebbieTask.class);
-                    if (!annotation.async()) {
-                        doMethodTask(task, method);
-                    } else {
-                        try {
-                            executor.execute(() -> {
-                                try {
-                                    doMethodTask(task, method);
-                                } catch (Throwable ex) {
-                                    LOGGER.error("", ex);
-                                }
-                            });
-                        } catch (Exception e) {
-                            LOGGER.error("", e);
-                        }
-                    }
-                }
+            for (MethodTaskInfo taskInfo : taskSet) {
+                doTask(executor, taskInfo, timer);
             }
         });
     }
 
-    private void doMethodTask(Object task, Method method) {
-        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method, globalBeanFactory);
+    private void doTask(final ThreadPooledExecutor executor, final MethodTaskInfo taskInfo, final Timer timer) {
+        DebbieTask annotation = taskInfo.getTaskAnnotation();
+        if (!annotation.async()) {
+            doMethodTask(taskInfo, annotation, timer);
+        } else {
+            try {
+                executor.execute(() -> {
+                    try {
+                        doMethodTask(taskInfo, annotation, timer);
+                    } catch (Throwable ex) {
+                        LOGGER.error("", ex);
+                    }
+                });
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
+    }
+
+    private void doMethodTask(final MethodTaskInfo taskInfo, final DebbieTask annotation, final Timer timer) {
+        var fixedRate = annotation.fixedRate();
+        var cron = annotation.cron();
+        if (fixedRate > -1) {
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    doMethodTask(taskInfo);
+                }
+            }, 0, fixedRate);
+        } else if (StringUtils.hasText(cron)) {
+            // todo cron
+        } else {
+            doMethodTask(taskInfo);
+        }
+    }
+
+    private void doMethodTask(MethodTaskInfo taskInfo) {
+        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(taskInfo.getTaskMethod(), globalBeanFactory);
         Object[] params = new Object[methodParams.size()];
         for (int i = 0; i < methodParams.size(); i++) {
             params[i] = methodParams.get(i).getValue();
         }
         taskRunning = true;
-        ReflectionHelper.invokeMethod(task, method, params);
+        ReflectionHelper.invokeMethod(taskInfo.getTaskBean().get(), taskInfo.getTaskMethod(), params);
         taskRunning = false;
     }
 
@@ -105,6 +138,7 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     public synchronized void destroy() {
         if (!isTaskRunning()) {
             LOGGER.info("destroy tasks bean");
+            timer.cancel();
             taskThreadPool.destroy();
             taskBeans.clear();
             // TODO: 清除正在运行的任务

@@ -64,7 +64,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             if (result == null) {
                 result = new SimpleApplicationFactory();
             }
-            result.setApplicationContext(applicationContext);
+            result.setApplicationFactory(this);
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("ApplicationFactory( " + result.getClass() + " ) loaded. ");
             return result;
@@ -148,37 +148,8 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         }
     }
 
-    private volatile AutoCreatedBeanFactory autoCreatedBeanFactory;
-
-    public synchronized void postCallStarter() {
-        // create not lazy beans
-        if (this.autoCreatedBeanFactory == null) {
-            autoCreatedBeanFactory = new AutoCreatedBeanFactory(applicationContext);
-        }
-        autoCreatedBeanFactory.autoCreateBeans();
-        // do startedEvent
-        multicastEvent(applicationContext);
-        // do task
-        TaskFactory taskFactory = applicationContext.getGlobalBeanFactory().factory("taskFactory");
-        taskFactory.doTask();
-    }
-
-    private volatile DebbieStartedEventProcessor processor;
-
-    private void multicastEvent(ApplicationContext applicationContext) {
-        if (this.processor == null) {
-            this.processor = new DebbieStartedEventProcessor(applicationContext);
-        }
-        processor.multicastEvent();
-    }
-
-    private synchronized void beforeRelease() {
-        if (this.autoCreatedBeanFactory != null) {
-            this.autoCreatedBeanFactory.stopAll();
-        }
-        if (this.processor != null) {
-            processor.stopAll();
-        }
+    public void postCallStarter() {
+        applicationContext.postCallStarter();
     }
 
     @Override
@@ -188,7 +159,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             if (debbieModuleStarters == null) {
                 debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
             }
-            beforeRelease();
+            applicationContext.beforeRelease();
             if (!debbieModuleStarters.isEmpty()) {
                 List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
                 list.sort(Comparator.reverseOrder());
