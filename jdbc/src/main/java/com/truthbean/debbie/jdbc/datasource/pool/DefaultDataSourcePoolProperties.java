@@ -12,13 +12,14 @@ package com.truthbean.debbie.jdbc.datasource.pool;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-26 16:41
  */
-public class DefaultDataSourcePoolProperties extends DataSourceProperties {
+public class DefaultDataSourcePoolProperties extends DataSourceProperties implements DebbieProperties<DataSourceConfiguration> {
     private final boolean unpool;
 
     //===========================================================================

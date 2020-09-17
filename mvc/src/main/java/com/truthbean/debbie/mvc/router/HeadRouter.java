@@ -33,6 +33,11 @@ public @interface HeadRouter {
     String name() default "";
 
     /**
+     * @return router description
+     */
+    String desc() default "";
+
+    /**
      * same as path
      * @return path regex
      */

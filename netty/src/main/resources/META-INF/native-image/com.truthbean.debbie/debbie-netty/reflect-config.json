@@ -1,0 +1,44 @@
+[
+  {
+    "name" : "com.truthbean.debbie.netty.NettyServerApplication",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.netty.NettyModuleStarter",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.netty.NettyProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "io.netty.channel.socket.nio.NioServerSocketChannel",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  }
+]

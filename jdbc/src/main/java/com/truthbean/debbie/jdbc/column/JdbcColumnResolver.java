@@ -75,8 +75,13 @@ public class JdbcColumnResolver {
                     String type = ColumnTypeHandler.getType(columnTypeName, precision, scale);
 
                     columnInfo = new ColumnInfo();
-                    columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnName));
-                    columnInfo.setColumnName(columnName);
+                    if (columnLabel != null && !"".equals(columnLabel.trim())) {
+                        columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnLabel));
+                        columnInfo.setColumnName(columnLabel);
+                    } else {
+                        columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnName));
+                        columnInfo.setColumnName(columnName);
+                    }
 
                     columnInfo.setDataType(type);
                     columnInfo.setJdbcType(JDBCType.valueOf(columnType));

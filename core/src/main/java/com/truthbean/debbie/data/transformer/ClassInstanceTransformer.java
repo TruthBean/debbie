@@ -26,7 +26,7 @@ public class ClassInstanceTransformer implements DataTransformer<Object, String>
 
     @Override
     public Object reverse(String className) {
-        ClassLoader defaultClassLoader = ClassLoaderUtils.getDefaultClassLoader();
+        var defaultClassLoader = ClassLoaderUtils.getDefaultClassLoader();
         Class<?> clazz = null;
         try {
             clazz = defaultClassLoader.loadClass(className);

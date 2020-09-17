@@ -3,21 +3,23 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
-import java.io.Serializable;
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -64,7 +66,11 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 break;
         }
         // resolve BeanComponent if has no bean Annotation, use it
-        resolveBeanComponent(classAnnotations.get(BeanComponent.class));
+        if (!resolveBeanComponent(classAnnotations.get(BeanComponent.class))) {
+            // resolve custom component annotation
+            // todo
+            LOGGER.warn("class(" + beanClass + ") no @BeanComponent");
+        }
     }
 
     public void setInitMethod(Method initMethod) {
@@ -173,79 +179,36 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return beanFactory != null;
     }
 
-    private void resolveBeanComponent(Annotation value) {
-        if (value != null) {
+    private boolean resolveBeanComponent(Annotation value) {
+        if (value == null)
+            return false;
+        if (value.annotationType() == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
-            if (beanNames.isEmpty()) {
-                String beanName = beanService.name();
-                if (beanName.isBlank()) {
-                    beanName = beanService.value();
-                }
-                if (!beanName.isBlank()) {
-                    beanNames.add(beanName);
-                }
-            }
-            if (beanType == null)
-                beanType = beanService.type();
-
-            if (lazyCreate == null)
-                lazyCreate = beanService.lazy();
+            var info = BeanComponentParser.parse(beanService);
+            setBeanComponent(info);
+            return true;
         }
+        return false;
+    }
+
+    private void setBeanComponent(BeanComponentInfo info) {
+        if (beanNames.isEmpty()) {
+            if (info.hasName()) {
+                beanNames.add(info.getName());
+            }
+        }
+        if (beanType == null)
+            beanType = info.getType();
+
+        if (lazyCreate == null)
+            lazyCreate = info.isLazy();
     }
 
     private boolean resolveComponent(Class<? extends Annotation> key, Annotation value) {
-        BeanComponent annotation = key.getAnnotation(BeanComponent.class);
-        if (annotation != null) {
-            Method[] methods = key.getMethods();
-            Method valueMethod = null;
-            Method nameMethod = null;
-            Method typeMethod = null;
-            Method lazyMethod = null;
-            for (Method method : methods) {
-                if ("value".equals(method.getName()) && method.getReturnType() == String.class
-                        && method.getAnnotation(BeanAliceForValue.class) != null) {
-                    valueMethod = method;
-                    continue;
-                }
-                if ("name".equals(method.getName()) && method.getReturnType() == String.class
-                        && method.getAnnotation(BeanAliceForName.class) != null) {
-                    nameMethod = method;
-                    continue;
-                }
-                if ("type".equals(method.getName()) && method.getReturnType() == BeanType.class
-                    && method.getAnnotation(BeanAliceForType.class) != null) {
-                    typeMethod = method;
-                    continue;
-                }
-                if ("lazy".equals(method.getName()) && method.getReturnType() == BeanType.class
-                    && method.getAnnotation(BeanAliceForLazy.class) != null) {
-                    lazyMethod = method;
-                }
-            }
-
-            if (valueMethod != null || nameMethod != null) {
-                String beanName = null;
-                if (valueMethod != null) {
-                    beanName = ReflectionHelper.invokeMethod(value, valueMethod);
-                }
-                if (!StringUtils.hasText(beanName) && nameMethod != null) {
-                    beanName = ReflectionHelper.invokeMethod(value, nameMethod);
-                }
-                if (StringUtils.isBlank(beanName)) {
-                    beanName = getServiceName();
-                }
-                beanNames.add(beanName);
-
-                if (typeMethod != null) {
-                    beanType = ReflectionHelper.invokeMethod(value, typeMethod);
-                }
-
-                if (lazyMethod != null) {
-                    lazyCreate = ReflectionHelper.invokeMethod(value, lazyMethod);
-                }
-
-                return true;
-            }
+        var info = BeanComponentParser.parse(key, value);
+        if (info != null) {
+            setBeanComponent(info);
+            return true;
         }
 
         return false;
@@ -284,7 +247,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 beanInterface = interfaces[0];
                 noInterface = false;
                 if (beanInterface.getPackageName().startsWith("java.")
-                        || beanInterface == JavaassistProxyBean.class) {
+                        || beanInterface == JavaassistProxyBean.class
+                        || beanInterface == DebbieProperties.class || beanInterface == DebbieConfiguration.class) {
                     beanInterface = null;
                     noInterface = true;
                 }
@@ -398,9 +362,23 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             beanFactory.destroy();
         } else {
             Class<Bean> beanClass = getClazz();
-            if (BeanClosure.class.isAssignableFrom(beanClass) && !DebbieBeanFactory.class.isAssignableFrom(beanClass)) {
-                if (bean != null) {
+            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && bean != null) {
+                if (BeanClosure.class.isAssignableFrom(beanClass)) {
                     ((BeanClosure) bean).destroy();
+                }
+                if (Closeable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((Closeable) bean).close();
+                    } catch (IOException e) {
+                        LOGGER.error("", e);
+                    }
+                }
+                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((AutoCloseable) bean).close();
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                    }
                 }
             }
         }

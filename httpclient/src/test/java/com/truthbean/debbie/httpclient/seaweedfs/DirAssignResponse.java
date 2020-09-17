@@ -49,4 +49,12 @@ public class DirAssignResponse {
   public void setCount(String count) {
     this.count = count;
   }
+
+    @Override
+    public String toString() {
+        return "{" + "\"fid\":\"" + fid + "\"" + ","
+                + "\"url\":\"" + url + "\"" + ","
+                + "\"publicUrl\":\"" + publicUrl + "\"" + ","
+                + "\"count\":\"" + count + "\"" + "}";
+    }
 }

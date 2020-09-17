@@ -9,11 +9,13 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
@@ -44,8 +46,12 @@ class AutoCreatedBeanFactory {
             for (DebbieBeanInfo localBeanInfo : autoCreatedBean) {
                 Boolean lazyCreate = localBeanInfo.getLazyCreate();
                 if (lazyCreate != null && !lazyCreate) {
-                    localBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
-                    beanInitialization.refreshBean(localBeanInfo);
+                    try {
+                        localBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
+                        beanInitialization.refreshBean(localBeanInfo);
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                    }
                 }
             }
         });
@@ -54,4 +60,6 @@ class AutoCreatedBeanFactory {
     public void stopAll() {
         autoCreatedBeanExecutor.destroy();
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoCreatedBeanFactory.class);
 }

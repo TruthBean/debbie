@@ -36,7 +36,7 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     }
 
     private boolean canNew() {
-        BeanType beanType = beanInfo.getBeanType();
+        var beanType = beanInfo.getBeanType();
         return beanType == BeanType.NO_LIMIT || (beanType == BeanType.SINGLETON && beanInfo.isEmpty());
     }
 

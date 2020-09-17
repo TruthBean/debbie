@@ -20,6 +20,9 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public class AioModuleStarter implements DebbieModuleStarter {
 
+    public AioModuleStarter() {
+    }
+
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         configurationFactory.register(AioServerProperties.class, AioServerConfiguration.class);

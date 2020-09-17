@@ -14,10 +14,12 @@ import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
+import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
@@ -35,17 +37,24 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     private GlobalBeanFactory globalBeanFactory;
     private volatile boolean taskRunning;
 
+    private final Set<TaskAction> taskActions;
+    private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
+    private final Set<MethodTaskInfo> taskList = new LinkedHashSet<>();
+
     TaskFactory() {
+        var classLoader = ClassLoaderUtils.getClassLoader(TaskAction.class);
+        this.taskActions = SpiLoader.loadProviderSet(TaskAction.class, classLoader);;
     }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        for (TaskAction taskAction : this.taskActions) {
+            taskAction.setApplicationContext(applicationContext);
+        }
     }
 
-    private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
-    private final Set<MethodTaskInfo> taskList = new LinkedHashSet<>();
 
     void registerTask() {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
@@ -67,7 +76,11 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
             Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
             for (Method method : methods) {
                 DebbieTask annotation = method.getAnnotation(DebbieTask.class);
-                taskList.add(new MethodTaskInfo(() -> task, method, annotation));
+                var taskInfo = new MethodTaskInfo(taskBean.getBeanClass(), () -> task, method, annotation, this::doMethodTask);
+                taskList.add(taskInfo);
+                for (TaskAction taskAction : taskActions) {
+                    taskAction.prepare(taskInfo);
+                }
             }
         }
     }
@@ -81,6 +94,9 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
                 doTask(executor, taskInfo, timer);
             }
         });
+        for (TaskAction taskAction : taskActions) {
+            taskAction.doTask();
+        }
     }
 
     private void doTask(final ThreadPooledExecutor executor, final MethodTaskInfo taskInfo, final Timer timer) {
@@ -109,13 +125,13 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    doMethodTask(taskInfo);
+                    taskInfo.accept();
                 }
             }, 0, fixedRate);
         } else if (StringUtils.hasText(cron)) {
             // todo cron
         } else {
-            doMethodTask(taskInfo);
+            taskInfo.accept();
         }
     }
 

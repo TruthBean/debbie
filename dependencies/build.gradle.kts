@@ -29,7 +29,7 @@ dependencyManagement {
         dependency("org.slf4j:slf4j-api:$slf4jVersion")
 
         val injectVersion: String by project
-        dependency("javax.inject:javax.inject:$injectVersion")
+        dependency("jakarta.inject:jakarta.inject-api:$injectVersion")
 
         // core-test
         val jupiterVersion: String by project
@@ -116,6 +116,7 @@ dependencyManagement {
         // debbie
         val projectVersion: String by project
         dependency("com.truthbean.debbie:debbie-core:$projectVersion")
+        dependency("com.truthbean.debbie:debbie-cron:$projectVersion")
         dependency("com.truthbean.debbie:debbie-jdbc:$projectVersion")
         dependency("com.truthbean.debbie:debbie-mvc:$projectVersion")
         dependency("com.truthbean.debbie:debbie-rmi:$projectVersion")

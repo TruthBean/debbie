@@ -8,8 +8,6 @@
  * See the Mulan PSL v2 for more details.
  */
 dependencies {
-    api(project(":debbie-boot"))
-    api(project(":debbie-mvc"))
     api(project(":debbie-server"))
 
     testImplementation(project(":debbie-test"))

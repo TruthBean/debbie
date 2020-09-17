@@ -202,7 +202,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         String[] names = new String[parameterCount];
         int i = firstParameterValue == null ? 0 : 1;
         for (; i < parameterCount; i++) {
-            Parameter parameter = parameters[i];
+            var parameter = parameters[i];
 
             var type = parameter.getType();
             boolean required = injectRequired;
@@ -219,6 +219,10 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                     names[i] = name;
                 }
                 required = annotation.require();
+            }
+
+            if ((name == null || name.isBlank()) && parameter.isNamePresent()) {
+                name = parameter.getName();
             }
 
             DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);

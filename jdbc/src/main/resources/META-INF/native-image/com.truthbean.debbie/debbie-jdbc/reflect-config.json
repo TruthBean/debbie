@@ -1,0 +1,62 @@
+[
+  {
+    "name" : "com.truthbean.debbie.jdbc.JdbcModuleStarter",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.jdbc.domain.PageableHandlerMethodArgumentResolver",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.jdbc.domain.SortHandlerMethodArgumentResolver",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.jdbc.datasource.DataSourceProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  }
+]

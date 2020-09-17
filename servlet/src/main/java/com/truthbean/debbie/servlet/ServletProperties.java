@@ -13,14 +13,16 @@ import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
+import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.ClassesScanProperties;
+import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/10 17:39.
  */
-public class ServletProperties extends MvcProperties {
+public class ServletProperties extends BaseProperties implements DebbieProperties<ServletConfiguration> {
 
     //========================================================================================
 
@@ -33,8 +35,6 @@ public class ServletProperties extends MvcProperties {
         }
 
         configuration = new ServletConfiguration(classLoader);
-
-        final ServletProperties properties = new ServletProperties();
 
         MvcConfiguration webConfiguration = MvcProperties.toConfiguration(classLoader);
         configuration.copyFrom(webConfiguration);

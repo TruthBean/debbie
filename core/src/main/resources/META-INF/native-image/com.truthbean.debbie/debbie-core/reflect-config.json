@@ -1,0 +1,23 @@
+[
+  {
+    "name" : "com.truthbean.debbie.properties.ClassesScanProperties",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.core.DebbieCoreModuleStarter",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  }
+]

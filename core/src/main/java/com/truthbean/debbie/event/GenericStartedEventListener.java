@@ -16,6 +16,7 @@ package com.truthbean.debbie.event;
 @FunctionalInterface
 public interface GenericStartedEventListener<E extends DebbieStartedEvent> extends DebbieEventListener<E> {
 
+    @Override
     default void onEvent(E event) {
         onApplicationEvent(event);
     }

@@ -1,0 +1,26 @@
+[
+  {
+    "name" : "com.truthbean.debbie.httpclient.HttpClientModuleStarter",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.httpclient.HttpClientProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  }
+]

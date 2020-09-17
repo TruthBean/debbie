@@ -33,8 +33,8 @@ public class EventListenerBeanRegister {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void register() {
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        var beanInitialization = applicationContext.getBeanInitialization();
+        var globalBeanFactory = applicationContext.getGlobalBeanFactory();
         ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
         DefaultEventPublisher eventPublisher = new DefaultEventPublisher(executor);
         // 先注册系统相关的

@@ -1,11 +1,10 @@
 dependencies {
-    api(project(":debbie-core"))
-    api(project(":debbie-boot"))
+    implementation(project(":debbie-core"))
 
     val jupiterVersion: String by project
-    "implementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-    "implementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
-    "implementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    api("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    api("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
+    api("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 
     val loggerVersion: String by project
     testImplementation("com.truthbean.logger:log4j2-adapter:$loggerVersion")

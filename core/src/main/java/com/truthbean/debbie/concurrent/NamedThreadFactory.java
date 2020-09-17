@@ -28,7 +28,7 @@ public class NamedThreadFactory implements ThreadFactory {
     private Integer priority;
 
     public NamedThreadFactory() {
-        SecurityManager s = System.getSecurityManager();
+        var s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         namePrefix = "debbie-" + poolNumber.getAndIncrement() + "-thread-";
         this.fixedName = false;
@@ -39,7 +39,7 @@ public class NamedThreadFactory implements ThreadFactory {
     }
 
     public NamedThreadFactory(String name, boolean fixedName) {
-        SecurityManager s = System.getSecurityManager();
+        var s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         if (fixedName) {
             if (name == null || name.isBlank())
@@ -59,7 +59,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
     public NamedThreadFactory(String name, ThreadGroup group, boolean fixedName) {
         if (group == null) {
-            SecurityManager s = System.getSecurityManager();
+            var s = System.getSecurityManager();
             this.group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         } else {
             this.group = group;

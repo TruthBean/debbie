@@ -11,6 +11,7 @@ package com.truthbean.debbie.task;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -19,17 +20,30 @@ import java.util.function.Supplier;
  * Created on 2020-08-10 19:37
  */
 public class MethodTaskInfo {
+    private Class<?> taskBeanClass;
     private Supplier<?> taskBean;
     private Method taskMethod;
     private DebbieTask taskAnnotation;
+    private Consumer<MethodTaskInfo> consumer;
 
     public MethodTaskInfo() {
     }
 
-    public MethodTaskInfo(Supplier<?> taskBean, Method taskMethod, DebbieTask taskAnnotation) {
+    public MethodTaskInfo(Class<?> taskBeanClass, Supplier<?> taskBean, Method taskMethod, DebbieTask taskAnnotation,
+                          Consumer<MethodTaskInfo> consumer) {
+        this.taskBeanClass = taskBeanClass;
         this.taskBean = taskBean;
         this.taskMethod = taskMethod;
         this.taskAnnotation = taskAnnotation;
+        this.consumer = consumer;
+    }
+
+    public Class<?> getTaskBeanClass() {
+        return taskBeanClass;
+    }
+
+    public void setTaskBeanClass(Class<?> taskBeanClass) {
+        this.taskBeanClass = taskBeanClass;
     }
 
     public Supplier<?> getTaskBean() {
@@ -54,6 +68,18 @@ public class MethodTaskInfo {
 
     public void setTaskAnnotation(DebbieTask taskAnnotation) {
         this.taskAnnotation = taskAnnotation;
+    }
+
+    public Consumer<MethodTaskInfo> getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(Consumer<MethodTaskInfo> consumer) {
+        this.consumer = consumer;
+    }
+
+    public void accept() {
+        this.consumer.accept(this);
     }
 
     @Override

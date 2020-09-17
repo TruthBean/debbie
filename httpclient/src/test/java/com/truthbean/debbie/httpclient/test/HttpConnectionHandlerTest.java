@@ -63,16 +63,17 @@ public class HttpConnectionHandlerTest {
 
     @Test
     public void testSeaweedfsDirAssign() {
-        var seaWeedFSUrl = "http://172.17.246.85:9333";
+        var seaWeedFSUrl = "http://192.168.1.12:9333";
         var dirAssign = seaWeedFSUrl + "/dir/assign";
         String response = httpClientHandler.get(dirAssign);
         System.out.println(response);
 
         DirAssignResponse assign = JacksonUtils.jsonToBean(response, DirAssignResponse.class);
+        System.out.println(assign);
         String url = "http://" + assign.getPublicUrl() + "/" + assign.getFid();
         FileFormDataParam param = new FileFormDataParam();
         param.setName("file");
-        param.setFile(new File("C:\\Users\\truth\\Pictures\\20170317174809_cb992f78-2fbb-4717-a59b-51ab6a3cb26d.jpg"));
+        param.setFile(new File("F:\\data\\images\\童思雨.jpg"));
 
         String form = httpClientHandler.form(url, List.of(param));
         System.out.println(form);

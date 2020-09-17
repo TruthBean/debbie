@@ -223,31 +223,36 @@ public class ReflectionHelper {
         if (clazz == null || clazz == Object.class || clazz == Void.class) {
             return new Type[0];
         }
-        Type[] types = clazz.getTypeParameters();
-        if (types.length > 0) {
-            return types;
-        }
-        Type genType = clazz.getGenericSuperclass();
+        try {
+            Type[] types = clazz.getTypeParameters();
+            if (types.length > 0) {
+                return types;
+            }
+            Type genType = clazz.getGenericSuperclass();
 
-        if (genType == Object.class) {
-            Type[] interfaces = clazz.getGenericInterfaces();
-            for (var type : interfaces) {
-                if (type instanceof ParameterizedType) {
-                    Type[] params = ((ParameterizedType) type).getActualTypeArguments();
-                    if (params != null && params.length > 0) {
-                        return params;
+            if (genType == Object.class) {
+                Type[] interfaces = clazz.getGenericInterfaces();
+                for (var type : interfaces) {
+                    if (type instanceof ParameterizedType) {
+                        Type[] params = ((ParameterizedType) type).getActualTypeArguments();
+                        if (params != null && params.length > 0) {
+                            return params;
+                        }
                     }
                 }
             }
+            if (!(genType instanceof ParameterizedType)) {
+                return getActualTypes(clazz.getSuperclass());
+            }
+            Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+            if (params == null || params.length == 0) {
+                return null;
+            }
+            return params;
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
-        if (!(genType instanceof ParameterizedType)) {
-            return getActualTypes(clazz.getSuperclass());
-        }
-        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
-        if (params == null || params.length == 0) {
-            return null;
-        }
-        return params;
+        return new Type[0];
     }
 
     public static Map<String, Type> getActualTypeMap(Class<?> clazz) {

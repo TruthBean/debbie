@@ -7,16 +7,16 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-plugins {
+/*plugins {
     id("de.jjohannes.extra-java-module-info") version "0.1"
-}
+}*/
 
 dependencies {
-    api(project(":debbie-mvc"))
     api(project(":debbie-server"))
 
     val undertowVersion: String by project
     api("io.undertow:undertow-core:$undertowVersion")
+    api("org.jboss.logging:jboss-logging-annotations:2.2.1.Final")
 
     testImplementation(project(":debbie-test"))
 
@@ -31,6 +31,7 @@ dependencies {
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 }
 
+/*
 extraJavaModuleInfo {
     val undertowVersion: String by project
     module("undertow-core-${undertowVersion}.jar", "io.undertow.core", undertowVersion) {
@@ -66,4 +67,4 @@ extraJavaModuleInfo {
     module("xnio-nio-3.8.0.Final.jar", "org.xnio.nio", "3.8.0")
     module("wildfly-client-config-1.0.1.Final.jar", "org.wildfly.client.config", "1.0.1")
     module("wildfly-common-1.5.2.Final.jar", "org.wildfly.common", "1.5.2")
-}
+}*/

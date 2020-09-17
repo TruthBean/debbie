@@ -217,7 +217,16 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         if (serviceName != null && !serviceName.isBlank()) {
             for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
                 if (debbieBeanInfo.containName(serviceName)) {
-                    list.add(debbieBeanInfo);
+                    if (type != null) {
+                        var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
+                                || (debbieBeanInfo.getBeanInterface() != null
+                                && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                        if (flag) {
+                            list.add(debbieBeanInfo);
+                        }
+                    } else {
+                        list.add(debbieBeanInfo);
+                    }
                 }
             }
         }

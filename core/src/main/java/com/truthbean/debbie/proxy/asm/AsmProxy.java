@@ -123,10 +123,11 @@ public class AsmProxy<B> extends AbstractProxy<B> {
                 path = path.substring(0, i);
 
                 File file = new File(path, classPath + ".class");
-                LOGGER.debug(() -> "AsmWrapper class created: " + file.getAbsolutePath());
-                try (FileOutputStream out = new FileOutputStream(file)) {
-                    out.write(data);
-                }
+                if (!file.exists())
+                    LOGGER.debug(() -> "AsmWrapper class created: " + file.getAbsolutePath());
+                    try (FileOutputStream out = new FileOutputStream(file)) {
+                        out.write(data);
+                    }
             }
         } catch (IOException e) {
             LOGGER.error("", e);

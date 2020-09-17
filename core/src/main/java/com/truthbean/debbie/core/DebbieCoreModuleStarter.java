@@ -24,6 +24,9 @@ import java.util.Optional;
  */
 public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
+    public DebbieCoreModuleStarter() {
+    }
+
     @Override
     public int getOrder() {
         return 0;
@@ -31,7 +34,7 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        DataTransformerRegister register = new DataTransformerRegister(beanInitialization);
+        var register = new DataTransformerRegister(beanInitialization);
         register.registerTransformer();
     }
 
@@ -50,7 +53,7 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         synchronized (DebbieCoreModuleStarter.class) {
             configurationFactory.reset();
-            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            var globalBeanFactory = applicationContext.getGlobalBeanFactory();
             Optional<ThreadPooledExecutor> executor = globalBeanFactory.factoryIfPresent("threadPooledExecutor");
             executor.ifPresent(ThreadPooledExecutor::destroy);
         }

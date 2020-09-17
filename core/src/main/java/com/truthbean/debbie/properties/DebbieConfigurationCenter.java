@@ -40,7 +40,6 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
 
     private ApplicationContext applicationContext;
-    private SingletonBeanRegister singletonBeanRegister;
 
     public DebbieConfigurationCenter() {
     }
@@ -48,7 +47,6 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.singletonBeanRegister = new SingletonBeanRegister(applicationContext);
     }
 
     public static <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration,
@@ -63,16 +61,13 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     public <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration) {
         var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
-        singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <P extends DebbieProperties, C extends DebbieConfiguration>
+    public <P extends DebbieProperties<S>, C extends DebbieConfiguration, S extends C>
     void register(Class<P> propertiesClass, Class<C> configurationClass) {
-        DebbieProperties<C> properties = (DebbieProperties<C>) ReflectionHelper.newInstance(propertiesClass);
+        DebbieProperties<S> properties = ReflectionHelper.newInstance(propertiesClass);
         C configuration = properties.toConfiguration(applicationContext);
         var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
-        this.singletonBeanRegister.registerSingletonBean(configuration, configurationClass, beanName);
         configurations.put(propertiesClass, configuration);
         applicationContext.refreshBeans();
     }

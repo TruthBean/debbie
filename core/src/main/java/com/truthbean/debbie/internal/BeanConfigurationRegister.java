@@ -9,10 +9,7 @@
  */
 package com.truthbean.debbie.internal;
 
-import com.truthbean.debbie.bean.BeanConfiguration;
-import com.truthbean.debbie.bean.BeanType;
-import com.truthbean.debbie.bean.DebbieBean;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -85,16 +82,18 @@ class BeanConfigurationRegister {
     private <Configuration> void register(Configuration configuration, ClassInfo<Configuration> classInfo) {
         Set<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {
-            for (Method method : annotationMethod) {
+            for (var method : annotationMethod) {
                 DebbieBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());
                 DebbieBean debbieBean = method.getAnnotation(DebbieBean.class);
-                String name = debbieBean.name();
+                var name = debbieBean.name();
                 if (name.isBlank()) {
                     name = method.getName();
                 }
                 beanInfo.addBeanName(name);
                 beanInfo.setBeanType(BeanType.SINGLETON);
+                // todo params
                 beanInfo.setBean(ReflectionHelper.invokeMethod(configuration, method));
+                beanInfo.setBeanFactory(new ConfigurationMethodBeanFactory<>(configuration, method));
                 beanRegisterCenter.register(beanInfo);
             }
         }

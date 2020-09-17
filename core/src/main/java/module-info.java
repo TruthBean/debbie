@@ -51,17 +51,18 @@ module com.truthbean.debbie.core {
     requires java.management;
 
     requires transitive com.truthbean.logger.core;
-    requires org.objectweb.asm;
+    requires transitive org.objectweb.asm;
     // requires javassist;
-    requires com.fasterxml.jackson.databind;
-    requires com.fasterxml.jackson.dataformat.xml;
-    requires com.fasterxml.jackson.dataformat.yaml;
+    requires transitive com.fasterxml.jackson.databind;
+    requires transitive com.fasterxml.jackson.dataformat.xml;
+    requires transitive com.fasterxml.jackson.dataformat.yaml;
 
     exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet;
 
     uses com.truthbean.debbie.boot.DebbieModuleStarter;
     uses com.truthbean.debbie.boot.AbstractApplication;
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
+    uses com.truthbean.debbie.task.TaskAction;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.core.DebbieCoreModuleStarter;

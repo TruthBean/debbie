@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface DebbieBootApplication {
     /**
      * event bean name

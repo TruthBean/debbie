@@ -14,6 +14,7 @@ import com.truthbean.debbie.data.transformer.text.LongTransformer;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.zaxxer.hikari.HikariConfig;
@@ -29,7 +30,7 @@ import java.util.concurrent.ThreadFactory;
  * Created on 2019/05/17 22:28.
  */
 @PropertiesConfiguration(keyPrefix = "debbie.datasource.hikari.")
-public class HikariConfiguration extends DataSourceConfiguration {
+public class HikariConfiguration extends DataSourceConfiguration implements DebbieConfiguration {
 
     private final HikariConfig hikariConfig;
 

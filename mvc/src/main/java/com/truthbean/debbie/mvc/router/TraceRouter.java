@@ -33,6 +33,11 @@ public @interface TraceRouter {
     String name() default "";
 
     /**
+     * @return router description
+     */
+    String desc() default "";
+
+    /**
      * same as path
      * @return path regex
      */

@@ -161,7 +161,7 @@ final class BeanRegisterCenter {
     @SuppressWarnings({"unchecked", "rawtypes"})
     synchronized void register(final Class<?> beanClass) {
         if (beanClass.isAnnotation()) {
-            registerAnnotation((Class<? extends Annotation>) beanClass);
+            registerBeanComponentAnnotation((Class<? extends Annotation>) beanClass);
             return;
         }
         if (support(beanClass)) {
@@ -169,20 +169,24 @@ final class BeanRegisterCenter {
             if (beanClassInfo.getBeanType() == null) {
                 return;
             }
-            BeanComponent beanComponent = beanClassInfo.getClassAnnotation(BeanComponent.class);
-            if (beanComponent != null) {
-                Class<? extends BeanFactory> factory = beanComponent.factory();
-                if (factory != BeanFactory.class) {
-                    BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
-                            new Object[]{beanClassInfo});
-                    beanClassInfo.setBeanFactory(beanFactory);
+            var annotations = getBeanAnnotations();
+            for (var annotation : annotations) {
+                Annotation beanComponent = beanClassInfo.getClassAnnotation(annotation);
+                BeanComponentInfo info = BeanComponentParser.parse(beanComponent);
+                if (info != null) {
+                    Class<? extends BeanFactory> factory = info.getFactory();
+                    if (factory != null && factory != BeanFactory.class) {
+                        BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
+                                new Object[]{beanClassInfo});
+                        beanClassInfo.setBeanFactory(beanFactory);
+                    }
                 }
             }
             register(beanClassInfo);
         }
     }
 
-    private void registerAnnotation(Class<? extends Annotation> annotationType) {
+    private void registerBeanComponentAnnotation(Class<? extends Annotation> annotationType) {
         if (annotationType.getAnnotation(BeanComponent.class) != null) {
             registerBeanAnnotation(annotationType);
         }

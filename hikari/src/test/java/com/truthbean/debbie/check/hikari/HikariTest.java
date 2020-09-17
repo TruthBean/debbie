@@ -55,4 +55,9 @@ public class HikariTest {
             applicationFactory.release();
         }
     }
+
+    @Test
+    void integer() {
+        System.out.println(Integer.toBinaryString(0));
+    }
 }

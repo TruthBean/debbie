@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -81,10 +81,6 @@ public class RepositoryHandler {
         return rows;
     }
 
-    public Object insert(Connection connection, String sql, boolean generatedKeys, Object... args) {
-        return insert(connection, sql, generatedKeys, Object.class, args);
-    }
-
     public final <K> K insert(final TransactionInfo transaction, final String sql, final boolean generatedKeys,
                               final Class<K> keyClass, final Object... args) {
 
@@ -150,29 +146,37 @@ public class RepositoryHandler {
         return rows;
     }
 
-    public final ResultSet executeQuery(final TransactionInfo transaction, final String sql, final Object... args) {
+    public final List<List<ColumnInfo>> query(final TransactionInfo transaction, final String sql, final Object... args) {
         loggerSqlAndParameters(sql, args);
 
-        transaction.setUsing(true);
-        var connection = transaction.getConnection();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        List<List<ColumnInfo>> list = new ArrayList<>();
+
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            transaction.setUsing(true);
+            var connection = transaction.getConnection();
+
+            preparedStatement = connection.prepareStatement(sql);
             if (args != null) {
                 for (int e = 0; e < args.length; ++e) {
                     ColumnTypeHandler.setSqlArgValue(driverName, preparedStatement, e + 1, args[e]);
                 }
             }
-            return preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
+            var tmp = JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
+            if (!tmp.isEmpty()) {
+                list.addAll(tmp);
+            }
         } catch (SQLException e) {
             LOGGER.error("", e);
             throw new TransactionException(e);
         } finally {
             transaction.setUsing(false);
+            JdbcUtils.close(resultSet, preparedStatement);
         }
-    }
-
-    public List<List<ColumnInfo>> query(final TransactionInfo transaction, String sql, Object... args) {
-        ResultSet resultSet = executeQuery(transaction, sql, args);
-        return JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
+        return list;
     }
 
     @SuppressWarnings("unchecked")

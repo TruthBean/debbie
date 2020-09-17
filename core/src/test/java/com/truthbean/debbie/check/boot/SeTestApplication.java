@@ -9,9 +9,9 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
  * @since 0.0.2
  */
 @DebbieBootApplication
-class SeTestApplication {
+public class SeTestApplication {
 
-    private SeTestApplication() {
+    public SeTestApplication() {
         System.out.println(".......");
     }
 

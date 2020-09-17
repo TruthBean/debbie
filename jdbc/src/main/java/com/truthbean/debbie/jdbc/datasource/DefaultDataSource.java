@@ -90,7 +90,7 @@ public class DefaultDataSource implements DataSource {
         }
     }
 
-    private void configureConnection(Connection connection) throws SQLException {
+    private void configureConnection(final Connection connection) throws SQLException {
         var autoCommit = configuration.getAutoCommit();
         if (autoCommit != null && autoCommit != connection.getAutoCommit()) {
             connection.setAutoCommit(autoCommit);

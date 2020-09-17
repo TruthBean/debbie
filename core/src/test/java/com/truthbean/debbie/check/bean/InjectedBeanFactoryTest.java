@@ -20,7 +20,7 @@ class InjectedBeanFactoryTest {
 
     @Test
     void configure() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             applicationFactory.release();
             System.out.println("-------------------------------------------------------------");

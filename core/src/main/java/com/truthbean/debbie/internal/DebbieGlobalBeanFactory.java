@@ -11,6 +11,8 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.MethodProxy;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
@@ -159,12 +161,12 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
 
     @SuppressWarnings("unchecked")
     protected <T> T factory(String serviceName, Class<T> type, boolean require, boolean throwException) {
-        /*if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
+        if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
             DebbieConfiguration configuration = DebbieConfigurationCenter.getConfiguration((Class<? extends DebbieConfiguration>) type);
             if (configuration != null) {
                 return (T) configuration;
             }
-        }*/
+        }
         synchronized (beanInfoFactory) {
             var beanInfo = this.beanInfoFactory.getBeanInfo(serviceName, type, require, throwException);
             if (!require && beanInfo == null)

@@ -73,6 +73,8 @@ class DataTransformerRegister {
         beanInitialization.registerDataTransformer(new IntegerTransformer(), Integer.class, String.class);
         beanInitialization.registerDataTransformer(new LongTransformer(), Long.class, String.class);
         beanInitialization.registerDataTransformer(new ShortTransformer(), Short.class, String.class);
+        beanInitialization.registerDataTransformer(new FloatArrayTransformer(), float[].class, String.class);
+        beanInitialization.registerDataTransformer(new DoubleArrayTransformer(), double[].class, String.class);
 
         beanInitialization.registerDataTransformer(new IntegerToBooleanTransformer(), Integer.class, Boolean.class);
         beanInitialization.registerDataTransformer(new LongToIntegerTransformer(), Long.class, Integer.class);

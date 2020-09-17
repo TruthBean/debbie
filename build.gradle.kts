@@ -71,26 +71,12 @@ subprojects {
     apply(plugin = "idea")
     apply(plugin = "eclipse")
 
-    dependencies {
-        if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
-            val loggerVersion: String by project
-            "implementation"("com.truthbean.logger:logger-core:$loggerVersion")
-        }
-        if (project.name != "debbie-dependencies" && project.name != "debbie-test") {
-            val jupiterVersion: String by project
-            "testImplementation"("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-            "testImplementation"("org.junit.jupiter:junit-jupiter-params:$jupiterVersion")
-            "testImplementation"("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
-        }
-    }
-
     tasks.withType<Test> {
         useJUnitPlatform()
     }
 
     afterEvaluate {
         val originName = project.name.substring(7)
-        val moduleName = "com.truthbean.debbie.$originName"
 
         tasks.withType<JavaCompile> {
             options.encoding = "UTF-8"
@@ -99,12 +85,6 @@ subprojects {
             options.compilerArgs.add("-parameters")
             options.isDebug = true
             options.isFork = true
-
-            // doFirst {
-                // options.compilerArgs.add("--module-path")
-                // options.compilerArgs.add(classpath.asPath)
-                // classpath = files()
-            // }
         }
 
         configure<JavaPluginConvention> {
@@ -162,9 +142,6 @@ subprojects {
         }
 
         tasks.withType<Delete> {
-            // delete(fileTree("$rootDir/dist/com/truthbean/debbie").matching {
-               // include("**/$projectVersion/**")
-            // })
             delete(File("$rootDir/$originName/out"))
             delete(File("$rootDir/$originName/build"))
         }
@@ -193,10 +170,6 @@ subprojects {
                         name.set(project.name)
                         group = "com.truthbean.debbie"
                         version = projectVersion
-
-                        /*if (project.name == "debbie-dependencies") {
-                            packaging = "pom"
-                        }*/
 
                         description.set("a java microservice project")
                         url.set("http://www.truthbean.com/debbie")

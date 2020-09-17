@@ -24,6 +24,7 @@ import com.truthbean.debbie.task.TaskFactory;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Consumer;
@@ -105,11 +106,24 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         final var targetClasses = configuration.getTargetClasses(resourceResolver);
         // beanInitialization
         var beanInitialization = applicationContext.getBeanInitialization();
+        // register annotation
+        debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
+        if (!debbieModuleStarters.isEmpty()) {
+            debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
+            for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
+                LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") getComponentAnnotation");
+                Set<Class<? extends Annotation>> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
+                if (componentAnnotations != null && !componentAnnotations.isEmpty())
+                    for (Class<? extends Annotation> componentAnnotation : componentAnnotations) {
+                        beanInitialization.registerBeanAnnotation(componentAnnotation);
+                    }
+            }
+        }
+
         beanInitialization.init(targetClasses);
         registerResourceResolver(resourceResolver, beanInitialization);
         applicationContext.getBeanInfoFactory().refreshBeans();
 
-        debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
         if (!debbieModuleStarters.isEmpty()) {
             debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {

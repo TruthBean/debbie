@@ -17,7 +17,6 @@ module com.truthbean.debbie.test {
     exports com.truthbean.debbie.test.annotation;
 
     requires transitive com.truthbean.debbie.core;
-    requires transitive com.truthbean.debbie.boot;
 
     requires transitive org.junit.jupiter.api;
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "name" : "com.truthbean.debbie.tomcat.TomcatServerApplication",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.tomcat.TomcatModuleStarter",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.tomcat.TomcatProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  }
+]

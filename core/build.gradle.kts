@@ -17,31 +17,30 @@ extraJavaModuleInfo {
     // module("jakarta.inject-api-${javassistVersion}.jar", "jakarta.inject.api", "1.0")
 }*/
 dependencies {
+    val loggerVersion: String by project
+    api("com.truthbean.logger:logger-core:$loggerVersion")
+
     // val graalvmVersion: String by project
     // compileOnly("org.graalvm.sdk:graal-sdk:$graalvmVersion")
     val asmVersion: String by project
-    compileOnly("org.ow2.asm:asm:$asmVersion")
+    api("org.ow2.asm:asm:$asmVersion")
 
     val javassistVersion: String by project
     // compileOnly("org.javassist:javassist:$javassistVersion")
 
     val jacksonVersion: String by project
-    compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     // test =========================================================================================================
 
-    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
-
     testImplementation(project(":debbie-test"))
-    // testImplementation(project(":debbie-aio"))
+    testImplementation(project(":debbie-boot"))
 
-    testImplementation("org.ow2.asm:asm:$asmVersion")
     testImplementation("org.javassist:javassist:$javassistVersion")
     val cglibVersion: String by project
     testImplementation("cglib:cglib:$cglibVersion")
 
     val injectVersion: String by project
-    testImplementation("jakarta.inject:jakarta.inject-api:1.0")
+    testImplementation("jakarta.inject:jakarta.inject-api:$injectVersion")
 }

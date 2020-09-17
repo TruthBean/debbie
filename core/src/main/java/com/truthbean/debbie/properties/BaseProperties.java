@@ -95,6 +95,10 @@ public class BaseProperties {
         return PROPERTIES;
     }
 
+    public void addProperty(String name, String value) {
+        PROPERTIES.put(name, value);
+    }
+
     public static boolean isPropertiesEmpty() {
         return PROPERTIES.isEmpty();
     }

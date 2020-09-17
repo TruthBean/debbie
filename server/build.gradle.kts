@@ -9,5 +9,5 @@
  */
 dependencies {
     api(project(":debbie-mvc"))
-    implementation(project(":debbie-boot"))
+    api(project(":debbie-boot"))
 }

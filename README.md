@@ -50,4 +50,6 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 12.踩完java11 module的坑..
 
-13.待续...
+13.适配graalvm
+
+14.待续...

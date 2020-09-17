@@ -42,7 +42,7 @@ public class BeanCreatedException extends RuntimeException {
     public static void throwException(Logger logger, Exception e) {
         if (logger.isTraceEnabled())
             logger.trace("", e);
-        Throwable cause = e.getCause();
+        var cause = e.getCause();
         var errorMessage = e.getMessage();
         if (cause != null) {
             errorMessage = cause.getMessage();

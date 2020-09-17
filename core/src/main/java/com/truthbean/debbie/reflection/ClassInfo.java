@@ -57,7 +57,7 @@ public class ClassInfo<C> implements Serializable {
         getMethodAnnotationMap();
 
         Type[] classActualTypes = ReflectionHelper.getActualTypes(clazz);
-        if (classActualTypes != null) {
+        if (classActualTypes != null && classActualTypes.length > 0) {
             this.actualTypes = Arrays.asList(classActualTypes);
         }
     }

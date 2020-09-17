@@ -3646,6 +3646,7 @@ public class ChineseNationalIdHelper {
      * 判断是否为闰年
      */
     private static boolean isLeapYear(int year) {
+        // IsoChronology.INSTANCE.isLeapYear(year)
         return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0);
     }
 
