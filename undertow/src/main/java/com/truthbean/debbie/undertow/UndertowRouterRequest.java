@@ -105,14 +105,11 @@ public class UndertowRouterRequest implements RouterRequest {
     }
 
     private void setCookies() {
-        var requestCookies = exchange.getRequestCookies();
-        var cookies = requestCookies.values();
+        var cookies = exchange.requestCookies();
         List<HttpCookie> result = new ArrayList<>();
 
-        if (!cookies.isEmpty()) {
-            for (var cookie : cookies) {
-                result.add(new UndertowRouterCookie(cookie).getHttpCookie());
-            }
+        for (var cookie : cookies) {
+            result.add(new UndertowRouterCookie(cookie).getHttpCookie());
         }
         routerRequestCache.setCookies(result);
     }

@@ -17,6 +17,7 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameterInfo;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.router.RouterAnnotationInfo;
+import com.truthbean.debbie.mvc.router.RouterAnnotationParser;
 import com.truthbean.debbie.mvc.router.RouterPathSplicer;
 import com.truthbean.debbie.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
@@ -58,7 +59,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             this.configuration = new HttpClientConfiguration();
         }
 
-        final RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
+        final RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method);
         if (router == null) {
             throw new IllegalArgumentException(method.getName() + " have no Router annotation ");
         }

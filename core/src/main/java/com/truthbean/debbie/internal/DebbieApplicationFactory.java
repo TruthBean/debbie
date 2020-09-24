@@ -112,11 +112,9 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") getComponentAnnotation");
-                Set<Class<? extends Annotation>> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
+                Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
                 if (componentAnnotations != null && !componentAnnotations.isEmpty())
-                    for (Class<? extends Annotation> componentAnnotation : componentAnnotations) {
-                        beanInitialization.registerBeanAnnotation(componentAnnotation);
-                    }
+                    componentAnnotations.forEach(beanInitialization::registerBeanAnnotation);
             }
         }
 

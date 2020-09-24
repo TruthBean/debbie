@@ -13,6 +13,7 @@
  * @since 0.1.0
  */
 module com.truthbean.debbie.core {
+    exports com.truthbean.debbie.annotation;
     exports com.truthbean.debbie.bean;
     exports com.truthbean.debbie.boot;
     exports com.truthbean.debbie.concurrent;

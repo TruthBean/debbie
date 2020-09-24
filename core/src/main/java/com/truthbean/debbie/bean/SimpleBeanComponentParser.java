@@ -3,22 +3,27 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.bean;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
 
 /**
- * @author TruthBean
- * @since 0.0.2
- * Created on 2019-11-28 18:08.
+ * @author TruthBean/Rogar·Q
+ * @since 0.1.0
+ * Created on 2020-09-18 00:33
  */
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface BeanAliceForValue {
+public class SimpleBeanComponentParser implements BeanComponentParser {
+    @Override
+    public BeanComponentInfo parse(Annotation annotation, Class<?> beanType) {
+        var info = new BeanComponentInfo();
+        info.setName(beanType.getName());
+        info.setType(BeanType.NO_LIMIT);
+        info.setLazy(false);
 
+        return info;
+    }
 }

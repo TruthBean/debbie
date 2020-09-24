@@ -26,6 +26,8 @@ module com.truthbean.debbie.mvc {
     requires transitive com.truthbean.debbie.core;
 
     uses com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
+    uses com.truthbean.debbie.mvc.router.RouterAnnotationParser;
+    uses com.truthbean.debbie.mvc.request.RequestParameterParser;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.mvc.MvcModuleStarter;

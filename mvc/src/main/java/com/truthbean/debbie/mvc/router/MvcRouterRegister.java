@@ -62,7 +62,7 @@ public class MvcRouterRegister {
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();
         for (var method : methods) {
-            RouterAnnotationInfo router = RouterAnnotationInfo.getRouterAnnotation(method);
+            RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method);
             List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method, clazz);
             if (router != null) {
                 var routerInfo = new RouterInfo();

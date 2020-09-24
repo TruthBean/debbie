@@ -44,7 +44,7 @@ class DebbieBeanInitialization implements BeanInitialization {
             resourceResolver.addResource(resources);
         }
         beanRegisterCenter = new BeanRegisterCenter();
-        beanRegisterCenter.registerBeanAnnotation(BeanComponent.class);
+        beanRegisterCenter.registerBeanAnnotation(BeanComponent.class, new DefaultBeanComponentParser());
         beanConfigurationRegister = new BeanConfigurationRegister(beanRegisterCenter, resourceResolver);
     }
 
@@ -71,8 +71,8 @@ class DebbieBeanInitialization implements BeanInitialization {
      * 标识的 annotation
      */
     @Override
-    public <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
-        beanRegisterCenter.registerBeanAnnotation(annotationType);
+    public <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType, BeanComponentParser parser) {
+        beanRegisterCenter.registerBeanAnnotation(annotationType, parser);
     }
 
     @Override

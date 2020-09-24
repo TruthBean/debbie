@@ -9,9 +9,15 @@
  */
 package com.truthbean.debbie.jdbc.annotation;
 
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.annotation.AliasFor;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author 璩诗斌
@@ -23,7 +29,6 @@ import java.lang.annotation.*;
 @BeanComponent(type = BeanType.SINGLETON)
 public @interface SqlRepository {
 
-    @BeanAliceForValue
-    @BeanAliceFor(name = "value")
+    @AliasFor(attribute = "value", annotation = BeanComponent.class)
     String value() default "";
 }

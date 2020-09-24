@@ -55,7 +55,8 @@ public class BeanComponentInfo {
         return factory;
     }
 
-    public void setFactory(Class<? extends BeanFactory<?>> factory) {
-        this.factory = factory;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void setFactory(Class<? extends BeanFactory> factory) {
+        this.factory = (Class<? extends BeanFactory<?>>) factory;
     }
 }

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.filter;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
 
 import java.lang.annotation.*;
@@ -23,8 +24,7 @@ import java.lang.annotation.*;
 @BeanComponent(type = BeanType.SINGLETON)
 public @interface Filter {
 
-    @BeanAliceForName
-    @BeanAliceFor(name = "name")
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
     String[] value() default {};

@@ -9,9 +9,15 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.annotation.AliasFor;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author truthbean
@@ -26,11 +32,9 @@ public @interface DebbieRmiService {
     /**
      * @return service name
      */
-    @BeanAliceForValue
-    @BeanAliceFor(name = "value")
+    @AliasFor(attribute = "value", annotation = BeanComponent.class)
     String value();
 
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
+    @AliasFor(attribute = "type", annotation = BeanComponent.class)
     BeanType type() default BeanType.NO_LIMIT;
 }

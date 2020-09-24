@@ -15,6 +15,7 @@ import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
@@ -68,8 +69,36 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         // resolve BeanComponent if has no bean Annotation, use it
         if (!resolveBeanComponent(classAnnotations.get(BeanComponent.class))) {
             // resolve custom component annotation
-            // todo
             LOGGER.warn("class(" + beanClass + ") no @BeanComponent");
+        }
+    }
+
+    public DebbieBeanInfo(Class<Bean> beanClass, Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotationTypes) {
+        super(beanClass);
+        Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
+        if (classAnnotations == null || classAnnotations.isEmpty())
+            return;
+
+        for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
+            Class<? extends Annotation> key = entry.getKey();
+            Annotation value = entry.getValue();
+            // 如果有其他Annotation，则使用其他的，而不是BeanComponent
+            if (key != BeanComponent.class && resolveComponent(key, value))
+                break;
+        }
+        // resolve BeanComponent if has no bean Annotation, use it
+        if (!resolveBeanComponent(classAnnotations.get(BeanComponent.class))) {
+            // resolve custom component annotation
+            LOGGER.warn("class(" + beanClass + ") no @BeanComponent");
+            for (Map.Entry<Class<? extends Annotation>, BeanComponentParser> entry : componentAnnotationTypes.entrySet()) {
+                var type = entry.getKey();
+                var parser = entry.getValue();
+                if (classAnnotations.containsKey(type)) {
+                    var info = parser.parse(classAnnotations.get(type), beanClass);
+                    setBeanComponent(info);
+                    break;
+                }
+            }
         }
     }
 
@@ -184,13 +213,14 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             return false;
         if (value.annotationType() == BeanComponent.class) {
             var beanService = ((BeanComponent) value);
-            var info = BeanComponentParser.parse(beanService);
+            var info = new DefaultBeanComponentParser().parse(beanService);
             setBeanComponent(info);
             return true;
         }
         return false;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void setBeanComponent(BeanComponentInfo info) {
         if (beanNames.isEmpty()) {
             if (info.hasName()) {
@@ -202,6 +232,15 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
 
         if (lazyCreate == null)
             lazyCreate = info.isLazy();
+
+        if (beanFactory == null && info.getFactory() != null) {
+            Class<? extends BeanFactory> factory = info.getFactory();
+            if (factory != null && factory != BeanFactory.class) {
+                BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
+                        new Object[]{this});
+                setBeanFactory(beanFactory);
+            }
+        }
     }
 
     private boolean resolveComponent(Class<? extends Annotation> key, Annotation value) {

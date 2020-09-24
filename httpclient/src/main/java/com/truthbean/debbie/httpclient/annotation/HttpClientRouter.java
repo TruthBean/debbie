@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.httpclient.annotation;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
 
 import java.lang.annotation.*;
@@ -27,8 +28,7 @@ public @interface HttpClientRouter {
      * bean name
      * @return bean name
      */
-    @BeanAliceForName
-    @BeanAliceFor(name = "name")
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String value() default "";
 
     String[] baseUrl() default {""};

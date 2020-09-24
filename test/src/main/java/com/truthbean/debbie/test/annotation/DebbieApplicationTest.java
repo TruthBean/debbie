@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.test.annotation;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
@@ -32,16 +33,14 @@ public @interface DebbieApplicationTest {
      * event bean name
      * @return router bean name
      */
-    @BeanAliceForValue
-    @BeanAliceFor(name = "value")
+    @AliasFor(attribute = "value", annotation = BeanComponent.class)
     String value() default "";
 
     /**
      * event bean name
      * @return router bean name
      */
-    @BeanAliceForName
-    @BeanAliceFor(name = "name")
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
      Class<? extends Annotation>[] customInjectType() default {};

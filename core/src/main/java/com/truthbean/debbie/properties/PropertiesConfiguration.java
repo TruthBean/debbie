@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.properties;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
 
 import java.lang.annotation.*;
@@ -28,16 +29,14 @@ public @interface PropertiesConfiguration {
      * event bean name
      * @return router bean name
      */
-    @BeanAliceForValue
-    @BeanAliceFor(name = "value")
+    @AliasFor(attribute = "value", annotation = BeanComponent.class)
     String value() default "";
 
     /**
      * router always be singleton
      * @return BeanType
      */
-    @BeanAliceForType
-    @BeanAliceFor(name = "type")
+    @AliasFor(attribute = "type", annotation = BeanComponent.class)
     BeanType type() default BeanType.SINGLETON;
 
     String keyPrefix() default "";

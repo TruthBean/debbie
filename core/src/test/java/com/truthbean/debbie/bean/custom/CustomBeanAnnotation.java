@@ -9,8 +9,7 @@
  */
 package com.truthbean.debbie.bean.custom;
 
-import com.truthbean.debbie.bean.BeanAliceForName;
-import com.truthbean.debbie.bean.BeanAliceForValue;
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 
@@ -27,9 +26,9 @@ import java.lang.annotation.*;
 @BeanComponent(type = BeanType.SINGLETON)
 public @interface CustomBeanAnnotation {
 
-    @BeanAliceForName
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
-    @BeanAliceForValue
+    @AliasFor(attribute = "value", annotation = BeanComponent.class)
     String value() default "";
 }

@@ -22,8 +22,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author TruthBean
@@ -35,7 +33,7 @@ final class BeanRegisterCenter {
     }
     public static final Object value = new Object();
 
-    private static final Set<Class<? extends Annotation>> BEAN_ANNOTATION = new LinkedHashSet<>();
+    private static final Map<Class<? extends Annotation>, BeanComponentParser> BEAN_ANNOTATION = new LinkedHashMap<>();
 
     private static final Map<Class<?>, DebbieBeanInfo<?>> BEAN_CLASSES = new HashMap<>();
     private static final Map<DebbieBeanInfo<?>, Object> CLASS_INFO_SET = new ConcurrentHashMap<>();
@@ -46,12 +44,12 @@ final class BeanRegisterCenter {
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo<?>>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
-    <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType) {
-        BEAN_ANNOTATION.add(annotationType);
+    <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType, BeanComponentParser parser) {
+        BEAN_ANNOTATION.put(annotationType, parser);
     }
 
     Set<Class<? extends Annotation>> getBeanAnnotations() {
-        return Collections.unmodifiableSet(BEAN_ANNOTATION);
+        return Collections.unmodifiableSet(BEAN_ANNOTATION.keySet());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -158,7 +156,7 @@ final class BeanRegisterCenter {
         return true;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     synchronized void register(final Class<?> beanClass) {
         if (beanClass.isAnnotation()) {
             registerBeanComponentAnnotation((Class<? extends Annotation>) beanClass);
@@ -167,20 +165,9 @@ final class BeanRegisterCenter {
         if (support(beanClass)) {
             var beanClassInfo = new DebbieBeanInfo<>(beanClass);
             if (beanClassInfo.getBeanType() == null) {
-                return;
-            }
-            var annotations = getBeanAnnotations();
-            for (var annotation : annotations) {
-                Annotation beanComponent = beanClassInfo.getClassAnnotation(annotation);
-                BeanComponentInfo info = BeanComponentParser.parse(beanComponent);
-                if (info != null) {
-                    Class<? extends BeanFactory> factory = info.getFactory();
-                    if (factory != null && factory != BeanFactory.class) {
-                        BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
-                                new Object[]{beanClassInfo});
-                        beanClassInfo.setBeanFactory(beanFactory);
-                    }
-                }
+                beanClassInfo = new DebbieBeanInfo<>(beanClass, BEAN_ANNOTATION);
+                if (beanClassInfo.getBeanType() == null)
+                    return;
             }
             register(beanClassInfo);
         }
@@ -188,7 +175,7 @@ final class BeanRegisterCenter {
 
     private void registerBeanComponentAnnotation(Class<? extends Annotation> annotationType) {
         if (annotationType.getAnnotation(BeanComponent.class) != null) {
-            registerBeanAnnotation(annotationType);
+            registerBeanAnnotation(annotationType, new DefaultBeanComponentParser());
         }
     }
 
@@ -245,11 +232,9 @@ final class BeanRegisterCenter {
 
     Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
         Set<DebbieBeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
-        var beanAnnotations = BEAN_ANNOTATION;
-
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
 
-        for (Class<? extends Annotation> annotationType : beanAnnotations) {
+        for (Class<? extends Annotation> annotationType : getBeanAnnotations()) {
             for (DebbieBeanInfo<?> classInfo : classInfoSet) {
                 if (classInfo.getClassAnnotations().containsKey(annotationType)) {
                     result.add(classInfo);

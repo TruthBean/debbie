@@ -9,8 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanAliceFor;
-import com.truthbean.debbie.bean.BeanAliceForName;
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 
@@ -33,7 +32,6 @@ public @interface EventBeanListener {
      * event bean name
      * @return router bean name
      */
-    @BeanAliceForName
-    @BeanAliceFor(name = "name")
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 }

@@ -29,7 +29,7 @@ public interface BeanInitialization {
      *      @see BeanComponent
      * 标识的 annotation
      */
-    <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType);
+    <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType, BeanComponentParser parser);
 
     void registerBeanConfiguration(Collection<Class<?>> classes);
 

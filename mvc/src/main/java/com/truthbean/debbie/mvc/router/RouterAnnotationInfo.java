@@ -14,8 +14,8 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author TruthBean
@@ -43,6 +43,7 @@ public class RouterAnnotationInfo {
 
     private MediaType responseType;
 
+    @SuppressWarnings("rawtypes")
     private Class<? extends AbstractResponseContentHandler> handlerClass;
 
     public RouterAnnotationInfo() {
@@ -182,6 +183,11 @@ public class RouterAnnotationInfo {
         return name;
     }
 
+    public RouterAnnotationInfo setName(String name) {
+        this.name = name;
+        return this;
+    }
+
     public BeanType type() {
         return type;
     }
@@ -190,92 +196,93 @@ public class RouterAnnotationInfo {
         return value;
     }
 
+    public RouterAnnotationInfo setValue(String[] value) {
+        this.value = value;
+        return this;
+    }
+
     public String[] urlPatterns() {
         return urlPatterns;
+    }
+
+    public RouterAnnotationInfo setUrlPatterns(String[] urlPatterns) {
+        this.urlPatterns = urlPatterns;
+        return this;
     }
 
     public HttpMethod[] method() {
         return method;
     }
 
+    public RouterAnnotationInfo setMethod(HttpMethod[] method) {
+        this.method = method;
+        return this;
+    }
+
+    public RouterAnnotationInfo setMethod(Collection<HttpMethod> methods) {
+        this.method = methods.toArray(value -> new HttpMethod[0]);
+        return this;
+    }
+
     public MediaType requestType() {
         return requestType;
+    }
+
+    public RouterAnnotationInfo setRequestType(MediaType requestType) {
+        this.requestType = requestType;
+        return this;
+    }
+
+    public RouterAnnotationInfo setRequestType(String mediaType) {
+        this.requestType = MediaType.of(mediaType);
+        return this;
     }
 
     public boolean hasTemplate() {
         return hasTemplate;
     }
 
+    public RouterAnnotationInfo setHasTemplate(boolean hasTemplate) {
+        this.hasTemplate = hasTemplate;
+        return this;
+    }
+
     public String templateSuffix() {
         return templateSuffix;
+    }
+
+    public RouterAnnotationInfo setTemplatePrefix(String templatePrefix) {
+        this.templatePrefix = templatePrefix;
+        return this;
     }
 
     public String templatePrefix() {
         return templatePrefix;
     }
 
+    public RouterAnnotationInfo setTemplateSuffix(String templateSuffix) {
+        this.templateSuffix = templateSuffix;
+        return this;
+    }
+
     public MediaType responseType() {
         return responseType;
     }
 
+    public RouterAnnotationInfo setResponseType(MediaType responseType) {
+        this.responseType = responseType;
+        return this;
+    }
+
+    @SuppressWarnings("rawtypes")
     public Class<? extends AbstractResponseContentHandler> handlerClass() {
         return handlerClass;
     }
 
-    public static RouterAnnotationInfo getRouterAnnotation(Method method) {
-        Router router = method.getAnnotation(Router.class);
-        if (router != null) {
-            return new RouterAnnotationInfo(router);
-        }
-
-        GetRouter getRouter = method.getAnnotation(GetRouter.class);
-        if (getRouter != null) {
-            return new RouterAnnotationInfo(getRouter);
-        }
-
-        PostRouter postRouter = method.getAnnotation(PostRouter.class);
-        if (postRouter != null) {
-            return new RouterAnnotationInfo(postRouter);
-        }
-
-        PutRouter putRouter = method.getAnnotation(PutRouter.class);
-        if (putRouter != null) {
-            return new RouterAnnotationInfo(putRouter);
-        }
-
-        DeleteRouter deleteRouter = method.getAnnotation(DeleteRouter.class);
-        if (deleteRouter != null) {
-            return new RouterAnnotationInfo(deleteRouter);
-        }
-
-        OptionsRouter optionsRouter = method.getAnnotation(OptionsRouter.class);
-        if (optionsRouter != null) {
-            return new RouterAnnotationInfo(optionsRouter);
-        }
-
-        HeadRouter headRouter = method.getAnnotation(HeadRouter.class);
-        if (headRouter != null) {
-            return new RouterAnnotationInfo(headRouter);
-        }
-
-        PatchRouter patchRouter = method.getAnnotation(PatchRouter.class);
-        if (patchRouter != null) {
-            return new RouterAnnotationInfo(patchRouter);
-        }
-
-        TraceRouter traceRouter = method.getAnnotation(TraceRouter.class);
-        if (traceRouter != null) {
-            return new RouterAnnotationInfo(traceRouter);
-        }
-
-        ConnectRouter connectRouter = method.getAnnotation(ConnectRouter.class);
-        if (connectRouter != null) {
-            return new RouterAnnotationInfo(connectRouter);
-        }
-
-        // todo custom annotation
-
-        return null;
+    @SuppressWarnings("rawtypes")
+    public RouterAnnotationInfo setHandlerClass(Class<? extends AbstractResponseContentHandler> handlerClass) {
+        this.handlerClass = handlerClass;
+        return this;
     }
 
     @Override

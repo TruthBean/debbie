@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpMethod;
@@ -32,8 +33,7 @@ public @interface Router {
      * router bean name
      * @return router bean name
      */
-    @BeanAliceForName
-    @BeanAliceFor(name = "name")
+    @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
     /**
