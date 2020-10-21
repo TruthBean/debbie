@@ -9,8 +9,6 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.core.ApplicationContext;
-
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0

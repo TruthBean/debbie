@@ -117,8 +117,14 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public void initBean(DebbieBeanInfo<?> beanInfo) {
-        beanRegisterCenter.register(beanInfo);
+    public void initBean(BeanInfo<?> beanInfo) {
+        DebbieBeanInfo<?> debbieBeanInfo;
+        if (beanInfo instanceof DebbieBeanInfo) {
+            debbieBeanInfo = (DebbieBeanInfo<?>) beanInfo;
+        } else {
+            debbieBeanInfo = new DebbieBeanInfo<>(beanInfo);
+        }
+        beanRegisterCenter.register(debbieBeanInfo);
     }
 
     @Override
@@ -128,13 +134,13 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public void refreshSingletonBean(DebbieBeanInfo<?> beanInfo) {
+    public void refreshSingletonBean(MutableBeanInfo<?> beanInfo) {
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanRegisterCenter.refresh(beanInfo);
     }
 
     @Override
-    public void refreshBean(DebbieBeanInfo<?> beanInfo) {
+    public void refreshBean(MutableBeanInfo<?> beanInfo) {
         beanRegisterCenter.refresh(beanInfo);
     }
 
@@ -191,7 +197,7 @@ class DebbieBeanInitialization implements BeanInitialization {
 
     @Override
     public <Bean> Bean getRegisterBean(Class<Bean> bean) {
-        DebbieBeanInfo<Bean> registerRawBean = beanRegisterCenter.getRegisterRawBean(bean);
+        MutableBeanInfo<Bean> registerRawBean = beanRegisterCenter.getRegisterRawBean(bean);
         if (registerRawBean == null) {
             return null;
         }

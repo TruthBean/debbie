@@ -47,19 +47,14 @@ public class ClassLoaderUtils {
     public static ClassLoader getClassLoader(Class<?> clazz) {
         ClassLoader cl = null;
         try {
-            cl = clazz.getClassLoader();
-        } catch (Throwable e) {
-            // SecurityException
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable ex) {
+            // Cannot access thread context ClassLoader - falling back...
         }
         if (cl == null) {
-            // getClassLoader() returning null indicates the bootstrap ClassLoader
-            try {
-                cl = Thread.currentThread().getContextClassLoader();
-            } catch (Throwable ex) {
-                // Cannot access thread context ClassLoader - falling back...
-            }
+            // No thread context class loader -> use class loader of this class.
+            cl = clazz.getClassLoader();
             if (cl == null) {
-                // No thread context class loader -> use class loader of this class.
                 try {
                     cl = ClassLoader.getPlatformClassLoader();
                 } catch (Throwable ignored1) {

@@ -31,18 +31,19 @@ import java.util.concurrent.ConcurrentHashMap;
 final class BeanRegisterCenter {
     BeanRegisterCenter() {
     }
+
     public static final Object value = new Object();
 
     private static final Map<Class<? extends Annotation>, BeanComponentParser> BEAN_ANNOTATION = new LinkedHashMap<>();
 
-    private static final Map<Class<?>, DebbieBeanInfo<?>> BEAN_CLASSES = new HashMap<>();
-    private static final Map<DebbieBeanInfo<?>, Object> CLASS_INFO_SET = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, BeanInfo<?>> BEAN_CLASSES = new HashMap<>();
+    private static final Map<BeanInfo<?>, Object> CLASS_INFO_SET = new ConcurrentHashMap<>();
 
     private static final Set<Class<? extends Annotation>> CLASS_ANNOTATION = new HashSet<>();
     private static final Map<Class<? extends Annotation>, Map<Class<?>, Set<Method>>> BEAN_CLASS_METHOD_MAP = new HashMap<>();
 
     private static final Set<Class<? extends Annotation>> METHOD_ANNOTATION = new HashSet<>();
-    private static final Map<Class<? extends Annotation>, Set<DebbieBeanInfo<?>>> ANNOTATION_METHOD_BEANS = new HashMap<>();
+    private static final Map<Class<? extends Annotation>, Set<BeanInfo<?>>> ANNOTATION_METHOD_BEANS = new HashMap<>();
 
     <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType, BeanComponentParser parser) {
         BEAN_ANNOTATION.put(annotationType, parser);
@@ -53,71 +54,77 @@ final class BeanRegisterCenter {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    synchronized <Bean> void register(DebbieBeanInfo<Bean> beanClassInfo) {
-        Class<Bean> beanClass = beanClassInfo.getBeanClass();
+    synchronized <Bean> void register(BeanInfo<Bean> beanClassInfo) {
+        Class<Bean> beanClass = beanClassInfo.getClazz();
         if (BEAN_CLASSES.containsKey(beanClass)) {
             // merge
-            DebbieBeanInfo beanInfo = BEAN_CLASSES.get(beanClass);
-            beanInfo.addBeanNames(beanClassInfo.getBeanNames());
+            BeanInfo info = BEAN_CLASSES.get(beanClass);
+            if (info instanceof MutableBeanInfo) {
+                MutableBeanInfo beanInfo = (MutableBeanInfo) info;
+                beanInfo.addBeanNames(beanClassInfo.getBeanNames());
 
-            // add bean alias name
-            // TODO if singleton, set order
-            if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
-                beanInfo.setBeanType(BeanType.SINGLETON);
-                if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
-                    beanInfo.setBean(beanClassInfo.getBean());
+                // add bean alias name
+                // TODO if singleton, set order
+                if ((beanInfo.isSingleton() || beanInfo.getBeanType() == null) && beanClassInfo.isSingleton()) {
+                    beanInfo.setBeanType(BeanType.SINGLETON);
+                    if (beanClassInfo.isPresent() && beanInfo.isEmpty()) {
+                        beanInfo.setBean(beanClassInfo.getBean());
+                    }
+                    if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                        beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                    }
+                    return;
+                } else if ((beanInfo.getBeanType() == BeanType.NO_LIMIT || beanInfo.getBeanType() == null)
+                        && beanClassInfo.getBeanType() == BeanType.NO_LIMIT) {
+                    if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
+                        beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+                    }
+                    return;
                 }
-                if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
-                    beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
-                }
-                return;
-            } else if ((beanInfo.getBeanType() == BeanType.NO_LIMIT || beanInfo.getBeanType() == null)
-                    && beanClassInfo.getBeanType() == BeanType.NO_LIMIT) {
-                if (beanClassInfo.hasBeanFactory() && !beanInfo.hasBeanFactory()) {
-                    beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
-                }
-                return;
             }
         }
 
-        DebbieBeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
+        BeanInfo<?> put = BEAN_CLASSES.put(beanClass, beanClassInfo);
         if (put == null) {
             LOGGER.trace(() -> "register class " + beanClass.getName() + " with bean name " + beanClassInfo.getServiceName());
         }
         CLASS_INFO_SET.put(beanClassInfo, value);
 
-        Map<Method, Set<Annotation>> methodWithAnnotations = beanClassInfo.getMethodWithAnnotations();
-        methodWithAnnotations.forEach((method, annotations) -> {
-            if (annotations != null) {
-                for (Annotation annotation : annotations) {
-                    var methodAnnotation = annotation.annotationType();
-                    if (methodAnnotation != Override.class && methodAnnotation != Deprecated.class && methodAnnotation != SuppressWarnings.class)
-                        METHOD_ANNOTATION.add(methodAnnotation);
+        if (beanClassInfo instanceof DetailedBeanInfo) {
+            DetailedBeanInfo detailedBeanInfo = (DetailedBeanInfo) beanClassInfo;
+            Map<Method, Set<Annotation>> methodWithAnnotations = detailedBeanInfo.getMethodWithAnnotations();
+            methodWithAnnotations.forEach((method, annotations) -> {
+                if (annotations != null) {
+                    for (Annotation annotation : annotations) {
+                        var methodAnnotation = annotation.annotationType();
+                        if (methodAnnotation != Override.class && methodAnnotation != Deprecated.class && methodAnnotation != SuppressWarnings.class)
+                            METHOD_ANNOTATION.add(methodAnnotation);
 
-                    var annotationMethodBeans = ANNOTATION_METHOD_BEANS.computeIfAbsent(methodAnnotation, k -> new HashSet<>());
-                    annotationMethodBeans.add(beanClassInfo);
+                        var annotationMethodBeans = ANNOTATION_METHOD_BEANS.computeIfAbsent(methodAnnotation, k -> new HashSet<>());
+                        annotationMethodBeans.add(beanClassInfo);
+                    }
                 }
+            });
+
+            Map<Class<? extends Annotation>, Annotation> classAnnotation = detailedBeanInfo.getClassAnnotations();
+            if (!classAnnotation.isEmpty()) {
+                var annotations = classAnnotation.keySet();
+
+                classAnnotation.forEach((type, annotation) -> {
+                    if (TypeHelper.filterAnnotation(type)) {
+                        CLASS_ANNOTATION.add(type);
+                    }
+                });
+
+                annotations.stream().filter(beanClass::isAnnotationPresent).forEach(annotation -> {
+                    var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
+                    if (classMethodMap == null) {
+                        classMethodMap = new HashMap<>();
+                    }
+                    classMethodMap.put(beanClass, methodWithAnnotations.keySet());
+                    BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
+                });
             }
-        });
-
-        Map<Class<? extends Annotation>, Annotation> classAnnotation = beanClassInfo.getClassAnnotations();
-        if (!classAnnotation.isEmpty()) {
-            var annotations = classAnnotation.keySet();
-
-            classAnnotation.forEach((type, annotation) -> {
-                if (TypeHelper.filterAnnotation(type)) {
-                    CLASS_ANNOTATION.add(type);
-                }
-            });
-
-            annotations.stream().filter(beanClass::isAnnotationPresent).forEach(annotation -> {
-                var classMethodMap = BEAN_CLASS_METHOD_MAP.get(annotation);
-                if (classMethodMap == null) {
-                    classMethodMap = new HashMap<>();
-                }
-                classMethodMap.put(beanClass, methodWithAnnotations.keySet());
-                BEAN_CLASS_METHOD_MAP.put(annotation, classMethodMap);
-            });
         }
     }
 
@@ -130,11 +137,11 @@ final class BeanRegisterCenter {
     }
 
     @SuppressWarnings("unchecked")
-    synchronized <Bean> void refresh(DebbieBeanInfo<Bean> beanClassInfo) {
-        Class<Bean> beanClass = beanClassInfo.getBeanClass();
+    synchronized <Bean> void refresh(MutableBeanInfo<Bean> beanClassInfo) {
+        Class<Bean> beanClass = beanClassInfo.getClazz();
         LOGGER.trace(() -> "refresh class " + beanClass.getName());
 
-        DebbieBeanInfo<Bean> beanInfo = (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(beanClass);
+        MutableBeanInfo<Bean> beanInfo = (MutableBeanInfo<Bean>) BEAN_CLASSES.get(beanClass);
         if (beanInfo == null) {
             throw new NoBeanException("bean " + beanClass + " has not registered. ");
         }
@@ -149,7 +156,7 @@ final class BeanRegisterCenter {
             return false;
         if (beanClass.isAnnotation())
             return false;
-        if (beanClass.getAnnotation(AsmGenerated.class) != null ||
+        if (beanClass.getAnnotation(AsmGenerated.class) != null || beanClass.getAnnotation(NonBean.class) != null ||
                 JavaassistProxyBean.class.isAssignableFrom(beanClass)) {
             return false;
         }
@@ -215,29 +222,37 @@ final class BeanRegisterCenter {
             LOGGER.error(() -> beanClass.getName() + " has not register");
             throw new NoBeanException(beanClass.getName() + " has not register");
         }
-        return classInfoSet.get(beanClass).getMethods();
+        BeanInfo<?> beanInfo = classInfoSet.get(beanClass);
+        if (beanInfo instanceof DetailedBeanInfo) {
+            return ((DetailedBeanInfo<?>) beanInfo).getMethods();
+        }
+        return new HashSet<>();
     }
 
     <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass) {
-        Set<DebbieBeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
+        Set<BeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
 
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
 
         classInfoSet.stream()
-                .filter(classInfo -> classInfo.getClassAnnotations().containsKey(annotationClass))
-                .forEach(result::add);
+                .filter(classInfo -> classInfo instanceof DebbieBeanInfo
+                        && ((DebbieBeanInfo<?>) classInfo).getClassAnnotations().containsKey(annotationClass))
+                .forEach(info -> result.add((DebbieBeanInfo<?>) info));
 
         return result;
     }
 
     Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
-        Set<DebbieBeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
+        Set<BeanInfo<?>> classInfoSet = CLASS_INFO_SET.keySet();
         Set<DebbieBeanInfo<?>> result = new HashSet<>();
 
         for (Class<? extends Annotation> annotationType : getBeanAnnotations()) {
-            for (DebbieBeanInfo<?> classInfo : classInfoSet) {
-                if (classInfo.getClassAnnotations().containsKey(annotationType)) {
-                    result.add(classInfo);
+            for (BeanInfo<?> classInfo : classInfoSet) {
+                if (classInfo instanceof DebbieBeanInfo) {
+                    DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) classInfo;
+                    if (beanInfo.getClassAnnotations().containsKey(annotationType)) {
+                        result.add(beanInfo);
+                    }
                 }
             }
         }
@@ -247,14 +262,21 @@ final class BeanRegisterCenter {
 
     @SuppressWarnings("unchecked")
     <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean) {
-        DebbieBeanInfo<?> info = BEAN_CLASSES.get(bean);
-        if (info != null)
+        BeanInfo<?> info = BEAN_CLASSES.get(bean);
+        if (info instanceof DebbieBeanInfo)
             return (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(bean);
         return null;
     }
 
     Collection<DebbieBeanInfo<?>> getRegisterRawBeans() {
-        return Collections.unmodifiableCollection(BEAN_CLASSES.values());
+        Collection<BeanInfo<?>> values = BEAN_CLASSES.values();
+        Collection<DebbieBeanInfo<?>> result = new HashSet<>();
+        for (BeanInfo<?> beanInfo : values) {
+            if (beanInfo instanceof DebbieBeanInfo) {
+                result.add((DebbieBeanInfo<?>) beanInfo);
+            }
+        }
+        return Collections.unmodifiableCollection(result);
     }
 
     Collection<Class<?>> getRegisterRawBeanTypes() {
@@ -267,7 +289,16 @@ final class BeanRegisterCenter {
     }*/
 
     Set<DebbieBeanInfo<?>> getAnnotatedMethodsBean(Class<? extends Annotation> methodAnnotation) {
-        return ANNOTATION_METHOD_BEANS.get(methodAnnotation);
+        Set<DebbieBeanInfo<?>> result = new HashSet<>();
+        Set<BeanInfo<?>> set = ANNOTATION_METHOD_BEANS.get(methodAnnotation);
+        if (set != null) {
+            for (BeanInfo<?> beanInfo : set) {
+                if (beanInfo instanceof DebbieBeanInfo) {
+                    result.add((DebbieBeanInfo<?>) beanInfo);
+                }
+            }
+        }
+        return result;
     }
 
     Set<DebbieBeanInfo<?>> getBeansByInterface(Class<?> interfaceType) {
@@ -281,8 +312,8 @@ final class BeanRegisterCenter {
             Class<?>[] interfaces = clazz.getInterfaces();
             if (interfaces.length > 0) {
                 for (Class<?> i : interfaces) {
-                    if (i == interfaceType) {
-                        classInfoSet.add(beanInfo);
+                    if (i == interfaceType && beanInfo instanceof DebbieBeanInfo) {
+                        classInfoSet.add((DebbieBeanInfo<?>)beanInfo);
                     }
                 }
             }
@@ -300,8 +331,9 @@ final class BeanRegisterCenter {
 
         BEAN_CLASSES.forEach((clazz, beanInfo) -> {
             Class<?> superclass = clazz.getSuperclass();
-            if (superclass != null && superclass != Object.class && superclass != Void.class) {
-                classInfoSet.add(beanInfo);
+            if (superclass != null && superclass != Object.class && superclass != Void.class
+                    && beanInfo instanceof DebbieBeanInfo) {
+                classInfoSet.add((DebbieBeanInfo<?>) beanInfo);
             }
         });
 

@@ -92,9 +92,11 @@ public interface RouterRequest {
 
     default HttpCookie getCookie(String name) {
         var cookies = getCookies();
-        for (HttpCookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                return cookie;
+        if (cookies != null) {
+            for (HttpCookie cookie : cookies) {
+                if (name.equals(cookie.getName())) {
+                    return cookie;
+                }
             }
         }
         return null;

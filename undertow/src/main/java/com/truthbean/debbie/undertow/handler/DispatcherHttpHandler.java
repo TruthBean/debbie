@@ -73,9 +73,8 @@ public class DispatcherHttpHandler implements HttpHandler {
             RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(httpRequest, configuration);
             LOGGER.debug(httpRequest::toString);
 
-            MvcRouterHandler.handleRouter(routerInfo, applicationContext);
+            var response = MvcRouterHandler.handleRouter(routerInfo, applicationContext);
 
-            var response = routerInfo.getResponse();
             var responseHandler = new UndertowResponseHandler(exchange);
             responseHandler.changeResponseWithoutContent(response);
             responseHandler.handle(response, routerInfo.getDefaultResponseType());

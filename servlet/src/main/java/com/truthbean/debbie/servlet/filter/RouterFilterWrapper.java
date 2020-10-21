@@ -16,9 +16,9 @@ import com.truthbean.debbie.mvc.filter.RouterFilter;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.servlet.request.ServletRouterRequest;
+import com.truthbean.debbie.servlet.request.HttpServletRequestWrapper;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
-import com.truthbean.debbie.servlet.response.ServletRouterResponse;
+import com.truthbean.debbie.servlet.response.HttpServletResponseWrapper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -72,8 +72,22 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
                 }
             }
         }
-        ServletRouterRequest routerRequest = new ServletRouterRequest(request);
-        ServletRouterResponse routerResponse = new ServletRouterResponse(response);
+
+        HttpServletRequestWrapper requestWrapper;
+        if (request instanceof HttpServletRequestWrapper) {
+            requestWrapper = (HttpServletRequestWrapper) request;
+        } else {
+            requestWrapper = new HttpServletRequestWrapper(request);
+        }
+        RouterRequest routerRequest = requestWrapper.getRouterRequest();
+
+        HttpServletResponseWrapper responseWrapper;
+        if (response instanceof HttpServletResponseWrapper) {
+            responseWrapper = (HttpServletResponseWrapper) response;
+        } else {
+            responseWrapper = new HttpServletResponseWrapper(response);
+        }
+        RouterResponse routerResponse = responseWrapper.getRouterResponse();
         boolean doFilter = false;
         if (this.preRouter(routerRequest, routerResponse)) {
             Map<String, Object> attributes = routerRequest.getAttributes();
@@ -81,25 +95,26 @@ public class RouterFilterWrapper extends HttpFilter implements RouterFilter {
                 attributes.forEach(request::setAttribute);
             }
             doFilter = true;
-        }
-        Boolean post = this.postRouter(routerRequest, routerResponse);
-        if (post != null) {
-            var handler = new ServletResponseHandler(routerRequest.getHttpServletRequest(), routerResponse.getResponse());
-            if (post) {
-                if (routerResponse.getStatus() == null) {
-                    // 默认请求成功
-                    routerResponse.setStatus(HttpStatus.OK);
+        } else {
+            Boolean post = this.postRouter(routerRequest, routerResponse);
+            if (post != null) {
+                var handler = new ServletResponseHandler(requestWrapper, responseWrapper.getResponse());
+                if (post) {
+                    if (routerResponse.getStatus() == null) {
+                        // 默认请求成功
+                        routerResponse.setStatus(HttpStatus.OK);
+                    }
+                    handler.changeResponseWithoutContent(routerResponse);
+                    handler.handle(routerResponse, defaultResponseType, false);
+                    doFilter = false;
+                } else {
+                    handler.changeResponseWithoutContent(routerResponse);
+                    doFilter = true;
                 }
-                handler.changeResponseWithoutContent(routerResponse);
-                handler.handle(routerResponse, defaultResponseType, false);
-                doFilter = false;
-            } else {
-                handler.changeResponseWithoutContent(routerResponse);
-                doFilter = true;
             }
         }
         if (doFilter) {
-            chain.doFilter(request, response);
+            chain.doFilter(requestWrapper, responseWrapper);
         }
     }
 }

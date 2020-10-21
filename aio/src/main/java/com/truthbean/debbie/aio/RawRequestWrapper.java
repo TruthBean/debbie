@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
@@ -20,7 +21,9 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.net.uri.QueryStringDecoder;
 import com.truthbean.debbie.net.uri.UriUtils;
+import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.util.Constants;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -40,9 +43,11 @@ class RawRequestWrapper implements RouterRequest {
     private final List<String> raw;
 
     private final DefaultRouterRequest routerRequestCache;
+    private final SessionManager sessionManager;
 
-    RawRequestWrapper(List<String> rawRequest, SocketAddress remoteAddress) {
+    RawRequestWrapper(List<String> rawRequest, SocketAddress remoteAddress, final SessionManager sessionManager) {
         this.raw = rawRequest;
+        this.sessionManager = sessionManager;
 
         this.routerRequestCache = new DefaultRouterRequest();
 
@@ -67,6 +72,8 @@ class RawRequestWrapper implements RouterRequest {
 
         setRequestResult();
         this.routerRequestCache.setRemoteAddress(remoteAddress.toString());
+
+        setCookies(this.routerRequestCache.getHeader());
     }
 
     @Override
@@ -207,10 +214,6 @@ class RawRequestWrapper implements RouterRequest {
                     }
                 }
 
-            /*if (contentType != null && contentType.isText()) {
-                this.routerRequestCache.setTextBody(line);
-            }*/
-
                 final var split = Constants.SEMICOLON + Constants.SPACE;
                 if (line.startsWith(Constants.FORM_DATA) && line.contains(split)) {
                     var names = line.split(split);
@@ -239,7 +242,7 @@ class RawRequestWrapper implements RouterRequest {
                     */
                 }
 
-                if (multipartFile != null || (contentType != null && contentType.isText())) {
+                if (multipartFile != null || contentType.isText()) {
                     textContent.append(line);
                     continue;
                 } else {
@@ -312,9 +315,35 @@ class RawRequestWrapper implements RouterRequest {
         return this.routerRequestCache.getCookies();
     }
 
+    private void setCookies(HttpHeader httpHeaders) {
+        String cookieString = httpHeaders.getHeader(HttpHeader.HttpHeaderNames.COOKIE);
+        if (cookieString != null) {
+            // todo decode cookie
+            LOGGER.trace("cookie: " + cookieString);
+        }
+        if (this.routerRequestCache.getCookies() == null) {
+            this.routerRequestCache.setCookies(new ArrayList<>());
+        }
+    }
+
     @Override
     public RouterSession getSession() {
-        return this.routerRequestCache.getSession();
+        var session = routerRequestCache.getSession();
+        if (session == null) {
+            try {
+                HttpCookie jSessionId = routerRequestCache.getCookie("JSESSIONID");
+                if (jSessionId != null) {
+                    session = sessionManager.getSession(jSessionId.getValue());
+                    routerRequestCache.setSession(session);
+                }
+                if (session == null) {
+                    session = sessionManager.createSession();
+                }
+            } catch (Throwable throwable) {
+                LOGGER.warn("this request has no session");
+            }
+        }
+        return session;
     }
 
     @Override
@@ -381,4 +410,6 @@ class RawRequestWrapper implements RouterRequest {
     public String getRemoteAddress() {
         return this.routerRequestCache.getRemoteAddress();
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RawRequestWrapper.class);
 }

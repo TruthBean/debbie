@@ -11,6 +11,8 @@ package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 
 /**
  * @author TruthBean
@@ -31,7 +33,16 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public HttpClientBean getBean() {
+        HttpClientRouter annotation = httpClientBeanClass.getAnnotation(HttpClientRouter.class);
+        if (annotation != null) {
+            Class<?> action = annotation.failureAction();
+            if (httpClientBeanClass.isAssignableFrom(action)) {
+                HttpClientBean o = (HttpClientBean) ReflectionHelper.newInstance(action);
+                return httpClientFactory.factory(httpClientBeanClass, o);
+            }
+        }
         return httpClientFactory.factory(httpClientBeanClass);
     }
 

@@ -3,20 +3,24 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.task;
+package com.truthbean.debbie.httpclient.test;
 
-import java.lang.annotation.*;
+import com.truthbean.debbie.bean.NonBean;
 
 /**
- * @author TruthBean
- * @since 0.0.2
+ * @author TruthBean/Rogar·Q
+ * @since 0.1.0
+ * Created on 2020-10-13 18:29
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Async {
+@NonBean
+public class ErrorPingService implements PingService {
+    @Override
+    public String ping() {
+        System.out.println("123");
+        return null;
+    }
 }

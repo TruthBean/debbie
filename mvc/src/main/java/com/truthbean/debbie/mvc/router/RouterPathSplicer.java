@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -47,6 +47,22 @@ public class RouterPathSplicer {
                 }
                 return newPaths;
             }
+        }
+        return null;
+    }
+
+    private static List<String> resolvePath(String[] prefixPathRegex) {
+        if (!isEmptyPaths(prefixPathRegex)) {
+            var prefixPath = trimPaths(prefixPathRegex);
+            List<String> newPaths = new ArrayList<>();
+            for (var s : prefixPath) {
+                if (!s.startsWith("/")) {
+                    newPaths.add("/" + s);
+                } else {
+                    newPaths.add(s);
+                }
+            }
+            return newPaths;
         }
         return null;
     }
@@ -98,6 +114,29 @@ public class RouterPathSplicer {
         return list;
     }
 
+    public static List<String> splicePaths(String dispatcherMapping, String[] prefixRouterRegex, RouterAnnotationInfo router) {
+        if (!dispatcherMapping.isBlank()) {
+            if (!dispatcherMapping.startsWith("/")) {
+                dispatcherMapping = "/" + dispatcherMapping;
+            }
+            if (dispatcherMapping.endsWith("/")) {
+                dispatcherMapping = dispatcherMapping.substring(0, dispatcherMapping.length() - 1);
+            }
+        }
+        var paths = splicePaths(prefixRouterRegex, router);
+
+        List<String> list = new ArrayList<>();
+        for (String s : paths) {
+            if (dispatcherMapping.endsWith("**") && s.startsWith("/")) {
+                s = s.substring(1);
+            }
+            s = dispatcherMapping.replace("**", s);
+            list.add(s);
+        }
+
+        return list;
+    }
+
     public static List<String> splicePaths(String apiPrefix, List<String> prefixRouter, RouterAnnotationInfo router) {
         var apiPrefixAfterTrim = apiPrefix;
         if (!apiPrefix.isBlank() && apiPrefix.endsWith("/")) {
@@ -121,6 +160,15 @@ public class RouterPathSplicer {
     private static Set<String> splicePaths(Router prefixRouter, RouterAnnotationInfo router) {
         if (prefixRouter != null) {
             var prefixPathRegex = resolvePath(new RouterAnnotationInfo(prefixRouter));
+            if (prefixPathRegex != null)
+                return splicePaths(prefixPathRegex, router);
+        }
+        return splicePaths(router);
+    }
+
+    private static Set<String> splicePaths(String[] prefixRouterRegex, RouterAnnotationInfo router) {
+        if (prefixRouterRegex != null) {
+            var prefixPathRegex = resolvePath(prefixRouterRegex);
             if (prefixPathRegex != null)
                 return splicePaths(prefixPathRegex, router);
         }

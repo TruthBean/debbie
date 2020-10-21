@@ -304,7 +304,7 @@ public class RequestParameterInfo {
         DefaultRequestParameterParser parameterParser = new DefaultRequestParameterParser();
         RequestParameterInfo parameterInfo = parameterParser.parse(argument);
         if (parameterInfo == null) {
-            Set<RequestParameterParser> parsers = SpiLoader.loadProviders(RequestParameterParser.class);
+            Set<RequestParameterParser> parsers = SpiLoader.loadProviderSet(RequestParameterParser.class);
             for (RequestParameterParser parser : parsers) {
                 RequestParameterInfo info = parser.parse(argument);
                 if (info != null) {
@@ -320,7 +320,7 @@ public class RequestParameterInfo {
         DefaultRequestParameterParser parameterParser = new DefaultRequestParameterParser();
         RequestParameterInfo parameterInfo = parameterParser.parse(annotation);
         if (parameterInfo == null) {
-            Set<RequestParameterParser> parsers = SpiLoader.loadProviders(RequestParameterParser.class);
+            Set<RequestParameterParser> parsers = SpiLoader.loadProviderSet(RequestParameterParser.class);
             for (RequestParameterParser parser : parsers) {
                 RequestParameterInfo info = parser.parse(annotation);
                 if (info != null) {

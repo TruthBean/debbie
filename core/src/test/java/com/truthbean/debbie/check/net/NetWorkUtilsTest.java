@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map;
 
 class NetWorkUtilsTest {
 
@@ -52,9 +53,11 @@ class NetWorkUtilsTest {
 
     @Test
     void getMacAddress() {
-        InetAddress localAddress0 = NetWorkUtils.getLocalIpv4Address0();
-        String macAddress = NetWorkUtils.getMacAddress(localAddress0);
-        System.out.println(macAddress);
+        Map<String, String> realIpAndMac = NetWorkUtils.getRealIpAndMac();
+        realIpAndMac.forEach((ip, mac) -> {
+            System.out.println(ip);
+            System.out.println(mac);
+        });
     }
 
     @Test

@@ -18,6 +18,9 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import static com.truthbean.debbie.mvc.request.HttpHeader.HttpHeaderNames.*;
 
 /**
@@ -25,11 +28,11 @@ import static com.truthbean.debbie.mvc.request.HttpHeader.HttpHeaderNames.*;
  * @since 0.0.1
  * Created on 2019/3/25 22:03.
  */
-public class CorsFilter implements RouterFilter {
+public class CorsFilter implements RouterFilter, Closeable {
 
     private MvcConfiguration configuration;
 
-    private boolean doCors;
+    private final ThreadLocal<Boolean> doCors = new ThreadLocal<>();
 
     @Override
     public CorsFilter setMvcConfiguration(MvcConfiguration configuration) {
@@ -39,13 +42,13 @@ public class CorsFilter implements RouterFilter {
 
     @Override
     public boolean preRouter(RouterRequest request, RouterResponse response) {
-        this.doCors = isCorsRequest(request) && this.configuration.isEnableCors();
+        this.doCors.set(isCorsRequest(request) && this.configuration.isEnableCors());
         return false;
     }
 
     @Override
     public Boolean postRouter(RouterRequest request, RouterResponse response) {
-        if (this.doCors) {
+        if (this.doCors.get() != null && this.doCors.get()) {
             LOGGER.debug("filter cors");
             var cors = configuration.getCors();
             if (cors != null && !cors.isEmpty()) {
@@ -114,6 +117,11 @@ public class CorsFilter implements RouterFilter {
         HttpHeader.HttpHeaderName acrm = HttpHeader.HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD;
         return (isCorsRequest(request) && HttpMethod.OPTIONS == request.getMethod() &&
                 request.getHeader().getHeader(acrm) != null);
+    }
+
+    @Override
+    public void close() throws IOException {
+        doCors.remove();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);

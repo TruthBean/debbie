@@ -9,7 +9,10 @@
  */
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ReflectionExceptionUtils;
+import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -29,14 +32,17 @@ public class InterfaceProxy<T> implements InvocationHandler {
     private final Class<? extends AbstractMethodExecutor> executorClass;
     private final Map<Method, AbstractMethodExecutor> methodCache;
     private final Object configuration;
+    private final Object failureAction;
 
     public InterfaceProxy(Class<? extends AbstractMethodExecutor> executorClass, Object object, Class<T> interfaceType,
-                          Map<Method, AbstractMethodExecutor> methodCache, Object configuration) {
+                          Map<Method, AbstractMethodExecutor> methodCache, Object configuration,
+                          Object failureAction) {
         this.executorClass = executorClass;
         this.object = object;
         this.interfaceType = interfaceType;
         this.methodCache = methodCache;
         this.configuration = configuration;
+        this.failureAction = failureAction;
     }
 
     @Override
@@ -52,7 +58,30 @@ public class InterfaceProxy<T> implements InvocationHandler {
         }
         Class<?> returnType = method.getReturnType();
         final AbstractMethodExecutor interfaceMethod = cachedMethodExecutor(method);
-        return interfaceMethod.execute(object, returnType, args);
+        Object execute = null;
+        if (failureAction != null && interfaceType.isAssignableFrom(failureAction.getClass())) {
+            try {
+                execute = interfaceMethod.execute(object, returnType, args);
+            } catch (Exception e) {
+                logger.warn("", e);
+                execute = ReflectionHelper.invokeMethod(failureAction, method, args);
+            }
+            return execute;
+        } else {
+            try {
+                return interfaceMethod.execute(object, returnType, args);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    Throwable throwable = cause.getCause();
+                    if (throwable != null)
+                        throw throwable;
+                    else
+                        throw cause;
+                } else
+                    throw e;
+            }
+        }
     }
 
     private AbstractMethodExecutor cachedMethodExecutor(Method method) {
@@ -83,4 +112,6 @@ public class InterfaceProxy<T> implements InvocationHandler {
                 & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC
                 && method.getDeclaringClass().isInterface();
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(InterfaceProxy.class);
 }

@@ -72,18 +72,34 @@ public class DefaultDataSource implements DataSource {
     private synchronized void initializeDriver() throws SQLException {
         DataSourceDriverName dataSourceDriverName = configuration.getDriverName();
         if (dataSourceDriverName != null && !REGISTERED_DRIVERS.containsKey(dataSourceDriverName.getDriverName())) {
-            Class<?> driverType;
+            Class<?> driverType = null;
             ClassLoader driverClassLoader = ClassLoaderUtils.getClassLoader(DataSource.class);
             try {
                 var driverName = dataSourceDriverName.getDriverName();
-                if (driverClassLoader != null) {
-                    driverType = Class.forName(driverName, true, driverClassLoader);
-                } else {
-                    driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                try {
+                    if (driverClassLoader != null) {
+                        driverType = Class.forName(driverName, true, driverClassLoader);
+                    } else {
+                        driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                    }
+                } catch (ClassNotFoundException e) {
+                    if (dataSourceDriverName == DataSourceDriverName.mysql8) {
+                        dataSourceDriverName = DataSourceDriverName.mysql;
+                        driverName = dataSourceDriverName.getDriverName();
+                        if (driverClassLoader != null) {
+                            driverType = Class.forName(driverName, true, driverClassLoader);
+                        } else {
+                            driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                        }
+                    }
                 }
-                Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
-                DriverManager.registerDriver(driverInstance);
-                REGISTERED_DRIVERS.put(driverName, driverInstance);
+                if (driverType != null) {
+                    Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
+                    DriverManager.registerDriver(driverInstance);
+                    REGISTERED_DRIVERS.put(driverName, driverInstance);
+                } else {
+                    throw new SQLException("No driver found. ");
+                }
             } catch (Exception e) {
                 throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);
             }

@@ -22,6 +22,7 @@ public class OsUtils {
     private static final boolean IS_LINUX_OS;
     private static final boolean IS_WIN_OS;
     private static final boolean IS_MAC_OS;
+    public static final String OS_NAME;
 
     static {
         String osName = System.getProperty("os.name").toLowerCase();
@@ -30,9 +31,14 @@ public class OsUtils {
         IS_LINUX_OS = osName.contains("linux");
         IS_WIN_OS = osName.contains("win");
         IS_MAC_OS = osName.contains("mac");
+        OS_NAME = osName;
     }
 
     private OsUtils() {
+    }
+
+    public static String getOsName() {
+        return OS_NAME;
     }
 
     public static boolean isLinuxOs() {

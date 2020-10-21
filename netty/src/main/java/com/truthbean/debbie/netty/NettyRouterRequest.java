@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.*;
+import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.ReferenceCountUtil;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -42,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -165,7 +167,11 @@ public class NettyRouterRequest implements RouterRequest {
     public void resetHttpRequest() {
         try {
             decoder.removeHttpDataFromClean(decoder.currentPartialHttpData());
-            decoder.cleanFiles();
+            try {
+                decoder.cleanFiles();
+            } catch (IllegalReferenceCountException ex) {
+                LOGGER.error("", ex);
+            }
             decoder.destroy();
         } catch (Exception e) {
             if (e instanceof HttpPostRequestDecoder.EndOfDataDecoderException
@@ -215,12 +221,22 @@ public class NettyRouterRequest implements RouterRequest {
             // tells if the file is in Memory
             if (fileUpload.isInMemory()) {
                 try {
-                    routerRequestCache.addParameter(fileUpload.getName(), fileUpload.get());
+                    MultipartFile multipartFile = new MultipartFile();
+                    multipartFile.setContent(fileUpload.get());
+                    multipartFile.setFileName(fileUpload.getFilename());
+                    multipartFile.setContentType(MediaType.ofWithOctetDefault(fileUpload.getContentType()));
+                    multipartFile.setFileExt(FileNameUtils.getExtension(fileUpload.getFilename()));
+                    routerRequestCache.addParameter(fileUpload.getName(), multipartFile);
                 } catch (IOException e) {
                     LOGGER.error("read memory file error. ", e);
                 }
             } else {
                 try {
+                    MultipartFile multipartFile = new MultipartFile();
+                    multipartFile.setContent(Files.readAllBytes(fileUpload.getFile().toPath()));
+                    multipartFile.setFileName(fileUpload.getFilename());
+                    multipartFile.setContentType(MediaType.ofWithOctetDefault(fileUpload.getContentType()));
+                    multipartFile.setFileExt(FileNameUtils.getExtension(fileUpload.getFilename()));
                     routerRequestCache.addParameter(fileUpload.getName(), fileUpload.getFile());
                     // or on File
                     // fileUpload.renameTo(dest); // enable to move into another
@@ -424,6 +440,9 @@ public class NettyRouterRequest implements RouterRequest {
 
     @Override
     public RouterRequest copy() {
+        if (httpRequest == null || httpRequest.get() == null) {
+            return null;
+        }
         return new NettyRouterRequest(sessionManager, id, httpRequest.get(), host, port);
     }
 

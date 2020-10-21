@@ -254,7 +254,9 @@ public class RouterInfo implements Cloneable {
 
         clone.requestType = requestType;
         if (request != null) {
-            clone.request = request.copy();
+            var copy = request.copy();
+            if (copy != null)
+                clone.request = copy;
         }
 
         if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {
@@ -366,7 +368,9 @@ public class RouterInfo implements Cloneable {
 
         jsonInfo.requestType = requestType.getValue();
         if (request != null) {
-            jsonInfo.request = request.copy();
+            var copy = request.copy();
+            if (copy != null)
+                jsonInfo.request = copy;
         }
 
         return jsonInfo;

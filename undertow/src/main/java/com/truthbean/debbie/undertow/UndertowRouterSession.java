@@ -64,7 +64,8 @@ public class UndertowRouterSession implements RouterSession {
 
     @Override
     public void removeAttribute(String name) {
-        session.removeAttribute(name);
+        if (name != null)
+            session.removeAttribute(name);
     }
 
     @Override

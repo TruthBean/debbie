@@ -20,6 +20,7 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -28,7 +29,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 /**
@@ -69,6 +72,10 @@ public class HttpClientAction extends HttpHandler {
         try {
             response = future.get(configuration.getResponseTimeout(), TimeUnit.MILLISECONDS);
         } catch (final Exception e) {
+            String message = e.getMessage();
+            if (message != null && message.startsWith("java.net.ConnectException:")) {
+                throw new HttpClientException(message);
+            }
             LOGGER.error("response error. ", e);
         }
         return response;
@@ -84,7 +91,17 @@ public class HttpClientAction extends HttpHandler {
             tryCount++;
             // retry the HttpRequest
             future = future.copy();
-            response = getResponse(future);
+            try {
+                response = future.get(configuration.getResponseTimeout(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                if (tryCount >= configuration.getRetryTime()) {
+                    String message = e.getMessage();
+                    if (message != null && message.startsWith("java.net.ConnectException:")) {
+                        throw new HttpClientException(e);
+                    }
+                }
+                LOGGER.error("response error. ", e);
+            }
             if (response != null) {
                 try {
                     if (LOGGER.isDebugEnabled())
@@ -143,7 +160,9 @@ public class HttpClientAction extends HttpHandler {
             contentType = MediaType.ANY.info();
         }
 
-        builder.header("Content-Type", contentType.toString());
+        if (!contentType.equals(MediaType.MULTIPART_FORM_DATA.info())) {
+            builder.header("Content-Type", contentType.toString());
+        }
 
         final var xWwwFormUrlencodedBody = new StringBuilder();
         final var parameters = request.getParameters();
@@ -167,7 +186,9 @@ public class HttpClientAction extends HttpHandler {
             return action(httpRequest, startTime, responseType);
         } else if (contentType.toMediaType() == MediaType.MULTIPART_FORM_DATA) {
             // multipart
-            final var multipart = ofMimeMultipartData(parameters, UUID.randomUUID().toString());
+            var boundary = UUID.randomUUID().toString();
+            builder.header("Content-Type", "multipart/form-data; boundary=" + boundary);
+            final var multipart = ofMimeMultipartData(parameters, boundary);
             final var httpRequest = builder.method(request.getMethod().name(), multipart).build();
             return action(httpRequest, startTime, responseType);
         } else {

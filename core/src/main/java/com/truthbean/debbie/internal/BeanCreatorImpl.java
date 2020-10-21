@@ -374,6 +374,10 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
+        if (beanInfo.getBean() == null && beanInfo.hasBeanFactory()) {
+            bean = beanInfo.getBeanFactory().factoryBean();
+            beanInfo.setBean(bean);
+        }
         if (beanInfo.getBean() == null &&
                 (beanInfo.getConstructorBeanDependent().isEmpty() || beanInfo.isConstructorBeanDependentHasValue())) {
             createRawBeanByConstructorDependent();
@@ -551,7 +555,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                                 if (!fieldType.isInstance(bean)) {
                                     bean = JdkDynamicProxy.getRealValue(bean);
                                 }
-                                ReflectionHelper.setField(this.bean, field, bean);
+                                ReflectionHelper.invokeFieldBySetMethod(this.bean, field, bean);
                                 fieldInfo.setValue();
                             } else {
                                 map.put(fieldInfo, beanInfo);

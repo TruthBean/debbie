@@ -63,6 +63,11 @@ public class SpiLoader {
         return loadProviders(serviceClass, classLoader);
     }
 
+    public static <S> Set<S> loadProviderSet(Class<S> serviceClass) {
+        var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
+        return loadProviderSet(serviceClass, classLoader);
+    }
+
     public static <S> Set<S> loadProviderSet(Class<S> serviceClass, ClassLoader classLoader) {
         Set<S> result = new HashSet<>();
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);

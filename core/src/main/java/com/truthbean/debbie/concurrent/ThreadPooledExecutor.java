@@ -10,6 +10,7 @@
 package com.truthbean.debbie.concurrent;
 
 import com.truthbean.debbie.lang.Callback;
+import com.truthbean.debbie.properties.BaseProperties;
 
 import java.util.concurrent.*;
 
@@ -20,26 +21,20 @@ import java.util.concurrent.*;
  */
 public class ThreadPooledExecutor implements Executor {
 
-    private final int coreSize;
-    private final int maximumPoolSize;
-    private final ThreadFactory threadFactory;
+    private final long awaitTerminationTime;
 
     private final ExecutorService executorService;
 
     public ThreadPooledExecutor() {
-        this.coreSize = 10;
-        this.maximumPoolSize = 200;
-        this.threadFactory = new NamedThreadFactory();
-
-        this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
+        this(10, 200, new NamedThreadFactory(), 5000L);
     }
 
     public ThreadPooledExecutor(int coreSize, int maximumPoolSize, ThreadFactory threadFactory) {
-        this.coreSize = coreSize;
-        this.maximumPoolSize = maximumPoolSize;
-        this.threadFactory = threadFactory;
+        this(coreSize, maximumPoolSize, threadFactory, 5000L);
+    }
+
+    public ThreadPooledExecutor(int coreSize, int maximumPoolSize, ThreadFactory threadFactory, long awaitTerminationTime) {
+        this.awaitTerminationTime = awaitTerminationTime;
 
         this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
                 0L, TimeUnit.MILLISECONDS,
@@ -64,7 +59,7 @@ public class ThreadPooledExecutor implements Executor {
         if (isRunning()) {
             try {
                 executorService.shutdown();
-                executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+                executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 executorService.shutdownNow();

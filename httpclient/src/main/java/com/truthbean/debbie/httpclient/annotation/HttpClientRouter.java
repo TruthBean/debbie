@@ -32,4 +32,9 @@ public @interface HttpClientRouter {
     String value() default "";
 
     String[] baseUrl() default {""};
+
+    /**
+     * @return the failure action type, that must be the client implement class
+     */
+    Class<?> failureAction() default Void.class;
 }

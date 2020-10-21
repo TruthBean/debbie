@@ -31,7 +31,7 @@ public class RouterResponse implements Cloneable {
     private String templatePrefix;
 
     private final Map<String, String> headers = new HashMap<>();
-    private final List<HttpCookie> cookies = new ArrayList<>();
+    private final Set<HttpCookie> cookies = new HashSet<>();
 
     private final Map<String, Object> modelAttributes = new HashMap<>();
 
@@ -45,6 +45,9 @@ public class RouterResponse implements Cloneable {
     private HttpStatus status;
 
     private boolean error;
+
+    public RouterResponse() {
+    }
 
     public boolean isRedirect() {
         return redirect;
@@ -63,15 +66,22 @@ public class RouterResponse implements Cloneable {
     }
 
     public void addCookie(HttpCookie cookie) {
+        String name = cookie.getName();
+        List<HttpCookie> copy = new ArrayList<>(cookies);
+        for (HttpCookie httpCookie : copy) {
+            if (httpCookie != null && httpCookie.getName().equals(name)) {
+                cookies.remove(httpCookie);
+            }
+        }
         cookies.add(cookie);
     }
 
     public Map<String, String> getHeaders() {
-        return Collections.unmodifiableMap(headers);
+        return Map.copyOf(headers);
     }
 
-    public List<HttpCookie> getCookies() {
-        return Collections.unmodifiableList(cookies);
+    public Set<HttpCookie> getCookies() {
+        return Set.copyOf(cookies);
     }
 
     public void addModelAttribute(String key, Object value) {
@@ -79,7 +89,7 @@ public class RouterResponse implements Cloneable {
     }
 
     public Map<String, Object> getModelAttributes() {
-        return Collections.unmodifiableMap(modelAttributes);
+        return Map.copyOf(modelAttributes);
     }
 
     public MediaTypeInfo getResponseType() {

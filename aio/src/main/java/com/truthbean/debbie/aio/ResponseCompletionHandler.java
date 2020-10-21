@@ -11,6 +11,11 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.RouterSession;
+import com.truthbean.debbie.mvc.filter.RouterFilterHandler;
+import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
+import com.truthbean.debbie.mvc.filter.RouterFilterManager;
+import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
@@ -19,8 +24,13 @@ import com.truthbean.debbie.util.OsUtils;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.net.HttpCookie;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -42,46 +52,53 @@ class ResponseCompletionHandler {
         this.routerRequest = routerRequest;
     }
 
-    private void writeChannel(AsynchronousSocketChannel channel, MediaTypeInfo responseType, Object result) {
+    private void writeChannel(AsynchronousSocketChannel channel, RouterResponse routerResponse, Object result) {
         logger.trace("response content: " + result);
         var lf = OsUtils.getLf();
         // 响应头的参数
         var serverLine = ("Server: " + configuration.getServerMessage() + lf);
         var statusLine = "HTTP/" + configuration.getHttpVersion() + " 200 OK" + lf;
-        var contentTypeLine = "Content-type: " + responseType.toString() + lf;
+        MediaTypeInfo responseType = routerResponse.getResponseType();
+        if (responseType == null) {
+            responseType = configuration.getDefaultContentType();
+        }
+        var contentTypeLine = HttpHeader.HttpHeaderNames.CONTENT_TYPE.getName() + ": " + responseType.toString() + lf;
 
         var contentLength = 1024;
         if (result instanceof String) {
-            contentLength = ((String) result).length();
+            // 中文编码问题，不能直接通过String的length()方法获取
+            contentLength = ((String) result).getBytes().length;
         } else if (result instanceof byte[]) {
             contentLength = ((byte[]) result).length;
         }
-        var contentLengthLine = "Content-Length: " + contentLength + lf;
-
-        var resultStr = new StringBuffer(statusLine)
-                .append(serverLine)
-                .append(contentTypeLine)
+        var contentLengthLine = HttpHeader.HttpHeaderNames.CONTENT_LENGTH.getName() + ": " + contentLength + lf;
+        var resultBuilder = new StringBuilder(statusLine)
+                .append(serverLine);
+        handleResponseWithoutContent(resultBuilder, routerResponse, lf);
+        var resultStr = resultBuilder.append(contentTypeLine)
                 .append(contentLengthLine)
                 .append(lf)
                 .append(result)
-                .append(lf).toString();
+                .toString();
 
         logger.trace("response: " + resultStr);
 
         Future<Integer> future;
         if (result instanceof byte[]) {
+            byte[] bytes = (byte[]) result;
             //先把头部转换成byte[]
-            var header = new StringBuffer(statusLine)
-                    .append(serverLine)
-                    .append(contentTypeLine)
+            var headerBuilder = new StringBuilder(statusLine)
+                    .append(serverLine);
+            handleResponseWithoutContent(headerBuilder, routerResponse, lf);
+            var header = headerBuilder.append(contentTypeLine)
                     .append(contentLengthLine)
                     .append(lf).toString();
 
-            var headerByteArray = header.toCharArray();
+            var headerByteArray = header.getBytes();
             //然后合并
-            var merge = new byte[headerByteArray.length + ((byte[]) result).length];
+            byte[] merge = new byte[headerByteArray.length + ((byte[]) result).length];
             System.arraycopy(headerByteArray, 0, merge, 0, headerByteArray.length);
-            System.arraycopy(result, 0, merge, headerByteArray.length, ((byte[]) result).length);
+            System.arraycopy(bytes, 0, merge, headerByteArray.length, bytes.length);
             future = channel.write(ByteBuffer.wrap(merge));
         } else {
             future = channel.write(ByteBuffer.wrap(resultStr.getBytes()));
@@ -96,18 +113,82 @@ class ResponseCompletionHandler {
 
     }
 
+    private void handleResponseWithoutContent(StringBuilder sb, RouterResponse routerResponse, String lf) {
+        RouterSession session = routerRequest.getSession();
+        if (session != null) {
+            sb.append("JSESSIONID: ").append(session.getId()).append(lf);
+        }
+        /*Set<HttpCookie> cookies = routerResponse.getCookies();
+        if (cookies != null && !cookies.isEmpty()) {
+            List<String> cookieStrList = new ArrayList<>();
+            for (HttpCookie cookie : cookies) {
+                cookieStrList.add(ServerCookieEncoder.LAX.encode(transform(cookie)));
+            }
+            response.headers().set(SET_COOKIE, cookieStrList);
+        }*/
+
+        Map<String, String> headers = routerResponse.getHeaders();
+        if (headers != null && !headers.isEmpty()) {
+            headers.forEach((key, value) -> sb.append(key).append(": ").append(value).append(lf));
+        }
+    }
+
     void handle(AsynchronousSocketChannel channel) {
         logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         logger.trace(routerRequest.toString());
         logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        logger.debug("--> handle response");
-        RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
-        RouterResponse routerResponse = MvcRouterHandler.handleRouter(matchedRouter, this.applicationContext);
-        MediaTypeInfo responseType = routerResponse.getResponseType();
-        if (responseType == null) {
-            responseType = matchedRouter.getDefaultResponseType();
+        final RouterResponse routerResponse = new RouterResponse();
+        if (handleFilter(routerRequest, routerResponse)) {
+            // static
+            byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
+            if (bytes != null) {
+                writeChannel(channel, routerResponse, bytes);
+            } else {
+                RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
+                logger.debug("--> handle response");
+                matchedRouter.getResponse().copyNoNull(routerResponse);
+                var afterResponse = MvcRouterHandler.handleRouter(matchedRouter, this.applicationContext);
+                MediaTypeInfo responseType = afterResponse.getResponseType();
+                if (responseType == null) {
+                    responseType = matchedRouter.getDefaultResponseType();
+                }
+                afterResponse.setResponseType(responseType);
+                writeChannel(channel, afterResponse, afterResponse.getContent());
+            }
+        } else {
+            writeChannel(channel, routerResponse, routerResponse.getContent());
         }
-        writeChannel(channel, responseType, routerResponse.getContent());
+    }
+
+    /**
+     * return true, go router
+     * return false, doFilter
+     *
+     * @param request router request
+     * @param response raw response
+     * @return boolean
+     */
+    private boolean handleFilter(RouterRequest request, RouterResponse response) {
+        // reverse order to fix the chain order
+        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
+        for (RouterFilterInfo filterInfo : filters) {
+            var filter = new RouterFilterHandler(filterInfo, applicationContext);
+            var filterType = filterInfo.getRouterFilterType();
+            if (!filter.notFilter(request)) {
+                if (filter.preRouter(request, response)) {
+                    logger.trace(() -> filterType + " no pre filter");
+                } else {
+                    Boolean post = filter.postRouter(request, response);
+                    if (post != null) {
+                        logger.trace(() -> filterType + " post filter");
+                        if (post) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ResponseCompletionHandler.class);

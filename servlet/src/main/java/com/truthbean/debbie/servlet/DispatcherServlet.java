@@ -12,7 +12,7 @@ package com.truthbean.debbie.servlet;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
-import com.truthbean.debbie.servlet.request.ServletRouterRequest;
+import com.truthbean.debbie.servlet.request.HttpServletRequestWrapper;
 import com.truthbean.debbie.servlet.response.ServletResponseHandler;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -83,9 +83,15 @@ public class DispatcherServlet extends HttpServlet {
     private void dispatcher(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         LOGGER.debug("dispatcher servlet .... ");
 
-        var requestAdapter = new ServletRouterRequest(req);
+        HttpServletRequestWrapper requestWrapper;
+        if (req instanceof HttpServletRequestWrapper) {
+            requestWrapper = (HttpServletRequestWrapper) req;
+        } else {
+            requestWrapper = new HttpServletRequestWrapper(req);
+        }
+        var routerRequest = requestWrapper.getRouterRequest();
 
-        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration.getStaticResourcesMapping());
+        byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
         if (bytes != null) {
             resp.setContentLength(bytes.length);
             try (var outputStream = resp.getOutputStream()) {
@@ -94,7 +100,7 @@ public class DispatcherServlet extends HttpServlet {
                 LOGGER.error(" ", e);
             }
         } else {
-            var routerInfo = MvcRouterHandler.getMatchedRouter(requestAdapter, configuration);
+            var routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
             LOGGER.debug(() -> "routerInfo invoke method params : " + routerInfo.getMethodParams());
             RouterResponse response = MvcRouterHandler.handleRouter(routerInfo, handler);
 

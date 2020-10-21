@@ -55,6 +55,8 @@ public interface Constants {
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     String APPLICATION_PROPERTIES = "application.properties";
+    String APPLICATION_YAML = "application.yaml";
+    String APPLICATION_YML = "application.yml";
 
     boolean USE_HTTPS = true;
 

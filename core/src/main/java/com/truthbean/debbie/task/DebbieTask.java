@@ -31,5 +31,7 @@ public @interface DebbieTask {
      */
     long fixedRate() default -1;
 
+    long initialDelay() default -1;
+
     String cron() default "";
 }

@@ -15,6 +15,7 @@ import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.task.TaskFactory;
 
 import java.util.Optional;
 
@@ -47,6 +48,15 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     @Override
     public void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         applicationContext.refreshBeans();
+    }
+
+    @Override
+    public void postStarter(ApplicationContext applicationContext) {
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        // do task
+        TaskFactory taskFactory = globalBeanFactory.factory("taskFactory");
+        taskFactory.prepare();
+        taskFactory.doTask();
     }
 
     @Override

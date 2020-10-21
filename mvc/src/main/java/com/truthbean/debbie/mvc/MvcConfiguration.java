@@ -252,7 +252,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public static final class Builder {
-        private MvcConfiguration configuration;
+        private final MvcConfiguration configuration;
 
         private Builder(MvcConfiguration configuration) {
             this.configuration = configuration;

@@ -1,19 +1,31 @@
 package com.truthbean.debbie.check.properties;
 
+import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
-import com.truthbean.debbie.properties.PropertyInject;
 
 @PropertiesConfiguration(keyPrefix = "test")
 public class PropertiesConfigurationTest {
 
-    @PropertyInject("hehe")
-    private String hehe = "hehe";
+    @NestedPropertiesConfiguration
+    private Hehe hehe = new Hehe();
 
-    public void setHehe(String hehe) {
+    public void setHehe(Hehe hehe) {
         this.hehe = hehe;
     }
 
-    public String getHehe() {
+    public Hehe getHehe() {
         return hehe;
+    }
+
+    public static class Hehe {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

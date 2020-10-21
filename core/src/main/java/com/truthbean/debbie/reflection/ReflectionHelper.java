@@ -640,8 +640,12 @@ public class ReflectionHelper {
             var method = targetClass.getMethod(methodName, fieldType);
             if (TypeHelper.isRawBaseType(fieldType)) {
                 fieldType = TypeHelper.getWrapperClass(fieldType);
+                return method.invoke(target, TransformerFactory.transform(arg, fieldType));
             }
-            return method.invoke(target, TransformerFactory.transform(arg, fieldType));
+            if (arg != null && fieldType.isAssignableFrom(arg.getClass()))
+                return method.invoke(target, arg);
+            else
+                return method.invoke(target, TransformerFactory.transform(arg, fieldType));
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {

@@ -101,7 +101,7 @@ public final class StreamHelper {
     }
 
     public static List<JarEntry> getFilesInJar(URL url) {
-        if (UriUtils.isJarURL(url)) {
+        if (UriUtils.isJarUrl(url)) {
             try {
                 // 获取jar
                 JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();

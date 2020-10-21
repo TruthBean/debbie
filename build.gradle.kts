@@ -13,6 +13,8 @@ buildscript {
         mavenLocal()
         maven("https://mirrors.huaweicloud.com/repository/maven/")
         jcenter()
+        maven("https://plugins.gradle.org/m2/")
+        maven("https://repo.spring.io/plugins-release/")
     }
 }
 
@@ -114,7 +116,7 @@ subprojects {
         }
 
         // javadoc
-        if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
+        if (project.name != "debbie-dependencies") {
             tasks.withType<Javadoc> {
                 isFailOnError = false
                 options {
@@ -154,7 +156,7 @@ subprojects {
                     version = projectVersion
                     from(components["java"])
                     artifact(tasks["sourcesJar"])
-                    if (project.name != "debbie-dependencies" && project.name != "debbie-boot") {
+                    if (project.name != "debbie-dependencies") {
                         artifact(tasks["javadocJar"])
                     }
                     versionMapping {

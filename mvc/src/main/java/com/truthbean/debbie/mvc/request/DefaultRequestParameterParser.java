@@ -138,7 +138,10 @@ public class DefaultRequestParameterParser implements RequestParameterParser {
             return new RequestParameterInfo(sessionParameter, paramName);
         }
 
-        return new RequestParameterInfo(paramName);
+        if (argument.getAnnotations().isEmpty())
+            return new RequestParameterInfo(paramName);
+
+        return null;
     }
 
     @Override

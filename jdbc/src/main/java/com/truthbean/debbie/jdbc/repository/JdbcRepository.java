@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -12,6 +12,7 @@ package com.truthbean.debbie.jdbc.repository;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.transaction.TransactionService;
+import com.truthbean.debbie.util.StringUtils;
 
 import java.util.*;
 
@@ -72,7 +73,7 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return repositoryHandler.update(transaction, entity, withEntityPropertyNull);
     }
 
-    public int update(Entity entity, boolean withEntityPropertyNull, String whereSql, Object...args) {
+    public int update(Entity entity, boolean withEntityPropertyNull, String whereSql, Object... args) {
         var transaction = getTransaction();
         return repositoryHandler.update(transaction, entity, withEntityPropertyNull, whereSql, args);
     }
@@ -94,12 +95,27 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return repositoryHandler.selectList(transaction, whereSql, value);
     }
 
+    public List<Entity> findListByColumnIn(String columnName, Collection<?> values) {
+        if (values.isEmpty()) return new ArrayList<>();
+        var transaction = getTransaction();
+        List<String> c = new ArrayList<>();
+        Object[] objects = new Object[values.size()];
+        int i = 0;
+        for (Object value : values) {
+            c.add("?");
+            objects[i++] = value;
+        }
+        String s = StringUtils.joining(c, ",");
+        String whereSql = columnName + " in (" + s + ")";
+        return repositoryHandler.selectList(transaction, whereSql, objects);
+    }
+
     public Entity findOne(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
         return repositoryHandler.selectOne(transaction, condition, withConditionNull);
     }
 
-    public Entity findOne(String whereSql, Object...args) {
+    public Entity findOne(String whereSql, Object... args) {
         var transaction = getTransaction();
         return repositoryHandler.selectOne(transaction, whereSql, args);
     }
@@ -113,7 +129,7 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
             return Optional.of(entity);
     }
 
-    public Optional<Entity> findOptional(String whereSql, Object...args) {
+    public Optional<Entity> findOptional(String whereSql, Object... args) {
         var transaction = getTransaction();
         var entity = repositoryHandler.selectOne(transaction, whereSql, args);
         if (entity == null)
@@ -127,7 +143,7 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return repositoryHandler.selectList(transaction, condition, withConditionNull);
     }
 
-    public List<Entity> findList(String whereSql, Object...args) {
+    public List<Entity> findList(String whereSql, Object... args) {
         var transaction = getTransaction();
         return repositoryHandler.selectList(transaction, whereSql, args);
     }
@@ -137,7 +153,7 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return repositoryHandler.selectPaged(transaction, condition, withConditionNull, pageable);
     }
 
-    public Page<Entity> findPaged(PageRequest pageable, String whereSql, Object...args) {
+    public Page<Entity> findPaged(PageRequest pageable, String whereSql, Object... args) {
         var transaction = getTransaction();
         return repositoryHandler.selectPaged(transaction, pageable, whereSql, args);
     }

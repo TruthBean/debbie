@@ -31,8 +31,17 @@ public class HttpClientFactory {
     }
 
     @SuppressWarnings("unchecked")
+    public <HttpClientBean> HttpClientBean factory(Class<HttpClientBean> beanClass, HttpClientBean failureAction) {
+        // InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader));
+        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, new HttpClientProperties(), classLoader, failureAction));
+
+        return  (HttpClientBean) interfaceProxyFactory.newInstance(this, HttpClientExecutor.class);
+    }
+
+    @SuppressWarnings("unchecked")
     public <HttpClientBean> HttpClientBean factory(Class<HttpClientBean> beanClass) {
-        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader));
+        // InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, httpClientConfiguration, classLoader));
+        InterfaceProxyFactory<?> interfaceProxyFactory = knownInterfaces.computeIfAbsent(beanClass, k -> new InterfaceProxyFactory<>(beanClass, new HttpClientProperties(), classLoader, null));
 
         return  (HttpClientBean) interfaceProxyFactory.newInstance(this, HttpClientExecutor.class);
     }

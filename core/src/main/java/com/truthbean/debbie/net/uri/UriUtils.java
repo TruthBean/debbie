@@ -87,7 +87,7 @@ public final class UriUtils {
      * @param url the URL to check
      * @return whether the URL has been identified as a JAR URL
      */
-    public static boolean isJarURL(URL url) {
+    public static boolean isJarUrl(URL url) {
         String protocol = url.getProtocol();
         return (UriUtils.URL_PROTOCOL_JAR.equals(protocol) || UriUtils.URL_PROTOCOL_WAR.equals(protocol) ||
                 UriUtils.URL_PROTOCOL_ZIP.equals(protocol) || UriUtils.URL_PROTOCOL_VFSZIP.equals(protocol) ||
@@ -468,7 +468,7 @@ public final class UriUtils {
      *
      * @since 0.0.2
      */
-    public static URL getURL(String resourceLocation) throws FileNotFoundException {
+    public static URL getUrl(String resourceLocation) throws FileNotFoundException {
         Assert.notNull(resourceLocation, "Resource location must not be null");
         if (resourceLocation.startsWith(CLASSPATH_URL_PREFIX)) {
             String path = resourceLocation.substring(CLASSPATH_URL_PREFIX.length());

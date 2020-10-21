@@ -13,9 +13,7 @@ import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -229,6 +227,8 @@ public class NetWorkUtils {
     }
 
     public static String getMacAddress(InetAddress ipAddress) {
+        LOGGER.trace("before getMacAddress");
+        String result = null;
         // 获得网络接口对象（即网卡），并得到mac地址，mac地址存在于一个byte数组中。
         byte[] mac = new byte[0];
         try {
@@ -241,17 +241,57 @@ public class NetWorkUtils {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mac.length; i++) {
                 if (i != 0) {
-                    sb.append("-");
+                    sb.append(":");
                 }
                 // mac[i] & 0xFF 是为了把byte转化为正整数
                 String s = Integer.toHexString(mac[i] & 0xFF);
                 sb.append(s.length() == 1 ? 0 + s : s);
             }
             // 把字符串所有小写字母改为大写成为正规的mac地址并返回
-            return sb.toString().toUpperCase();
+            result = sb.toString().toUpperCase();
+        }
+        LOGGER.trace("after getMacAddress");
+        return result;
+    }
+
+    public static Map<String, String> getIpv4AndMac() {
+        Map<String, String> map = new HashMap<>();
+        List<InetAddress> allIpv4LocalAddress = getAllIpv4LocalAddress();
+        for (InetAddress ipv4LocalAddress : allIpv4LocalAddress) {
+            String macAddress = getMacAddress(ipv4LocalAddress);
+            map.put(ipv4LocalAddress.getHostAddress(), macAddress);
+        }
+        return map;
+    }
+
+    public static Map<String, String> getRealIpAndMac() {
+        Map<String, String> map = new HashMap<>();
+
+        Map<String, String> ipAndMac = new HashMap<>();
+        List<InetAddress> allIpv4LocalAddress = getAllIpv4LocalAddress();
+        for (InetAddress ipv4LocalAddress : allIpv4LocalAddress) {
+            String macAddress = getMacAddress(ipv4LocalAddress);
+            String ip = ipv4LocalAddress.getHostAddress();
+            if (ip.startsWith("169.254")) {
+                LOGGER.debug("内部私有地址: " + ip);
+                continue;
+            }
+            ipAndMac.put(ipv4LocalAddress.getHostAddress(), macAddress);
         }
 
-        return null;
+        ipAndMac.forEach((ip, mac) -> {
+             if (mac.startsWith("00:15:5D")) {
+                LOGGER.debug("Hyper-V虚拟Mac地址: " + mac);
+            } else if (mac.startsWith("00:50:56") || mac.startsWith("00:0c:29")) {
+                System.out.println("vmware虚拟Mac地址: " + mac);
+            } else if (mac.startsWith("08:00:27")) {
+                System.out.println("virtualbox虚拟Mac地址: " + mac);
+            } else {
+                map.put(ip, mac);
+            }
+        });
+
+        return map;
     }
 
     public static String getSubnetMask(InetAddress ipAddress) {

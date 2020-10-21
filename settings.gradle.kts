@@ -15,7 +15,7 @@ val modules =
                 "servlet", "httpclient", "hikari",
                 "server",
                 "tomcat", "undertow", "netty", "aio",
-                "dependencies", "boot",
+                "dependencies",
                 "test"
         )
 

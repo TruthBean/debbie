@@ -11,21 +11,24 @@ package com.truthbean.debbie.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -161,7 +164,7 @@ public final class JacksonUtils {
         try {
             obj = OBJECT_MAPPER.readValue(jsonInputStream, clazz);
         } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error", e);
+            LOGGER.error("json inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -178,7 +181,7 @@ public final class JacksonUtils {
             obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
                     .constructCollectionType(List.class, clazz));
         } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error", e);
+            LOGGER.error("json inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -195,7 +198,7 @@ public final class JacksonUtils {
             obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
                     .constructCollectionType(Set.class, clazz));
         } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error", e);
+            LOGGER.error("json inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -437,7 +440,7 @@ public final class JacksonUtils {
         try {
             obj = xmlMapper.readValue(xmlInputStream, clazz);
         } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
+            LOGGER.error("xml inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -455,7 +458,7 @@ public final class JacksonUtils {
             obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
                     .constructCollectionType(List.class, clazz));
         } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
+            LOGGER.error("xml inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -473,7 +476,7 @@ public final class JacksonUtils {
             obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
                     .constructCollectionType(Set.class, clazz));
         } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
+            LOGGER.error("xml inputStream to bean error\n", e);
         }
         return obj;
     }
@@ -577,5 +580,54 @@ public final class JacksonUtils {
             LOGGER.error("", e);
         }
         return null;
+    }
+
+    public static Map<String, String> yml2Properties(InputStream inputStream) {
+        final String DOT = ".";
+        Map<String, String> map = new HashMap<>();
+        try {
+            YAMLFactory yamlFactory = new YAMLFactory();
+            YAMLParser parser = yamlFactory.createParser(new InputStreamReader(inputStream, Charset.defaultCharset()));
+
+            StringBuilder key = new StringBuilder();
+            String value;
+            JsonToken token = parser.nextToken();
+            while (token != null) {
+                if (!JsonToken.START_OBJECT.equals(token)) {
+                    if (JsonToken.FIELD_NAME.equals(token)) {
+                        if (key.length() > 0) {
+                            key.append(DOT);
+                        }
+                        key.append(parser.getCurrentName());
+
+                        token = parser.nextToken();
+                        if (JsonToken.START_OBJECT.equals(token)) {
+                            continue;
+                        }
+                        value = parser.getText();
+                        map.put(key.toString(), value);
+
+                        int dotOffset = key.lastIndexOf(DOT);
+                        if (dotOffset > 0) {
+                            key = new StringBuilder(key.substring(0, dotOffset));
+                        }
+                        value = null;
+                    } else if (JsonToken.END_OBJECT.equals(token)) {
+                        int dotOffset = key.lastIndexOf(DOT);
+                        if (dotOffset > 0) {
+                            key = new StringBuilder(key.substring(0, dotOffset));
+                        } else {
+                            key = new StringBuilder();
+                        }
+                    }
+                }
+
+                token = parser.nextToken();
+            }
+            parser.close();
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+        return map;
     }
 }

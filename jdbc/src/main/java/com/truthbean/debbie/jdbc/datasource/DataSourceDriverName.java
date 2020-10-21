@@ -16,6 +16,7 @@ package com.truthbean.debbie.jdbc.datasource;
  */
 public enum DataSourceDriverName {
     mysql("com.mysql.jdbc.Driver"),
+    mysql8("com.mysql.cj.jdbc.Driver"),
     mariadb("org.mariadb.jdbc.Driver"),
     oracle("oracle.jdbc.driver.OracleDriver"),
     db2("COM.ibm.db2.jdbc.net.DB2Driver"),

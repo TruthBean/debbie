@@ -13,6 +13,8 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
+import com.truthbean.debbie.properties.PropertiesException;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.FieldInfo;
@@ -168,12 +170,56 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
             resolvePropertiesInject(beanInfo.getBean(), field.getField(), keyPrefix, propertyInject);
             return;
         }
+        var nestedPropertiesConfiguration = field.getAnnotation(NestedPropertiesConfiguration.class);
+        if (nestedPropertiesConfiguration != null) {
+            // 1. 拼接 prefix
+            var name = field.getField().getName();
+            String newKeyPrefix;
+            if (keyPrefix.endsWith(".")) {
+                newKeyPrefix = keyPrefix + name;
+            } else {
+                newKeyPrefix = keyPrefix + "." + name;
+            }
+            var b = ReflectionHelper.getField(beanInfo.getBean(), field.getField());
+            Field[] fields = field.getType().getDeclaredFields();
+            for (Field f : fields) {
+                // 2. 递归获取@NestedPropertiesConfiguration的field的bean
+                resolveFieldValue(b, f, newKeyPrefix);
+            }
+            return;
+        }
         for (Class<? extends Annotation> type : injectTypes) {
             Annotation annotation = field.getAnnotation(type);
             if (annotation != null) {
                 resolveFieldDependentBean(beanInfo, field, annotation);
                 break;
             }
+        }
+    }
+
+    private void resolveFieldValue(Object configuration, Field field, String keyPrefix) {
+        var propertyInject = field.getAnnotation(PropertyInject.class);
+        if (propertyInject != null) {
+            resolvePropertiesInject(configuration, field, keyPrefix, propertyInject);
+            return;
+        }
+        var nestedPropertiesConfiguration = field.getAnnotation(NestedPropertiesConfiguration.class);
+        if (nestedPropertiesConfiguration != null) {
+            // 1. 拼接 prefix
+            var name = field.getName();
+            String newKeyPrefix;
+            if (keyPrefix.endsWith(".")) {
+                newKeyPrefix = keyPrefix + name;
+            } else {
+                newKeyPrefix = keyPrefix + "." + name;
+            }
+            Field[] fields = field.getType().getDeclaredFields();
+            for (Field f : fields) {
+                // 2. 递归获取@NestedPropertiesConfiguration的field的bean
+                resolveFieldValue(ReflectionHelper.getField(configuration, f), f, newKeyPrefix);
+            }
+        } else {
+            resolvePropertiesInject(configuration, field, keyPrefix, null);
         }
     }
 
@@ -216,30 +262,41 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
     @Override
     public Object factoryProperty(Class<?> valueType, String keyPrefix, PropertyInject propertyInject) {
-        String property = propertyInject.value();
-        if (!property.isBlank()) {
-            String key;
-            if (keyPrefix != null) {
-                key = keyPrefix + property;
-            } else {
-                key = property;
+        String key = keyPrefix;
+        if (propertyInject == null && keyPrefix == null) {
+            throw new PropertiesException("Filed has no @PropertyInject or @NestedPropertiesConfiguration");
+        }
+        if (propertyInject == null) {
+            key = keyPrefix;
+        } else {
+            String property = propertyInject.value();
+            if (!property.isBlank()) {
+                if (keyPrefix != null && !keyPrefix.endsWith(".")) {
+                    key = keyPrefix + "." + property;
+                } else if (keyPrefix != null) {
+                    key = keyPrefix + property;
+                } else {
+                    key = property;
+                }
             }
-            BaseProperties properties = new BaseProperties();
-            String value = properties.getValue(key);
-            if (value != null) {
+        }
+        BaseProperties properties = new BaseProperties();
+        String value = properties.getValue(key);
+        if (value != null) {
+            Object transform = null;
+            if (propertyInject != null) {
                 Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
-                Object transform = null;
                 try {
                     DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
                     transform = dataTransformer.reverse(value);
                 } catch (Exception e) {
                     LOGGER.error("", e);
                 }
-                if (transform == null || transform.getClass() != valueType) {
-                    transform = applicationContext.transform(value, valueType);
-                }
-                return transform;
             }
+            if (transform == null || !valueType.isAssignableFrom(transform.getClass())) {
+                transform = applicationContext.transform(value, valueType);
+            }
+            return transform;
         }
         return null;
     }
@@ -315,7 +372,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 }
                 value = globalBeanFactory.factoryAfterCreatedByProxy(fieldBeanInfo, BeanProxyType.ASM);
             }
-            ReflectionHelper.setField(beanInfo.getBean(), field, value);
+            ReflectionHelper.invokeFieldBySetMethod(beanInfo.getBean(), field, value);
         } else {
             if (required)
                 throw new NoBeanException("no bean " + name + " found .");

@@ -26,14 +26,16 @@ public class InterfaceProxyFactory<T> {
     private final Object configuration;
 
     private final ClassLoader classLoader;
+    private final T failureAction;
 
-    public InterfaceProxyFactory(Class<T> interfaceType, Object configuration, ClassLoader classLoader) {
+    public InterfaceProxyFactory(Class<T> interfaceType, Object configuration, ClassLoader classLoader, T failureAction) {
         this.interfaceType = interfaceType;
         this.configuration = configuration;
 
         if (classLoader == null)
             classLoader = ClassLoaderUtils.getClassLoader(interfaceType);
         this.classLoader = classLoader;
+        this.failureAction = failureAction;
     }
 
     public Class<T> getInterface() {
@@ -51,7 +53,7 @@ public class InterfaceProxyFactory<T> {
 
     public T newInstance(Object object, Class<? extends AbstractMethodExecutor> executorClass) {
         final InterfaceProxy<T> interfaceProxy =
-            new InterfaceProxy<>(executorClass, object, interfaceType, methodCache, configuration);
+            new InterfaceProxy<>(executorClass, object, interfaceType, methodCache, configuration, failureAction);
         return newInstance(interfaceProxy);
     }
 }

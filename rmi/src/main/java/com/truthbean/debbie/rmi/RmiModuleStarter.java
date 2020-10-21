@@ -46,8 +46,8 @@ public class RmiModuleStarter implements DebbieModuleStarter {
 
     private Set<Class<?>> getRmiServiceMappers(BeanInitialization beanInitialization) {
         Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
-        Set<DebbieBeanInfo<?>> beanInfos = beanInitialization.getRegisteredRawBeans();
-        for (DebbieBeanInfo<?> beanInfo : beanInfos) {
+        Set<DebbieBeanInfo<?>> beanInfoSet = beanInitialization.getRegisteredRawBeans();
+        for (DebbieBeanInfo<?> beanInfo : beanInfoSet) {
             DebbieRmiMapper classAnnotation = beanInfo.getClassAnnotation(DebbieRmiMapper.class);
             if (classAnnotation != null && beanInfo.getBeanClass().isInterface()) {
                 rmiServiceMappers.add(beanInfo.getBeanClass());

@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  */
 public class DebbieApplicationFactory implements ApplicationFactory {
 
-    private Set<DebbieModuleStarter> debbieModuleStarters;
+    private volatile Set<DebbieModuleStarter> debbieModuleStarters;
     private final DebbieBootApplicationResolver bootApplicationResolver;
     private final DebbieApplicationContext applicationContext;
 
@@ -107,9 +107,14 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         // beanInitialization
         var beanInitialization = applicationContext.getBeanInitialization();
         // register annotation
-        debbieModuleStarters = SpiLoader.loadProviders(DebbieModuleStarter.class);
-        if (!debbieModuleStarters.isEmpty()) {
-            debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
+        if (this.debbieModuleStarters == null) {
+            Set<DebbieModuleStarter> debbieModuleStarterSet = SpiLoader.loadProviders(DebbieModuleStarter.class);
+            if (!debbieModuleStarterSet.isEmpty()) {
+                this.debbieModuleStarters = new TreeSet<>(debbieModuleStarterSet);
+            }
+        }
+
+        if (!this.debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") getComponentAnnotation");
                 Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
@@ -123,7 +128,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         applicationContext.getBeanInfoFactory().refreshBeans();
 
         if (!debbieModuleStarters.isEmpty()) {
-            debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") registerBean");
                 debbieModuleStarter.registerBean(applicationContext, beanInitialization);
@@ -162,6 +166,20 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     public void postCallStarter() {
         applicationContext.postCallStarter();
+        Set<DebbieModuleStarter> debbieModuleStarterSet = this.debbieModuleStarters;
+        if (debbieModuleStarterSet == null) {
+            debbieModuleStarterSet = SpiLoader.loadProviders(DebbieModuleStarter.class);
+        }
+        if (!debbieModuleStarterSet.isEmpty()) {
+            debbieModuleStarterSet = new TreeSet<>(debbieModuleStarterSet);
+        }
+        if (debbieModuleStarters == null) {
+            debbieModuleStarters = debbieModuleStarterSet;
+        }
+        for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
+            LOGGER.debug(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") postStarter");
+            debbieModuleStarter.postStarter(applicationContext);
+        }
     }
 
     @Override
@@ -194,7 +212,8 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     public DebbieApplication factoryApplication() {
         LOGGER.debug("create debbieApplication ...");
         DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
-        return loadApplication().init(configurationFactory, applicationContext, applicationContext.getClassLoader());
+        return loadApplication()
+                .init(configurationFactory, applicationContext, applicationContext.getClassLoader());
     }
 
     @Override

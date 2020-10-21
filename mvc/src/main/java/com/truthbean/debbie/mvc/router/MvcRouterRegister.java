@@ -41,6 +41,7 @@ public class MvcRouterRegister {
 
     public static void registerRouter(MvcConfiguration webConfiguration, ApplicationContext applicationContext) {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        // todo rest
         Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
         for (DebbieBeanInfo<?> classInfo : classInfoSet) {
             Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
@@ -122,16 +123,22 @@ public class MvcRouterRegister {
                             if (annotations != null && !annotations.isEmpty()) {
                                 annotations.forEach((key, value) -> {
                                     boolean isBody = false;
+                                    MediaType bodyType = MediaType.ANY;
                                     if (key == RequestParameter.class) {
                                         RequestParameter requestParameter = (RequestParameter) value;
                                         if (requestParameter.paramType() == RequestParameterType.BODY) {
                                             isBody = true;
+                                            bodyType = requestParameter.bodyType();
                                         }
                                     } else if (key == BodyParameter.class) {
                                         isBody = true;
+                                        BodyParameter bodyParameter = (BodyParameter) value;
+                                        bodyType = bodyParameter.type();
                                     }
                                     if (isBody) {
-                                        if (!defaultContentTypes.isEmpty()) {
+                                        if (bodyType != MediaType.ANY) {
+                                            routerInfo.setRequestType(bodyType);
+                                        } else if (!defaultContentTypes.isEmpty()) {
                                             routerInfo.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
                                         } else {
                                             if (!webConfiguration.isAcceptClientContentType()) {

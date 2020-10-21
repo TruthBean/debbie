@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBeanInfo<Bean> {
+public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBeanInfo<Bean>, DetailedBeanInfo<Bean> {
     private final Set<String> beanNames = new HashSet<>();
     private int order;
 
@@ -100,6 +100,15 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
                 }
             }
         }
+    }
+
+    public DebbieBeanInfo(BeanInfo<Bean> beanInfo) {
+        super(beanInfo.getClazz());
+        this.bean = beanInfo.getBean();
+        this.addBeanName(beanInfo.getServiceName());
+        this.addBeanNames(beanInfo.getBeanNames());
+        this.beanFactory = beanInfo.getBeanFactory();
+        this.beanType = beanInfo.getBeanType();
     }
 
     public void setInitMethod(Method initMethod) {
@@ -200,10 +209,12 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.beanFactory = beanFactory;
     }
 
+    @Override
     public BeanFactory<Bean> getBeanFactory() {
         return beanFactory;
     }
 
+    @Override
     public boolean hasBeanFactory() {
         return beanFactory != null;
     }
@@ -263,15 +274,18 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.beanType = beanType;
     }
 
+    @Override
     public boolean isSingleton() {
         return this.beanType != null && this.beanType == BeanType.SINGLETON;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> Class<T> getBeanClass() {
         return (Class<T>) super.getClazz();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> Class<T> getBeanInterface() {
         if (noInterface) return null;
@@ -296,6 +310,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return (Class<T>) beanInterface;
     }
 
+    @Override
     public String getServiceName() {
         String name = this.beanNames.isEmpty() ? null : this.beanNames.iterator().next();
         if (name == null || name.isBlank()) {
@@ -306,14 +321,17 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return name;
     }
 
+    @Override
     public boolean containName(String name) {
         return this.beanNames.contains(name);
     }
 
+    @Override
     public Set<String> getBeanNames() {
         return this.beanNames;
     }
 
+    @Override
     public BeanType getBeanType() {
         return beanType;
     }
@@ -324,6 +342,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
             this.beanNames.add(beanName);
     }
 
+    @Override
     public void addBeanNames(Set<String> beanNames) {
         this.beanNames.addAll(beanNames);
     }
@@ -333,30 +352,42 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         this.bean = bean;
     }
 
+    @Override
+    public void setBean(Supplier<Bean> bean) {
+        this.bean = bean.get();
+    }
+
+    @Override
     public Boolean getLazyCreate() {
         return lazyCreate;
     }
 
+    @Override
     public Bean getBean() {
         return bean;
     }
 
+    @Override
     public Optional<Bean> optional() {
         return Optional.ofNullable(bean);
     }
 
+    @Override
     public boolean isEmpty() {
         return bean == null;
     }
 
+    @Override
     public boolean isPresent() {
         return bean != null;
     }
 
+    @Override
     public Supplier<Bean> getBeanSupplier() {
         return () -> bean;
     }
 
+    @Override
     public void consumer(Consumer<Bean> consumer) {
         consumer.accept(bean);
     }
@@ -395,6 +426,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements WriteableBe
         return beanInfo;
     }
 
+    @Override
     public void release() {
         beanNames.clear();
         if (beanFactory != null) {

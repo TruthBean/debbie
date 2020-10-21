@@ -21,6 +21,8 @@ dependencyManagement {
         dependency("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+        dependency("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+        dependency("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
         dependency("com.fasterxml.jackson.module:jackson-module-afterburner:$jacksonVersion")
         dependency("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
         val snakeyamlVersion: String by project
@@ -109,9 +111,25 @@ dependencyManagement {
 
         // netty
         val nettyVersion: String by project
-        dependency("io.netty:netty-codec-http2:$nettyVersion")
+        imports {
+            mavenBom("io.netty:netty-bom:$nettyVersion")
+        }
+        /*dependency("io.netty:netty-codec-http2:$nettyVersion")
         dependency("io.netty:netty-transport-native-epoll:$nettyVersion")
         dependency("io.netty:netty-transport-native-kqueue:$nettyVersion")
+        dependency("io.netty:netty-transport-native-epoll:$nettyVersion")
+        dependency("io.netty:netty-transport-native-kqueue:$nettyVersion")
+        dependency("io.netty:netty-resolver-dns:$nettyVersion")
+        dependency("io.netty:netty-handler-proxy:$nettyVersion")
+        dependency("io.netty:netty-codec-mqtt:$nettyVersion")
+        dependency("io.netty:netty-transport-rxtx:$nettyVersion")
+        dependency("io.netty:netty-codec-stomp:$nettyVersion")
+        dependency("io.netty:netty-transport-sctp:$nettyVersion")
+        dependency("io.netty:netty-transport-udt:$nettyVersion")
+        dependency("io.netty:netty-codec-haproxy:$nettyVersion")
+        dependency("io.netty:netty-codec-redis:$nettyVersion")
+        dependency("io.netty:netty-codec-memcache:$nettyVersion")
+        dependency("io.netty:netty-codec-smtp:$nettyVersion")*/
 
         // debbie
         val projectVersion: String by project
@@ -161,5 +179,11 @@ dependencyManagement {
         val springVersion: String by project
         dependency("org.springframework:spring-context-support:${springVersion}")
         dependency("com.truthbean.debbie:debbie-spring:$projectVersion")
+
+        val okhttpVersion: String by project
+        dependency("com.squareup.okhttp3:okhttp:$okhttpVersion")
+
+        val commonsCodesVersion: String by project
+        dependency("commons-codec:commons-codec:$commonsCodesVersion")
     }
 }

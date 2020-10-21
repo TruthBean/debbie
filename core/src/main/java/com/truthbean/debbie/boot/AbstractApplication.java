@@ -176,6 +176,7 @@ public abstract class AbstractApplication implements DebbieApplication {
             if (this.shutdownHook != null) {
                 try {
                     Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
+                    this.running.set(false);
                 } catch (IllegalStateException ex) {
                     // ignore - VM is already shutting down
                 }

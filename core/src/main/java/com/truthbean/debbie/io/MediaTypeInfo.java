@@ -170,11 +170,16 @@ public class MediaTypeInfo {
     }
 
     public boolean includes(String mediaType) {
-        return type.equalsIgnoreCase(Objects.requireNonNull(parse(mediaType)).type);
+        return includes(Objects.requireNonNull(parse(mediaType)));
     }
 
     public boolean includes(MediaType mediaType) {
-        return type.equalsIgnoreCase(mediaType.info().type);
+        var info = mediaType.info();
+        return includes(info);
+    }
+
+    public boolean includes(MediaTypeInfo info) {
+        return "*".equals(type) || (type.equalsIgnoreCase(info.type) && ("*".equals(subtype) || subtype.equalsIgnoreCase(info.subtype)));
     }
 
     @Override

@@ -16,8 +16,7 @@ import java.util.regex.Pattern;
  *
  */
 public class BCryptPasswordEncoder {
-	private Pattern BCRYPT_PATTERN = Pattern
-			.compile("\\A\\$2a?\\$\\d\\d\\$[./0-9A-Za-z]{53}");
+	private static final Pattern BCRYPT_PATTERN = Pattern.compile("\\A\\$2a?\\$\\d\\d\\$[./0-9A-Za-z]{53}");
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final int strength;

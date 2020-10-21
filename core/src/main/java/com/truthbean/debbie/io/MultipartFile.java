@@ -32,6 +32,8 @@ public class MultipartFile {
 
     private String fileExt;
 
+    public MultipartFile() {
+    }
 
     public String getFileName() {
         return fileName;

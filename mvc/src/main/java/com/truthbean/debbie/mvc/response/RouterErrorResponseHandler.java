@@ -16,6 +16,8 @@ import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.logger.LoggerFactory;
 
+import java.util.Objects;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -37,20 +39,31 @@ public final class RouterErrorResponseHandler {
         return error(routerRequest, data);
     }
 
+    private static Throwable getRealThrowable(Throwable e) {
+        String message = e.getMessage();
+        Throwable cause = e.getCause();
+        if (message == null && cause != null) {
+            return getRealThrowable(cause);
+        } else {
+            return Objects.requireNonNullElse(cause, e);
+        }
+    }
+
     public static RouterInfo exception(RouterRequest routerRequest, Throwable e) {
-        ResponseEntity<Object> data = ResponseHelper.error(e.getMessage());
+        Throwable throwable = getRealThrowable(e);
+        ResponseEntity<Object> data = ResponseHelper.error(throwable.getMessage());
 
         var value = new ErrorResponseData();
         value.setUri(routerRequest.getUrl());
         value.setTimestamp(System.currentTimeMillis());
-        value.setException(e);
+        value.setException(throwable);
         value.setMethod(routerRequest.getMethod().name());
         data.setData(value);
 
         return error(routerRequest, data);
     }
 
-    public static RouterInfo error(RouterRequest routerRequest, ResponseEntity data) {
+    public static RouterInfo error(RouterRequest routerRequest, ResponseEntity<Object> data) {
         RouterInfo error = new RouterInfo();
         error.setRequest(routerRequest);
 

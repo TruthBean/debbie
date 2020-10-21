@@ -44,7 +44,7 @@ public class DebbieEventBeanFactory<Bean extends AbstractDebbieEvent> implements
 
     @Override
     public void destroy() {
-        beanInfo.setBean(null);
+        beanInfo.setBean(() -> null);
     }
 
     @Override

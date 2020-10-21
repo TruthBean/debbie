@@ -11,7 +11,7 @@ package com.truthbean.debbie.servlet;
 
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
-import com.truthbean.debbie.servlet.request.ServletRouterRequest;
+import com.truthbean.debbie.servlet.request.HttpServletRequestWrapper;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
@@ -36,8 +36,13 @@ public class StaticResourcesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var requestAdapter = new ServletRouterRequest(req);
-        byte[] bytes = MvcRouterHandler.handleStaticResources(requestAdapter, configuration.getStaticResourcesMapping());
+        HttpServletRequestWrapper requestWrapper;
+        if (req instanceof HttpServletRequestWrapper) {
+            requestWrapper = (HttpServletRequestWrapper) req;
+        } else {
+            requestWrapper = new HttpServletRequestWrapper(req);
+        }
+        byte[] bytes = MvcRouterHandler.handleStaticResources(requestWrapper.getRouterRequest(), configuration.getStaticResourcesMapping());
         if (bytes != null) {
             resp.setContentLength(bytes.length);
             try (var outputStream = resp.getOutputStream()) {

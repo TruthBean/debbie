@@ -28,7 +28,14 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
@@ -39,6 +46,7 @@ import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
@@ -119,7 +127,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
     private void handleRouter(ChannelHandlerContext ctx) {
         NettyRouterRequest routerRequest = this.routerRequest.get();
         if (routerRequest != null) {
-            RouterResponse routerResponse = new RouterResponse();
+            final RouterResponse routerResponse = new RouterResponse();
             if (handleFilter(routerRequest, routerResponse, ctx)) {
                 byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
                 if (bytes != null) {
@@ -130,8 +138,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                     RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
                     RouterResponse response = routerInfo.getResponse();
                     response.copyNoNull(routerResponse);
-                    MvcRouterHandler.handleRouter(routerInfo, applicationContext);
-                    doResponse(routerRequest, response, ctx);
+                    var afterResponse = MvcRouterHandler.handleRouter(routerInfo, applicationContext);
+                    doResponse(routerRequest, afterResponse, ctx);
                 }
             } else {
                 doResponse(routerRequest, routerResponse, ctx);
@@ -165,7 +173,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
      */
     private boolean handleFilter(RouterRequest request, RouterResponse response, ChannelHandlerContext ctx) {
         // reverse order to fix the chain order
-        List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
+        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
         for (RouterFilterInfo filterInfo : filters) {
             var filter = new RouterFilterHandler(filterInfo, applicationContext);
             var filterType = filterInfo.getRouterFilterType();
@@ -188,7 +196,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private void beforeResponse(RouterRequest request, RouterResponse response) {
         // reverse order to fix the chain order
-        List<RouterFilterInfo> filters = RouterFilterManager.getReverseOrderFilters();
+        Set<RouterFilterInfo> filters = RouterFilterManager.getFilters();
         for (RouterFilterInfo filterInfo : filters) {
             var filter = new RouterFilterHandler(filterInfo, applicationContext);
             Boolean router = filter.postRouter(request, response);
@@ -204,13 +212,13 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         if (session != null) {
             response.headers().set("JSESSIONID", session.getId());
         }
-        List<HttpCookie> cookies = routerResponse.getCookies();
+        Set<HttpCookie> cookies = routerResponse.getCookies();
         if (cookies != null && !cookies.isEmpty()) {
-            List<String> cookieStrs = new ArrayList<>();
+            List<String> cookieStrList = new ArrayList<>();
             for (HttpCookie cookie : cookies) {
-                cookieStrs.add(ServerCookieEncoder.LAX.encode(transform(cookie)));
+                cookieStrList.add(ServerCookieEncoder.LAX.encode(transform(cookie)));
             }
-            response.headers().set(SET_COOKIE, cookieStrs);
+            response.headers().set(SET_COOKIE, cookieStrList);
         }
 
         Map<String, String> headers = routerResponse.getHeaders();

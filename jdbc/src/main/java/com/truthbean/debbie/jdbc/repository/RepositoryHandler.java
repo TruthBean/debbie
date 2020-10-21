@@ -316,7 +316,11 @@ public class RepositoryHandler {
                     Object value = entry.getValue();
                     // todo check
                     if (javaClass != type) {
-                        value = TransformerFactory.transform(entry.getValue(), type);
+                        try {
+                            value = TransformerFactory.transform(entry.getValue(), type);
+                        } catch (Exception e) {
+                            LOGGER.error(() -> "column (" + columnName + ") " + entry.getValue() + " (" + entry.getJavaClass() + ") transform " + type + " error \n", e);
+                        }
                     }
                     ReflectionHelper.invokeSetMethod(instance, field, value);
                     break;

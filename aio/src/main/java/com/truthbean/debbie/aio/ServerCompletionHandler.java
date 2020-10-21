@@ -30,6 +30,7 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
     private final AsynchronousServerSocketChannel listener;
     private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
+    private final SessionManager sessionManager;
 
     ServerCompletionHandler(AioServerConfiguration configuration, SessionManager sessionManager,
                                    final ApplicationContext applicationContext,
@@ -37,6 +38,7 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
         this.listener = listener;
         this.applicationContext = applicationContext;
         this.configuration = configuration;
+        this.sessionManager = sessionManager;
     }
 
     @Override
@@ -63,7 +65,7 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
 
         //获取客户端发送的请求
         var requestCompleteHandler = new RequestCompleteHandler();
-        return requestCompleteHandler.handle(channel);
+        return requestCompleteHandler.handle(channel, this.sessionManager);
     }
 
     private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,

@@ -13,9 +13,7 @@ import com.truthbean.debbie.data.transformer.TransformerFactory;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RequestParameterInfo;
-import com.truthbean.debbie.mvc.request.RequestParameterType;
+import com.truthbean.debbie.mvc.request.*;
 import com.truthbean.debbie.mvc.router.RouterAnnotationInfo;
 import com.truthbean.debbie.mvc.router.RouterAnnotationParser;
 import com.truthbean.debbie.mvc.router.RouterPathSplicer;
@@ -30,6 +28,7 @@ import com.truthbean.logger.LoggerFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.HttpCookie;
 import java.util.*;
 
@@ -55,6 +54,18 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
         if (configuration instanceof HttpClientConfiguration) {
             this.configuration = (HttpClientConfiguration) configuration;
+        } else if (configuration instanceof HttpClientProperties) {
+            var properties = (HttpClientProperties) configuration;
+            this.configuration = properties.loadConfiguration();
+            if (routerBaseUrl.length > 0) {
+                for (int i = 0; i < routerBaseUrl.length; i++) {
+                    var url = routerBaseUrl[i];
+                    if (url.startsWith("{") && url.endsWith("}")) {
+                        var str = url.substring(1, url.length() - 1);
+                        routerBaseUrl[i] = properties.getStringValue(str, "");
+                    }
+                }
+            }
         } else {
             this.configuration = new HttpClientConfiguration();
         }
@@ -85,6 +96,12 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 if (parameters != null) {
                     for (int i = 0; i < parameters.length; i++) {
                         final var parameter = parameters[i];
+
+                        BodyParameter annotation = parameter.getAnnotation(BodyParameter.class);
+                        if (annotation != null && request.getContentType().isAny()) {
+                            request.setContentType(annotation.type().info());
+                        }
+
                         final Class<?>[] parameterTypes = method.getParameterTypes();
                         final var invokedParameter = new ExecutableArgument();
 
@@ -124,6 +141,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
     }
 
     private void setParameterValue(final Object... args) {
+        if (args == null || args.length == 0)
+            return;
         for (final var request : requests) {
             for (int i = 0; i < args.length; i++) {
                 final var parameter = request.getInvokedParameter(i);
@@ -245,14 +264,25 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private <R> R getSingleResult(final HttpClientResponse response, Class<R> returnType,
                                   final MediaTypeInfo responseType) {
+        MediaTypeInfo newResponseType = responseType;
         if (response != null) {
+            List<String> values = response.getHeaderValues(HttpHeader.HttpHeaderNames.CONTENT_TYPE);
+            if (!values.isEmpty()) {
+                String v = values.get(0);
+                if (v != null) {
+                    newResponseType = MediaTypeInfo.parse(v);
+                    if (newResponseType == null) {
+                        newResponseType = responseType;
+                    }
+                }
+            }
             final Object o = response.getBody();
             if (o instanceof String) {
                 final String str = (String) o;
-                if (responseType.isSameMediaType(MediaType.APPLICATION_JSON_UTF8)) {
+                if (newResponseType.isSameMediaType(MediaType.APPLICATION_JSON_UTF8)) {
                     return JacksonUtils.jsonToBean(str, returnType);
                 }
-                if (responseType.isSameMediaType(MediaType.APPLICATION_XML_UTF8)) {
+                if (newResponseType.isSameMediaType(MediaType.APPLICATION_XML_UTF8)) {
                     return JacksonUtils.xmlToBean(str, returnType);
                 }
                 if (TypeHelper.isRawBaseType(returnType)) {

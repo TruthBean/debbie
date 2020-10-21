@@ -172,16 +172,16 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
 
         ExecutableArgumentResolverFactory factory = new ExecutableArgumentResolverFactory();
         ExecutableArgumentResolver resolver = factory.factory(invokedParameter);
-        if (resolver instanceof RequestParameterResolver) {
-            RequestParameterResolver requestParameterResolver = (RequestParameterResolver) resolver;
-            requestParameterResolver.setRequestType(requestType);
-            result = requestParameterResolver.resolveArgument(invokedParameter, parameters, dataValidateFactory);
-        } else if (resolver != null) {
+        if (resolver != null) {
             String resolverClassName = resolver.getClass().getName();
             if ("com.truthbean.debbie.jdbc.domain.PageableHandlerMethodArgumentResolver".equals(resolverClassName) ||
                     "com.truthbean.debbie.jdbc.domain.PageableRouterMethodArgumentResolver".equals(resolverClassName) ||
                     "com.truthbean.debbie.jdbc.domain.SortHandlerMethodArgumentResolver".equals(resolverClassName)) {
                 result = resolver.resolveArgument(invokedParameter, parameters.getQueries(), dataValidateFactory);
+            } else if (resolver instanceof RequestParameterResolver) {
+                RequestParameterResolver requestParameterResolver = (RequestParameterResolver) resolver;
+                requestParameterResolver.setRequestType(requestType);
+                result = requestParameterResolver.resolveArgument(invokedParameter, parameters, dataValidateFactory);
             } else {
                 result = resolver.resolveArgument(invokedParameter, parameters, dataValidateFactory);
             }

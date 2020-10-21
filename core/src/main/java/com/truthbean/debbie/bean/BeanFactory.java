@@ -22,7 +22,11 @@ public interface BeanFactory<Bean> extends GlobalBeanFactoryAware, BeanClosure {
         return getBean();
     }
 
-    Class<Bean> getBeanType();
+    /**
+     * 不用Class&lt;Bean&gt;或者Class&lt;? extends Bean&gt;的原因是，考虑到泛型问题
+     * @return Class&lt;? extends Bean&gt;
+     */
+    Class<?> getBeanType();
 
     boolean isSingleton();
 }

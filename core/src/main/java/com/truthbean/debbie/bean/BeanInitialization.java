@@ -27,6 +27,7 @@ public interface BeanInitialization {
      * @param <A> annotation type
      * @param annotationType registered by
      *      @see BeanComponent
+     * @param parser component parser
      * 标识的 annotation
      */
     <A extends Annotation> void registerBeanAnnotation(Class<A> annotationType, BeanComponentParser parser);
@@ -39,15 +40,15 @@ public interface BeanInitialization {
 
     <O, T> T transform(final O origin, final Class<T> target);
 
-    void init(Class<?> beanClass) ;
+    void init(Class<?> beanClass);
 
-    void initBean(DebbieBeanInfo<?> beanInfo);
+    void initBean(BeanInfo<?> beanInfo);
 
     void initSingletonBean(DebbieBeanInfo<?> beanInfo);
 
-    void refreshSingletonBean(DebbieBeanInfo<?> beanInfo);
+    void refreshSingletonBean(MutableBeanInfo<?> beanInfo);
 
-    void refreshBean(DebbieBeanInfo<?> beanInfo);
+    void refreshBean(MutableBeanInfo<?> beanInfo);
 
     void init(Set<Class<?>> beanClasses);
 

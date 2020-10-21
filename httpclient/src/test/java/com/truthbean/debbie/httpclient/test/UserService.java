@@ -12,6 +12,7 @@ package com.truthbean.debbie.httpclient.test;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.httpclient.HttpClientFactory;
+import com.truthbean.debbie.task.DebbieTask;
 
 import java.util.List;
 
@@ -21,6 +22,9 @@ public class UserService {
     private final HttpClientFactory httpClientFactory;
 
     private final UserHttpClient userHttpClient;
+
+    @BeanInject
+    private PingService pingService;
 
     public UserService(@BeanInject HttpClientFactory httpClientFactory, @BeanInject UserHttpClient userHttpClient) {
         this.httpClientFactory = httpClientFactory;
@@ -36,5 +40,11 @@ public class UserService {
         var body = "{\"username\": \"admin\",\"password\": \"admin\"}";
         List<String> response = userHttpClient.login(body);
         System.out.println(response);
+    }
+
+    @DebbieTask(async = false, fixedRate = 1000)
+    public void printId() {
+        String pong = pingService.ping();
+        System.out.println(pong);
     }
 }

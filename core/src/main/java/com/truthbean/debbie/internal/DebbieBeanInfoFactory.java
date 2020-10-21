@@ -10,12 +10,24 @@
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.bean.BeanInfoFactory;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.MutableBeanInfo;
+import com.truthbean.debbie.bean.NoBeanException;
+import com.truthbean.debbie.bean.OneMoreBeanRegisteredException;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -91,7 +103,7 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         beanServiceInfoSet.forEach((i, value) -> {
             Boolean lazyCreate = i.getLazyCreate();
             if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
-                i.setBean(beanFactory.factory(i.getServiceName()));
+                i.setBean(() -> beanFactory.factory(i.getServiceName()));
                 beanInitialization.refreshBean(i);
             }
         });
@@ -123,6 +135,9 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         try {
             return getBeanInfo(serviceName, type, require, beanServiceInfoSet.keySet(), true);
         } catch (Exception e) {
+            if (e instanceof OneMoreBeanRegisteredException) {
+                throw e;
+            }
             LOGGER.error(e.getMessage());
         }
         return null;

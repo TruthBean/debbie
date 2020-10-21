@@ -26,6 +26,8 @@ import java.util.Set;
  */
 public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
 
+    int getOrder();
+
     default Map<Class<? extends Annotation>, BeanComponentParser> getComponentAnnotation() {
         return new HashMap<>();
     }
@@ -42,7 +44,9 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
         // do nothing
     }
 
-    int getOrder();
+    default void postStarter(ApplicationContext applicationContext) {
+        // do nothing
+    }
 
     default void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
         // do nothing

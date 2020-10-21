@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.Logger;
+import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
@@ -34,20 +35,21 @@ import java.util.stream.Collectors;
 class RequestCompleteHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestCompleteHandler.class);
 
-    RouterRequest handle(AsynchronousSocketChannel channel) {
+    RouterRequest handle(AsynchronousSocketChannel channel, final SessionManager sessionManager) {
         try {
             // ByteBuffer是非线程安全的，如果要在多个线程间共享同一个ByteBuffer，需要考虑线程安全性问题
             var readByteBuffer = ByteBuffer.allocate(2048);
             var read = channel.read(readByteBuffer);
             SocketAddress remoteAddress = channel.getRemoteAddress();
-            return completed(read.get(), readByteBuffer, remoteAddress);
+            return completed(read.get(), readByteBuffer, remoteAddress, sessionManager);
         } catch (InterruptedException | ExecutionException | IOException e) {
             LOG.error("", e);
         }
         return null;
     }
 
-    private RouterRequest completed(int result, final ByteBuffer readByteBuffer, final SocketAddress remoteAddress) {
+    private RouterRequest completed(int result, final ByteBuffer readByteBuffer, final SocketAddress remoteAddress,
+                                    final SessionManager sessionManager) {
         LOG.info("Deal thread of [RequestCompleteHandler] : " + Thread.currentThread().getName());
         LOG.info("Read bytes : " + result);
         if (result == -1) {
@@ -66,7 +68,7 @@ class RequestCompleteHandler {
             if (lines.isEmpty() || lines.size() == 1)
                 return null;
 
-            return new RawRequestWrapper(lines, remoteAddress);
+            return new RawRequestWrapper(lines, remoteAddress, sessionManager);
         }
     }
 }

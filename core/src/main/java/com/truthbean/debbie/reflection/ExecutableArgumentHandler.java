@@ -9,12 +9,14 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -223,30 +225,78 @@ public class ExecutableArgumentHandler {
     }
 
     public void handleStream(InputStream stream, MediaType type, ExecutableArgument invokedParameter) {
-        Object value;
+        Object value = null;
         Class<?> clazz = TypeHelper.getClass(invokedParameter.getType());
         switch (type) {
             case APPLICATION_XML:
             case APPLICATION_XML_UTF8:
                 if (clazz == List.class) {
-                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.xmlStreamToListBean(stream, (Class<?>)actualType[0]);
+                    try {
+                        Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                        value = JacksonUtils.xmlStreamToListBean(stream, (Class<?>)actualType[0]);
+                        if (value == null) {
+                            value = new ArrayList<>();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = new ArrayList<>();
+                    }
                 } else if (clazz == Set.class) {
-                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.xmlStreamToSetBean(stream, (Class<?>)actualType[0]);
-                } else
-                    value = JacksonUtils.xmlStreamToBean(stream, clazz);
+                    try {
+                        Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                        value = JacksonUtils.xmlStreamToSetBean(stream, (Class<?>)actualType[0]);
+                        if (value == null) {
+                            value = new HashSet<>();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = new HashSet<>();
+                    }
+                } else if (clazz != null)
+                    try {
+                        value = JacksonUtils.xmlStreamToBean(stream, clazz);
+                        if (value == null) {
+                            value = ReflectionHelper.newInstance(clazz);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = ReflectionHelper.newInstance(clazz);
+                    }
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
                 if (clazz == List.class) {
-                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.jsonStreamToListBean(stream, (Class<?>)actualType[0]);
+                    try {
+                        Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                        value = JacksonUtils.jsonStreamToListBean(stream, (Class<?>)actualType[0]);
+                        if (value == null) {
+                            value = new ArrayList<>();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = new ArrayList<>();
+                    }
                 } else if (clazz == Set.class) {
-                    Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.jsonStreamToSetBean(stream, (Class<?>)actualType[0]);
-                } else
-                    value = JacksonUtils.jsonStreamToBean(stream, clazz);
+                    try {
+                        Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
+                        value = JacksonUtils.jsonStreamToSetBean(stream, (Class<?>)actualType[0]);
+                        if (value == null) {
+                            value = new HashSet<>();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = new HashSet<>();
+                    }
+                } else if (clazz != null)
+                    try {
+                        value = JacksonUtils.jsonStreamToBean(stream, clazz);
+                        if (value == null) {
+                            value = ReflectionHelper.newInstance(clazz);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                        value = ReflectionHelper.newInstance(clazz);
+                    }
                 break;
             case TEXT_PLAIN_UTF8:
             case TEXT_CSS_UTF8:
@@ -346,8 +396,10 @@ public class ExecutableArgumentHandler {
         invokedParameter.setType((Class<?>) parameter.getParameterizedType());
         String name = parameter.getName();
         if (name.startsWith("arg")) {
-            invokedParameter.setIndex(Integer.valueOf(name.split("arg")[1]));
+            invokedParameter.setIndex(Integer.parseInt(name.split("arg")[1]));
         }
         return invokedParameter;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableArgumentHandler.class);
 }

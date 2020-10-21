@@ -26,7 +26,7 @@ public interface RouterFilter extends Serializable {
     }
 
     /**
-     * if return true, do next; else --- postRouter(RouterRequest, RouterResponse)
+     * if return true, do next; else ---&gt; postRouter(RouterRequest, RouterResponse)
      * @param request RouterRequest
      * @param response RouterResponse
      * @return if do next

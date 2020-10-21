@@ -9,7 +9,10 @@
  */
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.io.MultipartFile;
+
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpRequest;
@@ -123,14 +126,23 @@ public class HttpHandler {
                     if (it instanceof Path) {
                         try {
                             var path = (Path) it;
-                            String mimeType = Files.probeContentType(path);
-                            byteArrays.add(("\"" + key + "\"; filename=\"" + path.getFileName()
-                                    + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-                            byteArrays.add(Files.readAllBytes(path));
-                            byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
+                            buildPart(byteArrays, key, path);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    } if (it instanceof File) {
+                        try {
+                            var path = ((File) it).toPath();
+                            buildPart(byteArrays, key, path);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } if (it instanceof MultipartFile) {
+                        var file = (MultipartFile) it;
+                        byteArrays.add(("\"" + key + "\"; filename=\"" + file.getFileName()
+                                + "\"\r\nContent-Type: " + file.getContentType().toString() + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+                        byteArrays.add(file.getContent());
+                        byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
                     } else {
                         byteArrays.add(("\"" + key + "\"\r\n\r\n" + it + "\r\n").getBytes(StandardCharsets.UTF_8));
                     }
@@ -139,5 +151,13 @@ public class HttpHandler {
         });
         byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+    }
+
+    private void buildPart(ArrayList<byte[]> byteArrays, String key, Path path) throws IOException {
+        String mimeType = Files.probeContentType(path);
+        byteArrays.add(("\"" + key + "\"; filename=\"" + path.getFileName()
+                + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        byteArrays.add(Files.readAllBytes(path));
+        byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
     }
 }

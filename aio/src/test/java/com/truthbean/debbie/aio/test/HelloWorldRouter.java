@@ -23,7 +23,7 @@ import com.truthbean.debbie.watcher.Watcher;
 @Router
 public class HelloWorldRouter {
 
-    @GetRouter(value = "/hello-world", responseType = MediaType.TEXT_PLAIN_UTF8)
+    @Router(value = "/hello-world", responseType = MediaType.TEXT_PLAIN_UTF8)
     public String helloWorld() {
         return "hello world";
     }

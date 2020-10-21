@@ -85,7 +85,7 @@ public interface RouterAnnotationParser {
             return new RouterAnnotationInfo(connectRouter);
         }
 
-        Set<RouterAnnotationParser> parsers = SpiLoader.loadProviders(RouterAnnotationParser.class);
+        Set<RouterAnnotationParser> parsers = SpiLoader.loadProviderSet(RouterAnnotationParser.class);
         for (RouterAnnotationParser parser : parsers) {
             RouterAnnotationInfo info = parser.parse(method);
             if (info != null) {

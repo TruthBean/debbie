@@ -11,13 +11,14 @@ package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author truthbean
  * @since 0.0.2
  */
-public class RmiServerProperties extends BaseProperties implements DebbieProperties {
+public class RmiServerProperties extends BaseProperties implements DebbieProperties<RmiServerConfiguration> {
 
     private final RmiServerConfiguration configuration;
 

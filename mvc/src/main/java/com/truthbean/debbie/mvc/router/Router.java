@@ -42,7 +42,7 @@ public @interface Router {
     String desc() default "";
 
     /**
-     * same as path
+     * same as urlPatterns
      * @return path regex
      */
     String[] value() default "";

@@ -9,8 +9,11 @@
  */
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.mvc.request.HttpHeader;
+
 import javax.net.ssl.SSLSession;
 import java.net.http.HttpClient;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +55,22 @@ public class HttpClientResponse<T> {
 
     public Map<String, List<String>> getHeaders() {
         return headers;
+    }
+
+    public List<String> getHeaderValues(HttpHeader.HttpHeaderName headerName) {
+        return getHeaderValues(headerName.getName());
+    }
+
+    public List<String> getHeaderValues(String headerName) {
+        if (!headers.isEmpty()) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                var key = entry.getKey();
+                if (key.equalsIgnoreCase(headerName)) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return new ArrayList<>();
     }
 
     public void setHeaders(Map<String, List<String>> headers) {

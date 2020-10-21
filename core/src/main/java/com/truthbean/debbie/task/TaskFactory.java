@@ -43,7 +43,7 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
 
     TaskFactory() {
         var classLoader = ClassLoaderUtils.getClassLoader(TaskAction.class);
-        this.taskActions = SpiLoader.loadProviderSet(TaskAction.class, classLoader);;
+        this.taskActions = SpiLoader.loadProviderSet(TaskAction.class, classLoader);
     }
 
     @Override
@@ -121,13 +121,31 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     private void doMethodTask(final MethodTaskInfo taskInfo, final DebbieTask annotation, final Timer timer) {
         var fixedRate = annotation.fixedRate();
         var cron = annotation.cron();
+        long delay = annotation.initialDelay();
         if (fixedRate > -1) {
+            if (delay <= 0)
+                delay = 0;
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        taskInfo.accept();
+                    } catch (Throwable ex) {
+                        LOGGER.error("error in timerTask. ", ex);
+                    }
+                }
+            }, delay, fixedRate);
+        } else if (fixedRate == -1 && delay > -1) {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    taskInfo.accept();
+                    try {
+                        taskInfo.accept();
+                    } catch (Exception e) {
+                        LOGGER.error("error in timerTask. ", e);
+                    }
                 }
-            }, 0, fixedRate);
+            }, delay);
         } else if (StringUtils.hasText(cron)) {
             // todo cron
         } else {
@@ -152,13 +170,13 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
 
     @Override
     public synchronized void destroy() {
-        if (!isTaskRunning()) {
-            LOGGER.info("destroy tasks bean");
-            timer.cancel();
-            taskThreadPool.destroy();
-            taskBeans.clear();
+        LOGGER.info("destroy tasks bean");
+        if (isTaskRunning()) {
             // TODO: 清除正在运行的任务
         }
+        timer.cancel();
+        taskThreadPool.destroy();
+        taskBeans.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskFactory.class);

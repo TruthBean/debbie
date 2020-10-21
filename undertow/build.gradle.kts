@@ -16,7 +16,9 @@ dependencies {
 
     val undertowVersion: String by project
     api("io.undertow:undertow-core:$undertowVersion")
-    api("org.jboss.logging:jboss-logging-annotations:2.2.1.Final")
+
+    val jbossLoggingAnnotationsVersion: String by project
+    api("org.jboss.logging:jboss-logging-annotations:${jbossLoggingAnnotationsVersion}")
 
     testImplementation(project(":debbie-test"))
 

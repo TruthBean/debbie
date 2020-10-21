@@ -16,16 +16,19 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  * Created on 2019-11-24 20:58.
  */
-public class SecurityFilter implements RouterFilter {
+public class SecurityFilter implements RouterFilter, Closeable {
 
     private MvcConfiguration configuration;
 
-    private boolean attacked;
+    private final ThreadLocal<Boolean> attacked = new ThreadLocal<>();
 
     @Override
     public SecurityFilter setMvcConfiguration(MvcConfiguration configuration) {
@@ -37,7 +40,7 @@ public class SecurityFilter implements RouterFilter {
     public boolean preRouter(RouterRequest request, RouterResponse response) {
         if (!this.configuration.isEnableSecurity()) return true;
         String userAgent = request.getHeader().getHeader("user-agent");
-        this.attacked = userAgent != null && (
+        var attacked = userAgent != null && (
                 userAgent.startsWith("$")
                         || userAgent.startsWith("Java") || userAgent.startsWith("Jakarta")
                 || userAgent.startsWith("Ruby")
@@ -68,16 +71,24 @@ public class SecurityFilter implements RouterFilter {
                 || "sogou develop spider".equalsIgnoreCase(userAgent) || "WEP Search 00".equalsIgnoreCase(userAgent)
                 );
         LOGGER.trace(() -> "attacked: " + attacked);
-        return !this.attacked;
+        this.attacked.set(attacked);
+        return !attacked;
     }
 
     @Override
     public Boolean postRouter(RouterRequest request, RouterResponse response) {
-        if (this.attacked) {
+        Boolean bool = this.attacked.get();
+        if (bool != null && bool) {
             response.setStatus(HttpStatus.FORBIDDEN);
             response.setContent("You are banned from this site.  Please contact via a \n" + "different client configuration if you believe that this is a mistake.");
-        }
-        return this.attacked;
+            return true;
+        } else
+            return bool;
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.attacked.remove();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityFilter.class);

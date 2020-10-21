@@ -53,7 +53,7 @@ public class DataSourceProperties extends BaseProperties implements DebbieProper
             custom.setDriverName(driverName);
             configuration.setDriverName(custom);
         } else if (url.startsWith("jdbc:mysql")) {
-            configuration.setDriverName(DataSourceDriverName.mysql);
+            configuration.setDriverName(DataSourceDriverName.mysql8);
         } else if (url.startsWith("jdbc:oracle")) {
             configuration.setDriverName(DataSourceDriverName.oracle);
         } else if (url.startsWith("jdbc:db2")) {

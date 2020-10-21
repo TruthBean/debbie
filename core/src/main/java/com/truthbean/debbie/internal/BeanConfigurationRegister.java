@@ -92,7 +92,7 @@ class BeanConfigurationRegister {
                 beanInfo.addBeanName(name);
                 beanInfo.setBeanType(BeanType.SINGLETON);
                 // todo params
-                beanInfo.setBean(ReflectionHelper.invokeMethod(configuration, method));
+                beanInfo.setBean(() -> ReflectionHelper.invokeMethod(configuration, method));
                 beanInfo.setBeanFactory(new ConfigurationMethodBeanFactory<>(configuration, method));
                 beanRegisterCenter.register(beanInfo);
             }

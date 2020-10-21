@@ -76,10 +76,6 @@ class DebbieApplicationContext implements ApplicationContext {
         autoCreatedBeanFactory.autoCreateBeans();
         // do startedEvent
         multicastEvent(this);
-        // do task
-        TaskFactory taskFactory = globalBeanFactory.factory("taskFactory");
-        taskFactory.prepare();
-        taskFactory.doTask();
     }
 
     private volatile DebbieStartedEventProcessor processor;

@@ -76,7 +76,8 @@ public class AioServerApplication extends AbstractWebServerApplication implement
 
         // 创建线程池
         var threadFactory = Executors.defaultThreadFactory();
-        var executor = new ThreadPoolExecutor(5, 200,
+        int core = Runtime.getRuntime().availableProcessors();
+        var executor = new ThreadPoolExecutor(core, core * 10,
                 0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(1024), threadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
         // 异步通道管理器

@@ -31,6 +31,18 @@ public class EventListenerBeanRegister {
         this.applicationContext = applicationContext;
     }
 
+    public <E extends AbstractDebbieEvent, L extends DebbieEventListener<E>> void register(final Class<E> eventType,
+                         final BeanFactory<L> listenerBeanFactory) {
+        var globalBeanFactory = applicationContext.getGlobalBeanFactory();
+
+        DebbieEventPublisher debbieEventPublisher = globalBeanFactory.factory("eventPublisher");
+        if (debbieEventPublisher instanceof DefaultEventPublisher) {
+            var eventPublisher = (DefaultEventPublisher) debbieEventPublisher;
+            listenerBeanFactory.setGlobalBeanFactory(globalBeanFactory);
+            eventPublisher.addEventListener(eventType, listenerBeanFactory);
+        }
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void register() {
         var beanInitialization = applicationContext.getBeanInitialization();
@@ -40,6 +52,7 @@ public class EventListenerBeanRegister {
         // 先注册系统相关的
         SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
         register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
+        eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的
         Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
         for (DebbieBeanInfo debbieBeanInfo : classInfoSet) {

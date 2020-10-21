@@ -21,8 +21,8 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.net.HttpCookie;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -43,7 +43,7 @@ public class UndertowResponseHandler implements ResponseHandler {
             headers.forEach((key, value) -> exchange.getResponseHeaders().put(new HttpString(key), value));
         }
 
-        List<HttpCookie> cookies = response.getCookies();
+        Set<HttpCookie> cookies = response.getCookies();
         if (!cookies.isEmpty()) {
             cookies.forEach(cookie -> exchange.setResponseCookie(new UndertowRouterCookie(cookie).getCookie()));
         }

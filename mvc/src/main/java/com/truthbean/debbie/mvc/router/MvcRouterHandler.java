@@ -115,27 +115,28 @@ public class MvcRouterHandler {
             // content type
             var requestType = routerInfo.getRequestType();
             LOGGER.trace(() -> "requestType: " + requestType);
-            var contextType = routerRequest.getContentType();
-            LOGGER.trace(() -> "contextType: " + contextType);
+            var contentType = routerRequest.getContentType();
+            LOGGER.trace(() -> "contentType: " + contentType);
             Set<MediaTypeInfo> defaultContentTypes = configuration.getDefaultContentTypes();
-            var matchRequestType = contextType.isAny() ||
-                    (!MediaType.ANY.isSame(requestType) && requestType.isSame(contextType))
-                    || (!MediaType.ANY.isSame(requestType) && !contextType.isAny() && requestType.isSame(contextType.toMediaType()))
+            var matchRequestType = contentType.isAny() || requestType.info().includes(contentType) ||
+                    (!MediaType.ANY.isSame(requestType) && requestType.isSame(contentType))
+                    || (!MediaType.ANY.isSame(requestType) && !contentType.isAny() && requestType.isSame(contentType.toMediaType()))
                     || (
-                    (MediaType.ANY.isSame(requestType) && !contextType.isAny() &&
-                            (MediaTypeInfo.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()))
+                    (MediaType.ANY.isSame(requestType) && !contentType.isAny() &&
+                            (MediaTypeInfo.contains(defaultContentTypes, contentType) || configuration.isAcceptClientContentType()))
             );
             if (!matchRequestType) {
                 continue;
             }
-            var flag = (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contextType) &&
-                    (MediaTypeInfo.contains(defaultContentTypes, contextType) || configuration.isAcceptClientContentType()));
+            var flag = (MediaType.ANY.isSame(requestType) && !MediaType.ANY.isSame(contentType) &&
+                    (MediaTypeInfo.contains(defaultContentTypes, contentType) || configuration.isAcceptClientContentType()));
             if (flag) {
-                routerInfo.setRequestType(contextType.toMediaType());
+                routerInfo.setRequestType(contentType.toMediaType());
             }
             LOGGER.trace(() -> "match request type: " + requestType.info());
-
-            routerRequest.setPathAttributes(routerInfo.getRequest().getPathAttributes());
+            var request = routerInfo.getRequest();
+            if (request != null)
+                routerRequest.setPathAttributes(request.getPathAttributes());
             result = routerInfo;
             break;
         }
@@ -173,7 +174,9 @@ public class MvcRouterHandler {
         // if no path variable and no matrix
         for (RouterInfo routerInfo : routerInfos) {
             if (matchedRawPath(routerInfo, url, false)) {
-                routerInfo.setRequest(routerRequest.copy());
+                var copy = routerRequest.copy();
+                if (copy == null) continue;
+                routerInfo.setRequest(copy);
                 result.add(routerInfo.clone());
             }
         }
@@ -183,7 +186,9 @@ public class MvcRouterHandler {
 
         // if has no matched, then match variable path
         for (RouterInfo routerInfo : routerInfos) {
-            if (matchedSameLengthVariablePath(routerInfo, url, false, routerRequest.copy())) {
+            RouterRequest copy = routerRequest.copy();
+            if (copy == null) continue;
+            if (matchedSameLengthVariablePath(routerInfo, url, false, copy)) {
                 result.add(routerInfo.clone());
             }
         }
@@ -192,7 +197,9 @@ public class MvcRouterHandler {
             return result;
 
         for (RouterInfo routerInfo : routerInfos) {
-            if (matchedNotSameLengthVariablePath(routerInfo, url, false, routerRequest.copy())) {
+            RouterRequest copy = routerRequest.copy();
+            if (copy == null) continue;
+            if (matchedNotSameLengthVariablePath(routerInfo, url, false, copy)) {
                 result.add(routerInfo.clone());
             }
         }
@@ -236,11 +243,15 @@ public class MvcRouterHandler {
 
         // if has no matched, then match variable path
         if (!matchUrl) {
-            matchUrl = matchedSameLengthVariablePath(routerInfo, url, withoutMatrix, routerRequest.copy());
+            RouterRequest copy = routerRequest.copy();
+            if (copy != null)
+                matchUrl = matchedSameLengthVariablePath(routerInfo, url, withoutMatrix, copy);
         }
 
         if (!matchUrl) {
-            matchUrl = matchedNotSameLengthVariablePath(routerInfo, url, withoutMatrix, routerRequest.copy());
+            RouterRequest copy = routerRequest.copy();
+            if (copy != null)
+                matchUrl = matchedNotSameLengthVariablePath(routerInfo, url, withoutMatrix, copy);
         }
 
         // if has no matched, then remove matrix
