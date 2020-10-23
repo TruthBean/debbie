@@ -14,7 +14,6 @@ import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
@@ -101,7 +100,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         startupShutdownThreadPool.execute(() -> {
             logger.debug("debbie (" + DebbieVersion.getVersion() + ") application start in thread ...");
             if (running.compareAndSet(false, true) && exited.get()) {
-                registerShutdownHook();
+                registerShutdownHook(args);
                 start(beforeStartTime, args);
                 exited.set(false);
             }
@@ -127,14 +126,14 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @see #exit
      * @see #doExit
      */
-    private void registerShutdownHook() {
+    private void registerShutdownHook(String... args) {
         if (this.shutdownHook == null) {
             // No shutdown hook registered yet.
             this.shutdownHook = new Thread(SHUTDOWN_HOOK_THREAD_NAME) {
                 @Override
                 public void run() {
                     synchronized (startupShutdownMonitor) {
-                        exit();
+                        exit(args);
                     }
                 }
             };

@@ -59,12 +59,13 @@ public class MvcRouterRegister {
     private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
                                        ClassInfo<?> classInfo, MvcConfiguration webConfiguration,
                                        ApplicationContext applicationContext) {
+        ClassLoader classLoader = applicationContext.getClassLoader();
         Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();
         for (var method : methods) {
-            RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method);
-            List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method, clazz);
+            RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method, classLoader);
+            List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method, clazz, classLoader);
             if (router != null) {
                 var routerInfo = new RouterInfo();
                 routerInfo.setRouterClass(classInfo.getClazz());

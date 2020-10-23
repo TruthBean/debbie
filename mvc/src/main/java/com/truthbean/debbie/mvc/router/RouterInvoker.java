@@ -37,7 +37,7 @@ public class RouterInvoker {
         this.routerInfo = routerInfo;
     }
 
-    public void action(RouterResponse routerResponse, GlobalBeanFactory beanFactory) throws Throwable {
+    public void action(RouterResponse routerResponse, GlobalBeanFactory beanFactory, ClassLoader classLoader) throws Throwable {
         if (routerInfo == null) {
             return;
         }
@@ -60,7 +60,7 @@ public class RouterInvoker {
 
         var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
-        var handler = new RouterMethodArgumentHandler();
+        var handler = new RouterMethodArgumentHandler(classLoader);
         var args = handler.handleMethodParams(parameters, routerInfo.getMethodParams(), routerInfo.getRequestType());
 
         var values = args.toArray();
@@ -74,16 +74,17 @@ public class RouterInvoker {
         }
 
         Object any = ReflectionHelper.invokeMethod(true, instance, method, values);
+        boolean isReturnVoid = method.getReturnType() == void.class || method.getReturnType() == Void.class;
 
         for (ExecutableArgument methodParam : routerInfo.getMethodParams()) {
             methodParam.setValue(null);
         }
 
-        resolveResponse(any, httpRequest.getResponseType().toMediaType(), routerResponse);
+        resolveResponse(isReturnVoid, any, httpRequest.getResponseType().toMediaType(), routerResponse);
     }
 
     @SuppressWarnings({"unchecked"})
-    private void resolveResponse(Object methodResult, MediaType responseType, RouterResponse routerResponse) {
+    private void resolveResponse(boolean isReturnVoid, Object methodResult, MediaType responseType, RouterResponse routerResponse) {
         var response = routerInfo.getResponse();
         if (response.hasTemplate()) {
             if (methodResult instanceof StaticResourcesView) {
@@ -105,6 +106,9 @@ public class RouterInvoker {
                 routerResponse.setContent(methodResult);
             }
         } else {
+            // return void
+            if (isReturnVoid && methodResult == null) return;
+
             if (handleResponse(methodResult, routerResponse, response)) return;
 
             if (methodResult == null) return;

@@ -119,10 +119,8 @@ public class HttpHandlerFilter implements HttpHandler {
         if (next.getClass() == DispatcherHttpHandler.class) {
             logger.trace("next is DispatcherHttpHandler");
             ((DispatcherHttpHandler) next).setRequest(request);
-            next.handleRequest(exchange);
-        } else {
-            next.handleRequest(exchange);
         }
+        next.handleRequest(exchange);
     }
 
     private boolean handleFilter(final RouterFilter routerFilter, final Class<? extends RouterFilter> filterClass,

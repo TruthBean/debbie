@@ -166,9 +166,9 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
      * return true, go router
      * return false, doFilter
      *
-     * @param request
-     * @param response
-     * @param ctx
+     * @param request routerRequest
+     * @param response routerResponse
+     * @param ctx ChannelHandlerContext
      * @return boolean
      */
     private boolean handleFilter(RouterRequest request, RouterResponse response, ChannelHandlerContext ctx) {

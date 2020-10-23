@@ -28,7 +28,6 @@ import com.truthbean.logger.LoggerFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.net.HttpCookie;
 import java.util.*;
 
@@ -43,7 +42,8 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
     private final List<HttpClientRequest> requests = new ArrayList<>();
 
-    public HttpClientExecutor(final Class<T> interfaceType, final Method method, final Object configuration) {
+    public HttpClientExecutor(final Class<T> interfaceType, final Method method, final ClassLoader classLoader,
+                              final Object configuration) {
         super(interfaceType, method, configuration);
 
         String[] routerBaseUrl = new String[0];
@@ -70,7 +70,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             this.configuration = new HttpClientConfiguration();
         }
 
-        final RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method);
+        final RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method, classLoader);
         if (router == null) {
             throw new IllegalArgumentException(method.getName() + " have no Router annotation ");
         }
@@ -103,7 +103,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         }
 
                         final Class<?>[] parameterTypes = method.getParameterTypes();
-                        final var invokedParameter = new ExecutableArgument();
+                        final var invokedParameter = new ExecutableArgument(classLoader);
 
                         final RequestParameterInfo requestParameter = RequestParameterInfo.fromParameterAnnotation(parameter);
                         if (requestParameter != null) {

@@ -31,8 +31,15 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
 
     private String stack;
 
-    public ExecutableArgument() {
+    private final ClassLoader classLoader;
+
+    public ExecutableArgument(ClassLoader classLoader) {
         this.annotations = new HashMap<>();
+        this.classLoader = classLoader;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
     }
 
     public Map<Class<? extends Annotation>, Annotation> getAnnotations() {
@@ -137,7 +144,7 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
         try {
             parameter = (ExecutableArgument) super.clone();
         } catch (CloneNotSupportedException e) {
-            parameter = new ExecutableArgument();
+            parameter = new ExecutableArgument(this.classLoader);
         }
         parameter.type = type;
         parameter.value = value;

@@ -20,10 +20,11 @@ import java.lang.reflect.Method;
 public class MethodExecutorFactory {
 
     public static <T> AbstractMethodExecutor factory(Class<? extends AbstractMethodExecutor> executorClass,
-                                                        Class<T> interfaceType, Method method, Object configuration) {
+                                                        Class<T> interfaceType, Method method, ClassLoader classLoader,
+                                                     Object configuration) {
         return ReflectionHelper.newInstance(executorClass,
-                new Class[]{Class.class, Method.class, Object.class},
-                new Object[]{interfaceType, method, configuration});
+                new Class[]{Class.class, Method.class, ClassLoader.class, Object.class},
+                new Object[]{interfaceType, method, classLoader, configuration});
     }
 
 }

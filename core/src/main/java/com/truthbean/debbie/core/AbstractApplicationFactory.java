@@ -17,15 +17,15 @@ import com.truthbean.debbie.internal.DebbieApplicationFactory;
  */
 public abstract class AbstractApplicationFactory extends DebbieApplicationFactory {
 
-    protected AbstractApplicationFactory(Class<?> applicationClass) {
-        super(applicationClass);
+    protected AbstractApplicationFactory(Class<?> applicationClass, String... args) {
+        super(applicationClass, args);
     }
 
-    protected AbstractApplicationFactory(ClassLoader classLoader) {
-        super(classLoader);
+    protected AbstractApplicationFactory(ClassLoader classLoader, String... args) {
+        super(classLoader, args);
     }
 
-    public AbstractApplicationFactory(Class<?> applicationClass, ClassLoader classLoader) {
-        super(applicationClass, classLoader);
+    public AbstractApplicationFactory(Class<?> applicationClass, ClassLoader classLoader, String... args) {
+        super(applicationClass, classLoader, args);
     }
 }

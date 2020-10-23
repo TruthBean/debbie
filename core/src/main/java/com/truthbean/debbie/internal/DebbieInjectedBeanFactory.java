@@ -11,7 +11,9 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertiesException;
@@ -257,7 +259,17 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
     @Override
     public void resolveMethodValue(Object object, Method method) {
-        // todo
+        if (object instanceof ClassLoaderAware) {
+            ((ClassLoaderAware) object).setClassLoader(applicationContext.getClassLoader());
+        } else if (object instanceof ApplicationContextAware) {
+            ((ApplicationContextAware) object).setApplicationContext(applicationContext);
+        } else if (object instanceof GlobalBeanFactoryAware) {
+            ((GlobalBeanFactoryAware) object).setGlobalBeanFactory(globalBeanFactory);
+        } else if (object instanceof InjectedBeanFactoryAware) {
+            ((InjectedBeanFactoryAware) object).setInjectedBeanFactory(applicationContext.getInjectedBeanFactory());
+        } else if (object instanceof DebbieEventPublisherAware) {
+            // todo
+        }
     }
 
     @Override

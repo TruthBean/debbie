@@ -10,7 +10,6 @@
 package com.truthbean.debbie.tomcat;
 
 import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.boot.AbstractApplication;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.PathUtils;

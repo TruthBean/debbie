@@ -134,12 +134,11 @@ public class RouterFilterManager {
             if (pattern.contains("*")) {
                 if ("/*".equals(pattern) || "/**".equals(pattern)) {
                     filterInfo.addUrlPattern(ALL);
-                    filterInfo.addRawUrlPattern(pattern);
                 } else {
                     String newPattern = pattern.replaceAll("\\*", "\\w");
                     filterInfo.addUrlPattern(Pattern.compile(newPattern));
-                    filterInfo.addRawUrlPattern(pattern);
                 }
+                filterInfo.addRawUrlPattern(pattern);
             } else {
                 filterInfo.addRawUrlPattern(pattern);
             }

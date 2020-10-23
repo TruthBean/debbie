@@ -12,7 +12,6 @@ package com.truthbean.debbie.jdbc.repository;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
-import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
@@ -20,7 +19,6 @@ import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.JDBCType;
 import java.util.List;
 

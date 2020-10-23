@@ -10,7 +10,6 @@
 package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
-import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 

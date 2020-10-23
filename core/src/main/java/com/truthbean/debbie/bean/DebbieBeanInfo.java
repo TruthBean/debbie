@@ -10,6 +10,8 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
@@ -301,7 +303,10 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
                 noInterface = false;
                 if (beanInterface.getPackageName().startsWith("java.")
                         || beanInterface == JavaassistProxyBean.class
-                        || beanInterface == DebbieProperties.class || beanInterface == DebbieConfiguration.class) {
+                        || beanInterface == DebbieProperties.class || beanInterface == DebbieConfiguration.class
+                        || beanInterface == ApplicationContextAware.class || beanInterface == ClassLoaderAware.class
+                        || beanInterface == BeanAware.class || beanInterface == GlobalBeanFactoryAware.class
+                        || beanInterface == InjectedBeanFactoryAware.class || beanInterface == DebbieEventPublisherAware.class) {
                     beanInterface = null;
                     noInterface = true;
                 }

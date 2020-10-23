@@ -115,7 +115,6 @@ public interface BeanComponentParser {
             var info = entry.getValue();
             if (info.hasAliasFor()) {
                 Class<? extends Annotation> type = info.getAliasForAnnotation();
-                String attribute = info.getAliasForAttribute();
                 if (type == BeanComponent.class) {
                     if (info.aliasFor("name", String.class)) {
                         beanName = (String) annotationInfo.properties().get(name);

@@ -273,7 +273,7 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
      *
      * @author Oliver Gierke
      */
-    public static enum Direction {
+    public enum Direction {
 
         ASC, DESC;
 
@@ -337,7 +337,7 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
      * @author Thomas Darimont
      * @since 1.8
      */
-    public static enum NullHandling {
+    public enum NullHandling {
 
         /**
          * Lets the data store decide what to do with nulls.
@@ -352,7 +352,7 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
         /**
          * A hint to the used data store to order entries with null values after non null entries.
          */
-        NULLS_LAST;
+        NULLS_LAST
     }
 
     /**

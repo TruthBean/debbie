@@ -34,8 +34,18 @@ import java.util.*;
  */
 public class ExecutableArgumentHandler {
 
+    private final ClassLoader classLoader;
+
+    public ExecutableArgumentHandler(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
     public ExecutableArgument typeOf(Field field, int index) {
-        ExecutableArgument invokedParameter = new ExecutableArgument();
+        ExecutableArgument invokedParameter = new ExecutableArgument(classLoader);
         Type genericType = field.getGenericType();
         if (genericType instanceof Class) {
             invokedParameter.setType(genericType);
@@ -48,7 +58,7 @@ public class ExecutableArgumentHandler {
         return invokedParameter;
     }
 
-    public static List<ExecutableArgument> typeOf(Method method, GlobalBeanFactory beanFactory) {
+    public static List<ExecutableArgument> typeOf(Method method, GlobalBeanFactory beanFactory, ClassLoader classLoader) {
         List<ExecutableArgument> result = new ArrayList<>();
 
         Parameter[] parameters = method.getParameters();
@@ -57,7 +67,7 @@ public class ExecutableArgumentHandler {
         ExecutableArgument invokedParameter;
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
-            invokedParameter = new ExecutableArgument();
+            invokedParameter = new ExecutableArgument(classLoader);
             Class<?> type = parameterTypes[i];
             invokedParameter.setType(type);
             invokedParameter.setIndex(i);
@@ -391,9 +401,9 @@ public class ExecutableArgumentHandler {
         invokedParameter.setValue(value);
     }
 
-    public static ExecutableArgument typeOf(Parameter parameter) {
-        ExecutableArgument invokedParameter = new ExecutableArgument();
-        invokedParameter.setType((Class<?>) parameter.getParameterizedType());
+    public static ExecutableArgument typeOf(Parameter parameter, ClassLoader classLoader) {
+        ExecutableArgument invokedParameter = new ExecutableArgument(classLoader);
+        invokedParameter.setType(parameter.getParameterizedType());
         String name = parameter.getName();
         if (name.startsWith("arg")) {
             invokedParameter.setIndex(Integer.parseInt(name.split("arg")[1]));

@@ -154,7 +154,7 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     }
 
     private void doMethodTask(MethodTaskInfo taskInfo) {
-        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(taskInfo.getTaskMethod(), globalBeanFactory);
+        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(taskInfo.getTaskMethod(), globalBeanFactory, applicationContext.getClassLoader());
         Object[] params = new Object[methodParams.size()];
         for (int i = 0; i < methodParams.size(); i++) {
             params[i] = methodParams.get(i).getValue();

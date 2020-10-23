@@ -22,10 +22,7 @@ import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -148,8 +145,8 @@ public class RouterInfo implements Cloneable {
     private final List<ExecutableArgument> baseTypeMethodParams = new ArrayList<>();
     private final List<ExecutableArgument> notBaseTypeMethodParams = new ArrayList<>();
 
-    public void setBaseTypeMethodParams() {
-        RouterMethodArgumentHandler handler = new RouterMethodArgumentHandler();
+    public void setBaseTypeMethodParams(ClassLoader classLoader) {
+        RouterMethodArgumentHandler handler = new RouterMethodArgumentHandler(classLoader);
         for (ExecutableArgument param : methodParams) {
             if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
                 baseTypeMethodParams.add(param);
@@ -163,9 +160,9 @@ public class RouterInfo implements Cloneable {
         }
     }
 
-    public List<ExecutableArgument> getBaseTypeMethodParams() {
+    public List<ExecutableArgument> getBaseTypeMethodParams(ClassLoader classLoader) {
         if (baseTypeMethodParams.isEmpty()) {
-            setBaseTypeMethodParams();
+            setBaseTypeMethodParams(classLoader);
         }
         return baseTypeMethodParams;
     }
@@ -255,8 +252,17 @@ public class RouterInfo implements Cloneable {
         clone.requestType = requestType;
         if (request != null) {
             var copy = request.copy();
-            if (copy != null)
+            if (copy != null) {
+                Map<String, List<String>> pathAttributes = request.getPathAttributes();
+                if (pathAttributes != null && !pathAttributes.isEmpty()) {
+                    copy.setPathAttributes(pathAttributes);
+                }
+                /*Map<String, List<String>> matrix = request.getMatrix();
+                if (matrix != null && !matrix.isEmpty()) {
+                    copy.getMatrix().putAll(matrix);
+                }*/
                 clone.request = copy;
+            }
         }
 
         if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {

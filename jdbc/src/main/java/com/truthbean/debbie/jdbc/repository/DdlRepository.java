@@ -11,7 +11,6 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
-import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionService;
 
 import java.util.List;

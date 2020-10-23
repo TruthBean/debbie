@@ -21,14 +21,7 @@ import java.io.IOException;
 /**
  * Interface of an object, which may be closed.
  */
-public interface Closeable {
-
-    /**
-     * Closes the object.
-     *
-     * @throws IOException An I/O error occurred.
-     */
-    void close() throws IOException;
+public interface Closeable extends java.io.Closeable {
 
     /**
      * Returns, whether the object is already closed.

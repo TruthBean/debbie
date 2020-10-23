@@ -11,7 +11,6 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 
-import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

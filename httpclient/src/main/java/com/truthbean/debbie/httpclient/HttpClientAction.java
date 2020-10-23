@@ -20,7 +20,6 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;

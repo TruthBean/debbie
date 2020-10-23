@@ -59,15 +59,17 @@ public final class ResourcesHandler {
             while (dirs.hasMoreElements()) {
                 // 获取下一个元素
                 var url = dirs.nextElement();
+                LOGGER.trace("scan resource: " + url);
                 // 得到协议的名称
                 var protocol = url.getProtocol();
+                // graalvm protocol: file、resource
                 // 如果是以文件的形式保存在服务器上
                 if ("file".equals(protocol)) {
                     // 获取包的物理路径
                     var filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
                     // 以文件的方式扫描整个包下的文件 并添加到集合中
                     findAllResourcesInPackageByFile(resource, filePath, result);
-                } else if ("jar".equals(protocol) || "war".equals(protocol)) {
+                } else if ("jar".equals(protocol) || "war".equals(protocol) || "resource".equals(protocol)) {
                     getResourcesFromJarByPackageName(url, resource, result);
                 }
             }
@@ -133,6 +135,7 @@ public final class ResourcesHandler {
         }
         // 如果前半部分和定义的包名相同
         if (name.startsWith(dirName) && !entry.isDirectory()) {
+            LOGGER.trace("resource: " + name);
             result.add(name);
         }
     }
@@ -166,7 +169,6 @@ public final class ResourcesHandler {
     }
 
     private static InputStream handle(String resource) {
-
         String tempResource = resource;
         if (resource.contains(Constants.CLASSPATH)) {
             tempResource = resource.substring(10);
@@ -175,7 +177,14 @@ public final class ResourcesHandler {
             tempResource = resource.substring(11);
         }
         InputStream in;
-        in = Thread.currentThread().getContextClassLoader().getResourceAsStream(tempResource);
+        in = ClassLoaderUtils.getDefaultClassLoader().getResourceAsStream(tempResource);
+        if (in == null) {
+            in = ResourcesHandler.class.getResourceAsStream(tempResource);
+        }
+        if (in == null && tempResource.startsWith("/")) {
+            tempResource = tempResource.substring(1);
+        }
+        in = ClassLoaderUtils.getDefaultClassLoader().getResourceAsStream(tempResource);
         if (in == null) {
             in = ResourcesHandler.class.getResourceAsStream(tempResource);
         }

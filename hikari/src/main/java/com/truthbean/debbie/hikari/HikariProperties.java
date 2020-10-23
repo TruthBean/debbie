@@ -11,8 +11,6 @@ package com.truthbean.debbie.hikari;
 
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
-import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.util.StringUtils;

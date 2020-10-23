@@ -34,7 +34,7 @@ public interface RouterAnnotationParser {
         return null;
     }
 
-    static RouterAnnotationInfo getRouterAnnotation(Method method) {
+    static RouterAnnotationInfo getRouterAnnotation(Method method, ClassLoader classLoader) {
         Router router = method.getAnnotation(Router.class);
         if (router != null) {
             return new RouterAnnotationInfo(router);
@@ -85,7 +85,7 @@ public interface RouterAnnotationParser {
             return new RouterAnnotationInfo(connectRouter);
         }
 
-        Set<RouterAnnotationParser> parsers = SpiLoader.loadProviderSet(RouterAnnotationParser.class);
+        Set<RouterAnnotationParser> parsers = SpiLoader.loadProviderSet(RouterAnnotationParser.class, classLoader);
         for (RouterAnnotationParser parser : parsers) {
             RouterAnnotationInfo info = parser.parse(method);
             if (info != null) {

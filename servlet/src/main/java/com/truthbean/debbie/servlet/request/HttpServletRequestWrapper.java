@@ -615,7 +615,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     @Override
     public boolean isRequestedSessionIdFromUrl() {
-        return request.isRequestedSessionIdFromUrl();
+        return request.isRequestedSessionIdFromURL();
     }
 
     @Override

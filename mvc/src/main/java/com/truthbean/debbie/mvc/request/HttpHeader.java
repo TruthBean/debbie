@@ -44,8 +44,7 @@ public class HttpHeader {
             values = headers.get(name.toLowerCase());
         }
         if (values != null && !values.isEmpty()) {
-            String value = values.get(0);
-            if (value != null) return value;
+            return values.get(0);
         }
         return null;
     }

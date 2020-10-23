@@ -13,6 +13,7 @@ import com.truthbean.debbie.bean.BeanInfoFactory;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.bean.InjectedBeanFactory;
+import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
@@ -21,6 +22,11 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  * @since 0.1.0
  */
 public interface ApplicationContext {
+    /**
+     * after DebbieApplication.start call
+     * @return application args
+     */
+    ApplicationArgs getApplicationArgs();
 
     ClassLoader getClassLoader();
 

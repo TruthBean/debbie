@@ -158,7 +158,7 @@ public class Page<T> implements Streamable<T> {
 
     public <U> List<U> getConvertedContent(Function<? super T, ? extends U> converter) {
         Assert.notNull(converter, "Function must not be null!");
-        return this.stream().map(converter::apply).collect(Collectors.toList());
+        return this.stream().map(converter).collect(Collectors.toList());
     }
 
     public boolean hasPrevious() {

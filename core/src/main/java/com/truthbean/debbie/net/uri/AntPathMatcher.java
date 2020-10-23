@@ -378,7 +378,7 @@ public class AntPathMatcher {
     protected String[] tokenizePattern(String pattern) {
         String[] tokenized = null;
         Boolean cachePatterns = this.cachePatterns;
-        if (cachePatterns == null || cachePatterns.booleanValue()) {
+        if (cachePatterns == null || cachePatterns) {
             tokenized = this.tokenizedPatternCache.get(pattern);
         }
         if (tokenized == null) {
@@ -390,7 +390,7 @@ public class AntPathMatcher {
                 deactivatePatternCache();
                 return tokenized;
             }
-            if (cachePatterns == null || cachePatterns.booleanValue()) {
+            if (cachePatterns == null || cachePatterns) {
                 this.tokenizedPatternCache.put(pattern, tokenized);
             }
         }

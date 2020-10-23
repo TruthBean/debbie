@@ -17,17 +17,12 @@
 package org.apache.commons.fileupload;
 
 import org.apache.commons.fileupload.impl.FileItemIteratorImpl;
-import org.apache.commons.fileupload.impl.FileItemStreamImpl;
 import org.apache.commons.fileupload.impl.FileUploadIOException;
 import org.apache.commons.fileupload.impl.IOFileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.fileupload.util.Streams;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -271,7 +266,7 @@ public abstract class FileUploadBase {
      */
     public List<FileItem> parseRequest(UploadContext ctx)
             throws FileUploadException {
-        List<FileItem> items = new ArrayList<FileItem>();
+        List<FileItem> items = new ArrayList<>();
         boolean successful = false;
         try {
             FileItemIterator iter = getItemIterator(ctx);
@@ -280,7 +275,7 @@ public abstract class FileUploadBase {
             while (iter.hasNext()) {
                 final FileItemStream item = iter.next();
                 // Don't use getName() here to prevent an InvalidFileNameException.
-                final String fileName = ((FileItemStreamImpl) item).getName();
+                final String fileName = item.getName();
                 FileItem fileItem = fileItemFactory.createItem(item.getFieldName(), item.getContentType(),
                                                    item.isFormField(), fileName);
                 items.add(fileItem);

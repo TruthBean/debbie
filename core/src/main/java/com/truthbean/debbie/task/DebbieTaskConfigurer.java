@@ -22,13 +22,13 @@ import com.truthbean.debbie.properties.BaseProperties;
 public class DebbieTaskConfigurer {
 
     public void configure(ApplicationContext applicationContext) {
-        TaskFactory debbieTaskFactory = new TaskFactory();
-        SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
+        var debbieTaskFactory = new TaskFactory();
+        var register = new SingletonBeanRegister(applicationContext);
 
         debbieTaskFactory.setApplicationContext(applicationContext);
 
         var time = new BaseProperties().getLongValue("debbie.thread-pool-executor.await-termination-time", 5000L);
-        ThreadPooledExecutor factory = new ThreadPooledExecutor(10, 200, new NamedThreadFactory(), time);
+        var factory = new ThreadPooledExecutor(10, 200, new NamedThreadFactory(), time);
         register.registerSingletonBean(factory, ThreadPooledExecutor.class, "threadPooledExecutor");
 
         debbieTaskFactory.registerTask();

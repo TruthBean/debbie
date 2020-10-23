@@ -261,7 +261,7 @@ public final class JacksonUtils {
      */
     public static <T> T jsonToBeanRefer(String jsonStr, Class<T> clazz) {
         try {
-            return OBJECT_MAPPER.readValue(jsonStr, new TypeReference<T>() {
+            return OBJECT_MAPPER.readValue(jsonStr, new TypeReference<>() {
             });
         } catch (IOException e) {
             LOGGER.error("", e);

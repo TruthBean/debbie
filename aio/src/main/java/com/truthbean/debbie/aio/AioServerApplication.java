@@ -126,6 +126,5 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         }
     }
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AioServerApplication.class);
 }

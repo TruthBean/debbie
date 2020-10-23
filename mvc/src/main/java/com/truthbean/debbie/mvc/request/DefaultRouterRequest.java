@@ -10,7 +10,6 @@
 package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 
 import java.io.File;

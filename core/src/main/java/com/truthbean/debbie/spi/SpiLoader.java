@@ -49,7 +49,13 @@ public class SpiLoader {
     }
 
     public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader, S defaultService) {
-        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
+        ServiceLoader<S> serviceLoader = null;
+        try {
+            serviceLoader = ServiceLoader.load(serviceClass, classLoader);
+        } catch (Exception e) {
+            LOGGER.error("", e);
+            return null;
+        }
         Iterator<S> search = serviceLoader.iterator();
         if (search.hasNext()) {
             return search.next();
@@ -70,7 +76,13 @@ public class SpiLoader {
 
     public static <S> Set<S> loadProviderSet(Class<S> serviceClass, ClassLoader classLoader) {
         Set<S> result = new HashSet<>();
-        ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, classLoader);
+        ServiceLoader<S> serviceLoader = null;
+        try {
+            serviceLoader = ServiceLoader.load(serviceClass, classLoader);
+        } catch (Throwable e) {
+            LOGGER.error("", e);
+            return result;
+        }
         for (S s : serviceLoader) {
             result.add(s);
         }

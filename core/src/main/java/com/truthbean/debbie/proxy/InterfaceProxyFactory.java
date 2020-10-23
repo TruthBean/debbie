@@ -53,7 +53,7 @@ public class InterfaceProxyFactory<T> {
 
     public T newInstance(Object object, Class<? extends AbstractMethodExecutor> executorClass) {
         final InterfaceProxy<T> interfaceProxy =
-            new InterfaceProxy<>(executorClass, object, interfaceType, methodCache, configuration, failureAction);
+            new InterfaceProxy<>(executorClass, object, interfaceType, classLoader, methodCache, configuration, failureAction);
         return newInstance(interfaceProxy);
     }
 }

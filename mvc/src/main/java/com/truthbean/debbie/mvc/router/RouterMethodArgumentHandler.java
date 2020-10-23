@@ -41,7 +41,11 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterMethodArgumentHandler.class);
 
-    public List handleMethodParams(RouterRequestValues parameters, List<ExecutableArgument> methodParams, MediaType requestType) {
+    public RouterMethodArgumentHandler(ClassLoader classLoader) {
+        super(classLoader);
+    }
+
+    public List<Object> handleMethodParams(RouterRequestValues parameters, List<ExecutableArgument> methodParams, MediaType requestType) {
         List<Object> result = new LinkedList<>();
         for (ExecutableArgument invokedParameter : methodParams) {
             LOGGER.debug(() -> "invokedParameter " + invokedParameter.getType().getTypeName());
@@ -152,8 +156,8 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                         // todo
                     }
                 }
+                i++;
             }
-            i++;
         }
     }
 
@@ -316,7 +320,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         }
     }
 
-    public static List<ExecutableArgument> typeOf(Method method, Class<?> declaringClass) {
+    public static List<ExecutableArgument> typeOf(Method method, Class<?> declaringClass, ClassLoader classLoader) {
         List<ExecutableArgument> result = new ArrayList<>();
 
         Parameter[] parameters = method.getParameters();
@@ -325,7 +329,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         ExecutableArgument invokedParameter;
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
-            invokedParameter = new ExecutableArgument();
+            invokedParameter = new ExecutableArgument(classLoader);
             Type parameterizedType = parameterTypes[i];
             invokedParameter.setType(parameterizedType);
             invokedParameter.setIndex(i);

@@ -32,15 +32,15 @@ public interface ApplicationFactory {
 
     DebbieApplication createApplication(Class<?> applicationClass);
 
-    static DebbieApplication create(Class<?> applicationClass) {
-        return DebbieApplicationFactory.create(applicationClass);
+    static DebbieApplication create(Class<?> applicationClass, String... args) {
+        return DebbieApplicationFactory.create(applicationClass, args);
     }
 
-    static ApplicationFactory configure(Class<?> applicationClass) {
-        return DebbieApplicationFactory.configure(applicationClass);
+    static ApplicationFactory configure(Class<?> applicationClass, String... args) {
+        return DebbieApplicationFactory.configure(applicationClass, args);
     }
 
-    static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer) {
-        return DebbieApplicationFactory.configure(classLoader, consumer);
+    static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
+        return DebbieApplicationFactory.configure(classLoader, consumer, args);
     }
 }

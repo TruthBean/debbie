@@ -50,7 +50,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
         String serverMessage = getStringValue(SERVER_MESSAGE, "A Simple Java Aio WebServer by Debbie Framework");
         configuration.setServerMessage(serverMessage);
 
-        AioServerProperties properties = new AioServerProperties();
+        var properties = new AioServerProperties();
         properties.loadAndSet(properties, configuration);
 
         return configuration;

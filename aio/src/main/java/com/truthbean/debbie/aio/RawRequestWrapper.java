@@ -61,7 +61,7 @@ class RawRequestWrapper implements RouterRequest {
         var decoder = new QueryStringDecoder(url);
 
         if (decoder.hasParams()) {
-            this.routerRequestCache.addQueries(decoder.parameters());;
+            this.routerRequestCache.addQueries(decoder.parameters());
         }
         this.routerRequestCache.setUrl(decoder.path());
         Map<String, List<String>> matrix = UriUtils.resolveMatrixByPath(getUrl());
@@ -167,8 +167,6 @@ class RawRequestWrapper implements RouterRequest {
     private void setRequestResult() {
         Map<String, List<Object>> params = new HashMap<>();
 
-        MediaTypeInfo responseType = MediaType.ANY.info();
-
         //=========================================================
 
         String paramName = null;
@@ -188,7 +186,7 @@ class RawRequestWrapper implements RouterRequest {
             header = new HttpHeader();
         }
 
-        responseType = header.getMediaTypeFromHeaders(MediaType.RESPONSE_TYPE, getUrl());
+        MediaTypeInfo responseType = header.getMediaTypeFromHeaders(MediaType.RESPONSE_TYPE, getUrl());
         this.routerRequestCache.setResponseType(responseType);
 
         MediaTypeInfo contentType = header.getMediaTypeFromHeaders(MediaType.CONTENT_TYPE, getUrl());
@@ -265,11 +263,10 @@ class RawRequestWrapper implements RouterRequest {
                     List<Object> list;
                     if (params.containsKey(paramName)) {
                         list = params.get(paramName);
-                        list.add(line);
                     } else {
                         list = new ArrayList<>();
-                        list.add(line);
                     }
+                    list.add(line);
                     params.put(paramName, list);
                     paramName = null;
                 }
@@ -289,11 +286,10 @@ class RawRequestWrapper implements RouterRequest {
                 List<Object> list;
                 if (params.containsKey(paramName)) {
                     list = params.get(paramName);
-                    list.add(multipartFile);
                 } else {
                     list = new ArrayList<>();
-                    list.add(multipartFile);
                 }
+                list.add(multipartFile);
                 params.put(paramName, list);
             }
 

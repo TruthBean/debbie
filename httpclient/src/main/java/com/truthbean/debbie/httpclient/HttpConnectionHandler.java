@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,39 @@ public class HttpConnectionHandler extends HttpHandler {
 
     public String get(String url) {
         return get(url, null, null, null, null);
+    }
+
+    public void download(String url, File file) {
+        HttpURLConnection connection = prepare(url, HttpMethod.GET);
+        int status;
+        try {
+            status = connection.getResponseCode();
+        } catch (IOException e) {
+            LOGGER.warn("IOException send message", e);
+            return;
+        }
+
+        LOGGER.debug(() -> "remote service response status: " + status);
+
+        if (status / 100 == 5) {
+            LOGGER.info("remote service is unavailable (status " + status + ")");
+        } else {
+            if (status / 100 != 2) {
+                try {
+                    String responseBody = StreamHelper.getAndClose(connection.getErrorStream());
+                    LOGGER.error("Plain post error response: " + responseBody);
+                } catch (IOException e) {
+                    LOGGER.warn("Exception reading response", e);
+                }
+            } else {
+                try {
+                    StreamHelper.copyLarge(connection.getInputStream(), new FileOutputStream(file));
+                } catch (IOException e) {
+                    LOGGER.warn("Exception reading response", e);
+                }
+
+            }
+        }
     }
 
     public String get(String url, List<HttpCookie> cookies) {

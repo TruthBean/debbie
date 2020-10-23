@@ -11,6 +11,7 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.io.ResourceResolver;
@@ -37,10 +38,13 @@ class DebbieApplicationContext implements ApplicationContext {
     private final DebbieBeanInfoFactory debbieBeanInfoFactory;
     private final DebbieGlobalBeanFactory globalBeanFactory;
 
+    private final ApplicationArgs applicationArgs;
+
     private static final Object object = new Object();
 
-    protected DebbieApplicationContext(@Nullable Class<?> applicationClass, ClassLoader classLoader) {
+    protected DebbieApplicationContext(@Nullable Class<?> applicationClass, ClassLoader classLoader, ApplicationArgs applicationArgs) {
         synchronized (object) {
+            this.applicationArgs = applicationArgs;
             resourceResolver = new ResourceResolver();
             beanInitialization = DebbieBeanInitialization.getInstance(applicationClass, classLoader, resourceResolver);
             this.configurationCenter = new DebbieConfigurationCenter();
@@ -94,6 +98,11 @@ class DebbieApplicationContext implements ApplicationContext {
         if (this.processor != null) {
             processor.stopAll();
         }
+    }
+
+    @Override
+    public ApplicationArgs getApplicationArgs() {
+        return applicationArgs;
     }
 
     @Override

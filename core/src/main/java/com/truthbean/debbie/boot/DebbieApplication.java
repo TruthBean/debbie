@@ -24,10 +24,10 @@ public interface DebbieApplication {
     void exit(String... args);
 
     static void run(Class<?> applicationClass, String... args) {
-        DebbieApplicationFactory.create(applicationClass).start(args);
+        DebbieApplicationFactory.create(applicationClass, args).start(args);
     }
 
-    static DebbieApplication create(Class<?> applicationClass) {
-        return DebbieApplicationFactory.create(applicationClass);
+    static DebbieApplication create(Class<?> applicationClass, String... args) {
+        return DebbieApplicationFactory.create(applicationClass, args);
     }
 }

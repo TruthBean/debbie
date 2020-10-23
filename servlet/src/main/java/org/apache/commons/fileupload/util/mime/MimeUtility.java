@@ -63,7 +63,7 @@ public final class MimeUtility {
     /**
      * Mappings between MIME and Java charset.
      */
-    private static final Map<String, String> MIME2JAVA = new HashMap<String, String>();
+    private static final Map<String, String> MIME2JAVA = new HashMap<>();
 
     static {
         MIME2JAVA.put("iso-2022-cn", "ISO2022CN");
@@ -99,7 +99,7 @@ public final class MimeUtility {
     public static String decodeText(String text) throws UnsupportedEncodingException {
         // if the text contains any encoded tokens, those tokens will be marked with "=?".  If the
         // source string doesn't contain that sequent, no decoding is required.
-        if (text.indexOf(ENCODED_TOKEN_MARKER) < 0) {
+        if (!text.contains(ENCODED_TOKEN_MARKER)) {
             return text;
         }
 

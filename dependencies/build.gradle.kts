@@ -185,5 +185,14 @@ dependencyManagement {
 
         val commonsCodesVersion: String by project
         dependency("commons-codec:commons-codec:$commonsCodesVersion")
+
+        // javafx
+        dependency("com.truthbean.debbie:debbie-javafx:$projectVersion")
+
+        // kafka
+        dependency("com.truthbean.debbie:debbie-kafka:$projectVersion")
+
+        // lucene
+        dependency("com.truthbean.debbie:debbie-lucene:$projectVersion")
     }
 }

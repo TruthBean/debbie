@@ -34,7 +34,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
     public boolean supportsParameter(ExecutableArgument parameter) {
         RequestParameterInfo requestParameterInfo = RequestParameterInfo.fromExecutableArgumentAnnotation(parameter);
         if (requestParameterInfo != null) {
-            this.handler = new RouterMethodArgumentHandler();
+            this.handler = new RouterMethodArgumentHandler(parameter.getClassLoader());
             return true;
         }
         return false;

@@ -40,20 +40,23 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     private final DebbieBootApplicationResolver bootApplicationResolver;
     private final DebbieApplicationContext applicationContext;
 
-    protected DebbieApplicationFactory(Class<?> applicationClass) {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass));
+    protected DebbieApplicationFactory(Class<?> applicationClass, String... args) {
+        var applicationArgs = new ApplicationArgs(args);
+        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
     }
 
-    protected DebbieApplicationFactory(ClassLoader classLoader) {
-        this.applicationContext = new DebbieApplicationContext(null, classLoader);
+    protected DebbieApplicationFactory(ClassLoader classLoader, String... args) {
+        var applicationArgs = new ApplicationArgs(args);
+        this.applicationContext = new DebbieApplicationContext(null, classLoader, applicationArgs);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
     }
 
-    protected DebbieApplicationFactory(Class<?> applicationClass, ClassLoader classLoader) {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader);
+    protected DebbieApplicationFactory(Class<?> applicationClass, ClassLoader classLoader, String... args) {
+        var applicationArgs = new ApplicationArgs(args);
+        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
     }
@@ -224,12 +227,12 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     protected static volatile DebbieApplication debbieApplication;
     protected static volatile DebbieApplicationFactory debbieApplicationFactory;
 
-    public static DebbieApplication create(Class<?> applicationClass) {
+    public static DebbieApplication create(Class<?> applicationClass, String... args) {
         long beforeStartTime = System.currentTimeMillis();
         LOGGER.info(() -> "debbie start time: " + (new Timestamp(beforeStartTime)));
         if (debbieApplication != null)
             return debbieApplication;
-        var debbieApplicationFactory = configure(applicationClass);
+        var debbieApplicationFactory = configure(applicationClass, args);
         debbieApplication = debbieApplicationFactory.factoryApplication();
         debbieApplicationFactory.configDebbieApplication(debbieApplication, beforeStartTime);
         return debbieApplication;
@@ -242,20 +245,20 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         }
     }
 
-    public static synchronized DebbieApplicationFactory configure(Class<?> applicationClass) {
+    public static synchronized DebbieApplicationFactory configure(Class<?> applicationClass, String... args) {
         ClassLoader classLoader = ClassLoaderUtils.getClassLoader(applicationClass);
         if (debbieApplicationFactory != null)
             return debbieApplicationFactory;
-        debbieApplicationFactory = new DebbieApplicationFactory(applicationClass, classLoader);
+        debbieApplicationFactory = new DebbieApplicationFactory(applicationClass, classLoader, args);
         debbieApplicationFactory.config(applicationClass);
         debbieApplicationFactory.callStarter();
         return debbieApplicationFactory;
     }
 
-    public static DebbieApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer) {
+    public static DebbieApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
         if (debbieApplicationFactory != null)
             return debbieApplicationFactory;
-        debbieApplicationFactory = new DebbieApplicationFactory(classLoader);
+        debbieApplicationFactory = new DebbieApplicationFactory(classLoader, args);
         debbieApplicationFactory.config(consumer);
         debbieApplicationFactory.callStarter();
         return debbieApplicationFactory;

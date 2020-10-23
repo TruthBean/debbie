@@ -382,7 +382,7 @@ public class MvcRouterHandler {
 
             routerResponse.setResponseType(routerInfo.getResponse().getResponseType());
             RouterInvoker invoker = new RouterInvoker(routerInfo);
-            invoker.action(routerResponse, globalBeanFactory);
+            invoker.action(routerResponse, globalBeanFactory, applicationContext.getClassLoader());
             return routerResponse;
         } catch (Throwable e) {
             LOGGER.error("", e);

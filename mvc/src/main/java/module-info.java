@@ -23,6 +23,9 @@ module com.truthbean.debbie.mvc {
     exports com.truthbean.debbie.mvc.request;
     exports com.truthbean.debbie.mvc.url;
 
+    opens com.truthbean.debbie.mvc.router to com.truthbean.debbie.core;
+    opens com.truthbean.debbie.mvc.request to com.truthbean.debbie.core;
+
     requires transitive com.truthbean.debbie.core;
 
     uses com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;

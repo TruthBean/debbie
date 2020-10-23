@@ -200,9 +200,9 @@ public class BeanScanConfiguration implements DebbieConfiguration {
                     ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
             resourceResolver.addResource(resources);
             classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
-        }
-        else
+        } else {
             classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+        }
         return classList;
     }
 

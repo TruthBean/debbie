@@ -9,7 +9,9 @@
  */
 package com.truthbean.debbie.io;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.net.uri.AntPathMatcher;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,6 +44,7 @@ public class ResourceResolver {
         Set<String> result = new HashSet<>();
         Set<String> resources  = cache.keySet();
         for (String resource : resources) {
+            logger.trace("resource: " + resource);
             if (antPathMatcher.match(pattern, resource)) {
                 result.add(resource);
             }
@@ -57,4 +60,6 @@ public class ResourceResolver {
         cache.clear();
         this.classCache.clear();
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(ResourceResolver.class);
 }

@@ -9,7 +9,6 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -91,7 +90,7 @@ public class RouterRequestValues {
     public Map<String, List<String>> getHeaders() {
         if (headers == null) {
             headers = new HashMap<>();
-            var requestHeaders = routerRequest.getHeader().getHeaders();;
+            var requestHeaders = routerRequest.getHeader().getHeaders();
             if (requestHeaders != null)
                 headers.putAll(requestHeaders);
         }

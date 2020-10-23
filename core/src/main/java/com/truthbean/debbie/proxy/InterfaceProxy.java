@@ -29,15 +29,18 @@ public class InterfaceProxy<T> implements InvocationHandler {
 
     private final Object object;
     private final Class<T> interfaceType;
+    private final ClassLoader classLoader;
     private final Class<? extends AbstractMethodExecutor> executorClass;
     private final Map<Method, AbstractMethodExecutor> methodCache;
     private final Object configuration;
     private final Object failureAction;
 
-    public InterfaceProxy(Class<? extends AbstractMethodExecutor> executorClass, Object object, Class<T> interfaceType,
+    public InterfaceProxy(Class<? extends AbstractMethodExecutor> executorClass, Object object,
+                          Class<T> interfaceType, ClassLoader classLoader,
                           Map<Method, AbstractMethodExecutor> methodCache, Object configuration,
                           Object failureAction) {
         this.executorClass = executorClass;
+        this.classLoader = classLoader;
         this.object = object;
         this.interfaceType = interfaceType;
         this.methodCache = methodCache;
@@ -86,7 +89,7 @@ public class InterfaceProxy<T> implements InvocationHandler {
 
     private AbstractMethodExecutor cachedMethodExecutor(Method method) {
         return methodCache.computeIfAbsent(method, v ->
-                MethodExecutorFactory.factory(executorClass, interfaceType, method, configuration));
+                MethodExecutorFactory.factory(executorClass, interfaceType, method, classLoader, configuration));
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args)

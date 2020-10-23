@@ -78,7 +78,7 @@ public class HttpServletResponseWrapper implements HttpServletResponse {
 
     @Override
     public String encodeRedirectUrl(String url) {
-        return response.encodeRedirectUrl(url);
+        return response.encodeRedirectURL(url);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class HttpServletResponseWrapper implements HttpServletResponse {
 
     @Override
     public void setStatus(int sc, String sm) {
-        response.setStatus(sc, sm);
+        response.setStatus(sc);
     }
 
     @Override

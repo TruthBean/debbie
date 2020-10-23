@@ -1,0 +1,4 @@
+[
+  ["com.truthbean.debbie.event.GenericStartedEventListener"],
+  ["com.truthbean.debbie.event.DebbieEventListener"]
+]
