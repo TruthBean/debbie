@@ -251,31 +251,33 @@ public class TransactionInfo implements Closeable {
 
     @Override
     public void close() {
-        beforeClose();
+        if (!isUsing()) {
+            beforeClose();
 
-        if (connection == null) {
-            LOGGER.error("method (" + method + ") not bind connection is null. ");
-            return;
-        }
-
-        if (hasMethod())
-            LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ")  and remove it. ");
-        else
-            LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
-        try {
-            if (!connection.isClosed()) {
-                connection.close();
-                connection = null;
+            if (connection == null) {
+                LOGGER.error("method (" + method + ") not bind connection is null. ");
+                return;
             }
-        } catch (SQLException e) {
-            LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
+
+            if (hasMethod())
+                LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ")  and remove it. ");
+            else
+                LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                    connection = null;
+                }
+            } catch (SQLException e) {
+                LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
+            }
+
+            afterClose();
+
+            // clear
+            resources.clear();
+            resourceHolders.clear();
         }
-
-        afterClose();
-
-        // clear
-        resources.clear();
-        resourceHolders.clear();
     }
 
     private void afterClose() {

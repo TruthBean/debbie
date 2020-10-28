@@ -10,6 +10,7 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
@@ -22,6 +23,7 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.server.session.SessionManager;
+import com.truthbean.debbie.util.StringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -132,8 +134,24 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
                 if (bytes != null) {
                     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                    HttpResponseStatus status = HttpResponseStatus.valueOf(routerResponse.getStatus().getStatus());
-                    doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status);
+                    HttpStatus httpStatus = routerResponse.getStatus();
+                    httpStatus = httpStatus != null ? httpStatus : HttpStatus.OK;
+                    HttpResponseStatus status = HttpResponseStatus.valueOf(httpStatus.getStatus());
+                    if (routerResponse.getResponseType() == null) {
+                        MediaTypeInfo responseType = routerRequest.getResponseType();
+                        if (responseType != null) {
+                            routerResponse.setResponseType(responseType);
+                        } else {
+                            String url = routerRequest.getUrl();
+                            String extension = FileNameUtils.getExtension(url);
+                            if (StringUtils.hasText(extension)) {
+                                MediaType type = MediaType.getTypeByUriExt(extension);
+                                if (type != MediaType.ANY)
+                                    routerResponse.setResponseType(type);
+                            }
+                        }
+                    }
+                    doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status, false);
                 } else {
                     RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
                     RouterResponse response = routerInfo.getResponse();
@@ -148,10 +166,11 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     }
 
-    private void doHandleResponse(ChannelHandlerContext ctx, NettyRouterRequest routerRequest, RouterResponse routerResponse, ByteBuf byteBuf, HttpResponseStatus status) {
+    private void doHandleResponse(ChannelHandlerContext ctx, NettyRouterRequest routerRequest, RouterResponse routerResponse,
+                                  ByteBuf byteBuf, HttpResponseStatus status, boolean setContentType) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, byteBuf);
 
-        handleResponseWithoutContent(response, routerRequest, routerResponse);
+        handleResponseWithoutContent(response, routerRequest, routerResponse, setContentType);
 
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
         if (!keepAlive) {
@@ -207,7 +226,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
     }
 
     private void handleResponseWithoutContent(FullHttpResponse response,
-                                              NettyRouterRequest routerRequest, RouterResponse routerResponse) {
+                                              NettyRouterRequest routerRequest, RouterResponse routerResponse,
+                                              boolean setContentType) {
         RouterSession session = routerRequest.getSession();
         if (session != null) {
             response.headers().set("JSESSIONID", session.getId());
@@ -231,7 +251,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             responseType = configuration.getDefaultContentType();
         }
 
-        response.headers().set(CONTENT_TYPE, responseType.toString());
+        if (setContentType)
+            response.headers().set(CONTENT_TYPE, responseType.toString());
     }
 
     private Cookie transform(HttpCookie cookie) {
@@ -253,10 +274,12 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         Object resp = routerResponse.getContent();
 
         ByteBuf byteBuf = Unpooled.wrappedBuffer("null".getBytes());
+        boolean setContentType = true;
         if (resp instanceof String) {
             byteBuf = Unpooled.wrappedBuffer(((String) resp).getBytes());
         } else {
             if (resp instanceof byte[]) {
+                setContentType = false;
                 byteBuf = Unpooled.wrappedBuffer((byte[]) resp);
             }
         }
@@ -266,7 +289,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
             httpStatus = HttpStatus.OK;
         }
         HttpResponseStatus status = HttpResponseStatus.valueOf(httpStatus.getStatus());
-        doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status);
+        doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status, setContentType);
     }
 
     @Override
