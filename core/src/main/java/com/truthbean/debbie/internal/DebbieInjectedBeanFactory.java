@@ -128,7 +128,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
         creator.createPreparation(singletonBeanCreatorMap, firstParamValue);
 
-        creator.createPreparationByDependence();
+        creator.createPreparationByDependence(applicationContext);
 
         creator.postConstructor();
         creator.postPreparation(singletonBeanCreatorMap);

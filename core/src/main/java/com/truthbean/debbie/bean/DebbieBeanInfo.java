@@ -185,6 +185,30 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
         return constructorBeanDependent;
     }
 
+    public void getCircleDependencyInConstructor() {
+        if (constructorBeanDependent == null)
+            return;
+        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+            getCircleDependencyInConstructor(this, dependence.getBeanInfo(), new StringBuilder());
+        }
+    }
+
+    public void getCircleDependencyInConstructor(DebbieBeanInfo<?> beanInfo, DebbieBeanInfo<?> dependency,
+                                                 StringBuilder dependencyLine) {
+        if (dependency == null || dependency.constructorBeanDependent == null)
+            return;
+        Class<?> beanType = beanInfo.getBeanClass();
+        for (BeanExecutableDependence dependence : dependency.constructorBeanDependent) {
+            var type = dependence.getType();
+            LOGGER.trace(beanType + " ===>>> " + type);
+            if (beanType == type) {
+                LOGGER.error(beanType + " --> " + type);
+            } else {
+                getCircleDependencyInConstructor(beanInfo, dependence.getBeanInfo(), dependencyLine);
+            }
+        }
+    }
+
     public boolean isConstructorBeanDependentHasValue() {
         for (BeanExecutableDependence dependence : constructorBeanDependent) {
             if (dependence.getBeanInfo() != null && dependence.getBeanInfo().isEmpty())

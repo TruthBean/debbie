@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc.response.provider;
 
+import com.truthbean.debbie.data.serialize.JacksonXmlUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean
@@ -22,7 +22,7 @@ public class XmlResponseHandler<S> extends AbstractRestResponseHandler<S> {
 
     @Override
     public String transform(S s) {
-        return JacksonUtils.toXml(s);
+        return JacksonXmlUtils.toXml(s);
     }
 
     @Override

@@ -10,8 +10,8 @@
 package com.truthbean.debbie.httpclient.test;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.data.serialize.JacksonJsonUtils;
 import com.truthbean.debbie.mvc.response.ResponseEntity;
-import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.logger.LoggerFactory;
 
 import java.net.http.WebSocket;
@@ -54,7 +54,7 @@ public class WebSocketListener implements WebSocket.Listener {
         if (first.compareAndSet(false, true)) {
             LOGGER.debug(data.toString());
             var dataStr = data.toString();
-            ResponseEntity<?> response = JacksonUtils.jsonToBean(dataStr, ResponseEntity.class);
+            ResponseEntity<?> response = JacksonJsonUtils.jsonToBean(dataStr, ResponseEntity.class);
             if (response == null) {
                 return null;
             }
@@ -64,7 +64,7 @@ public class WebSocketListener implements WebSocket.Listener {
                 request.put("request", 1);
                 request.put("requestId", o);
                 request.put("carriageId", 1);
-                var text = JacksonUtils.toJson(request);
+                var text = JacksonJsonUtils.toJson(request);
                 LOGGER.debug(text);
                 webSocket.sendText(text, last);
             }

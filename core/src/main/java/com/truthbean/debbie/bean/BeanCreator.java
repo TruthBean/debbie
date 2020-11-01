@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -23,7 +25,7 @@ public interface BeanCreator<Bean> extends BaseBeanCreator<Bean> {
 
     void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Object firstParamValue);
 
-    void createPreparationByDependence();
+    void createPreparationByDependence(ApplicationContext applicationContext);
 
     void postConstructor();
 

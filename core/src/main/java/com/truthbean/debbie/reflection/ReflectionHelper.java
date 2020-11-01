@@ -435,9 +435,13 @@ public class ReflectionHelper {
         List<Field> fields = new ArrayList<>();
         for (var superClass = clazz; superClass != null && superClass != Object.class;
              superClass = superClass.getSuperclass()) {
-            Field[] declaredFields = superClass.getDeclaredFields();
-            if (declaredFields.length > 0) {
-                fields.addAll(Arrays.asList(declaredFields));
+            try {
+                Field[] declaredFields = superClass.getDeclaredFields();
+                if (declaredFields.length > 0) {
+                    fields.addAll(Arrays.asList(declaredFields));
+                }
+            } catch (Throwable e) {
+                LOGGER.error("", e);
             }
         }
         return fields;
@@ -447,21 +451,29 @@ public class ReflectionHelper {
         Set<Method> methods = new HashSet<>();
         for (var superClass = clazz; superClass != null && superClass != Object.class;
              superClass = superClass.getSuperclass()) {
-            Method[] declaredMethods = superClass.getDeclaredMethods();
-            if (declaredMethods.length > 0) {
-                methods.addAll(Arrays.asList(declaredMethods));
+            try {
+                Method[] declaredMethods = superClass.getDeclaredMethods();
+                if (declaredMethods.length > 0) {
+                    methods.addAll(Arrays.asList(declaredMethods));
+                }
+            } catch (Throwable e) {
+                LOGGER.error("", e);
             }
         }
         Set<Class<?>> interfaces = getInterfaces(clazz);
         if (!interfaces.isEmpty()) {
             for (Class<?> anInterface : interfaces) {
-                Method[] declaredMethods = anInterface.getDeclaredMethods();
-                if (declaredMethods.length > 0) {
-                    for (Method declaredMethod : declaredMethods) {
-                        if (declaredMethod.isDefault()) {
-                            methods.add(declaredMethod);
+                try {
+                    Method[] declaredMethods = anInterface.getDeclaredMethods();
+                    if (declaredMethods.length > 0) {
+                        for (Method declaredMethod : declaredMethods) {
+                            if (declaredMethod.isDefault()) {
+                                methods.add(declaredMethod);
+                            }
                         }
                     }
+                } catch (Throwable e) {
+                    LOGGER.error("", e);
                 }
             }
         }
@@ -653,6 +665,7 @@ public class ReflectionHelper {
             } else {
                 LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", e.getMessage());
             }
+            throw e;
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e.getCause();
             LOGGER.error("", Objects.requireNonNullElse(cause, e));

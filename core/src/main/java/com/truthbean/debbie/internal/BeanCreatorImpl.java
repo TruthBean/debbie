@@ -11,6 +11,8 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.FieldInfo;
@@ -90,17 +92,17 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @Override
-    public void createPreparationByDependence() {
+    public void createPreparationByDependence(ApplicationContext applicationContext) {
         if (this.bean != null) return;
 
         LOGGER.trace(() -> "creator " + beanClass + " has no raw value");
 
         if (initMethod != null) {
             LOGGER.trace(() -> "create " + beanClass + " preparation by init method dependence");
-            createPreparationByInitMethodDependent();
+            createPreparationByInitMethodDependent(applicationContext);
         } else {
             LOGGER.trace(() -> "create " + beanClass + " preparation by constructor dependence");
-            createPreparationByConstructorDependent();
+            createPreparationByConstructorDependent(applicationContext);
         }
     }
 
@@ -341,13 +343,20 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         }
     }
 
-    private void createPreparationByInitMethodDependent() {
+    private void createPreparationByInitMethodDependent(ApplicationContext applicationContext) {
         Collection<BeanExecutableDependence> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent();
         for (BeanExecutableDependence dependence : initMethodBeanDependent) {
             DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
-            if (debbieBeanInfo == null)
+            if (debbieBeanInfo == null) {
+                var type = dependence.getType();
+                if (type == ApplicationContext.class) {
+                    dependence.setValue(applicationContext);
+                } else if (type == ResourceResolver.class) {
+                    dependence.setValue(applicationContext.getResourceResolver());
+                }
                 continue;
-            if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
+            }
+            if (debbieBeanInfo.optional().isEmpty() && debbieBeanInfo.hasNoVirtualValue()) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo, false);
             }
@@ -362,22 +371,29 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         }
     }
 
-    private void createPreparationByConstructorDependent() {
+    private void createPreparationByConstructorDependent(ApplicationContext applicationContext) {
+        beanInfo.getCircleDependencyInConstructor();
         Collection<BeanExecutableDependence> constructorBeanDependent = beanInfo.getConstructorBeanDependent();
         for (BeanExecutableDependence dependence : constructorBeanDependent) {
+            var type = dependence.getType();
             DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {
+                if (type == ApplicationContext.class) {
+                    dependence.setValue(applicationContext);
+                } else if (type == ResourceResolver.class) {
+                    dependence.setValue(applicationContext.getResourceResolver());
+                }
                 continue;
             }
-            if ((debbieBeanInfo.optional().isEmpty() || debbieBeanInfo.hasNoVirtualValue())) {
+            if (debbieBeanInfo.optional().isEmpty() && debbieBeanInfo.hasNoVirtualValue()) {
                 debbieBeanInfo.setHasVirtualValue(true);
                 injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
-        if (beanInfo.getBean() == null && beanInfo.hasBeanFactory()) {
+        /*if (!fromFactory && beanInfo.getBean() == null && beanInfo.hasBeanFactory()) {
             bean = beanInfo.getBeanFactory().factoryBean();
             beanInfo.setBean(bean);
-        }
+        }*/
         if (beanInfo.getBean() == null &&
                 (beanInfo.getConstructorBeanDependent().isEmpty() || beanInfo.isConstructorBeanDependentHasValue())) {
             createRawBeanByConstructorDependent();

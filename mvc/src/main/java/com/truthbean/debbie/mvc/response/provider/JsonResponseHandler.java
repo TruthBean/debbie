@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc.response.provider;
 
+import com.truthbean.debbie.data.serialize.JacksonJsonUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean
@@ -21,7 +21,7 @@ import com.truthbean.debbie.util.JacksonUtils;
 public class JsonResponseHandler<S> extends AbstractRestResponseHandler<S> {
     @Override
     public String transform(S original) {
-        return JacksonUtils.toJson(original);
+        return JacksonJsonUtils.toJson(original);
     }
 
     @Override

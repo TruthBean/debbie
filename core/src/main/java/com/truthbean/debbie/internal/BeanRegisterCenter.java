@@ -156,11 +156,8 @@ final class BeanRegisterCenter {
             return false;
         if (beanClass.isAnnotation())
             return false;
-        if (beanClass.getAnnotation(AsmGenerated.class) != null || beanClass.getAnnotation(NonBean.class) != null ||
-                JavaassistProxyBean.class.isAssignableFrom(beanClass)) {
-            return false;
-        }
-        return true;
+        return beanClass.getAnnotation(AsmGenerated.class) == null && beanClass.getAnnotation(NonBean.class) == null &&
+                !JavaassistProxyBean.class.isAssignableFrom(beanClass);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -170,13 +167,17 @@ final class BeanRegisterCenter {
             return;
         }
         if (support(beanClass)) {
-            var beanClassInfo = new DebbieBeanInfo<>(beanClass);
-            if (beanClassInfo.getBeanType() == null) {
-                beanClassInfo = new DebbieBeanInfo<>(beanClass, BEAN_ANNOTATION);
-                if (beanClassInfo.getBeanType() == null)
-                    return;
+            try {
+                var beanClassInfo = new DebbieBeanInfo<>(beanClass);
+                if (beanClassInfo.getBeanType() == null) {
+                    beanClassInfo = new DebbieBeanInfo<>(beanClass, BEAN_ANNOTATION);
+                    if (beanClassInfo.getBeanType() == null)
+                        return;
+                }
+                register(beanClassInfo);
+            } catch (Throwable e) {
+                LOGGER.error("", e);
             }
-            register(beanClassInfo);
         }
     }
 

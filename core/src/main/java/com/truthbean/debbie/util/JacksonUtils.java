@@ -9,25 +9,15 @@
  */
 package com.truthbean.debbie.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import com.truthbean.Logger;
+import com.truthbean.debbie.data.serialize.JacksonJsonUtils;
+import com.truthbean.debbie.data.serialize.JacksonXmlUtils;
+import com.truthbean.debbie.data.serialize.JacksonYamlUtils;
 import com.truthbean.logger.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -41,49 +31,12 @@ public final class JacksonUtils {
     }
 
     /**
-     * slf4j logger
+     * logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(JacksonUtils.class);
 
-    private static final class Instance {
-        /**
-         * ObjectMapper 实例
-         */
-        static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-        static {
-            OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            OBJECT_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-            OBJECT_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
-        }
-
-        static final XmlMapper XML_MAPPER = new XmlMapper();
-
-        static {
-            XML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            XML_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-            XML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
-        }
-
-        static final YAMLMapper YAML_MAPPER = new YAMLMapper();
-
-        static {
-            YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            YAML_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-            YAML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
-        }
-
-    }
-
-    /**
-     * ObjectMapper 实例
-     */
-    private static final ObjectMapper OBJECT_MAPPER = Instance.OBJECT_MAPPER;
-    private static final XmlMapper XML_MAPPER = Instance.XML_MAPPER;
-    private static final YAMLMapper YAML_MAPPER = Instance.YAML_MAPPER;
-
     public static ObjectMapper getObjectMapper() {
-        return OBJECT_MAPPER;
+        return JacksonJsonUtils.getObjectMapper();
     }
 
     /**
@@ -93,23 +46,11 @@ public final class JacksonUtils {
      * @return jsonNode
      */
     public static JsonNode toJsonNode(String json) {
-        try {
-            return OBJECT_MAPPER.readTree(json);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return NullNode.getInstance();
+        return JacksonJsonUtils.toJsonNode(json);
     }
 
     public static <T, I> JsonNode toJsonNode(T obj, Class<I> interfaceClass) {
-        try {
-            var mapper = OBJECT_MAPPER.copy();
-            mapper.addMixIn(obj.getClass(), interfaceClass);
-            return mapper.valueToTree(obj);
-        } catch (Exception e) {
-            LOGGER.error("", e);
-        }
-        return NullNode.getInstance();
+        return JacksonJsonUtils.toJsonNode(obj, interfaceClass);
     }
 
     /**
@@ -119,21 +60,11 @@ public final class JacksonUtils {
      * @return json string
      */
     public static String toJson(Object obj) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.toJson(obj);
     }
 
     public static <T> T toBean(JsonNode jsonNode, Class<T> clazz) {
-        try {
-            return OBJECT_MAPPER.treeToValue(jsonNode, clazz);
-        } catch (JsonProcessingException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.toBean(jsonNode, clazz);
     }
 
     /**
@@ -145,12 +76,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T jsonToBean(String jsonStr, Class<T> clazz) {
-        try {
-            return OBJECT_MAPPER.readValue(jsonStr, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToBean(jsonStr, clazz);
     }
 
     /**
@@ -160,13 +86,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T jsonStreamToBean(InputStream jsonInputStream, Class<T> clazz) {
-        T obj = null;
-        try {
-            obj = OBJECT_MAPPER.readValue(jsonInputStream, clazz);
-        } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonJsonUtils.jsonStreamToSetBean(jsonInputStream, clazz);
     }
 
     /**
@@ -176,14 +96,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T jsonStreamToListBean(InputStream jsonInputStream, Class<T> clazz) {
-        T obj = null;
-        try {
-            obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(List.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonJsonUtils.jsonStreamToListBean(jsonInputStream, clazz);
     }
 
     /**
@@ -193,25 +106,11 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T jsonStreamToSetBean(InputStream jsonInputStream, Class<T> clazz) {
-        T obj = null;
-        try {
-            obj = OBJECT_MAPPER.readValue(jsonInputStream, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(Set.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("json inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonJsonUtils.jsonStreamToSetBean(jsonInputStream, clazz);
     }
 
     public static <T> T jsonToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
-        T obj = null;
-        try {
-            obj = JacksonUtils.OBJECT_MAPPER.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
-                    .constructParametricType(rawType, parameterClasses));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return obj;
+        return JacksonJsonUtils.jsonToParametricBean(json, rawType, parameterClasses);
     }
 
     /**
@@ -221,36 +120,15 @@ public final class JacksonUtils {
      * @return json string
      */
     public static String toJsonExcludeNullValue(Object obj) {
-        var mapper = OBJECT_MAPPER.copy();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        try {
-            return mapper.writeValueAsString(obj);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.toJsonExcludeNullValue(obj);
     }
 
     public static <T, I> T jsonToBean(String jsonStr, Class<T> clazz, Class<I> interfaceClass) {
-        try {
-            var mapper = OBJECT_MAPPER.copy();
-            mapper.addMixIn(clazz, interfaceClass);
-            return mapper.readValue(jsonStr, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToBean(jsonStr, clazz, interfaceClass);
     }
 
     public static <T, I> T jsonToBean(JsonNode jsonStr, Class<T> clazz, Class<I> interfaceClass) {
-        try {
-            var mapper = OBJECT_MAPPER.copy();
-            mapper.addMixIn(clazz, interfaceClass);
-            return mapper.treeToValue(jsonStr, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToBean(jsonStr, clazz, interfaceClass);
     }
 
     /**
@@ -260,13 +138,7 @@ public final class JacksonUtils {
      * @return T
      */
     public static <T> T jsonToBeanRefer(String jsonStr, Class<T> clazz) {
-        try {
-            return OBJECT_MAPPER.readValue(jsonStr, new TypeReference<>() {
-            });
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToBeanRefer(jsonStr, clazz);
     }
 
     /**
@@ -278,47 +150,21 @@ public final class JacksonUtils {
      * @return T
      */
     public static <T> List<T> jsonToListBean(String jsonStr, Class<T> bean) {
-        try {
-            return OBJECT_MAPPER.readValue(jsonStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(List.class, bean));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToListBean(jsonStr, bean);
     }
 
     public static <T> List<T> jsonToSetBean(String jsonStr, Class<T> bean) {
-        try {
-            return OBJECT_MAPPER.readValue(jsonStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(Set.class, bean));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToSetBean(jsonStr, bean);
     }
 
     @SuppressWarnings("rawtypes")
     public static <T> List<T> jsonToCollectionBean(String jsonStr,
                                                    Class<? extends Collection> collectionType, Class<T> bean) {
-        try {
-            return OBJECT_MAPPER.readValue(jsonStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(collectionType, bean));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToCollectionBean(jsonStr, collectionType, bean);
     }
 
     public static <T, I> List<T> jsonToListBean(String jsonStr, Class<T> bean, Class<I> interfaceClass) {
-        try {
-            var mapper = OBJECT_MAPPER.copy();
-            mapper.addMixIn(bean, interfaceClass);
-            return mapper.readValue(jsonStr, mapper.getTypeFactory()
-                    .constructCollectionType(List.class, bean));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonJsonUtils.jsonToListBean(jsonStr, bean, interfaceClass);
     }
 
     /**
@@ -327,15 +173,7 @@ public final class JacksonUtils {
      * @return json string
      */
     public static String xmlToJson(String xml) {
-        var xmlMapper = XML_MAPPER.copy();
-        var json = "{}";
-        try {
-            var node = xmlMapper.readTree(xml.getBytes());
-            json = toJson(node);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return json;
+        return JacksonXmlUtils.xmlToJson(xml);
     }
 
     /**
@@ -345,14 +183,7 @@ public final class JacksonUtils {
      * @return xml string
      */
     public static <T> String toXml(T object) {
-        var xmlMapper = XML_MAPPER.copy();
-        var xml = "<xml></xml>";
-        try {
-            xml = xmlMapper.writeValueAsString(object);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return xml;
+        return JacksonXmlUtils.toXml(object);
     }
 
     /**
@@ -361,71 +192,27 @@ public final class JacksonUtils {
      * @return json string
      */
     public static JsonNode xmlToJsonNode(String xml) {
-        var xmlMapper = XML_MAPPER.copy();
-        JsonNode node = NullNode.getInstance();
-        try {
-            node = xmlMapper.readTree(xml.getBytes());
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return node;
+        return JacksonXmlUtils.xmlToJsonNode(xml);
     }
 
     public static <T> T xmlToBean(String xmlStr, Class<T> clazz) {
-        var mapper = XML_MAPPER.copy();
-        try {
-            return mapper.readValue(xmlStr, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonXmlUtils.xmlToBean(xmlStr, clazz);
     }
 
     public static <T> T xmlToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
-        var mapper = XML_MAPPER.copy();
-        try {
-            return mapper.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
-                    .constructParametricType(rawType, parameterClasses));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonXmlUtils.xmlToParametricBean(json, rawType, parameterClasses);
     }
 
     public static <T> T xmlToListBean(String xmlStr, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(List.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlToListBean(xmlStr, clazz);
     }
 
     public static <T> T xmlToSetBean(String xmlStr, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(Set.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlToListBean(xmlStr, clazz);
     }
 
     public static <T> T xmlToCollectionBean(String xmlStr, Class<? extends Collection<?>> collectionClass, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(collectionClass, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlToCollectionBean(xmlStr, collectionClass, clazz);
     }
 
     /**
@@ -435,14 +222,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T xmlStreamToBean(InputStream xmlInputStream, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlInputStream, clazz);
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlStreamToBean(xmlInputStream, clazz);
     }
 
     /**
@@ -452,15 +232,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T xmlStreamToListBean(InputStream xmlInputStream, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(List.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlStreamToListBean(xmlInputStream, clazz);
     }
 
     /**
@@ -470,15 +242,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T xmlStreamToSetBean(InputStream xmlInputStream, Class<T> clazz) {
-        var xmlMapper = XML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = xmlMapper.readValue(xmlInputStream, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(Set.class, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error\n", e);
-        }
-        return obj;
+        return JacksonXmlUtils.xmlStreamToSetBean(xmlInputStream, clazz);
     }
 
     /**
@@ -487,15 +251,7 @@ public final class JacksonUtils {
      * @return json string
      */
     public static String yamlToJson(String yaml) {
-        var yamlMapper = YAML_MAPPER.copy();
-        var json = "{}";
-        try {
-            var node = yamlMapper.readTree(yaml.getBytes());
-            json = toJson(node);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return json;
+        return JacksonYamlUtils.yamlToJson(yaml);
     }
 
     /**
@@ -505,14 +261,7 @@ public final class JacksonUtils {
      * @return yaml string
      */
     public static <T> String toYaml(T object) {
-        var yamlMapper = YAML_MAPPER.copy();
-        var yaml = "";
-        try {
-            yaml = yamlMapper.writeValueAsString(object);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return yaml;
+        return JacksonYamlUtils.toYaml(object);
     }
 
     /**
@@ -521,24 +270,11 @@ public final class JacksonUtils {
      * @return json string
      */
     public static JsonNode yamlToJsonNode(String yaml) {
-        var yamlMapper = YAML_MAPPER.copy();
-        JsonNode node = NullNode.getInstance();
-        try {
-            node = yamlMapper.readTree(yaml.getBytes());
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return node;
+        return JacksonYamlUtils.yamlToJsonNode(yaml);
     }
 
     public static <T> T yamlToBean(String yaml, Class<T> clazz) {
-        var mapper = YAML_MAPPER.copy();
-        try {
-            return mapper.readValue(yaml, clazz);
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonYamlUtils.yamlToBean(yaml, clazz);
     }
 
     /**
@@ -548,86 +284,19 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T yamlStreamToBean(InputStream yamlInputStream, Class<T> clazz) {
-        var yamlMapper = YAML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = yamlMapper.readValue(yamlInputStream, clazz);
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
+        return JacksonYamlUtils.yamlStreamToBean(yamlInputStream, clazz);
     }
 
     public static <T> T yamlToCollectionBean(String xmlStr, Class<? extends Collection<?>> collectionClass,
                                           Class<T> clazz) {
-        var yamlMapper = YAML_MAPPER.copy();
-        T obj = null;
-        try {
-            obj = yamlMapper.readValue(xmlStr, OBJECT_MAPPER.getTypeFactory()
-                    .constructCollectionType(collectionClass, clazz));
-        } catch (IOException e) {
-            LOGGER.error("xml inputStream to bean error", e);
-        }
-        return obj;
+        return JacksonYamlUtils.yamlToCollectionBean(xmlStr, collectionClass, clazz);
     }
 
     public static <T> T yamlToParametricBean(String json, Class<T> rawType, Class<?>... parameterClasses) {
-        var mapper = YAML_MAPPER.copy();
-        try {
-            return mapper.readValue(json, JacksonUtils.OBJECT_MAPPER.getTypeFactory()
-                    .constructParametricType(rawType, parameterClasses));
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        return null;
+        return JacksonYamlUtils.yamlToParametricBean(json, rawType, parameterClasses);
     }
 
     public static Map<String, String> yml2Properties(InputStream inputStream) {
-        final String DOT = ".";
-        Map<String, String> map = new HashMap<>();
-        try {
-            YAMLFactory yamlFactory = new YAMLFactory();
-            YAMLParser parser = yamlFactory.createParser(new InputStreamReader(inputStream, Charset.defaultCharset()));
-
-            StringBuilder key = new StringBuilder();
-            String value;
-            JsonToken token = parser.nextToken();
-            while (token != null) {
-                if (!JsonToken.START_OBJECT.equals(token)) {
-                    if (JsonToken.FIELD_NAME.equals(token)) {
-                        if (key.length() > 0) {
-                            key.append(DOT);
-                        }
-                        key.append(parser.getCurrentName());
-
-                        token = parser.nextToken();
-                        if (JsonToken.START_OBJECT.equals(token)) {
-                            continue;
-                        }
-                        value = parser.getText();
-                        map.put(key.toString(), value);
-
-                        int dotOffset = key.lastIndexOf(DOT);
-                        if (dotOffset > 0) {
-                            key = new StringBuilder(key.substring(0, dotOffset));
-                        }
-                        value = null;
-                    } else if (JsonToken.END_OBJECT.equals(token)) {
-                        int dotOffset = key.lastIndexOf(DOT);
-                        if (dotOffset > 0) {
-                            key = new StringBuilder(key.substring(0, dotOffset));
-                        } else {
-                            key = new StringBuilder();
-                        }
-                    }
-                }
-
-                token = parser.nextToken();
-            }
-            parser.close();
-        } catch (Exception e) {
-            LOGGER.error("", e);
-        }
-        return map;
+        return JacksonYamlUtils.yml2Properties(inputStream);
     }
 }

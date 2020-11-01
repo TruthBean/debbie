@@ -10,9 +10,9 @@
 package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.data.serialize.JacksonYamlUtils;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.logger.LoggerFactory;
 
 import java.io.*;
@@ -268,7 +268,7 @@ public class BaseProperties {
         result.putAll(env);
         // project properties
         Properties properties = new Properties();
-        Map map = JacksonUtils.yml2Properties(inputStream);
+        Map map = JacksonYamlUtils.yml2Properties(inputStream);
         properties.putAll(map);
         // custom properties will cover system properties
         result.putAll(properties);

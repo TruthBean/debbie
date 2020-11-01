@@ -17,6 +17,7 @@ public class BeanExecutableDependence {
     private Integer index;
     private DebbieBeanInfo<?> beanInfo;
     private Class<?> type;
+    private Object value;
 
     public BeanExecutableDependence() {
     }
@@ -52,8 +53,19 @@ public class BeanExecutableDependence {
     }
 
     public boolean isPresent() {
+        if (value != null) {
+            return true;
+        }
         if (this.beanInfo != null)
             return this.beanInfo.isPresent();
         return false;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
     }
 }

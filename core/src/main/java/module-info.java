@@ -27,6 +27,7 @@ module com.truthbean.debbie.core {
     exports com.truthbean.debbie.data.transformer.date;
     exports com.truthbean.debbie.data.transformer.jdbc;
     exports com.truthbean.debbie.data.transformer.numeric;
+    exports com.truthbean.debbie.data.serialize;
 
     exports com.truthbean.debbie.event;
     exports com.truthbean.debbie.io;

@@ -84,7 +84,7 @@ subprojects {
             options.encoding = "UTF-8"
             options.compilerArgs.add("-Xlint:unchecked")
             options.compilerArgs.add("-Xlint:deprecation")
-            options.compilerArgs.add("-parameters")
+            // options.compilerArgs.add("-parameters")
             options.isDebug = true
             options.isFork = true
         }

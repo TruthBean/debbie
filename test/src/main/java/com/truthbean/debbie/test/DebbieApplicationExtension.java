@@ -17,6 +17,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
+import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.junit.jupiter.api.extension.*;
 import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
@@ -38,6 +39,14 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     private static final Logger logger = LoggerFactory.getLogger(DebbieApplicationExtension.class);
 
     private static final String START_TIME = "start time";
+
+    static {
+        try {
+            Class.forName("org.apache.logging.log4j.jul.LogManager", false, ClassLoaderUtils.getClassLoader(DebbieApplicationExtension.class));
+            System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+        } catch (Throwable ignored) {
+        }
+    }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)

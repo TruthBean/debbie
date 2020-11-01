@@ -10,7 +10,7 @@ import com.truthbean.debbie.event.EventComponent;
  * @since 0.1.0
  * Created on 2020/7/13 15:17.
  */
-@EventComponent
+@EventComponent("testStartedEvent")
 public class TestStartedEvent extends DebbieStartedEvent {
     /**
      * @param source             event source

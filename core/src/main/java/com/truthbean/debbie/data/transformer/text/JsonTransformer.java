@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.data.transformer.text;
 
+import com.truthbean.debbie.data.serialize.JacksonJsonUtils;
 import com.truthbean.debbie.data.transformer.DataTransformer;
-import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean
@@ -26,11 +26,11 @@ public class JsonTransformer<T> implements DataTransformer<T, String> {
 
     @Override
     public String transform(T original) {
-        return JacksonUtils.toJson(original);
+        return JacksonJsonUtils.toJson(original);
     }
 
     @Override
     public T reverse(String transformer) {
-        return JacksonUtils.jsonToBean(transformer, this.clazz);
+        return JacksonJsonUtils.jsonToBean(transformer, this.clazz);
     }
 }

@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.data.transformer.text;
 
+import com.truthbean.debbie.data.serialize.JacksonXmlUtils;
 import com.truthbean.debbie.data.transformer.DataTransformer;
-import com.truthbean.debbie.util.JacksonUtils;
 
 import java.util.Map;
 
@@ -34,11 +34,11 @@ public class XmlTransformer<T> implements DataTransformer<T, String> {
 
     @Override
     public String transform(T original) {
-        return JacksonUtils.toXml(original);
+        return JacksonXmlUtils.toXml(original);
     }
 
     @Override
     public T reverse(String transformer) {
-        return JacksonUtils.xmlToBean(transformer, this.type);
+        return JacksonXmlUtils.xmlToBean(transformer, this.type);
     }
 }

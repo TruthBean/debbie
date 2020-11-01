@@ -16,7 +16,10 @@ dependencyManagement {
         val asmVersion: String by project
         dependency("org.ow2.asm:asm:$asmVersion")
         val jacksonVersion: String by project
-        dependency("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+        imports {
+            mavenBom("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+        }
+        /*dependency("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
         dependency("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
         dependency("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
         dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
@@ -24,7 +27,7 @@ dependencyManagement {
         dependency("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
         dependency("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
         dependency("com.fasterxml.jackson.module:jackson-module-afterburner:$jacksonVersion")
-        dependency("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
+        dependency("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")*/
         val snakeyamlVersion: String by project
         dependency("org.yaml:snakeyaml:$snakeyamlVersion")
         val slf4jVersion: String by project

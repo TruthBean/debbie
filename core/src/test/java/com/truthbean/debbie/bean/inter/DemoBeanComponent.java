@@ -21,8 +21,9 @@ public class DemoBeanComponent {
 
     private final String uuid;
 
-    @BeanInject
+    @BeanInject(name = "demo")
     private Demo2 demo1;
+
     private final Demo2 demo2;
 
     public DemoBeanComponent(Demo2 demo2) {

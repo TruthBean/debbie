@@ -21,7 +21,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent(type = BeanType.NO_LIMIT, factory = DebbieEventBeanFactory.class)
+@BeanComponent(type = BeanType.SINGLETON, factory = DebbieEventBeanFactory.class)
 public @interface EventComponent {
 
     /**
