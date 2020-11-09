@@ -326,6 +326,8 @@ public class RouterPathSplicer {
         if ("/**".equals(dispatcherMapping)) {
             return "/" + path;
         }
-        return dispatcherMapping.replace("**", path);
+        if (dispatcherMapping != null)
+            return dispatcherMapping.replace("**", path);
+        return path;
     }
 }

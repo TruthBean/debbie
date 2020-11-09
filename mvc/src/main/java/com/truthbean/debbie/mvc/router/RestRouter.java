@@ -9,8 +9,11 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.watcher.Watcher;
+import com.truthbean.debbie.watcher.WatcherType;
 
 import java.lang.annotation.*;
 
@@ -23,11 +26,23 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @BeanComponent(type = BeanType.SINGLETON)
+@Watcher(type = WatcherType.HTTP)
 public @interface RestRouter {
+    /**
+     * bean name
+     * @return bean name
+     */
+    @AliasFor(annotation = Watcher.class, attribute = "name")
+    String name() default "";
 
     /**
      * same as urlPatterns
      * @return path regex
      */
+    @AliasFor(annotation = Router.class, attribute = "urlPatterns")
     String[] value() default "";
+
+    String title() default "";
+
+    String desc() default "";
 }

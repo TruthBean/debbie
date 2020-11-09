@@ -18,11 +18,18 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class FloatTransformer implements DataTransformer<Float, String> {
     @Override
     public String transform(Float result) {
+        if (result == null)
+            return null;
         return String.valueOf(result);
     }
 
     @Override
     public Float reverse(String value) {
+        if (value == null)
+            return null;
+        if (value.trim().isEmpty()) {
+            return 0.0F;
+        }
         return Float.parseFloat(value);
     }
 }

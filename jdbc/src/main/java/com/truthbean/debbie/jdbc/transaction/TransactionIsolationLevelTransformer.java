@@ -23,6 +23,8 @@ public class TransactionIsolationLevelTransformer implements DataTransformer<Tra
 
     @Override
     public TransactionIsolationLevel reverse(String s) {
+        if (s == null || s.trim().isEmpty())
+            return null;
         return TransactionIsolationLevel.valueOf(s);
     }
 }

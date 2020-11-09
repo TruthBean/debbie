@@ -27,6 +27,12 @@ public class RouterAnnotationInfo {
 
     private final BeanType type = BeanType.SINGLETON;
 
+    private String[] tags;
+
+    private String desc;
+
+    private boolean hidden;
+
     private String[] value;
 
     private String[] urlPatterns;
@@ -60,10 +66,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(ConnectRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.CONNECT};
@@ -73,10 +81,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(GetRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.GET};
@@ -86,10 +96,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(HeadRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.HEAD};
@@ -99,10 +111,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(OptionsRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.OPTIONS};
@@ -112,10 +126,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(PatchRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.PATCH};
@@ -125,10 +141,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(PostRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.POST};
@@ -138,10 +156,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(PutRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.PUT};
@@ -151,10 +171,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(DeleteRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.DELETE};
@@ -164,10 +186,12 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public RouterAnnotationInfo(TraceRouter router) {
-        this.name = router.name();
         this.value = router.value();
         this.urlPatterns = router.urlPatterns();
         this.method = new HttpMethod[]{HttpMethod.DELETE};
@@ -177,6 +201,9 @@ public class RouterAnnotationInfo {
         this.templatePrefix = router.templatePrefix();
         this.responseType = router.responseType();
         this.handlerClass = router.handlerClass();
+        this.desc = router.desc();
+        this.tags = router.tags();
+        this.hidden = router.hidden();
     }
 
     public String name() {
@@ -283,6 +310,18 @@ public class RouterAnnotationInfo {
     public RouterAnnotationInfo setHandlerClass(Class<? extends AbstractResponseContentHandler> handlerClass) {
         this.handlerClass = handlerClass;
         return this;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public String[] getTags() {
+        return tags;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 
     @Override

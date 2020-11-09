@@ -21,16 +21,18 @@ import java.lang.annotation.*;
  * @author TruthBean
  * @since 0.0.2
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @BeanComponent(type = BeanType.SINGLETON)
 public @interface PatchRouter {
+
     /**
-     * router bean name
-     * @return router bean name
-     */
-    String name() default "";
+     * Tags can be used for logical grouping of operations by resources or any other qualifier.
+     *
+     * @return the list of tags associated with this operation
+     **/
+    String[] tags() default {};
 
     /**
      * @return router description
@@ -71,4 +73,6 @@ public @interface PatchRouter {
      */
     MediaType responseType() default MediaType.ANY;
     Class<? extends AbstractResponseContentHandler> handlerClass() default NothingResponseHandler.class;
+
+    boolean hidden() default false;
 }

@@ -37,6 +37,13 @@ public @interface Router {
     String name() default "";
 
     /**
+     * Tags can be used for logical grouping of operations by resources or any other qualifier.
+     *
+     * @return the list of tags associated with this operation
+     **/
+    String[] tags() default {};
+
+    /**
      * @return router description
      */
     String desc() default "";
@@ -77,4 +84,6 @@ public @interface Router {
      */
     MediaType responseType() default MediaType.ANY;
     Class<? extends AbstractResponseContentHandler> handlerClass() default NothingResponseHandler.class;
+
+    boolean hidden() default false;
 }

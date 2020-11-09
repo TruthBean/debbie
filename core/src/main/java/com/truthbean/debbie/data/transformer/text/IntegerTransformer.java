@@ -18,11 +18,18 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class IntegerTransformer implements DataTransformer<Integer, String> {
     @Override
     public String transform(Integer integer) {
+        if (integer == null)
+            return null;
         return String.valueOf(integer);
     }
 
     @Override
     public Integer reverse(String s) {
+        if (s == null)
+            return null;
+        if (s.trim().isEmpty()) {
+            return 0;
+        }
         return Integer.parseInt(s);
     }
 }

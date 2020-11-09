@@ -86,7 +86,7 @@ public final class JacksonUtils {
      * @return obj
      */
     public static <T> T jsonStreamToBean(InputStream jsonInputStream, Class<T> clazz) {
-        return JacksonJsonUtils.jsonStreamToSetBean(jsonInputStream, clazz);
+        return JacksonJsonUtils.jsonStreamToBean(jsonInputStream, clazz);
     }
 
     /**
@@ -208,7 +208,7 @@ public final class JacksonUtils {
     }
 
     public static <T> T xmlToSetBean(String xmlStr, Class<T> clazz) {
-        return JacksonXmlUtils.xmlToListBean(xmlStr, clazz);
+        return JacksonXmlUtils.xmlToSetBean(xmlStr, clazz);
     }
 
     public static <T> T xmlToCollectionBean(String xmlStr, Class<? extends Collection<?>> collectionClass, Class<T> clazz) {

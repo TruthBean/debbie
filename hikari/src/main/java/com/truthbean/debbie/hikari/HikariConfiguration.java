@@ -46,25 +46,25 @@ public class HikariConfiguration extends DataSourceConfiguration implements Debb
     @PropertyInject(value = "password")
     private String hikariPassword;
 
-    @PropertyInject(value = "auto-commit", transformer = BooleanTransformer.class)
+    @PropertyInject(value = "auto-commit", transformer = BooleanTransformer.class, defaultValue = "false")
     private Boolean hikariAutoCommit;
 
     /**
      *  Lowest acceptable connection timeout is 250 ms. Default: 30000 (30 seconds)
      */
-    @PropertyInject(value = "connection-timeout", transformer = LongTransformer.class)
+    @PropertyInject(value = "connection-timeout", transformer = LongTransformer.class, defaultValue = "30000")
     private long connectionTimeout = 30000;
 
     /**
      *  The minimum allowed value is 10000ms (10 seconds). Default: 600000 (10 minutes)
      */
-    @PropertyInject(value = "idle-timeout")
+    @PropertyInject(value = "idle-timeout", defaultValue = "600000")
     private long idleTimeout = 600000;
 
     /**
      *  Default: 1800000 (30 minutes)
      */
-    @PropertyInject(value = "max-lifetime")
+    @PropertyInject(value = "max-lifetime", defaultValue = "1800000")
     private long maxLifetime = 1800000;
 
     @PropertyInject(value = "connection-test-query")
@@ -73,13 +73,13 @@ public class HikariConfiguration extends DataSourceConfiguration implements Debb
     /**
      * Default: same as maximumPoolSize
      */
-    @PropertyInject(value = "min-idle")
+    @PropertyInject(value = "min-idle", defaultValue = "10")
     private int minimumIdle;
 
     /**
      * https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
      */
-    @PropertyInject(value = "max-pool-size")
+    @PropertyInject(value = "max-pool-size", defaultValue = "10")
     private int maximumPoolSize = 10;
 
     /**
@@ -97,19 +97,19 @@ public class HikariConfiguration extends DataSourceConfiguration implements Debb
     @PropertyInject(value = "pool-name")
     private String poolName;
 
-    @PropertyInject(value = "init-fail-timeout")
+    @PropertyInject(value = "init-fail-timeout", defaultValue = "1")
     private long initializationFailTimeout = 1;
 
-    @PropertyInject(value = "isolate-internal-queries")
+    @PropertyInject(value = "isolate-internal-queries", defaultValue = "false")
     private boolean isolateInternalQueries = false;
 
-    @PropertyInject(value = "allow-pool-suspension")
+    @PropertyInject(value = "allow-pool-suspension", defaultValue = "false")
     private boolean allowPoolSuspension = false;
 
-    @PropertyInject(value = "read-only")
+    @PropertyInject(value = "read-only", defaultValue = "false")
     private boolean readOnly = false;
 
-    @PropertyInject(value = "register-mbeans")
+    @PropertyInject(value = "register-mbeans", defaultValue = "false")
     private boolean registerMbeans = false;
 
     @PropertyInject(value = "catalog")
@@ -127,14 +127,14 @@ public class HikariConfiguration extends DataSourceConfiguration implements Debb
     /**
      *  Lowest acceptable validate timeout is 250 ms. Default: 5000
      */
-    @PropertyInject(value = "validate-timeout")
+    @PropertyInject(value = "validate-timeout", defaultValue = "5000")
     private long validationTimeout = 5000;
 
     /**
      * This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak.
      * A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds). Default: 0
      */
-    @PropertyInject(value = "leak-detection-threshold")
+    @PropertyInject(value = "leak-detection-threshold", defaultValue = "0")
     private long leakDetectionThreshold = 0;
 
     @PropertyInject(value = "schema")

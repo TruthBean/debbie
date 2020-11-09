@@ -18,11 +18,18 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class LongTransformer implements DataTransformer<Long, String> {
     @Override
     public String transform(Long aLong) {
+        if (aLong == null)
+            return null;
         return aLong.toString();
     }
 
     @Override
     public Long reverse(String s) {
+        if (s == null)
+            return null;
+        if (s.trim().isEmpty()) {
+            return 0L;
+        }
         return Long.parseLong(s);
     }
 }

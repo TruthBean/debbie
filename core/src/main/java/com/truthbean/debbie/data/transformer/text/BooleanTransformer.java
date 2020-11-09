@@ -19,11 +19,17 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class BooleanTransformer implements DataTransformer<Boolean, String> {
     @Override
     public String transform(Boolean bool) {
+        if (bool == null)
+            return null;
         return bool.toString();
     }
 
     @Override
     public Boolean reverse(String s) {
+        if (s == null)
+            return null;
+        if (s.trim().isBlank())
+            return false;
         return Boolean.valueOf(s);
     }
 }

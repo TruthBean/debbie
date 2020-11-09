@@ -30,5 +30,7 @@ public @interface PropertyInject {
      */
     String value() default "";
 
+    String defaultValue() default "";
+
     Class<? extends DataTransformer<?, String>> transformer() default DefaultTextTransformer.class;
 }

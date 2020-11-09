@@ -74,6 +74,10 @@ public enum MediaType {
 
     MULTIPART_FORM_DATA("multipart/form-data"),
 
+    MULTIPART_MIXED("multipart/mixed"),
+
+    MULTIPART_RELATED_VALUE("multipart/related"),
+
     TEXT_EVENT_STREAM("text/event-stream"),
 
     TEXT_MARKDOWN("text/markdown"),

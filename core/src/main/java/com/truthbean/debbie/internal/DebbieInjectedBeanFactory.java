@@ -294,23 +294,29 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         }
         BaseProperties properties = new BaseProperties();
         String value = properties.getValue(key);
-        if (value != null) {
-            Object transform = null;
-            if (propertyInject != null) {
-                Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
-                try {
-                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
-                    transform = dataTransformer.reverse(value);
-                } catch (Exception e) {
-                    LOGGER.error("", e);
-                }
-            }
-            if (transform == null || !valueType.isAssignableFrom(transform.getClass())) {
-                transform = applicationContext.transform(value, valueType);
-            }
-            return transform;
+        if (value == null && propertyInject != null) {
+            value = propertyInject.defaultValue();
         }
-        return null;
+        if (value == null) {
+            return null;
+        }
+        if (!CharSequence.class.isAssignableFrom(valueType) && value.trim().isEmpty()) {
+            return null;
+        }
+        Object transform = null;
+        if (propertyInject != null) {
+            Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
+            try {
+                DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
+                transform = dataTransformer.reverse(value);
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
+        if (transform == null || !valueType.isAssignableFrom(transform.getClass())) {
+            transform = applicationContext.transform(value, valueType);
+        }
+        return transform;
     }
 
     @SuppressWarnings({"unchecked"})

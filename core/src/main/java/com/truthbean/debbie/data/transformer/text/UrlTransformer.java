@@ -23,6 +23,8 @@ import java.net.URL;
 public class UrlTransformer implements DataTransformer<URL, String> {
     @Override
     public String transform(URL url) {
+        if (url == null)
+            return null;
         return url.toString();
     }
 

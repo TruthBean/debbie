@@ -18,11 +18,18 @@ import com.truthbean.debbie.data.transformer.DataTransformer;
 public class ShortTransformer implements DataTransformer<Short, String> {
     @Override
     public String transform(Short aShort) {
+        if (aShort == null)
+            return null;
         return aShort.toString();
     }
 
     @Override
     public Short reverse(String s) {
+        if (s == null)
+            return null;
+        if (s.trim().isEmpty()) {
+            return 0;
+        }
         return Short.parseShort(s);
     }
 }

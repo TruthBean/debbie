@@ -584,6 +584,8 @@ public final class TypeHelper {
                 } else {
                     return isOrValueOf(clazz, (String) value);
                 }
+            } else {
+                return clazz.isInstance(value);
             }
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -601,6 +603,8 @@ public final class TypeHelper {
                 }
             } else if (rawType instanceof Class && value instanceof String) {
                 return isOrValueOf((Class<?>) rawType, (String) value);
+            } else if (rawType instanceof Class) {
+                return ((Class<?>) rawType).isInstance(value);
             }
         }
         return result;
