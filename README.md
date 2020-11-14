@@ -1,5 +1,12 @@
 # debbie
-for microservice
+This project is target for a microservice project, including IOC, MVC, JDBC, httpclient, test, server and other modules.
+It also supports running jdk, graalvm, etc., and supports third-party frameworks, such as spring(https://github. com/truthbean/debbie-spring), mybatis (https://github.com/truthbean/debbie-mybatis), etc., 
+which will be gradually added to make it grow into a complete microservice project.
+
+该项目是从零开始的微服务项目，包含IOC、MVC、JDBC、httpclient、test、server等模块组成，同时支持再jdk、graalvm等运行，
+支持第三方框架，如spring(https://github.com/truthbean/debbie-spring)，
+mybatis(https://github.com/truthbean/debbie-mybatis) 等，
+后续陆续增加，使其成长为一个完整的微服务项目
 
 ## 说明
     该项目使用Java11开发，为什么不适用kotlin，因为jetbrain开发的ktor框架已经很好用了啊（[滑稽]）；
@@ -21,6 +28,14 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 [0.0.1-RELEASE package](./versions/0.0.1-RELEASE.md)
 
 [0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
+
+```xml
+<dependency>
+    <groupId>com.truthbean.debbie</groupId>
+    <artifactId>debbie-xxx</artifactId>
+    <version>x.x.x-RELEASE</version>
+</dependency>
+```
 
 ## 目标
 --------
