@@ -29,16 +29,25 @@ import java.lang.annotation.*;
 public @interface PutRouter {
 
     /**
-     * Tags can be used for logical grouping of operations by resources or any other qualifier.
-     *
-     * @return the list of tags associated with this operation
-     **/
-    String[] tags() default {};
+     * @return router title
+     */
+    String title() default "";
 
     /**
      * @return router description
      */
     String desc() default "";
+
+    /**
+     * @return router version
+     */
+    String version() default "";
+
+    /* Tags can be used for logical grouping of operations by resources or any other qualifier.
+     *
+     * @return the list of tags associated with this operation
+     **/
+    String[] tags() default {};
 
     /**
      * same as path

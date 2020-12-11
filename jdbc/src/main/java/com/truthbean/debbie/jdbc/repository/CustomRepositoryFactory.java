@@ -24,10 +24,10 @@ public class CustomRepositoryFactory<R extends CustomRepository<E, I>, E, I> imp
     private GlobalBeanFactory globalBeanFactory;
     private DataSourceConfiguration configuration;
 
-    private final DebbieBeanInfo<R> beanInfo;
+    private final BeanInfo<R> beanInfo;
     private volatile R bean;
 
-    public CustomRepositoryFactory(DebbieBeanInfo<R> beanInfo) {
+    public CustomRepositoryFactory(BeanInfo<R> beanInfo) {
         this.beanInfo = beanInfo;
     }
 

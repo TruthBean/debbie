@@ -29,6 +29,8 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 [0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
 
+latest version: 0.1.1-RELEASE
+
 ```xml
 <dependency>
     <groupId>com.truthbean.debbie</groupId>
@@ -57,13 +59,13 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 ~~9. 基于mvc内核实现httpclient功能~~
 
-10.使用javassist或者ASM增强bean proxy功能
+~~10.使用javassist或者ASM增强bean proxy功能~~
 
 10.完善aio、rmi模块
 
 11.增加cache功能
 
-12.踩完java11 module的坑..
+~~12.踩完java11 module的坑..~~
 
 13.适配graalvm
 

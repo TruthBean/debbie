@@ -54,7 +54,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
 
     @Override
     public boolean add(E e) {
-        return map.put(e, PRESENT) == null;
+        return map.putIfAbsent(e, PRESENT) == null;
     }
 
     @Override
@@ -71,8 +71,6 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
     public boolean remove(Object o) {
         return map.remove(o) == null;
     }
-
-
 
     @Override
     public void clear() {

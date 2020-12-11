@@ -23,8 +23,8 @@ class EventTest {
         eventMulticaster.addEventListener(new Test2EventListener());
 
         long start1 = System.currentTimeMillis();
-        // TestEvent testEvent = new TestEvent(this, "test22222");
-        // eventMulticaster.multicastEvent(testEvent);
+        Test2Event testEvent = new Test2Event(this, 2333);
+        eventMulticaster.multicastEvent(testEvent);
         long end = System.currentTimeMillis();
         System.out.println(end - start1);
         System.out.println(end - start);

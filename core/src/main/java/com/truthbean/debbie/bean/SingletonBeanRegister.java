@@ -25,14 +25,14 @@ public class SingletonBeanRegister {
     }
 
     public <T extends I, I> void registerSingletonBean(T bean, Class<I> beanClass, String beanName) {
-        DebbieBeanInfo<I> beanInfo = new DebbieBeanInfo<>(beanClass);
+        MutableBeanInfo<I> beanInfo = new DebbieBeanInfo<>(beanClass);
         beanInfo.addBeanName(beanName);
         beanInfo.setBean(bean);
         initialization.initSingletonBean(beanInfo);
         beanInfoFactory.refreshBeans();
     }
 
-    public <T extends I, I> void registerSingletonBean(DebbieBeanInfo<T> beanInfo) {
+    public <T extends I, I> void registerSingletonBean(MutableBeanInfo<T> beanInfo) {
         initialization.refreshSingletonBean(beanInfo);
         beanInfoFactory.refreshBeans();
     }

@@ -25,6 +25,7 @@ public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> imple
     private final Method eventMethod;
 
     private boolean async = false;
+    private boolean allowConcurrent = false;
 
     public EventMethodListenerFactory(Object targetBean, Class<EVENT> eventType, Method eventMethod) {
         this.eventType = eventType;
@@ -39,6 +40,15 @@ public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> imple
 
     public void setAsync(boolean async) {
         this.async = async;
+    }
+
+    @Override
+    public boolean allowConcurrent() {
+        return this.allowConcurrent;
+    }
+
+    public void setAllowConcurrent(boolean allowConcurrent) {
+        this.allowConcurrent = allowConcurrent;
     }
 
     @Override

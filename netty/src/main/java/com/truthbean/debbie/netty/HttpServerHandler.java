@@ -30,14 +30,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
@@ -93,6 +86,9 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
             }
             keepAlive = HttpUtil.isKeepAlive(httpRequest);
+        }
+        if (msg instanceof FullHttpMessage) {
+            LOGGER.debug("msg instanceof FullHttpMessage");
         }
         if (msg instanceof LastHttpContent) {
             LOGGER.debug("msg instanceof LastHttpContent. ");

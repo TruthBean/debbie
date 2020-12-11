@@ -88,7 +88,7 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
     }
 
     @Override
-    public Class<Bean> getClazz() {
+    public Class<Bean> getBeanClass() {
         return beanClass;
     }
 
@@ -105,5 +105,15 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
     @Override
     public Set<String> getBeanNames() {
         return beanNames;
+    }
+
+    @Override
+    public String toString() {
+        return "\"SimpleBeanInfo\":{" +
+                "\"beanFactory\":" + beanFactory + "," +
+                "\"bean\":" + bean + "," +
+                "\"beanClass\":" + beanClass + "," +
+                "\"beanType\":" + beanType + "," +
+                "\"beanNames\":" + beanNames + "}";
     }
 }

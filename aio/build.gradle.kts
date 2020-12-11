@@ -11,4 +11,7 @@ dependencies {
     api(project(":debbie-server"))
 
     testImplementation(project(":debbie-test"))
+
+    val loggerVersion: String by project
+    testImplementation("com.truthbean.logger:jul-adapter:$loggerVersion")
 }

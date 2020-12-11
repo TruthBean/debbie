@@ -31,13 +31,13 @@ public interface GlobalBeanFactory {
 
     <T> T factoryByNoBean(Class<T> noBeanType);
 
-    <T, K extends T> T factory(DebbieBeanInfo<K> beanInfo);
+    <T, K extends T> T factory(BeanInfo<K> beanInfo);
 
-    <T> T factoryBeanByDependenceProcessor(DebbieBeanInfo<T> beanInfo, boolean skipFactory);
+    <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory);
 
-    <T> T factoryBeanByDependenceProcessor(DebbieBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
+    <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
 
-    <T> DebbieBeanInfo<T> getBeanInfoWithBean(Class<T> type);
+    <T> BeanInfo<T> getBeanInfoWithBean(Class<T> type);
 
     <T, K extends T> List<K> getBeanList(Class<T> superType);
 
@@ -47,7 +47,7 @@ public interface GlobalBeanFactory {
 
     boolean containsBean(String beanName);
 
-    <T> T getBeanByFactory(DebbieBeanInfo<T> beanInfo);
+    <T> T getBeanByFactory(BeanInfo<T> beanInfo);
 
     <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory);
 }

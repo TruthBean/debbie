@@ -283,15 +283,50 @@ public class NetWorkUtils {
              if (mac.startsWith("00:15:5D")) {
                 LOGGER.debug("Hyper-V虚拟Mac地址: " + mac);
             } else if (mac.startsWith("00:50:56") || mac.startsWith("00:0c:29")) {
-                System.out.println("vmware虚拟Mac地址: " + mac);
+                 LOGGER.debug("vmware虚拟Mac地址: " + mac);
             } else if (mac.startsWith("08:00:27")) {
-                System.out.println("virtualbox虚拟Mac地址: " + mac);
+                 LOGGER.debug("virtualbox虚拟Mac地址: " + mac);
             } else {
                 map.put(ip, mac);
             }
         });
 
         return map;
+    }
+
+    public static InetAddress getOneRealIp() {
+        Map<InetAddress, String> map = new HashMap<>();
+
+        Map<InetAddress, String> ipAndMac = new HashMap<>();
+        List<InetAddress> allIpv4LocalAddress = getAllIpv4LocalAddress();
+        for (InetAddress ipv4LocalAddress : allIpv4LocalAddress) {
+            String macAddress = getMacAddress(ipv4LocalAddress);
+            String ip = ipv4LocalAddress.getHostAddress();
+            if (ip.startsWith("169.254")) {
+                LOGGER.debug("内部私有地址: " + ip);
+                continue;
+            }
+            ipAndMac.put(ipv4LocalAddress, macAddress);
+        }
+
+        ipAndMac.forEach((ip, mac) -> {
+            if (mac.startsWith("00:15:5D")) {
+                LOGGER.debug("Hyper-V虚拟Mac地址: " + mac);
+            } else if (mac.startsWith("00:50:56") || mac.startsWith("00:0c:29")) {
+                LOGGER.debug("vmware虚拟Mac地址: " + mac);
+            } else if (mac.startsWith("08:00:27")) {
+                LOGGER.debug("virtualbox虚拟Mac地址: " + mac);
+            } else {
+                map.put(ip, mac);
+            }
+        });
+
+        for (Map.Entry<InetAddress, String> entry : map.entrySet()) {
+            InetAddress ip = entry.getKey();
+            String mac = entry.getValue();
+            return ip;
+        }
+        return getLocalIpv4Address();
     }
 
     public static String getSubnetMask(InetAddress ipAddress) {
@@ -364,6 +399,26 @@ public class NetWorkUtils {
         }
 
         return result.toString();
+    }
+
+    public static InetAddress strToAddr(String ipv4) {
+        var bytes = ipv4ToBytes(ipv4);
+        try {
+            return Inet4Address.getByAddress(bytes);
+        } catch (UnknownHostException e) {
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    public static byte[] ipv4ToBytes(String ipv4) {
+        byte[] bytes = new byte[4];
+        var parts = ipv4.split("\\.");
+        int i = 0;
+        for (String part : parts) {
+            bytes[i++] = (byte) Integer.parseInt(part);
+        }
+        return bytes;
     }
 
     private static boolean isPrivateIp(String ipv4) {

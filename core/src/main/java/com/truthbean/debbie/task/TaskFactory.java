@@ -38,7 +38,7 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     private volatile boolean taskRunning;
 
     private final Set<TaskAction> taskActions;
-    private final Set<DebbieBeanInfo<?>> taskBeans = new LinkedHashSet<>();
+    private final Set<DebbieClassBeanInfo<?>> taskBeans = new LinkedHashSet<>();
     private final Set<MethodTaskInfo> taskList = new LinkedHashSet<>();
 
     TaskFactory() {
@@ -55,10 +55,9 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         }
     }
 
-
     void registerTask() {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        Set<DebbieBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
+        Set<DebbieClassBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
         if (tasks != null && !tasks.isEmpty()) {
             taskBeans.addAll(tasks);
         }
@@ -69,8 +68,8 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
     private final Timer timer = new Timer();
 
     public void prepare() {
-        final Set<DebbieBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
-        for (DebbieBeanInfo<?> taskBean : taskBeanSet) {
+        final Set<DebbieClassBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
+        for (DebbieClassBeanInfo<?> taskBean : taskBeanSet) {
             Object task = globalBeanFactory.factory(taskBean.getServiceName());
             LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
             Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);

@@ -18,6 +18,11 @@ import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractApplication implements DebbieApplication {
     private Logger logger;
-    private long beforeStartTime;
+    private Instant beforeStartTime;
     private ApplicationContext applicationContext;
     private ApplicationFactory applicationFactory;
 
@@ -69,6 +74,11 @@ public abstract class AbstractApplication implements DebbieApplication {
         this.applicationContext = applicationFactory.getApplicationContext();
     }
 
+    @Override
+    public ApplicationContext getApplicationContext() {
+        return this.applicationContext;
+    }
+
     protected void setLogger(Logger logger) {
         this.logger = logger;
     }
@@ -85,7 +95,7 @@ public abstract class AbstractApplication implements DebbieApplication {
     public abstract DebbieApplication init(DebbieConfigurationCenter configurationCenter, ApplicationContext applicationContext,
                                            ClassLoader classLoader);
 
-    public void setBeforeStartTime(long beforeStartTime) {
+    public void setBeforeStartTime(Instant beforeStartTime) {
         this.beforeStartTime = beforeStartTime;
     }
 
@@ -98,7 +108,6 @@ public abstract class AbstractApplication implements DebbieApplication {
     @Override
     public final void start(String... args) {
         startupShutdownThreadPool.execute(() -> {
-            logger.debug("debbie (" + DebbieVersion.getVersion() + ") application start in thread ...");
             if (running.compareAndSet(false, true) && exited.get()) {
                 registerShutdownHook(args);
                 start(beforeStartTime, args);
@@ -113,7 +122,17 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @param beforeStartTime time of application starting spending
      * @param args            args
      */
-    protected abstract void start(long beforeStartTime, String... args);
+    protected abstract void start(Instant beforeStartTime, String... args);
+
+    protected void printStartTime() {
+        final RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+        final Instant now = Instant.now();
+        final Duration between = Duration.between(beforeStartTime, now);
+        final long uptime = mxBean.getUptime();
+        final long startTime = mxBean.getStartTime();
+        logger.info(() -> "application start spends " + between.toMillis() +
+                "ms ( JVM started at "  + new Timestamp(startTime) + ", running for "  + uptime + "ms )");
+    }
 
     /**
      * Register a shutdown hook {@linkplain Thread#getName() named}
@@ -149,7 +168,7 @@ public abstract class AbstractApplication implements DebbieApplication {
     public final void exit(String... args) {
         startupShutdownThreadPool.execute(() -> {
             if (running.get() && exited.compareAndSet(false, true)) {
-                logger.debug("application exiting...");
+                logger.info("application is exiting...");
                 beforeExit(applicationContext, args);
                 doExit(args);
             }
@@ -162,7 +181,21 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @param beforeStartTime before start time, long timestamp
      * @param args args
      */
-    protected abstract void exit(long beforeStartTime, String... args);
+    protected abstract void exit(Instant beforeStartTime, String... args);
+
+    protected void printExitTime() {
+        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+        Instant now = Instant.now();
+        Duration between = Duration.between(beforeStartTime, now);
+        long uptime = mxBean.getUptime();
+        long startTime = mxBean.getStartTime();
+        logger.info(() -> "JVM started at "  + new Timestamp(startTime) + ", running for "  + uptime + "ms");
+        logger.info(() -> "application start spends " + between.toDays() + " days");
+        logger.info(() -> "application start spends " + between.toMinutes() + " minutes");
+        logger.info(() -> "application start spends " + between.toSeconds() + " seconds");
+        logger.info(() -> "application start spends " + between.toMillis() + " million seconds");
+        logger.info(() -> "application start spends " + between.toNanos() + " nano seconds");
+    }
 
     public final void doExit(String... args) {
         synchronized (this.startupShutdownMonitor) {

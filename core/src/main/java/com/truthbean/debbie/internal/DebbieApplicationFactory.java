@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.*;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -26,6 +27,7 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -35,6 +37,8 @@ import java.util.function.Consumer;
  * Created on 2019/3/23 14:09.
  */
 public class DebbieApplicationFactory implements ApplicationFactory {
+
+    private static final Instant beforeStartTime = Instant.now();
 
     private volatile Set<DebbieModuleStarter> debbieModuleStarters;
     private final DebbieBootApplicationResolver bootApplicationResolver;
@@ -228,17 +232,33 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     protected static volatile DebbieApplicationFactory debbieApplicationFactory;
 
     public static DebbieApplication create(Class<?> applicationClass, String... args) {
-        long beforeStartTime = System.currentTimeMillis();
-        LOGGER.info(() -> "debbie start time: " + (new Timestamp(beforeStartTime)));
+        printApplicationInfo();
         if (debbieApplication != null)
             return debbieApplication;
         var debbieApplicationFactory = configure(applicationClass, args);
         debbieApplication = debbieApplicationFactory.factoryApplication();
-        debbieApplicationFactory.configDebbieApplication(debbieApplication, beforeStartTime);
+        debbieApplicationFactory.configDebbieApplication(debbieApplication);
         return debbieApplication;
     }
 
-    private void configDebbieApplication(DebbieApplication debbieApplication, long beforeStartTime) {
+    private static void printApplicationInfo() {
+        LOGGER.info(() -> "debbie (" + DebbieVersion.getVersion() + ") application start at " + beforeStartTime.toString());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("os.name: " + System.getProperty("os.name"));
+            LOGGER.debug("os.arch: " + System.getProperty("os.arch"));
+
+            LOGGER.debug("user.home: " + System.getProperty("user.home"));
+            LOGGER.debug("user.dir: " + System.getProperty("user.dir"));
+            LOGGER.debug("java.io.tmpdir: " + System.getProperty("java.io.tmpdir"));
+
+            LOGGER.debug("java.runtime.version: " + System.getProperty("java.runtime.version"));
+            LOGGER.debug("java.home: " + System.getProperty("java.home"));
+            LOGGER.debug("java.vm.vendor: " + System.getProperty("java.vm.vendor"));
+            LOGGER.debug("java.library.path: " + System.getProperty("java.library.path"));
+        }
+    }
+
+    private void configDebbieApplication(DebbieApplication debbieApplication) {
         if (debbieApplication instanceof AbstractApplication) {
             var application = (AbstractApplication) debbieApplication;
             application.setBeforeStartTime(beforeStartTime);
@@ -266,19 +286,17 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public DebbieApplication postCreateApplication() {
-        long beforeStartTime = System.currentTimeMillis();
-        LOGGER.info(() -> "debbie start time: " + (new Timestamp(beforeStartTime)));
+        printApplicationInfo();
         if (debbieApplication != null)
             return debbieApplication;
         debbieApplication = factoryApplication();
-        this.configDebbieApplication(debbieApplication, beforeStartTime);
+        this.configDebbieApplication(debbieApplication);
         return debbieApplication;
     }
 
     @Override
     public DebbieApplication createApplication(Class<?> applicationClass) {
-        long beforeStartTime = System.currentTimeMillis();
-        LOGGER.info(() -> "debbie start time: " + (new Timestamp(beforeStartTime)));
+        printApplicationInfo();
         if (debbieApplication != null)
             return debbieApplication;
 
@@ -288,7 +306,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         callStarter();
 
         debbieApplication = factoryApplication();
-        debbieApplicationFactory.configDebbieApplication(debbieApplication, beforeStartTime);
+        debbieApplicationFactory.configDebbieApplication(debbieApplication);
         return debbieApplication;
     }
 

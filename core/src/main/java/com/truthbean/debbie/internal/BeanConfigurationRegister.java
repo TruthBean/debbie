@@ -83,7 +83,7 @@ class BeanConfigurationRegister {
         Set<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {
             for (var method : annotationMethod) {
-                DebbieBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());
+                MutableBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());
                 DebbieBean debbieBean = method.getAnnotation(DebbieBean.class);
                 var name = debbieBean.name();
                 if (name.isBlank()) {

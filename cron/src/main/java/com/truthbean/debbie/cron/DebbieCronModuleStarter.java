@@ -11,6 +11,7 @@ package com.truthbean.debbie.cron;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.MutableBeanInfo;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import org.quartz.Scheduler;
@@ -34,7 +35,7 @@ public class DebbieCronModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        DebbieBeanInfo<Scheduler> schedulerBeanInfo = new DebbieBeanInfo<>(Scheduler.class);
+        MutableBeanInfo<Scheduler> schedulerBeanInfo = new DebbieBeanInfo<>(Scheduler.class);
         schedulerBeanInfo.addBeanName("scheduler");
         schedulerBeanInfo.setBeanFactory(new SchedulerBeanFactory());
         beanInitialization.initSingletonBean(schedulerBeanInfo);

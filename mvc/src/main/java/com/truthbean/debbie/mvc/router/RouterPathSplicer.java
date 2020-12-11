@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import com.truthbean.debbie.net.uri.UriPathFragment;
 import com.truthbean.debbie.net.uri.UriPathVariable;
@@ -35,18 +36,15 @@ public class RouterPathSplicer {
             if (isEmptyPaths(prefixPathRegex)) {
                 prefixPathRegex = router.urlPatterns();
             }
-            if (!isEmptyPaths(prefixPathRegex)) {
-                var prefixPath = trimPaths(prefixPathRegex);
-                List<String> newPaths = new ArrayList<>();
-                for (var s : prefixPath) {
-                    if (!s.startsWith("/")) {
-                        newPaths.add("/" + s);
-                    } else {
-                        newPaths.add(s);
-                    }
-                }
-                return newPaths;
-            }
+            return resolvePath(prefixPathRegex);
+        }
+        return null;
+    }
+
+    private static List<String> resolvePath(HttpRouterInfo router) {
+        if (router != null) {
+            var prefixPathRegex = router.getUrlPatterns();
+            return resolvePath(prefixPathRegex);
         }
         return null;
     }
@@ -91,7 +89,7 @@ public class RouterPathSplicer {
         return copy;
     }
 
-    public static List<String> splicePaths(String dispatcherMapping, Router prefixRouter, RouterAnnotationInfo router) {
+    public static List<String> splicePaths(String dispatcherMapping, @Nullable HttpRouterInfo prefixRouter, RouterAnnotationInfo router) {
         if (!dispatcherMapping.isBlank()) {
             if (!dispatcherMapping.startsWith("/")) {
                 dispatcherMapping = "/" + dispatcherMapping;
@@ -160,6 +158,15 @@ public class RouterPathSplicer {
     private static Set<String> splicePaths(Router prefixRouter, RouterAnnotationInfo router) {
         if (prefixRouter != null) {
             var prefixPathRegex = resolvePath(new RouterAnnotationInfo(prefixRouter));
+            if (prefixPathRegex != null)
+                return splicePaths(prefixPathRegex, router);
+        }
+        return splicePaths(router);
+    }
+
+    private static Set<String> splicePaths(@Nullable HttpRouterInfo prefixRouter, RouterAnnotationInfo router) {
+        if (prefixRouter != null) {
+            var prefixPathRegex = resolvePath(prefixRouter);
             if (prefixPathRegex != null)
                 return splicePaths(prefixPathRegex, router);
         }
@@ -238,7 +245,7 @@ public class RouterPathSplicer {
         result.put(name, list);
     }
 
-    public static List<RouterPathFragments> splicePathFragment(String dispatcherMapping, Router prefixRouter, RouterAnnotationInfo router) {
+    public static List<RouterPathFragments> splicePathFragment(String dispatcherMapping, @Nullable HttpRouterInfo prefixRouter, RouterAnnotationInfo router) {
         var paths = splicePaths(dispatcherMapping, prefixRouter, router);
         List<RouterPathFragments> patterns = new ArrayList<>();
         for (String path : paths) {

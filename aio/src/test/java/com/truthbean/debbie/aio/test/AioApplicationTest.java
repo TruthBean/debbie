@@ -27,7 +27,12 @@ public class AioApplicationTest {
     public static void main(String[] args) {
         var application = ApplicationFactory.create(AioApplicationTest.class);
         application.start(args);
-        // application.exit(args);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        application.exit(args);
     }
 
     @Test

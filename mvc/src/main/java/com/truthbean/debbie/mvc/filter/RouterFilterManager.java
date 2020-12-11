@@ -11,6 +11,7 @@ package com.truthbean.debbie.mvc.filter;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.DebbieClassBeanInfo;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
@@ -32,7 +33,7 @@ public class RouterFilterManager {
     private static final Pattern ALL = Pattern.compile("\\w");
 
     public static void registerFilter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
-        Set<DebbieBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInitialization.getAnnotatedClass(Filter.class));
+        Set<DebbieClassBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInitialization.getAnnotatedClass(Filter.class));
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);
         }
@@ -86,13 +87,13 @@ public class RouterFilterManager {
     }
 
     @SuppressWarnings("unchecked")
-    private static Set<DebbieBeanInfo<? extends RouterFilter>> change(Set<DebbieBeanInfo<?>> raw) {
-        Set<DebbieBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
+    private static Set<DebbieClassBeanInfo<? extends RouterFilter>> change(Set<DebbieClassBeanInfo<?>> raw) {
+        Set<DebbieClassBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
         if (raw != null && !raw.isEmpty()) {
             for (var beanInfo : raw) {
                 Class<?> beanClass = beanInfo.getBeanClass();
                 if (RouterFilter.class.isAssignableFrom(beanClass))
-                    result.add((DebbieBeanInfo<? extends RouterFilter>) beanInfo);
+                    result.add((DebbieClassBeanInfo<? extends RouterFilter>) beanInfo);
             }
         }
         return result;
@@ -106,7 +107,7 @@ public class RouterFilterManager {
         filterInfo.setConfiguration(configuration);
 
         var classAnnotations = classInfo.getClassAnnotations();
-        Filter filter = (Filter) classAnnotations.get(Filter.class);
+        Filter filter = (Filter) classAnnotations.get(Filter.class).getOrigin();
         var name = filter.name();
         if (name.isBlank()) {
             filterInfo.setName(clazz.getName());

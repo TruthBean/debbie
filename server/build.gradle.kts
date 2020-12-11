@@ -11,5 +11,6 @@ dependencies {
     api(project(":debbie-mvc"))
 
     val loggerVersion: String by project
-    api("com.truthbean.logger:slf4j-boot:$loggerVersion")
+    // api("com.truthbean.logger:slf4j-boot:$loggerVersion")
+    // api("com.truthbean.logger:stdout-adapter:$loggerVersion")
 }

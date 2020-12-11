@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.event;
 
+import com.truthbean.debbie.bean.BeanFactory;
+
 /**
  * @author truthbean
  * @since 0.0.2
@@ -31,6 +33,12 @@ public interface DebbieEventMulticaster {
      * @param listener the listener to remove
      */
     void removeEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener);
+
+    /**
+     * Remove a listener from the notification list.
+     * @param listenerBeanFactory the listener factory to remove
+     */
+    void removeEventListener(BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory);
 
     /**
      * Remove a listener bean from the notification list.

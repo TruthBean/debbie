@@ -63,7 +63,7 @@ class DebbieBootApplicationResolver {
         if (notSupport(applicationClass)) return;
 
         var beanInitialization = this.applicationContext.getBeanInitialization();
-        DebbieBeanInfo<?> applicationClassBeanInfo = new DebbieBeanInfo<>(applicationClass);
+        DebbieClassBeanInfo<?> applicationClassBeanInfo = new DebbieClassBeanInfo<>(applicationClass);
         applicationClassBeanInfo.setBeanType(BeanType.SINGLETON);
         beanInitialization.initBean(applicationClassBeanInfo);
         this.applicationContext.getBeanInfoFactory().refreshBeans();

@@ -15,14 +15,14 @@ package com.truthbean.debbie.bean;
  */
 public class BeanExecutableDependence {
     private Integer index;
-    private DebbieBeanInfo<?> beanInfo;
+    private BeanInfo<?> beanInfo;
     private Class<?> type;
     private Object value;
 
     public BeanExecutableDependence() {
     }
 
-    public BeanExecutableDependence(Integer index, DebbieBeanInfo<?> beanInfo, Class<?> type) {
+    public BeanExecutableDependence(Integer index, BeanInfo<?> beanInfo, Class<?> type) {
         this.index = index;
         this.beanInfo = beanInfo;
         this.type = type;
@@ -36,11 +36,11 @@ public class BeanExecutableDependence {
         this.index = index;
     }
 
-    public DebbieBeanInfo<?> getBeanInfo() {
+    public BeanInfo<?> getBeanInfo() {
         return beanInfo;
     }
 
-    public void setBeanInfo(DebbieBeanInfo<?> beanInfo) {
+    public void setBeanInfo(BeanInfo<?> beanInfo) {
         this.beanInfo = beanInfo;
     }
 
@@ -67,5 +67,14 @@ public class BeanExecutableDependence {
 
     public void setValue(Object value) {
         this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "\"BeanExecutableDependence\":{" +
+                "\"index\":" + index + "," +
+                "\"beanInfo\":" + beanInfo + "," +
+                "\"type\":" + type + "," +
+                "\"value\":" + value + "}";
     }
 }

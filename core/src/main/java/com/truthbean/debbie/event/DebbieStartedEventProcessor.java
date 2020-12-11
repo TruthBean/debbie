@@ -39,7 +39,7 @@ public class DebbieStartedEventProcessor {
         this.startedEventThreadPool = new ThreadPooledExecutor(10, 128, namedThreadFactory);
     }
 
-    public void multicastEvent() {
+    public synchronized void multicastEvent() {
         final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this);
         startedEvent.setApplicationContext(applicationContext);
         var globalBeanFactory = applicationContext.getGlobalBeanFactory();
@@ -51,12 +51,21 @@ public class DebbieStartedEventProcessor {
                     if (eventType == DebbieStartedEvent.class) {
                         if (startedEventListener.async()) {
                             startedEventThreadPool.execute(() -> startedEventListener.onEvent(startedEvent));
-                        } else
+                        } else if (startedEventListener.allowConcurrent()) {
+                            synchronized (this) {
+                                startedEventListener.onEvent(startedEvent);
+                            }
+                        } else {
                             startedEventListener.onEvent(startedEvent);
+                        }
                     } else {
                         DebbieStartedEvent event = globalBeanFactory.factory(eventType);
                         if (startedEventListener.async()) {
                             startedEventThreadPool.execute(() -> startedEventListener.onEvent(event));
+                        } else if (startedEventListener.allowConcurrent()) {
+                            synchronized (this) {
+                                startedEventListener.onApplicationEvent(event);
+                            }
                         } else
                             startedEventListener.onEvent(event);
                     }

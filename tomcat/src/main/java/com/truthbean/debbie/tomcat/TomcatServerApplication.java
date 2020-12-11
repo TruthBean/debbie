@@ -34,10 +34,13 @@ import com.truthbean.logger.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -199,14 +202,13 @@ public class TomcatServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    public void start(long beforeStartTime, String... args) {
+    public void start(Instant beforeStartTime, String... args) {
         try {
             server.init();
             server.getConnector();
             server.start();
             printlnWebUrl(LOGGER, configuration.getPort());
-            double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-            LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms ( JVM running for "  + uptime + "ms )");
+            super.printStartTime();
             postBeforeStart();
         } catch (LifecycleException e) {
             Throwable cause = e.getCause();
@@ -218,16 +220,14 @@ public class TomcatServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    public void exit(long beforeStartTime, String... args) {
+    public void exit(Instant beforeStartTime, String... args) {
         try {
             server.stop();
             server.destroy();
         } catch (LifecycleException e) {
             LOGGER.error("tomcat stop error", e);
         } finally {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-            }
+            super.printExitTime();
         }
     }
 

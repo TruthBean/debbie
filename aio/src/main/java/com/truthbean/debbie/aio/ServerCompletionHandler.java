@@ -27,15 +27,12 @@ import java.nio.channels.CompletionHandler;
  */
 class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketChannel, AsynchronousServerSocketChannel> {
 
-    private final AsynchronousServerSocketChannel listener;
     private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
     private final SessionManager sessionManager;
 
     ServerCompletionHandler(AioServerConfiguration configuration, SessionManager sessionManager,
-                                   final ApplicationContext applicationContext,
-                                   final AsynchronousServerSocketChannel listener) {
-        this.listener = listener;
+                                   final ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
         this.sessionManager = sessionManager;

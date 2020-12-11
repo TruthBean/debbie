@@ -10,14 +10,7 @@
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.BeanInfoFactory;
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.BeanType;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.bean.MutableBeanInfo;
-import com.truthbean.debbie.bean.NoBeanException;
-import com.truthbean.debbie.bean.OneMoreBeanRegisteredException;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -38,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 class DebbieBeanInfoFactory implements BeanInfoFactory {
     public static final Object value = new Object();
-    private final Map<DebbieBeanInfo<?>, Object> beanServiceInfoSet = new ConcurrentHashMap<>();
+    private final Map<BeanInfo<?>, Object> beanServiceInfoSet = new ConcurrentHashMap<>();
 
     private final BeanInitialization beanInitialization;
 
@@ -49,11 +42,11 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     @Override
     public void refreshBeans() {
         // 重新计算hashcode，因为map的key存的是最开始put进去的值的hashcode，但是key更新的话，hashcode并没有更新
-        Map<DebbieBeanInfo<?>, Object> copy = new ConcurrentHashMap<>(beanServiceInfoSet);
+        Map<BeanInfo<?>, Object> copy = new ConcurrentHashMap<>(beanServiceInfoSet);
         beanServiceInfoSet.clear();
 
         var registeredBeans = beanInitialization.getRegisteredBeans();
-        for (DebbieBeanInfo<?> registeredBean : registeredBeans) {
+        for (BeanInfo<?> registeredBean : registeredBeans) {
             copy.put(registeredBean, value);
         }
 
@@ -62,7 +55,7 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         Set<Class<? extends Annotation>> beanAnnotations = new CopyOnWriteArraySet<>(beanInitialization.getBeanAnnotations());
         beanAnnotations.forEach((annotationType) -> {
             var annotatedClass = beanInitialization.getAnnotatedClass(annotationType);
-            for (DebbieBeanInfo<?> beanInfo : annotatedClass) {
+            for (DebbieClassBeanInfo<?> beanInfo : annotatedClass) {
                 copy.put(beanInfo, value);
             }
         });
@@ -72,7 +65,7 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
             if (clazz.isAnnotation()) {
                 @SuppressWarnings("unchecked") var annotation = (Class<? extends Annotation>) clazz;
                 var set = beanInitialization.getAnnotatedClass(annotation);
-                for (DebbieBeanInfo<?> beanInfo : set) {
+                for (DebbieClassBeanInfo<?> beanInfo : set) {
                     copy.put(beanInfo, value);
                 }
 
@@ -82,12 +75,12 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
                     copy.put(i, value);
                 } else if (clazz.isInterface()) {
                     var beans = beanInitialization.getBeanByInterface(clazz);
-                    for (DebbieBeanInfo<?> beanInfo : beans) {
+                    for (DebbieClassBeanInfo<?> beanInfo : beans) {
                         copy.put(beanInfo, value);
                     }
                 } else if (Modifier.isAbstract(i.getClazz().getModifiers())) {
                     var beans = beanInitialization.getBeanByAbstractSuper(clazz);
-                    for (DebbieBeanInfo<?> beanInfo : beans) {
+                    for (DebbieClassBeanInfo<?> beanInfo : beans) {
                         copy.put(beanInfo, value);
                     }
                 } else {
@@ -101,19 +94,20 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     @Override
     public void autoCreateSingletonBeans(GlobalBeanFactory beanFactory) {
         beanServiceInfoSet.forEach((i, value) -> {
-            Boolean lazyCreate = i.getLazyCreate();
-            if (lazyCreate != null && !lazyCreate && i.getBeanType() == BeanType.SINGLETON) {
-                i.setBean(() -> beanFactory.factory(i.getServiceName()));
-                beanInitialization.refreshBean(i);
+            boolean lazyCreate = i.isLazyCreate();
+            if (!lazyCreate && i.getBeanType() == BeanType.SINGLETON && i instanceof MutableBeanInfo) {
+                MutableBeanInfo<?> beanInfo = (MutableBeanInfo<?>) i;
+                beanInfo.setBean(() -> beanFactory.factory(i.getServiceName()));
+                beanInitialization.refreshBean(beanInfo);
             }
         });
     }
 
-    Set<DebbieBeanInfo<?>> getAutoCreatedBean() {
-        Set<DebbieBeanInfo<?>> result = new HashSet<>();
-        for (DebbieBeanInfo<?> beanInfo : beanServiceInfoSet.keySet()) {
-            Boolean lazyCreate = beanInfo.getLazyCreate();
-            if (lazyCreate != null && !lazyCreate) {
+    Set<BeanInfo<?>> getAutoCreatedBean() {
+        Set<BeanInfo<?>> result = new HashSet<>();
+        for (BeanInfo<?> beanInfo : beanServiceInfoSet.keySet()) {
+            boolean lazyCreate = beanInfo.isLazyCreate();
+            if (!lazyCreate) {
                 result.add(beanInfo);
             }
         }
@@ -121,17 +115,17 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getAllDebbieBeanInfo() {
+    public Set<BeanInfo<?>> getAllDebbieBeanInfo() {
         return Set.copyOf(beanServiceInfoSet.keySet());
     }
 
     @Override
-    public <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require) {
+    public <T, K extends T> List<BeanInfo<K>> getBeanInfoList(Class<T> type, boolean require) {
         return getBeanInfoList(type, require, beanServiceInfoSet.keySet());
     }
 
     @Override
-    public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
+    public <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require) {
         try {
             return getBeanInfo(serviceName, type, require, beanServiceInfoSet.keySet(), true);
         } catch (Exception e) {
@@ -144,12 +138,12 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     }
 
     @Override
-    public <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException) {
+    public <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException) {
         return getBeanInfo(serviceName, type, require, beanServiceInfoSet.keySet(), throwException);
     }
 
     @Override
-    public void destroy(DebbieBeanInfo<?> beanInfo) {
+    public void destroy(BeanInfo<?> beanInfo) {
         beanServiceInfoSet.remove(beanInfo);
     }
 
@@ -161,31 +155,37 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         }
     }
 
-    synchronized void destroyBeans(Collection<DebbieBeanInfo<?>> beans) {
+    synchronized void destroyBeans(Collection<BeanInfo<?>> beans) {
         if (beans != null && !beans.isEmpty()) {
-            for (DebbieBeanInfo<?> bean : beans) {
-                LOGGER.trace(() -> "release bean " + bean.getBeanClass() + " with name " + bean.getServiceName());
-                bean.release();
+            for (BeanInfo<?> bean : beans) {
+                if (bean instanceof MutableBeanInfo) {
+                    LOGGER.trace(() -> "release bean " + bean.getBeanClass() + " with name " + bean.getServiceName());
+                    ((MutableBeanInfo<?>)bean).release();
+                }
             }
         }
     }
 
-    private <T> void getDebbieBeanInfoList(final Class<T> type, final Set<DebbieBeanInfo<?>> beanInfoSet,
-                                           final List<DebbieBeanInfo<?>> list) {
-        for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
+    private <T> void getDebbieBeanInfoList(final Class<T> type, final Set<BeanInfo<?>> beanInfoSet,
+                                           final List<BeanInfo<?>> list) {
+        for (BeanInfo<?> debbieBeanInfo : beanInfoSet) {
             var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                    || (debbieBeanInfo.getBeanInterface() != null
-                    && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                    || (debbieBeanInfo instanceof DebbieClassBeanInfo
+                        && ((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface() != null
+                        && type.isAssignableFrom(((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface())
+                    );
             if (flag) {
                 list.add(debbieBeanInfo);
             }
         }
 
         if (list.isEmpty()) {
-            for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
+            for (BeanInfo<?> debbieBeanInfo : beanInfoSet) {
                 var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                        || (debbieBeanInfo.getBeanInterface() != null
-                        && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                        || (debbieBeanInfo instanceof DebbieClassBeanInfo
+                            && ((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface() != null
+                            && type.isAssignableFrom(((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface())
+                        );
                 if (flag) {
                     list.add(debbieBeanInfo);
                 }
@@ -193,9 +193,9 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         }
     }
 
-    private <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require,
-                                                                     final Set<DebbieBeanInfo<?>> beanInfoSet) {
-        List<DebbieBeanInfo<?>> list = new ArrayList<>();
+    private <T, K extends T> List<BeanInfo<K>> getBeanInfoList(Class<T> type, boolean require,
+                                                                     final Set<BeanInfo<?>> beanInfoSet) {
+        List<BeanInfo<?>> list = new ArrayList<>();
 
         if (type != null) {
             getDebbieBeanInfoList(type, beanInfoSet, list);
@@ -208,15 +208,15 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
                 }
             }
 
-            List<DebbieBeanInfo<K>> result = new ArrayList<>();
-            for (DebbieBeanInfo<?> beanInfo : list) {
+            List<BeanInfo<K>> result = new ArrayList<>();
+            for (BeanInfo<?> beanInfo : list) {
                 if (type.isAssignableFrom(beanInfo.getBeanClass())) {
                     @SuppressWarnings("unchecked")
-                    DebbieBeanInfo<K> ele = (DebbieBeanInfo<K>) beanInfo;
+                    BeanInfo<K> ele = (BeanInfo<K>) beanInfo;
                     if (beanInfo.getBeanType() == BeanType.SINGLETON) {
                         result.add(ele);
-                    } else {
-                        result.add(ele.copy());
+                    } else if (ele instanceof MutableBeanInfo) {
+                        result.add(((MutableBeanInfo<K>)ele).copy());
                     }
                 }
             }
@@ -226,16 +226,18 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
         return null;
     }
 
-    private <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, final Class<T> type, boolean require,
-                                              final Set<DebbieBeanInfo<?>> beanInfoSet, boolean throwException) {
-        List<DebbieBeanInfo<?>> list = new ArrayList<>();
+    private <T> BeanInfo<T> getBeanInfo(String serviceName, final Class<T> type, boolean require,
+                                              final Set<BeanInfo<?>> beanInfoSet, boolean throwException) {
+        List<BeanInfo<?>> list = new ArrayList<>();
         if (serviceName != null && !serviceName.isBlank()) {
-            for (DebbieBeanInfo<?> debbieBeanInfo : beanInfoSet) {
+            for (BeanInfo<?> debbieBeanInfo : beanInfoSet) {
                 if (debbieBeanInfo.containName(serviceName)) {
                     if (type != null) {
                         var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                                || (debbieBeanInfo.getBeanInterface() != null
-                                && type.isAssignableFrom(debbieBeanInfo.getBeanInterface()));
+                                || (debbieBeanInfo instanceof DebbieClassBeanInfo
+                                    && ((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface() != null
+                                    && type.isAssignableFrom(((DebbieClassBeanInfo)debbieBeanInfo).getBeanInterface())
+                                );
                         if (flag) {
                             list.add(debbieBeanInfo);
                         }
@@ -273,12 +275,13 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
             throw new OneMoreBeanRegisteredException(serviceName + " must be only one");
         }
 
-        @SuppressWarnings("unchecked") DebbieBeanInfo<T> beanInfo = (DebbieBeanInfo<T>) list.get(0);
-        if (type == null || type.isAssignableFrom(beanInfo.getBeanClass())) {
-            if (beanInfo.getBeanType() == BeanType.SINGLETON) {
-                return beanInfo;
-            } else {
-                return beanInfo.copy();
+        var ele = list.get(0);
+        // @SuppressWarnings("unchecked") DebbieBeanInfo<T> beanInfo = (DebbieBeanInfo<T>) list.get(0);
+        if (type == null || type.isAssignableFrom(ele.getBeanClass())) {
+            if (ele.getBeanType() == BeanType.SINGLETON) {
+                return (BeanInfo<T>) ele;
+            } else if (ele instanceof MutableBeanInfo){
+                return ((MutableBeanInfo<T>)ele).copy();
             }
         }
         if (throwException)

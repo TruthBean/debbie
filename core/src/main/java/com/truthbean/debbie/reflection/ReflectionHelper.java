@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -374,7 +374,7 @@ public class ReflectionHelper {
         return null;
     }
 
-    public static Object invokeStaticMethod(Method declaredMethod, Object...args) {
+    public static Object invokeStaticMethod(Method declaredMethod, Object... args) {
         try {
             boolean cannotAccess = ((!Modifier.isPublic(declaredMethod.getModifiers())
                     || !Modifier.isPublic(declaredMethod.getDeclaringClass().getModifiers())) &&
@@ -457,7 +457,11 @@ public class ReflectionHelper {
                     methods.addAll(Arrays.asList(declaredMethods));
                 }
             } catch (Throwable e) {
-                LOGGER.error("", e);
+                if (e instanceof NoClassDefFoundError) {
+                    LOGGER.debug("class(" + superClass + ").getDeclaredMethods() error because " + e.getMessage());
+                } else {
+                    LOGGER.error("class(" + superClass + ").getDeclaredMethods() error.\n", e);
+                }
             }
         }
         Set<Class<?>> interfaces = getInterfaces(clazz);
@@ -600,7 +604,7 @@ public class ReflectionHelper {
     }
 
     public static Map<Class<? extends Annotation>, Annotation> getAnnotatedAnnotationOrAnnotation(Collection<? extends Annotation> annotations,
-                                                                                           Class<? extends Annotation> annotationClass) {
+                                                                                                  Class<? extends Annotation> annotationClass) {
         Map<Class<? extends Annotation>, Annotation> result = new HashMap<>();
         if (annotations.isEmpty()) {
             return result;
@@ -660,10 +664,10 @@ public class ReflectionHelper {
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n",
+                LOGGER.debug(targetClass.getName() + "." + fieldName + " set method not found. \n",
                         Objects.requireNonNullElse(cause, e));
             } else {
-                LOGGER.error(targetClass.getName() + "." + fieldName + " set method not found. \n", e.getMessage());
+                LOGGER.debug(targetClass.getName() + "." + fieldName + " set method not found. \n" + e.getMessage());
             }
             throw e;
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -844,7 +848,7 @@ public class ReflectionHelper {
 
         var methodName = "set" + handleFieldName(fieldName);
         try {
-            return invokeMethod(targetClass, target, methodName, new Class<?>[]{ parameterTypes }, new Object[]{arg});
+            return invokeMethod(targetClass, target, methodName, new Class<?>[]{parameterTypes}, new Object[]{arg});
         } catch (NoSuchMethodException e) {
             Throwable cause = e.getCause();
             if (LOGGER.isDebugEnabled()) {
@@ -855,7 +859,7 @@ public class ReflectionHelper {
             methodName = fieldName;
             LOGGER.warn("try to invoke " + methodName + " method");
             try {
-                return invokeMethod(targetClass, target, methodName, new Class<?>[]{ parameterTypes }, new Object[]{arg});
+                return invokeMethod(targetClass, target, methodName, new Class<?>[]{parameterTypes}, new Object[]{arg});
             } catch (NoSuchMethodException ex) {
                 cause = ex.getCause();
                 if (LOGGER.isDebugEnabled()) {

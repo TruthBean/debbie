@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.debbie.annotation.AnnotationInfo;
+import com.truthbean.debbie.annotation.AnnotationParser;
 import com.truthbean.debbie.lang.NonNull;
 
 import java.io.Serializable;
@@ -26,7 +28,7 @@ import java.util.*;
  */
 public class ClassInfo<C> implements Serializable {
     private final Class<C> clazz;
-    private final HashMap<Class<? extends Annotation>, Annotation> classAnnotations = new HashMap<>();
+    private final Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations;
 
     private final int classModifiers;
     private Constructor<C>[] constructors;
@@ -42,43 +44,24 @@ public class ClassInfo<C> implements Serializable {
         this.clazz = clazz;
         this.classModifiers = clazz.getModifiers();
 
+        this.classAnnotations = AnnotationParser.parseClassAnnotation(clazz);
+
         getClassInfo();
     }
 
     @SuppressWarnings("unchecked")
     private void getClassInfo() {
-        getClassAnnotationsMap();
 
         fields = new ArrayList<>();
         ReflectionHelper.getDeclaredFields(clazz).forEach(field -> fields.add(new FieldInfo(field)));
 
-        this.constructors = (Constructor<C>[]) clazz.getConstructors();
+        this.constructors = (Constructor<C>[]) clazz.getDeclaredConstructors();
         this.methods = ReflectionHelper.getDeclaredMethods(clazz);
         getMethodAnnotationMap();
 
         Type[] classActualTypes = ReflectionHelper.getActualTypes(clazz);
         if (classActualTypes != null && classActualTypes.length > 0) {
             this.actualTypes = Arrays.asList(classActualTypes);
-        }
-    }
-
-    private void getClassAnnotationsMap() {
-        Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
-
-        if (!annotations.isEmpty()) {
-            for (Annotation annotation : annotations) {
-                Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
-                if (!annotationInAnnotation.isEmpty()) {
-                    for (Annotation ann : annotationInAnnotation) {
-                        Class<? extends Annotation> annotationType = ann.annotationType();
-                        if (TypeHelper.filterAnnotation(annotationType)) {
-                            this.classAnnotations.put(ann.annotationType(), ann);
-                        }
-                    }
-                }
-
-                this.classAnnotations.put(annotation.annotationType(), annotation);
-            }
         }
     }
 
@@ -136,15 +119,18 @@ public class ClassInfo<C> implements Serializable {
         return !methodAnnotationMap.isEmpty();
     }
 
-    public Map<Class<? extends Annotation>, Annotation> getClassAnnotations() {
+    public Map<Class<? extends Annotation>, AnnotationInfo> getClassAnnotations() {
+        // Map<Class<? extends Annotation>, Annotation> map = new HashMap<>();
+        // classAnnotations.forEach((type, info) -> map.put(type, info.getOrigin()));
         return classAnnotations;
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Annotation> T getClassAnnotation(Class<T> annotationClass) {
         if (!classAnnotations.isEmpty()) {
-            Annotation annotation = classAnnotations.get(annotationClass);
-            return (T) annotation;
+            var info = classAnnotations.get(annotationClass);
+            if (info != null)
+                return (T) info.getOrigin();
         }
         return null;
     }
@@ -170,9 +156,9 @@ public class ClassInfo<C> implements Serializable {
 
     public <T extends Annotation> Annotation getAnnotatedClassAnnotation(Class<T> annotationClass) {
         if (!classAnnotations.isEmpty()) {
-            for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
+            for (Map.Entry<Class<? extends Annotation>, AnnotationInfo> entry : classAnnotations.entrySet()) {
                 if (entry.getKey().getAnnotation(annotationClass) != null) {
-                    return entry.getValue();
+                    return entry.getValue().getOrigin();
                 }
             }
         }
@@ -184,9 +170,9 @@ public class ClassInfo<C> implements Serializable {
         if (classAnnotations.isEmpty()) {
             return result;
         }
-        for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
+        for (Map.Entry<Class<? extends Annotation>, AnnotationInfo> entry : classAnnotations.entrySet()) {
             if (entry.getKey().getAnnotation(annotationClass) != null || entry.getKey().isInstance(annotationClass)) {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey(), entry.getValue().getOrigin());
             }
         }
         return result;

@@ -9,12 +9,14 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.data.transformer.DataTransformer;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -99,36 +101,38 @@ class DebbieBeanInitialization implements BeanInitialization {
 
     @Override
     public synchronized void init(Class<?> beanClass) {
-        if (beanClass.isAnonymousClass()) {
-            if ("".equals(beanClass.getSimpleName())) {
-                Class<?>[] interfaces = beanClass.getInterfaces();
-                if (interfaces.length == 1) {
-                    beanRegisterCenter.register(interfaces[0]);
-                } else {
-                    Class<?> superclass = beanClass.getSuperclass();
-                    if (superclass != Object.class) {
-                        beanRegisterCenter.register(superclass);
+        try {
+            if (beanClass.isAnonymousClass()) {
+                if ("".equals(beanClass.getSimpleName())) {
+                    Class<?>[] interfaces = beanClass.getInterfaces();
+                    if (interfaces.length == 1) {
+                        beanRegisterCenter.register(interfaces[0]);
+                    } else {
+                        Class<?> superclass = beanClass.getSuperclass();
+                        if (superclass != Object.class) {
+                            beanRegisterCenter.register(superclass);
+                        }
                     }
                 }
+            } else {
+                beanRegisterCenter.register(beanClass);
             }
-        } else {
-            beanRegisterCenter.register(beanClass);
+        } catch (Throwable e) {
+            if (e instanceof NoClassDefFoundError) {
+                LOGGER.debug(e.getMessage());
+            } else {
+                LOGGER.error("", e);
+            }
         }
     }
 
     @Override
     public void initBean(BeanInfo<?> beanInfo) {
-        DebbieBeanInfo<?> debbieBeanInfo;
-        if (beanInfo instanceof DebbieBeanInfo) {
-            debbieBeanInfo = (DebbieBeanInfo<?>) beanInfo;
-        } else {
-            debbieBeanInfo = new DebbieBeanInfo<>(beanInfo);
-        }
-        beanRegisterCenter.register(debbieBeanInfo);
+        beanRegisterCenter.register(beanInfo);
     }
 
     @Override
-    public void initSingletonBean(DebbieBeanInfo<?> beanInfo) {
+    public void initSingletonBean(MutableBeanInfo<?> beanInfo) {
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanRegisterCenter.register(beanInfo);
     }
@@ -161,27 +165,27 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass) {
+    public <T extends Annotation> Set<DebbieClassBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass) {
         return beanRegisterCenter.getAnnotatedClass(annotationClass);
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getAnnotatedBeans() {
+    public Set<DebbieClassBeanInfo<?>> getAnnotatedBeans() {
         return beanRegisterCenter.getAnnotatedBeans();
     }
 
     @Override
-    public <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedMethodBean(Class<T> annotationClass) {
+    public <T extends Annotation> Set<DebbieClassBeanInfo<?>> getAnnotatedMethodBean(Class<T> annotationClass) {
         return beanRegisterCenter.getAnnotatedMethodsBean(annotationClass);
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getBeanByInterface(Class<?> interfaceType) {
+    public Set<DebbieClassBeanInfo<?>> getBeanByInterface(Class<?> interfaceType) {
         return beanRegisterCenter.getBeansByInterface(interfaceType);
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getBeanByAbstractSuper(Class<?> abstractType) {
+    public Set<DebbieClassBeanInfo<?>> getBeanByAbstractSuper(Class<?> abstractType) {
         return beanRegisterCenter.getBeansByInterface(abstractType);
     }
 
@@ -213,11 +217,11 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getRegisteredBeans() {
-        Set<DebbieBeanInfo<?>> result = new HashSet<>();
-        Collection<DebbieBeanInfo<?>> registerRawBeans = new CopyOnWriteArrayList<>(beanRegisterCenter.getRegisterRawBeans());
+    public Set<BeanInfo<?>> getRegisteredBeans() {
+        Set<BeanInfo<?>> result = new HashSet<>();
+        Collection<BeanInfo<?>> registerRawBeans = new CopyOnWriteArrayList<>(beanRegisterCenter.getRegisterRawBeans());
         if (!registerRawBeans.isEmpty()) {
-            for (DebbieBeanInfo<?> registerRawBean : registerRawBeans) {
+            for (BeanInfo<?> registerRawBean : registerRawBeans) {
                 if (registerRawBean.isPresent() || registerRawBean.getBeanFactory() != null) {
                     result.add(registerRawBean);
                 }
@@ -227,9 +231,9 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public Set<DebbieBeanInfo<?>> getRegisteredRawBeans() {
-        Set<DebbieBeanInfo<?>> result = new HashSet<>();
-        Collection<DebbieBeanInfo<?>> registerRawBeans = beanRegisterCenter.getRegisterRawBeans();
+    public Set<MutableBeanInfo<?>> getRegisteredRawBeans() {
+        Set<MutableBeanInfo<?>> result = new HashSet<>();
+        Collection<MutableBeanInfo<?>> registerRawBeans = beanRegisterCenter.getRegisterRawBeans();
         if (!registerRawBeans.isEmpty()) {
             result.addAll(registerRawBeans);
         }
@@ -259,4 +263,6 @@ class DebbieBeanInitialization implements BeanInitialization {
         initialization = null;
         resourceResolver = null;
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInitialization.class);
 }

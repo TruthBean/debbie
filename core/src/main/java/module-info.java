@@ -66,6 +66,9 @@ module com.truthbean.debbie.core {
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
     uses com.truthbean.debbie.task.TaskAction;
 
+    provides com.truthbean.logger.LoggerConfig
+            with com.truthbean.debbie.boot.DebbieLoggerConfig;
+
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.core.DebbieCoreModuleStarter;
 }

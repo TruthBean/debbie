@@ -10,6 +10,7 @@
 package com.truthbean.debbie.annotation;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -19,31 +20,88 @@ import java.util.*;
  */
 public class AnnotationInfo {
     private final Annotation origin;
+    private final Class<? extends Annotation> type;
 
-    private final Map<String, Object> properties = new HashMap<>();
-
-    private final Map<String, AnnotationMethodInfo> methods = new HashMap<>();
+    private final Map<String, AnnotationMethodInfo> properties = new HashMap<>();
 
     public AnnotationInfo(Annotation origin) {
         this.origin = origin;
+        this.type = origin.annotationType();
+        this.setPropertiesDefaultValue();
+    }
+
+    private void setPropertiesDefaultValue() {
+        Method[] declaredMethods = type.getDeclaredMethods();
+        for (Method declaredMethod : declaredMethods) {
+            AnnotationMethodInfo methodInfo = new AnnotationMethodInfo();
+            methodInfo.setMethod(declaredMethod);
+            String methodName = declaredMethod.getName();
+            methodInfo.setMethodName(methodName);
+            properties.put(methodName, methodInfo);
+        }
     }
 
     public Annotation getOrigin() {
         return origin;
     }
 
-    public Map<String, Object> properties() {
+    public Class<? extends Annotation> annotationType() {
+        return type;
+    }
+
+    public Map<String, AnnotationMethodInfo> properties() {
         return properties;
     }
 
-    public Map<String, AnnotationMethodInfo> methods() {
-        return methods;
+    public boolean containAnnotation(Class<? extends Annotation> annotationClass) {
+        for (Map.Entry<String, AnnotationMethodInfo> entry : properties.entrySet()) {
+            var info = entry.getValue();
+            if (info.getAliasForAnnotation() == annotationClass) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T invokeAttribute(String attribute) {
+        for (Map.Entry<String, AnnotationMethodInfo> entry : properties.entrySet()) {
+            var name = entry.getKey();
+            if (name.equals(attribute)) {
+                var info = entry.getValue();
+                return (T) info.getValue();
+            }
+        }
+        return null;
+    }
+
+    public void setPropertyValue(String name, Object value) {
+        for (Map.Entry<String, AnnotationMethodInfo> entry : properties.entrySet()) {
+            var propertyName = entry.getKey();
+            if (propertyName.equals(name)) {
+                var methodInfo = entry.getValue();
+                methodInfo.setValue(value);
+                break;
+            }
+        }
+    }
+
+    void handlePropertyAliasFor() {
+        for (Map.Entry<String, AnnotationMethodInfo> entry : properties.entrySet()) {
+            var info = entry.getValue();
+            Class<? extends Annotation> alias = info.getAliasForAnnotation();
+            if (info.hasAliasFor() && alias == Annotation.class || alias == origin.annotationType()) {
+                var aliasInfo = properties.get(info.getAliasForAttribute());
+                if (aliasInfo.isDefaultValue()) {
+                    aliasInfo.setValue(info.getValue());
+                }
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "{" + "\"origin\":" + origin + ","
-                + "\"properties\":" + properties + ","
-                + "\"methods\":" + methods + "}";
+                + "\"properties\":" + properties + "}";
     }
 }

@@ -30,6 +30,9 @@ import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -89,21 +92,17 @@ public final class UndertowServerApplication extends AbstractWebServerApplicatio
     }
 
     @Override
-    public void start(long beforeStartTime, String... args) {
+    public void start(Instant beforeStartTime, String... args) {
         server.start();
         printlnWebUrl(LOGGER, configuration.getPort());
-        double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) +
-                "ms ( JVM running for "  + uptime + "ms )");
+        super.printStartTime();
         postBeforeStart();
     }
 
     @Override
-    public void exit(long beforeStartTime, String... args) {
+    public void exit(Instant beforeStartTime, String... args) {
         server.stop();
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-        }
+        super.printExitTime();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UndertowServerApplication.class);

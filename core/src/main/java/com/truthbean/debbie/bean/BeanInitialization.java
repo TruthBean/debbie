@@ -44,7 +44,7 @@ public interface BeanInitialization {
 
     void initBean(BeanInfo<?> beanInfo);
 
-    void initSingletonBean(DebbieBeanInfo<?> beanInfo);
+    void initSingletonBean(MutableBeanInfo<?> beanInfo);
 
     void refreshSingletonBean(MutableBeanInfo<?> beanInfo);
 
@@ -54,25 +54,25 @@ public interface BeanInitialization {
 
     void init(ClassLoader classLoader, String... packageName);
 
-    <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass);
+    <T extends Annotation> Set<DebbieClassBeanInfo<?>> getAnnotatedClass(Class<T> annotationClass);
 
-    Set<DebbieBeanInfo<?>> getAnnotatedBeans();
+    Set<DebbieClassBeanInfo<?>> getAnnotatedBeans();
 
-    <T extends Annotation> Set<DebbieBeanInfo<?>> getAnnotatedMethodBean(Class<T> annotationClass);
+    <T extends Annotation> Set<DebbieClassBeanInfo<?>> getAnnotatedMethodBean(Class<T> annotationClass);
 
-    Set<DebbieBeanInfo<?>> getBeanByInterface(Class<?> interfaceType);
+    Set<DebbieClassBeanInfo<?>> getBeanByInterface(Class<?> interfaceType);
 
-    Set<DebbieBeanInfo<?>> getBeanByAbstractSuper(Class<?> abstractType);
+    Set<DebbieClassBeanInfo<?>> getBeanByAbstractSuper(Class<?> abstractType);
 
     Set<Class<? extends Annotation>> getBeanAnnotations();
 
-    <Bean> DebbieBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean);
+    <Bean> MutableBeanInfo<Bean> getRegisterRawBean(Class<Bean> bean);
 
     <Bean> Bean getRegisterBean(Class<Bean> bean) ;
 
-    Set<DebbieBeanInfo<?>> getRegisteredBeans();
+    Set<BeanInfo<?>> getRegisteredBeans();
 
-    Set<DebbieBeanInfo<?>> getRegisteredRawBeans();
+    Set<MutableBeanInfo<?>> getRegisteredRawBeans();
 
     Set<Class<?>> getRegisteredRawBeanType();
 

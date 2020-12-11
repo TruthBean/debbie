@@ -9,12 +9,15 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.DebbieClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.BodyParameter;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RequestParameter;
 import com.truthbean.debbie.mvc.request.RequestParameterType;
 import com.truthbean.debbie.mvc.response.ResponseContentHandlerFactory;
@@ -39,46 +42,174 @@ import java.util.*;
 public class MvcRouterRegister {
     private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
 
+    private static volatile MvcRouterRegister instance;
+    private final MvcConfiguration webConfiguration;
+
+    private MvcRouterRegister(MvcConfiguration webConfiguration) {
+        this.webConfiguration = webConfiguration;
+    }
+
     public static void registerRouter(MvcConfiguration webConfiguration, ApplicationContext applicationContext) {
+        // create instalace
+        getInstance(webConfiguration);
+        // config
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        // todo rest
-        Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
-        for (DebbieBeanInfo<?> classInfo : classInfoSet) {
-            Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
-            Watcher watcher = (Watcher) classAnnotations.get(Watcher.class);
+        Set<DebbieClassBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
+        for (DebbieClassBeanInfo<?> classInfo : classInfoSet) {
+            Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = classInfo.getClassAnnotations();
+            Watcher watcher = classInfo.getClassAnnotation(Watcher.class);
             if (watcher == null || watcher.type() == WatcherType.HTTP) {
-                registerRouter(classAnnotations, classInfo, webConfiguration, applicationContext);
+                registerRouter(HttpRouterParser.parse(classAnnotations), classInfo, webConfiguration, applicationContext);
             }
         }
+    }
+
+    public static MvcRouterRegister getInstance(MvcConfiguration webConfiguration) {
+        if (instance == null)
+        synchronized (MvcRouterRegister.class) {
+            if (instance == null)
+                instance = new MvcRouterRegister(webConfiguration);
+        }
+        return instance;
+    }
+
+    public MvcRouterRegister router(HttpMethod[] method, String[] urlPattern, MvcRouter router) {
+        RouterInfo info = new RouterInfo();
+        RouterAnnotationInfo annotationInfo = new RouterAnnotationInfo();
+        annotationInfo.setMethod(method);
+        annotationInfo.setUrlPatterns(urlPattern);
+        info.setAnnotationInfo(annotationInfo);
+
+        List<RouterPathFragments> routerPathFragments =
+                RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), null, annotationInfo);
+        info.setPaths(routerPathFragments);
+
+        RouterResponse response = new RouterResponse();
+
+        setTemplate(response, annotationInfo, webConfiguration);
+        info.setResponse(response);
+
+        var defaultResponseTypes = webConfiguration.getDefaultResponseTypes();
+        var defaultContentTypes = webConfiguration.getDefaultContentTypes();
+        if (!defaultContentTypes.isEmpty()) {
+            info.setRequestType(defaultResponseTypes.iterator().next().toMediaType());
+        } else {
+            if (!webConfiguration.isAcceptClientContentType()) {
+                throw new RuntimeException("requestType cannot be MediaType.ANY. Or config default request type. Or accept client content type.");
+            } else {
+                info.setRequestType(MediaType.ANY);
+            }
+        }
+
+        if (info.getRequestType() == null) {
+            info.setRequestType(MediaType.ANY);
+        }
+
+        info.setExecutor(new SimpleRouterExecutor(router));
+
+        LOGGER.debug(() -> "register router: " + info);
+        ROUTER_INFO_SET.add(info);
+        return this;
+    }
+
+    public MvcRouterRegister get(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.GET}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister post(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.POST}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister connect(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.CONNECT}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister delete(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.DELETE}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister head(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.HEAD}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister options(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.OPTIONS}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister patch(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.PATCH}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister put(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.PUT}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister trace(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.TRACE}, new String[]{urlPattern}, router);
+    }
+
+    public MvcRouterRegister get(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.GET}, urlPattern, router);
+    }
+
+    public MvcRouterRegister post(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.POST}, urlPattern, router);
+    }
+
+    public MvcRouterRegister connect(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.CONNECT}, urlPattern, router);
+    }
+
+    public MvcRouterRegister delete(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.DELETE}, urlPattern, router);
+    }
+
+    public MvcRouterRegister head(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.HEAD}, urlPattern, router);
+    }
+
+    public MvcRouterRegister options(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.OPTIONS}, urlPattern, router);
+    }
+
+    public MvcRouterRegister patch(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.PATCH}, urlPattern, router);
+    }
+
+    public MvcRouterRegister put(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.PUT}, urlPattern, router);
+    }
+
+    public MvcRouterRegister trace(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.TRACE}, urlPattern, router);
     }
 
     public static void registerRouter(RouterInfo routerInfo) {
         ROUTER_INFO_SET.add(routerInfo);
     }
 
-    private static void registerRouter(Map<Class<? extends Annotation>, Annotation> classAnnotations,
+    private static void registerRouter(HttpRouterInfo httpRouterInfo,
                                        ClassInfo<?> classInfo, MvcConfiguration webConfiguration,
                                        ApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
-        Router prefixRouter = (Router) classAnnotations.get(Router.class);
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();
         for (var method : methods) {
             RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method, classLoader);
             List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method, clazz, classLoader);
             if (router != null) {
-                var routerInfo = new RouterInfo();
-                routerInfo.setRouterClass(classInfo.getClazz());
-                routerInfo.setMethod(method);
+                MethodRouterExecutor routerExecutor = new MethodRouterExecutor();
+                var routerInfo = new RouterInfo(routerExecutor);
+                routerExecutor.setRouterClass(classInfo.getClazz());
+                routerInfo.setAnnotationInfo(router);
+                routerExecutor.setMethod(method);
 
                 var stackMethod = classInfo.getClazz().getName() + "." + method.getName();
                 LOGGER.debug(() -> "register router method: " + stackMethod);
 
                 List<RouterPathFragments> routerPathFragments =
-                        RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), prefixRouter, router);
+                        RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), httpRouterInfo, router);
                 routerInfo.setPaths(routerPathFragments);
-
-                routerInfo.setRequestMethod(Arrays.asList(router.method()));
 
                 RouterResponse response = new RouterResponse();
                 response.setRestResponseClass(method.getReturnType());
@@ -162,7 +293,7 @@ public class MvcRouterRegister {
                 }
 
                 routerInfo.setResponse(response);
-                routerInfo.setMethodParams(methodParams);
+                routerExecutor.setMethodParams(methodParams);
                 LOGGER.debug(() -> "register router: " + routerInfo);
                 ROUTER_INFO_SET.add(routerInfo);
             }

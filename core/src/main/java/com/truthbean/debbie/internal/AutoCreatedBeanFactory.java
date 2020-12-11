@@ -38,15 +38,16 @@ class AutoCreatedBeanFactory {
     private final ThreadPooledExecutor autoCreatedBeanExecutor = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void autoCreateBeans() {
-        final Set<DebbieBeanInfo<?>> autoCreatedBean = beanInfoFactory.getAutoCreatedBean();
+    void autoCreateBeans() {
+        final Set<BeanInfo<?>> autoCreatedBean = beanInfoFactory.getAutoCreatedBean();
         autoCreatedBeanExecutor.execute(() -> {
-            for (DebbieBeanInfo localBeanInfo : autoCreatedBean) {
-                Boolean lazyCreate = localBeanInfo.getLazyCreate();
-                if (lazyCreate != null && !lazyCreate) {
+            for (BeanInfo localBeanInfo : autoCreatedBean) {
+                boolean lazyCreate = localBeanInfo.isLazyCreate();
+                if (!lazyCreate && localBeanInfo instanceof MutableBeanInfo) {
                     try {
-                        localBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
-                        beanInitialization.refreshBean(localBeanInfo);
+                        MutableBeanInfo mutableBeanInfo = (MutableBeanInfo) localBeanInfo;
+                        mutableBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
+                        beanInitialization.refreshBean(mutableBeanInfo);
                     } catch (Exception e) {
                         LOGGER.error("", e);
                     }
@@ -55,7 +56,7 @@ class AutoCreatedBeanFactory {
         });
     }
 
-    public void stopAll() {
+    void stopAll() {
         autoCreatedBeanExecutor.destroy();
     }
 

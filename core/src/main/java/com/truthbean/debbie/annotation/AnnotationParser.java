@@ -10,9 +10,14 @@
 package com.truthbean.debbie.annotation;
 
 import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -27,6 +32,9 @@ public class AnnotationParser {
         for (Method declaredMethod : declaredMethods) {
             AnnotationMethodInfo methodInfo = new AnnotationMethodInfo();
             methodInfo.setMethod(declaredMethod);
+            methodInfo.setMethodName(declaredMethod.getName());
+            var value = ReflectionHelper.invokeMethod(annotation, declaredMethod);
+            methodInfo.setValue(value);
             AliasFor aliasFor = declaredMethod.getAnnotation(AliasFor.class);
             if (aliasFor != null) {
                 methodInfo.setAliasFor(true);
@@ -39,11 +47,88 @@ public class AnnotationParser {
                     attribute = declaredMethod.getName();
                 }
                 methodInfo.setAliasForAttribute(attribute);
-                methodInfo.setMethodName(declaredMethod.getName());
             }
-            info.methods().put(declaredMethod.getName(), methodInfo);
-            info.properties().put(declaredMethod.getName(), ReflectionHelper.invokeMethod(annotation, declaredMethod));
+            info.properties().put(declaredMethod.getName(), methodInfo);
         }
         return info;
+    }
+
+    public static Map<Class<? extends Annotation>, AnnotationInfo> parseClassAnnotation(Class<?> clazz) {
+        Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
+
+        Set<Annotation> classAnnotations = new HashSet<>();
+        Map<Class<? extends Annotation>, AnnotationInfo> map = new HashMap<>();
+
+        if (!annotations.isEmpty()) {
+            for (Annotation annotation : annotations) {
+                Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
+                if (!annotationInAnnotation.isEmpty()) {
+                    for (Annotation ann : annotationInAnnotation) {
+                        Class<? extends Annotation> annotationType = ann.annotationType();
+                        if (TypeHelper.filterAnnotation(annotationType)) {
+                            map.put(ann.annotationType(), new AnnotationInfo(ann));
+                            classAnnotations.add(ann);
+                        }
+                    }
+                }
+
+                if (TypeHelper.filterAnnotation(annotation.annotationType())) {
+                    map.put(annotation.annotationType(), new AnnotationInfo(annotation));
+                    classAnnotations.add(annotation);
+                }
+            }
+        }
+        for (Annotation annotation : classAnnotations) {
+            if (TypeHelper.filterAnnotation(annotation.annotationType())) {
+                parseClassAnnotation(map.get(annotation.annotationType()), map, null, null);
+            }
+        }
+        return map;
+    }
+
+    private static void parseClassAnnotation(AnnotationInfo info, Map<Class<? extends Annotation>, AnnotationInfo> map,
+                                            String attributeName, Object attributeValue) {
+        Class<? extends Annotation> type = info.annotationType();
+        info.properties().forEach((name, methodInfo) -> {
+            Method declaredMethod = methodInfo.getMethod();
+            String methodName = methodInfo.getMethodName();
+            var value = ReflectionHelper.invokeMethod(info.getOrigin(), declaredMethod);
+            if (methodName.equals(attributeName)) {
+                methodInfo.setValue(attributeValue);
+                value = attributeValue;
+            } else {
+                methodInfo.setValue(value);
+            }
+            AliasFor aliasFor = declaredMethod.getAnnotation(AliasFor.class);
+            if (aliasFor != null) {
+                methodInfo.setAliasFor(true);
+                var anno = aliasFor.annotation();
+                if (anno == Annotation.class) {
+                    methodInfo.setAliasForAnnotation(type);
+                } else {
+                    methodInfo.setAliasForAnnotation(anno);
+                }
+                String attribute = aliasFor.attribute().trim();
+                if (attribute.isBlank()) {
+                    attribute = aliasFor.value().trim();
+                }
+                if (attribute.isBlank()) {
+                    attribute = declaredMethod.getName();
+                }
+                if (map.containsKey(anno)) {
+                    var annoInfo = map.get(anno);
+                    if (annoInfo != null) {
+                        annoInfo.setPropertyValue(attribute, value);
+                        annoInfo.handlePropertyAliasFor();
+                    }
+                } else {
+                    var annoAnno = type.getAnnotation(anno);
+                    if (annoAnno != null)
+                        parseClassAnnotation(new AnnotationInfo(annoAnno), map, attribute, value);
+                }
+                methodInfo.setAliasForAttribute(attribute);
+            }
+        });
+        info.handlePropertyAliasFor();
     }
 }

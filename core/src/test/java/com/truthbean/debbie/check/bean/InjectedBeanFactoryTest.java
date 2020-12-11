@@ -1,10 +1,7 @@
 package com.truthbean.debbie.check.bean;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.BeanInfoFactory;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.bean.InjectedBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.bean.inter.Abc;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -37,7 +34,7 @@ class InjectedBeanFactoryTest {
             InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
             GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
-            DebbieBeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
+            BeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
             System.out.println("------------------------------------------------------------------------------");
             Abc factory = globalBeanFactory.factory(Abc.class);
             System.out.println(factory.toString());

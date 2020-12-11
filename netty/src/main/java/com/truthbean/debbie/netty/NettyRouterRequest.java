@@ -189,8 +189,13 @@ public class NettyRouterRequest implements RouterRequest {
     public void setTextBody(HttpContent httpContent) {
         HttpContent copy = httpContent.copy();
         ByteBuf content = copy.content();
+        StringBuilder sb = new StringBuilder();
         if (content.isReadable()) {
-            this.routerRequestCache.setTextBody(content.toString(StandardCharsets.UTF_8));
+            sb.append(content.toString(StandardCharsets.UTF_8));
+        }
+        var text = sb.toString();
+        if (!text.isEmpty()) {
+            this.routerRequestCache.setTextBody(sb.toString());
         }
         copy.release();
     }

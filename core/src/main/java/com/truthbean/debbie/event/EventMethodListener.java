@@ -21,4 +21,6 @@ import java.lang.annotation.*;
 public @interface EventMethodListener {
 
     boolean async() default true;
+
+    boolean allowConcurrent() default false;
 }

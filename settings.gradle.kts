@@ -10,12 +10,13 @@
 rootProject.name = "debbie"
 
 val modules =
-        arrayOf("core", "metrics", "cron",
+        arrayOf("core",
+                "metrics", "cron",
                 "jdbc", "mvc", "rmi",
                 "servlet", "httpclient", "hikari",
                 "server",
                 "tomcat", "undertow", "netty", "aio",
-                "dependencies",
+                "dependencies", "agent",
                 "test"
         )
 

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 
 /**
@@ -22,6 +23,8 @@ public interface DebbieApplication {
     void start(String... args);
 
     void exit(String... args);
+
+    ApplicationContext getApplicationContext();
 
     static void run(Class<?> applicationClass, String... args) {
         DebbieApplicationFactory.create(applicationClass, args).start(args);

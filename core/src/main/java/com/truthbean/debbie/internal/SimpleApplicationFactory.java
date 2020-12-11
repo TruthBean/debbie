@@ -17,6 +17,9 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * @author truthbean
@@ -36,15 +39,13 @@ class SimpleApplicationFactory extends AbstractApplication {
     }
 
     @Override
-    protected void start(long beforeStartTime, String... args) {
-        double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        logger.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) +
-                "ms ( JVM running for "  + uptime + "ms )");
+    protected void start(Instant beforeStartTime, String... args) {
+        super.printStartTime();
         postBeforeStart();
     }
 
     @Override
-    public void exit(long beforeStartTime, String... args) {
-        logger.trace(() -> "application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
+    public void exit(Instant beforeStartTime, String... args) {
+        super.printExitTime();
     }
 }

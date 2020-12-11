@@ -15,5 +15,6 @@ public class Test2EventListener implements DebbieEventListener<Test2Event> {
         System.out.println(Test2EventListener.class + " do event.....");
         System.out.println(event.getEvent() + 1);
         System.out.println(testBean);
+        throw new RuntimeException("test error....");
     }
 }

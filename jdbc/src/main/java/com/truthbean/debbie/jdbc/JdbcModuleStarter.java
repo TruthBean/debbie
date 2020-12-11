@@ -56,8 +56,8 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void registerCustomRepository(BeanInitialization beanInitialization, GlobalBeanFactory beanFactory) {
-        Set<DebbieBeanInfo<?>> repository = beanInitialization.getAnnotatedClass(SqlRepository.class);
-        for (DebbieBeanInfo<?> debbieBeanInfo : repository) {
+        Set<DebbieClassBeanInfo<?>> repository = beanInitialization.getAnnotatedClass(SqlRepository.class);
+        for (DebbieClassBeanInfo<?> debbieBeanInfo : repository) {
             if (debbieBeanInfo.isAssignable(JdbcRepository.class)) {
                 BeanFactory repositoryFactory = new CustomRepositoryFactory(debbieBeanInfo);
                 repositoryFactory.setGlobalBeanFactory(beanFactory);

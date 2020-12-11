@@ -24,6 +24,10 @@ import java.util.function.Supplier;
  */
 public interface BeanInfo<Bean> {
 
+    default boolean isLazyCreate() {
+        return true;
+    }
+
     default BeanFactory<Bean> getBeanFactory() {
         return null;
     }
@@ -37,10 +41,7 @@ public interface BeanInfo<Bean> {
         return beanType == BeanType.SINGLETON;
     }
 
-    @SuppressWarnings("unchecked")
-    default Class<Bean> getClazz() {
-        return (Class<Bean>) getBean().getClass();
-    }
+    Class<Bean> getBeanClass();
 
     BeanType getBeanType();
 
@@ -48,7 +49,7 @@ public interface BeanInfo<Bean> {
         Set<String> beanNames = getBeanNames();
         String name = beanNames.isEmpty() ? null : beanNames.iterator().next();
         if (name == null || name.isBlank()) {
-            name = getClazz().getSimpleName();
+            name = getBeanClass().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
             beanNames.add(name);
         }

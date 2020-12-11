@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
@@ -34,200 +35,28 @@ import java.util.function.Supplier;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBeanInfo<Bean>, DetailedBeanInfo<Bean> {
+public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     private final Set<String> beanNames = new HashSet<>();
     private int order;
 
     private BeanType beanType;
     private Boolean lazyCreate;
 
+    private final Class<Bean> beanClass;
     private BeanFactory<Bean> beanFactory;
     private Bean bean;
 
-    private boolean noInterface = false;
-    private Class<?> beanInterface;
-
-    private Method initMethod;
-    private Method destroyMethod;
-
-    private List<BeanExecutableDependence> constructorBeanDependent;
-    private List<BeanExecutableDependence> initMethodBeanDependent;
-    private Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent;
-    private boolean hasVirtualValue;
-
     public DebbieBeanInfo(Class<Bean> beanClass) {
-        super(beanClass);
-        Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
-        if (classAnnotations == null || classAnnotations.isEmpty())
-            return;
-
-        for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
-            Class<? extends Annotation> key = entry.getKey();
-            Annotation value = entry.getValue();
-            // 如果有其他Annotation，则使用其他的，而不是BeanComponent
-            if (key != BeanComponent.class && resolveComponent(key, value))
-                break;
-        }
-        // resolve BeanComponent if has no bean Annotation, use it
-        if (!resolveBeanComponent(classAnnotations.get(BeanComponent.class))) {
-            // resolve custom component annotation
-            LOGGER.warn("class(" + beanClass + ") no @BeanComponent");
-        }
-    }
-
-    public DebbieBeanInfo(Class<Bean> beanClass, Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotationTypes) {
-        super(beanClass);
-        Map<Class<? extends Annotation>, Annotation> classAnnotations = getClassAnnotations();
-        if (classAnnotations == null || classAnnotations.isEmpty())
-            return;
-
-        for (Map.Entry<Class<? extends Annotation>, Annotation> entry : classAnnotations.entrySet()) {
-            Class<? extends Annotation> key = entry.getKey();
-            Annotation value = entry.getValue();
-            // 如果有其他Annotation，则使用其他的，而不是BeanComponent
-            if (key != BeanComponent.class && resolveComponent(key, value))
-                break;
-        }
-        // resolve BeanComponent if has no bean Annotation, use it
-        if (!resolveBeanComponent(classAnnotations.get(BeanComponent.class))) {
-            // resolve custom component annotation
-            LOGGER.warn("class(" + beanClass + ") no @BeanComponent");
-            for (Map.Entry<Class<? extends Annotation>, BeanComponentParser> entry : componentAnnotationTypes.entrySet()) {
-                var type = entry.getKey();
-                var parser = entry.getValue();
-                if (classAnnotations.containsKey(type)) {
-                    var info = parser.parse(classAnnotations.get(type), beanClass);
-                    setBeanComponent(info);
-                    break;
-                }
-            }
-        }
+        this.beanClass = beanClass;
     }
 
     public DebbieBeanInfo(BeanInfo<Bean> beanInfo) {
-        super(beanInfo.getClazz());
+        this.beanClass = beanInfo.getBeanClass();
         this.bean = beanInfo.getBean();
         this.addBeanName(beanInfo.getServiceName());
         this.addBeanNames(beanInfo.getBeanNames());
         this.beanFactory = beanInfo.getBeanFactory();
         this.beanType = beanInfo.getBeanType();
-    }
-
-    public void setInitMethod(Method initMethod) {
-        this.initMethod = initMethod;
-    }
-
-    public Method getInitMethod() {
-        return initMethod;
-    }
-
-    public void setDestroyMethod(Method destroyMethod) {
-        this.destroyMethod = destroyMethod;
-    }
-
-    public Method getDestroyMethod() {
-        return destroyMethod;
-    }
-
-    public void setConstructorBeanDependent(List<BeanExecutableDependence> constructorBeanDependent) {
-        this.constructorBeanDependent = constructorBeanDependent;
-    }
-
-    public void addConstructorBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
-        if (this.constructorBeanDependent == null) {
-            this.constructorBeanDependent = new ArrayList<>();
-        }
-        this.constructorBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass()));
-    }
-
-    public void setInitMethodBeanDependent(List<BeanExecutableDependence> initMethodBeanDependent) {
-        this.initMethodBeanDependent = initMethodBeanDependent;
-    }
-
-    public void addInitMethodBeanDependent(Integer index, DebbieBeanInfo<?> beanInfo) {
-        if (this.initMethodBeanDependent == null) {
-            this.initMethodBeanDependent = new ArrayList<>();
-        }
-        this.initMethodBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass()));
-    }
-
-    public void setFieldBeanDependent(Map<FieldInfo, DebbieBeanInfo<?>> fieldBeanDependent) {
-        this.fieldBeanDependent = fieldBeanDependent;
-    }
-
-    public void addFieldBeanDependent(Field field, DebbieBeanInfo<?> debbieBeanInfo) {
-        if (this.fieldBeanDependent == null) {
-            this.fieldBeanDependent = new HashMap<>();
-        }
-        this.fieldBeanDependent.put(new FieldInfo(field), debbieBeanInfo);
-    }
-
-    public List<BeanExecutableDependence> getInitMethodBeanDependent() {
-        if (initMethodBeanDependent == null) {
-            initMethodBeanDependent = new ArrayList<>();
-        }
-        return initMethodBeanDependent;
-    }
-
-    public boolean isInitMethodBeanDependentHasValue() {
-        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
-            if (!dependence.isPresent()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public List<BeanExecutableDependence> getConstructorBeanDependent() {
-        if (constructorBeanDependent == null) {
-            constructorBeanDependent = new ArrayList<>();
-        }
-        return constructorBeanDependent;
-    }
-
-    public void getCircleDependencyInConstructor() {
-        if (constructorBeanDependent == null)
-            return;
-        for (BeanExecutableDependence dependence : constructorBeanDependent) {
-            getCircleDependencyInConstructor(this, dependence.getBeanInfo(), new StringBuilder());
-        }
-    }
-
-    public void getCircleDependencyInConstructor(DebbieBeanInfo<?> beanInfo, DebbieBeanInfo<?> dependency,
-                                                 StringBuilder dependencyLine) {
-        if (dependency == null || dependency.constructorBeanDependent == null)
-            return;
-        Class<?> beanType = beanInfo.getBeanClass();
-        for (BeanExecutableDependence dependence : dependency.constructorBeanDependent) {
-            var type = dependence.getType();
-            LOGGER.trace(beanType + " ===>>> " + type);
-            if (beanType == type) {
-                LOGGER.error(beanType + " --> " + type);
-            } else {
-                getCircleDependencyInConstructor(beanInfo, dependence.getBeanInfo(), dependencyLine);
-            }
-        }
-    }
-
-    public boolean isConstructorBeanDependentHasValue() {
-        for (BeanExecutableDependence dependence : constructorBeanDependent) {
-            if (dependence.getBeanInfo() != null && dependence.getBeanInfo().isEmpty())
-                return false;
-        }
-        return true;
-    }
-
-    public Map<FieldInfo, DebbieBeanInfo<?>> getFieldBeanDependent() {
-        return fieldBeanDependent;
-    }
-
-
-    public boolean hasNoVirtualValue() {
-        return !hasVirtualValue;
-    }
-
-    public void setHasVirtualValue(boolean hasVirtualValue) {
-        this.hasVirtualValue = hasVirtualValue;
     }
 
     @Override
@@ -269,11 +98,15 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
 
         if (lazyCreate == null)
             lazyCreate = info.isLazy();
+        else {
+            // note: default value is true
+            lazyCreate = true;
+        }
 
         if (beanFactory == null && info.getFactory() != null) {
             Class<? extends BeanFactory> factory = info.getFactory();
             if (factory != null && factory != BeanFactory.class) {
-                BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{DebbieBeanInfo.class},
+                BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{BeanInfo.class},
                         new Object[]{this});
                 setBeanFactory(beanFactory);
             }
@@ -306,44 +139,15 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> Class<T> getBeanClass() {
-        return (Class<T>) super.getClazz();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> Class<T> getBeanInterface() {
-        if (noInterface) return null;
-        if (beanInterface == null) {
-            Class<?> clazz = super.getClazz();
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length == 0) {
-                LOGGER.trace(() -> clazz.getName() + " has no direct interface");
-                noInterface = true;
-                beanInterface = null;
-            } else {
-                beanInterface = interfaces[0];
-                noInterface = false;
-                if (beanInterface.getPackageName().startsWith("java.")
-                        || beanInterface == JavaassistProxyBean.class
-                        || beanInterface == DebbieProperties.class || beanInterface == DebbieConfiguration.class
-                        || beanInterface == ApplicationContextAware.class || beanInterface == ClassLoaderAware.class
-                        || beanInterface == BeanAware.class || beanInterface == GlobalBeanFactoryAware.class
-                        || beanInterface == InjectedBeanFactoryAware.class || beanInterface == DebbieEventPublisherAware.class) {
-                    beanInterface = null;
-                    noInterface = true;
-                }
-            }
-        }
-        return (Class<T>) beanInterface;
+    public Class<Bean> getBeanClass() {
+        return beanClass;
     }
 
     @Override
     public String getServiceName() {
         String name = this.beanNames.isEmpty() ? null : this.beanNames.iterator().next();
         if (name == null || name.isBlank()) {
-            name = super.getClazz().getSimpleName();
+            name = this.getBeanClass().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
             this.beanNames.add(name);
         }
@@ -387,8 +191,8 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
     }
 
     @Override
-    public Boolean getLazyCreate() {
-        return lazyCreate;
+    public boolean isLazyCreate() {
+        return lazyCreate != null && lazyCreate;
     }
 
     @Override
@@ -441,7 +245,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
 
     @Override
     public DebbieBeanInfo<Bean> copy() {
-        DebbieBeanInfo<Bean> beanInfo = new DebbieBeanInfo<>(getClazz());
+        DebbieBeanInfo<Bean> beanInfo = new DebbieBeanInfo<>(getBeanClass());
 
         if (!beanNames.isEmpty()) {
             beanInfo.beanNames.addAll(beanNames);
@@ -461,7 +265,7 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {
-            Class<Bean> beanClass = getClazz();
+            Class<Bean> beanClass = getBeanClass();
             if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && bean != null) {
                 if (BeanClosure.class.isAssignableFrom(beanClass)) {
                     ((BeanClosure) bean).destroy();
@@ -482,6 +286,18 @@ public class DebbieBeanInfo<Bean> extends ClassInfo<Bean> implements MutableBean
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "\"DebbieBeanInfo\":{" +
+                "\"beanNames\":" + beanNames + "," +
+                "\"order\":" + order + "," +
+                "\"beanType\":" + beanType + "," +
+                "\"lazyCreate\":" + lazyCreate + "," +
+                "\"beanClass\":" + beanClass + "," +
+                "\"beanFactory\":" + beanFactory + "," +
+                "\"bean\":" + bean + "}";
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanInfo.class);

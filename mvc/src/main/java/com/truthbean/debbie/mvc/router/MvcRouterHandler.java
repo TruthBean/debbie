@@ -92,7 +92,7 @@ public class MvcRouterHandler {
                 continue;
             }
             if (response.getHandler() == null || response.getHandler().getClass() == NothingResponseHandler.class) {
-                if (responseType.isAny() && responseTypeInRequestHeader.isAny()) {
+                if (responseType == null || (responseType.isAny() && responseTypeInRequestHeader.isAny())) {
                     if (defaultResponseTypes.isEmpty()) {
                         LOGGER.error("responseTypes has not default value, set application/json as default!");
                         defaultResponseTypes.add(MediaType.APPLICATION_JSON_UTF8.info());

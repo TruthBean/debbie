@@ -27,6 +27,12 @@ public class NamedThreadFactory implements ThreadFactory {
     private Boolean daemon;
     private Integer priority;
 
+    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+
+    public static NamedThreadFactory defaultThreadFactory() {
+        return new NamedThreadFactory().setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
+    }
+
     public NamedThreadFactory() {
         var s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
@@ -88,6 +94,11 @@ public class NamedThreadFactory implements ThreadFactory {
         this.priority = priority;
     }
 
+    public NamedThreadFactory setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+        return this;
+    }
+
     @Override
     public Thread newThread(Runnable r) {
         Thread thread;
@@ -105,6 +116,11 @@ public class NamedThreadFactory implements ThreadFactory {
             thread.setPriority(priority);
         } else if (thread.getPriority() != Thread.NORM_PRIORITY)
             thread.setPriority(Thread.NORM_PRIORITY);
+
+        if (this.uncaughtExceptionHandler != null) {
+            thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+        }
+
         return thread;
     }
 }

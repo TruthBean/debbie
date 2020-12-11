@@ -29,13 +29,12 @@ dependencies {
     api("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion")
     api("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
 
+    val loggerVersion: String by project
+    api("com.truthbean.logger:juli-impl:$loggerVersion")
+
     testImplementation(project(":debbie-test"))
 
-    val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2-adapter:$loggerVersion")
-
-    val log4j2Version: String by project
-    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    testImplementation("com.truthbean.logger:stdout-adapter:$loggerVersion")
 
     val jacksonVersion: String by project
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")

@@ -29,6 +29,15 @@ public interface BeanComponentParser {
 
     BeanComponentInfo parse(Annotation annotation, Class<?> beanType);
 
+    static BeanComponentInfo parse(AnnotationInfo componentInfo) {
+        var info = new BeanComponentInfo();
+        info.setName(componentInfo.invokeAttribute("name"));
+        info.setType(componentInfo.invokeAttribute("type"));
+        info.setLazy(componentInfo.invokeAttribute("lazy"));
+        info.setFactory(componentInfo.invokeAttribute("factory"));
+        return info;
+    }
+
     static BeanComponentInfo parse(Class<? extends Annotation> key, Annotation value) {
         BeanComponent annotation = key.getAnnotation(BeanComponent.class);
         if (annotation != null) {
@@ -105,7 +114,7 @@ public interface BeanComponentParser {
 
     static BeanComponentInfo parse(Annotation value, BeanComponent annotation) {
         AnnotationInfo annotationInfo = AnnotationParser.parse(value);
-        Map<String, AnnotationMethodInfo> methods = annotationInfo.methods();
+        Map<String, AnnotationMethodInfo> methods = annotationInfo.properties();
         String beanName = null;
         String nameValue = null;
         BeanType beanType = null;
@@ -117,19 +126,19 @@ public interface BeanComponentParser {
                 Class<? extends Annotation> type = info.getAliasForAnnotation();
                 if (type == BeanComponent.class) {
                     if (info.aliasFor("name", String.class)) {
-                        beanName = (String) annotationInfo.properties().get(name);
+                        beanName = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
                     if (info.aliasFor("value", String.class)) {
-                        nameValue = (String) annotationInfo.properties().get(name);
+                        nameValue = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
                     if (info.aliasFor("type", BeanType.class)) {
-                        beanType = (BeanType) annotationInfo.properties().get(name);
+                        beanType = (BeanType) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
                     if (info.aliasFor("lazy", boolean.class)) {
-                        lazy = (boolean) annotationInfo.properties().get(name);
+                        lazy = (boolean) annotationInfo.properties().get(name).getValue();
                     }
                 }
             }

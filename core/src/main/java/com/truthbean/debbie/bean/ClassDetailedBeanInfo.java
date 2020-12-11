@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 
 import java.lang.annotation.Annotation;
@@ -22,11 +23,7 @@ import java.util.Set;
  * @since 0.1.0
  * Created on 2020-09-28 16:57
  */
-public interface DetailedBeanInfo<Bean> extends BeanInfo<Bean> {
-
-    <T> Class<T> getBeanClass();
-
-    Boolean getLazyCreate();
+public interface ClassDetailedBeanInfo<Bean> extends BeanInfo<Bean> {
 
     <T> Class<T> getBeanInterface();
 
@@ -40,7 +37,7 @@ public interface DetailedBeanInfo<Bean> extends BeanInfo<Bean> {
 
     boolean hasAnnotatedMethod();
 
-    Map<Class<? extends Annotation>, Annotation> getClassAnnotations();
+    Map<Class<? extends Annotation>, AnnotationInfo> getClassAnnotations();
 
     <T extends Annotation> T getClassAnnotation(Class<T> annotationClass);
 

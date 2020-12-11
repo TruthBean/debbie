@@ -20,6 +20,9 @@ import com.truthbean.Logger;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * @author TruthBean
@@ -72,7 +75,7 @@ public class NettyServerApplication extends AbstractWebServerApplication {
 
     private void run(final NettyConfiguration configuration, final SessionManager sessionManager,
                      final ApplicationContext applicationContext,
-                     long beforeStartTime) {
+                     Instant beforeStartTime) {
         try {
             // (2)
             ServerBootstrap b = new ServerBootstrap();
@@ -91,9 +94,7 @@ public class NettyServerApplication extends AbstractWebServerApplication {
             ChannelFuture channelFuture = b.bind(configuration.getPort()).sync();
             LOGGER.debug(() -> "netty config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
             printlnWebUrl(LOGGER, configuration.getPort());
-            double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-            LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms" +
-                    " ( JVM running for "  + uptime + "ms )");
+            super.printStartTime();
             super.postBeforeStart();
 
             // Wait until the server socket is closed.
@@ -140,17 +141,14 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    protected void start(long beforeStartTime, String... args) {
+    protected void start(Instant beforeStartTime, String... args) {
         run(configuration, sessionManager, applicationContext, beforeStartTime);
     }
 
     @Override
-    protected void exit(long beforeStartTime, String... args) {
+    protected void exit(Instant beforeStartTime, String... args) {
         shutdown();
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) +
-                    "ms");
-        }
+        super.printExitTime();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerApplication.class);

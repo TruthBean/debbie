@@ -52,35 +52,46 @@ public class RouterInvoker {
             throw new NullPointerException("httpResponse is null");
         }
 
-        var method = routerInfo.getMethod();
-        if (method == null) {
+        if (!routerInfo.hasExecutor()) {
             // todo
             return;
         }
 
-        var parameters = new RouterRequestValues(httpRequest, httpResponse);
+        Object any = null;
+        var executor = routerInfo.getExecutor();
+        if (executor instanceof MethodRouterExecutor) {
+            MethodRouterExecutor methodRouterExecutor = (MethodRouterExecutor) executor;
+            var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
-        var handler = new RouterMethodArgumentHandler(classLoader);
-        var args = handler.handleMethodParams(parameters, routerInfo.getMethodParams(), routerInfo.getRequestType());
+            var handler = new RouterMethodArgumentHandler(classLoader);
+            var args = handler.handleMethodParams(parameters, methodRouterExecutor.getMethodParams(), routerInfo.getRequestType());
 
-        var values = args.toArray();
+            var values = args.toArray();
 
-        var type = routerInfo.getRouterClass();
+            var type = methodRouterExecutor.getRouterClass();
 
-        var instance = routerInfo.getRouterInstance();
-        if (instance == null) {
-            instance = beanFactory.factory(type);
-            routerInfo.setRouterInstance(instance);
+            var instance = methodRouterExecutor.getRouterInstance();
+            if (instance == null) {
+                instance = beanFactory.factory(type);
+                methodRouterExecutor.setRouterInstance(instance);
+            }
+
+            any = executor.execute(values);
+
+            for (ExecutableArgument methodParam : methodRouterExecutor.getMethodParams()) {
+                methodParam.setValue(null);
+            }
+        } else if (executor instanceof SimpleRouterExecutor){
+            SimpleRouterExecutor simpleRouterExecutor = (SimpleRouterExecutor) executor;
+            simpleRouterExecutor.setRequest(httpRequest);
+            simpleRouterExecutor.setResponse(httpResponse);
+            any = executor.execute();
+        } else {
+            any = executor.execute();
         }
 
-        Object any = ReflectionHelper.invokeMethod(true, instance, method, values);
-        boolean isReturnVoid = method.getReturnType() == void.class || method.getReturnType() == Void.class;
 
-        for (ExecutableArgument methodParam : routerInfo.getMethodParams()) {
-            methodParam.setValue(null);
-        }
-
-        resolveResponse(isReturnVoid, any, httpRequest.getResponseType().toMediaType(), routerResponse);
+        resolveResponse(routerInfo.returnVoid(), any, httpRequest.getResponseType().toMediaType(), routerResponse);
     }
 
     @SuppressWarnings({"unchecked"})

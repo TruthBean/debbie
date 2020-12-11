@@ -31,5 +31,7 @@ public interface MutableBeanInfo<Bean> extends BeanInfo<Bean> {
 
     void setBean(Supplier<Bean> bean);
 
+    MutableBeanInfo<Bean> copy();
+
     void release();
 }

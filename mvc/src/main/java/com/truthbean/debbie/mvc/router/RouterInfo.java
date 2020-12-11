@@ -31,53 +31,46 @@ import java.util.*;
  */
 public class RouterInfo implements Cloneable {
 
-    private Method method;
+    private RouterAnnotationInfo annotationInfo;
 
-    private List<ExecutableArgument> methodParams;
-
-    private Class<?> routerClass;
-    private Object routerInstance;
+    private RouterExecutor executor;
 
     private List<RouterPathFragments> paths;
 
-    private List<HttpMethod> requestMethod;
-
-    private MediaType requestType;
     private RouterRequest request;
 
     private RouterResponse response;
     private Collection<MediaTypeInfo> defaultResponseTypes;
 
-    public Method getMethod() {
-        return method;
+    public RouterInfo() {
     }
 
-    public void setMethod(Method method) {
-        this.method = method;
+    public RouterInfo(RouterExecutor executor) {
+        this.executor = executor;
     }
 
-    public List<ExecutableArgument> getMethodParams() {
-        return methodParams;
+    public void setExecutor(RouterExecutor executor) {
+        this.executor = executor;
     }
 
-    public void setMethodParams(List<ExecutableArgument> methodParams) {
-        this.methodParams = methodParams;
+    public RouterExecutor getExecutor() {
+        return executor;
     }
 
-    public Class<?> getRouterClass() {
-        return routerClass;
+    public boolean hasExecutor() {
+        return this.executor != null;
     }
 
-    public void setRouterClass(Class<?> routerClass) {
-        this.routerClass = routerClass;
+    public boolean returnVoid() {
+        return this.executor.returnVoid();
     }
 
-    public Object getRouterInstance() {
-        return routerInstance;
+    public RouterAnnotationInfo getAnnotationInfo() {
+        return annotationInfo;
     }
 
-    public void setRouterInstance(Object routerInstance) {
-        this.routerInstance = routerInstance;
+    public void setAnnotationInfo(RouterAnnotationInfo annotationInfo) {
+        this.annotationInfo = annotationInfo;
     }
 
     public List<RouterPathFragments> getPaths() {
@@ -89,11 +82,7 @@ public class RouterInfo implements Cloneable {
     }
 
     public List<HttpMethod> getRequestMethod() {
-        return requestMethod;
-    }
-
-    public void setRequestMethod(List<HttpMethod> requestMethod) {
-        this.requestMethod = requestMethod;
+        return Arrays.asList(this.annotationInfo.method());
     }
 
     public RouterResponse getResponse() {
@@ -105,11 +94,11 @@ public class RouterInfo implements Cloneable {
     }
 
     public MediaType getRequestType() {
-        return requestType;
+        return this.annotationInfo.requestType();
     }
 
     public void setRequestType(MediaType requestType) {
-        this.requestType = requestType;
+        this.annotationInfo.setRequestType(requestType);
     }
 
     public RouterRequest getRequest() {
@@ -139,49 +128,6 @@ public class RouterInfo implements Cloneable {
         return MediaType.ANY.info();
     }
 
-    public RouterInfo() {
-    }
-
-    private final List<ExecutableArgument> baseTypeMethodParams = new ArrayList<>();
-    private final List<ExecutableArgument> notBaseTypeMethodParams = new ArrayList<>();
-
-    public void setBaseTypeMethodParams(ClassLoader classLoader) {
-        RouterMethodArgumentHandler handler = new RouterMethodArgumentHandler(classLoader);
-        for (ExecutableArgument param : methodParams) {
-            if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
-                baseTypeMethodParams.add(param);
-            } else {
-                List<Field> fields = ReflectionHelper.getDeclaredFields(param.getRawType());
-                int i = 0;
-                while (i < fields.size()) {
-                    baseTypeMethodParams.add(handler.typeOf(fields.get(i), i++));
-                }
-            }
-        }
-    }
-
-    public List<ExecutableArgument> getBaseTypeMethodParams(ClassLoader classLoader) {
-        if (baseTypeMethodParams.isEmpty()) {
-            setBaseTypeMethodParams(classLoader);
-        }
-        return baseTypeMethodParams;
-    }
-
-    public void setNotBaseTypeMethodParams() {
-        for (ExecutableArgument param : methodParams) {
-            if (!TypeHelper.isBaseType(param.getType()) && param.getType() != MultipartFile.class) {
-                baseTypeMethodParams.add(param);
-            }
-        }
-    }
-
-    public List<ExecutableArgument> getNotBaseTypeMethodParams() {
-        if (notBaseTypeMethodParams.isEmpty()) {
-            setNotBaseTypeMethodParams();
-        }
-        return notBaseTypeMethodParams;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -191,37 +137,27 @@ public class RouterInfo implements Cloneable {
             return false;
         }
         RouterInfo that = (RouterInfo) o;
-        return Objects.equals(method, that.method) &&
-                Objects.equals(methodParams, that.methodParams) &&
-                Objects.equals(routerClass, that.routerClass) &&
+        return Objects.equals(executor, that.executor) &&
                 Objects.equals(paths, that.paths) &&
-                requestMethod == that.requestMethod &&
+                getRequestMethod() == that.getRequestMethod() &&
 
                 Objects.equals(request, that.request) &&
-                Objects.equals(response, that.response) &&
-
-                Objects.equals(baseTypeMethodParams, that.baseTypeMethodParams) &&
-                Objects.equals(notBaseTypeMethodParams, that.notBaseTypeMethodParams);
+                Objects.equals(response, that.response);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, methodParams, routerClass, paths, requestMethod, response,
-                request, baseTypeMethodParams, notBaseTypeMethodParams);
+        return Objects.hash(executor, paths, getRequestMethod(), response, request);
     }
 
     @Override
     public String toString() {
         return "{" +
-                "\"method\":" + method +
-                ",\"methodParams\":" + methodParams +
-                ",\"routerClass\":" + routerClass +
+                "\"executor\":" + executor +
                 ",\"paths\":" + paths +
-                ",\"requestMethod\":" + requestMethod +
+                ",\"requestMethod\":" + getRequestMethod() +
                 ",\"response\":" + response +
                 ",\"request\":" + request +
-                ",\"baseTypeMethodParams\":" + baseTypeMethodParams +
-                ",\"notBaseTypeMethodParams\":" + notBaseTypeMethodParams +
                 '}';
     }
 
@@ -232,24 +168,18 @@ public class RouterInfo implements Cloneable {
     @Override
     public RouterInfo clone() {
         RouterInfo clone = new RouterInfo();
-        clone.method = method;
-        if (methodParams != null) {
-            clone.methodParams = new ArrayList<>(methodParams);
-        }
-        clone.routerClass = routerClass;
-        clone.routerInstance = routerInstance;
+        // todo clone
+        clone.executor = this.executor;
+        clone.annotationInfo = this.annotationInfo;
 
         if (paths != null)
             clone.paths = new ArrayList<>(paths);
-
-        if (requestMethod != null)
-            clone.requestMethod = new ArrayList<>(requestMethod);
 
         if (response != null) {
             clone.response = response.clone();
         }
 
-        clone.requestType = requestType;
+        clone.setRequestType(getRequestType());
         if (request != null) {
             var copy = request.copy();
             if (copy != null) {
@@ -271,7 +201,7 @@ public class RouterInfo implements Cloneable {
         return clone;
     }
 
-    public static class RouterJsonInfo {
+    /*public static class RouterJsonInfo {
         private String errorInfo;
 
         private String method;
@@ -343,16 +273,16 @@ public class RouterInfo implements Cloneable {
 
     public RouterJsonInfo toJsonInfo() {
         var jsonInfo = new RouterJsonInfo();
-        jsonInfo.method = method.toString();
+        jsonInfo.method = getMethod().toString();
 
-        if (methodParams != null) {
+        if (getMethodParams() != null) {
             jsonInfo.methodParams = new ArrayList<>();
-            for (ExecutableArgument methodParam : methodParams) {
+            for (ExecutableArgument methodParam : getMethodParams()) {
                 jsonInfo.methodParams.add(methodParam.getType().getTypeName());
             }
         }
 
-        jsonInfo.routerClass = routerClass.getName();
+        jsonInfo.routerClass = getRouterClass().getName();
 
         if (paths != null) {
             jsonInfo.paths = new ArrayList<>();
@@ -361,9 +291,9 @@ public class RouterInfo implements Cloneable {
             }
         }
 
-        if (requestMethod != null) {
+        if (getRequestMethod() != null) {
             jsonInfo.requestMethod = new ArrayList<>();
-            for (HttpMethod httpMethod : requestMethod) {
+            for (HttpMethod httpMethod : getRequestMethod()) {
                 jsonInfo.requestMethod.add(httpMethod.name());
             }
         }
@@ -372,7 +302,7 @@ public class RouterInfo implements Cloneable {
             jsonInfo.response = response.toJsonInfo();
         }
 
-        jsonInfo.requestType = requestType.getValue();
+        jsonInfo.requestType = getRequestType().getValue();
         if (request != null) {
             var copy = request.copy();
             if (copy != null)
@@ -380,5 +310,5 @@ public class RouterInfo implements Cloneable {
         }
 
         return jsonInfo;
-    }
+    }*/
 }

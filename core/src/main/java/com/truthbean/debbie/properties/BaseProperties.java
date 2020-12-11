@@ -31,7 +31,15 @@ public class BaseProperties {
     /**
      * logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseProperties.class);
+    private final Logger logger;
+    
+    public BaseProperties() {
+        this.logger = LoggerFactory.getLogger(BaseProperties.class);
+    }
+
+    public BaseProperties(Logger logger) {
+        this.logger = logger;
+    }
 
     /**
      * properties
@@ -45,52 +53,52 @@ public class BaseProperties {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.properties", Constants.APPLICATION_PROPERTIES);
         if (applicationUrl == null) {
-            LOGGER.warn(() -> "debbie.application.properties value is null.");
+            logger.warn(() -> "debbie.application.properties value is null.");
         } else {
-            LOGGER.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + applicationUrl);
+            logger.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
             if (url == null) {
                 if (applicationUrl.equals(Constants.APPLICATION_PROPERTIES))
-                    LOGGER.warn(Constants.APPLICATION_PROPERTIES + " not found in classpath.");
+                    logger.warn(Constants.APPLICATION_PROPERTIES + " not found in classpath.");
                 else {
-                    LOGGER.warn(applicationUrl + " not found in classpath.");
+                    logger.warn(applicationUrl + " not found in classpath.");
                 }
                 // read via file
                 File file = new File(applicationUrl);
                 if (file.exists()) {
-                    LOGGER.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + file.getAbsolutePath());
+                    logger.debug(() -> Constants.APPLICATION_PROPERTIES + ": " + file.getAbsolutePath());
                     try (InputStream inputStream = new FileInputStream(file)) {
                         var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                         return loadProperties(reader);
                     } catch (IOException e) {
-                        LOGGER.error("load properties error", e);
+                        logger.error("load properties error", e);
                     }
                 } else {
                     // read via network
                     try {
                         if (!applicationUrl.equals(Constants.APPLICATION_PROPERTIES)) {
                             URL url1 = new URL(applicationUrl);
-                            if (LOGGER.isDebugEnabled())
-                                LOGGER.debug(Constants.APPLICATION_PROPERTIES + " url: " + url1);
+                            if (logger.isDebugEnabled())
+                                logger.debug(Constants.APPLICATION_PROPERTIES + " url: " + url1);
                             try (InputStream inputStream = url1.openStream()) {
                                 var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                                 return loadProperties(reader);
                             }
                         }
                     } catch (IOException e) {
-                        LOGGER.error("load properties error", e);
+                        logger.error("load properties error", e);
                     }
                 }
             } else {
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug(Constants.APPLICATION_PROPERTIES + " url: " + url);
+                if (logger.isDebugEnabled())
+                    logger.debug(Constants.APPLICATION_PROPERTIES + " url: " + url);
                 InputStream inputStream;
                 try {
                     inputStream = url.openStream();
                     var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                     return loadProperties(reader);
                 } catch (IOException e) {
-                    LOGGER.error("load properties error", e);
+                    logger.error("load properties error", e);
                 }
             }
         }
@@ -104,48 +112,49 @@ public class BaseProperties {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.yaml", Constants.APPLICATION_YAML);
         if (applicationUrl == null) {
-            LOGGER.warn(() -> "debbie.application.yaml value is null.");
+            logger.warn(() -> "debbie.application.yaml value is null.");
         } else {
-            LOGGER.debug(() -> Constants.APPLICATION_YAML + ": " + applicationUrl);
+            logger.debug(() -> Constants.APPLICATION_YAML + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
             if (url == null) {
                 if (applicationUrl.equals(Constants.APPLICATION_YAML))
-                    LOGGER.warn(Constants.APPLICATION_YAML + " not found in classpath.");
+                    logger.warn(Constants.APPLICATION_YAML + " not found in classpath.");
                 else {
-                    LOGGER.warn(applicationUrl + " not found in classpath.");
+                    logger.warn(applicationUrl + " not found in classpath.");
                 }
                 // read via file
                 File file = new File(applicationUrl);
                 if (file.exists()) {
-                    LOGGER.debug(() -> Constants.APPLICATION_YAML + ": " + file.getAbsolutePath());
+                    logger.debug(() -> Constants.APPLICATION_YAML + ": " + file.getAbsolutePath());
                     try (InputStream inputStream = new FileInputStream(file)) {
                         return loadYaml(inputStream);
                     } catch (IOException e) {
-                        LOGGER.error("load yaml error", e);
+                        logger.error("load yaml error", e);
                     }
                 } else {
                     // read via network
                     try {
                         if (!applicationUrl.equals(Constants.APPLICATION_YAML)) {
-                            if (LOGGER.isDebugEnabled())
-                                LOGGER.debug(Constants.APPLICATION_YAML + " url: " + url);
+                            url = new URL(applicationUrl);
+                            if (logger.isDebugEnabled())
+                                logger.debug(Constants.APPLICATION_YAML + " url: " + url);
                             try (InputStream inputStream = url.openStream()) {
                                 return loadYaml(inputStream);
                             }
                         }
                     } catch (IOException e) {
-                        LOGGER.error("load yaml error", e);
+                        logger.error("load yaml error", e);
                     }
                 }
             } else {
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug(Constants.APPLICATION_YAML + " url: " + url);
+                if (logger.isDebugEnabled())
+                    logger.debug(Constants.APPLICATION_YAML + " url: " + url);
                 InputStream inputStream;
                 try {
                     inputStream = url.openStream();
                     return loadYaml(inputStream);
                 } catch (IOException e) {
-                    LOGGER.error("load yaml error", e);
+                    logger.error("load yaml error", e);
                 }
             }
         }
@@ -159,48 +168,49 @@ public class BaseProperties {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.yml", Constants.APPLICATION_YML);
         if (applicationUrl == null) {
-            LOGGER.warn(() -> "debbie.application.yml value is null.");
+            logger.warn(() -> "debbie.application.yml value is null.");
         } else {
-            LOGGER.debug(() -> Constants.APPLICATION_YML + ": " + applicationUrl);
+            logger.debug(() -> Constants.APPLICATION_YML + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
             if (url == null) {
                 if (applicationUrl.equals(Constants.APPLICATION_YML))
-                    LOGGER.warn(Constants.APPLICATION_YML + " not found in classpath.");
+                    logger.warn(Constants.APPLICATION_YML + " not found in classpath.");
                 else {
-                    LOGGER.warn(applicationUrl + " not found in classpath.");
+                    logger.warn(applicationUrl + " not found in classpath.");
                 }
                 // read via file
                 File file = new File(applicationUrl);
                 if (file.exists()) {
-                    LOGGER.debug(() -> Constants.APPLICATION_YML + ": " + file.getAbsolutePath());
+                    logger.debug(() -> Constants.APPLICATION_YML + ": " + file.getAbsolutePath());
                     try (InputStream inputStream = new FileInputStream(file)) {
                         return loadYaml(inputStream);
                     } catch (IOException e) {
-                        LOGGER.error("load yml error", e);
+                        logger.error("load yml error", e);
                     }
                 } else {
                     // read via network
                     try {
                         if (!applicationUrl.equals(Constants.APPLICATION_YML)) {
-                            if (LOGGER.isDebugEnabled())
-                                LOGGER.debug(Constants.APPLICATION_YML + " url: " + url);
+                            url = new URL(applicationUrl);
+                            if (logger.isDebugEnabled())
+                                logger.debug(Constants.APPLICATION_YML + " url: " + url);
                             try (InputStream inputStream = url.openStream()) {
                                 return loadYaml(inputStream);
                             }
                         }
                     } catch (IOException e) {
-                        LOGGER.error("load yml error", e);
+                        logger.error("load yml error", e);
                     }
                 }
             } else {
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug(Constants.APPLICATION_YML + " url: " + url);
+                if (logger.isDebugEnabled())
+                    logger.debug(Constants.APPLICATION_YML + " url: " + url);
                 InputStream inputStream;
                 try {
                     inputStream = url.openStream();
                     return loadYaml(inputStream);
                 } catch (IOException e) {
-                    LOGGER.error("load yml error", e);
+                    logger.error("load yml error", e);
                 }
             }
         }
@@ -251,7 +261,7 @@ public class BaseProperties {
         try {
             properties.load(reader);
         } catch (IOException e) {
-            LOGGER.error("load properties error", e);
+            logger.error("load properties error", e);
         }
         // custom properties will cover system properties
         result.putAll(properties);
@@ -321,7 +331,7 @@ public class BaseProperties {
             try {
                 result = value.charAt(0);
             } catch (Exception e) {
-                LOGGER.error(value + " to char error", e);
+                logger.error(value + " to char error", e);
                 result = defaultValue;
             }
         }
@@ -337,7 +347,7 @@ public class BaseProperties {
             try {
                 result = Boolean.parseBoolean(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to bool error", e);
+                logger.error(value + " to bool error", e);
                 result = defaultValue;
             }
         }
@@ -353,7 +363,7 @@ public class BaseProperties {
             try {
                 result = Integer.parseInt(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to int error", e);
+                logger.error(value + " to int error", e);
                 result = defaultValue;
             }
         }
@@ -369,7 +379,7 @@ public class BaseProperties {
             try {
                 result = Double.parseDouble(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to double error", e);
+                logger.error(value + " to double error", e);
                 result = defaultValue;
             }
         }
@@ -385,7 +395,7 @@ public class BaseProperties {
             try {
                 result = Long.parseLong(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to long error", e);
+                logger.error(value + " to long error", e);
                 result = defaultValue;
             }
         }
@@ -412,7 +422,7 @@ public class BaseProperties {
             try {
                 result = Charset.forName(value);
             } catch (Exception e) {
-                LOGGER.error(value + " to Charset error", e);
+                logger.error(value + " to Charset error", e);
                 result = defaultCharset;
             }
         }
@@ -463,7 +473,7 @@ public class BaseProperties {
                     try {
                         result.add(classLoader.loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        LOGGER.error("class (" + className + ") not found", e);
+                        logger.error("class (" + className + ") not found", e);
                     }
                 }
             }
@@ -479,7 +489,7 @@ public class BaseProperties {
             try {
                 result = classLoader.loadClass(className);
             } catch (ClassNotFoundException e) {
-                LOGGER.error("class (" + className + ") not found", e);
+                logger.error("class (" + className + ") not found", e);
             }
         }
         return result;
@@ -496,7 +506,7 @@ public class BaseProperties {
                     try {
                         result.add(classLoader.loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        LOGGER.error("class (" + className + ") not found", e);
+                        logger.error("class (" + className + ") not found", e);
                     }
                 }
             }

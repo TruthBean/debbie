@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  */
 class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private final Class<Bean> beanClass;
-    private final DebbieBeanInfo<Bean> beanInfo;
+    private final DebbieClassBeanInfo<Bean> beanInfo;
     // todo inject by method
     // private final Map<String, Method> beanMethods = new HashMap<>();
 
@@ -49,16 +49,29 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         this.debbieBeanInfoFactory = debbieBeanInfoFactory;
         this.beanClass = beanClass;
         var methods = initialization.getBeanMethods(beanClass);
-        this.beanInfo = initialization.getRegisterRawBean(beanClass);
+        DebbieClassBeanInfo<Bean> classBeanInfo;
+        var beanInfo = initialization.getRegisterRawBean(beanClass);
+        if (beanInfo instanceof DebbieClassBeanInfo) {
+            classBeanInfo = (DebbieClassBeanInfo<Bean>) beanInfo;
+        } else {
+            classBeanInfo = new DebbieClassBeanInfo<>(beanClass);
+        }
+        this.beanInfo = classBeanInfo;
 
         setMethods(methods);
     }
 
-    public BeanCreatorImpl(DebbieBeanInfo<Bean> beanInfo, DebbieBeanInfoFactory debbieBeanInfoFactory) {
+    public BeanCreatorImpl(BeanInfo<Bean> beanInfo, DebbieBeanInfoFactory debbieBeanInfoFactory) {
         this.debbieBeanInfoFactory = debbieBeanInfoFactory;
         this.beanClass = beanInfo.getBeanClass();
-        var methods = beanInfo.getMethods();
-        this.beanInfo = beanInfo;
+        DebbieClassBeanInfo<Bean> classBeanInfo;
+        if (beanInfo instanceof DebbieClassBeanInfo) {
+            classBeanInfo = (DebbieClassBeanInfo<Bean>) beanInfo;
+        } else {
+            classBeanInfo = new DebbieClassBeanInfo<>(beanClass);
+        }
+        var methods = classBeanInfo.getMethods();
+        this.beanInfo = classBeanInfo;
         setMethods(methods);
     }
 
@@ -67,12 +80,12 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @Override
-    public DebbieBeanInfo<Bean> getBeanInfo() {
+    public DebbieClassBeanInfo<Bean> getBeanInfo() {
         return beanInfo;
     }
 
     @Override
-    public synchronized void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+    public synchronized void createPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
                                                Object firstParamValue) {
         if (!preparationCreated) {
             if (initMethod != null) {
@@ -112,7 +125,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @Override
-    public void postPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
+    public void postPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
         collectFieldsDependent(singletonBeanCreatorMap);
         resolveFieldValue();
 
@@ -134,7 +147,11 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
     @Override
     public Bean getCreatedBean() {
-        return bean;
+        if (created) {
+            return bean;
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -161,7 +178,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     @SuppressWarnings("unchecked")
-    private void createPreparationByInitMethod(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+    private void createPreparationByInitMethod(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
                                                Object firstParamValue) {
         if (Modifier.isStatic(initMethod.getModifiers())) {
             Parameter[] parameters = initMethod.getParameters();
@@ -197,7 +214,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         }
     }
 
-    private boolean createPreparationByExecutable(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+    private boolean createPreparationByExecutable(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
                                                   Parameter[] parameters, int parameterCount, Object[] values,
                                                   List<BeanExecutableDependence> dependence,
                                                   boolean injectRequired, Object firstParameterValue) {
@@ -227,7 +244,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 name = parameter.getName();
             }
 
-            DebbieBeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
+            BeanInfo<?> beanInfo = debbieBeanInfoFactory.getBeanInfo(name, type, required);
             if (beanInfo == null && required) {
                 throw new NoBeanException("no bean " + names[i] + " found .");
             } else if (beanInfo != null) {
@@ -281,7 +298,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     }
 
     // TODO cache
-    private void createPreparationByConstructor(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
+    private void createPreparationByConstructor(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap,
                                                 Object firstParamValue) {
         try {
             // get all constructor
@@ -303,7 +320,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                     }
                     List<BeanExecutableDependence> constructorBeanDependent = new ArrayList<>();
                     if (firstParamValue != null) {
-                        DebbieBeanInfo<Object> info = new DebbieBeanInfo<>(Object.class);
+                        DebbieClassBeanInfo<Object> info = new DebbieClassBeanInfo<>(Object.class);
                         info.setBean(firstParamValue);
                         constructorBeanDependent.add(new BeanExecutableDependence(0, info, Object.class));
                     }
@@ -333,6 +350,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
             for (Constructor<Bean> constructor : constructors) {
                 int parameterCount = constructor.getParameterCount();
                 if (parameterCount == 0) {
+                    constructor.setAccessible(true);
                     this.bean = constructor.newInstance();
                     break;
                 }
@@ -346,7 +364,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private void createPreparationByInitMethodDependent(ApplicationContext applicationContext) {
         Collection<BeanExecutableDependence> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent();
         for (BeanExecutableDependence dependence : initMethodBeanDependent) {
-            DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
+            BeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {
                 var type = dependence.getType();
                 if (type == ApplicationContext.class) {
@@ -356,8 +374,13 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 }
                 continue;
             }
-            if (debbieBeanInfo.optional().isEmpty() && debbieBeanInfo.hasNoVirtualValue()) {
-                debbieBeanInfo.setHasVirtualValue(true);
+            if (debbieBeanInfo instanceof MutableBeanInfo) {
+                DebbieClassBeanInfo<?> mutableBeanInfo = (DebbieClassBeanInfo<?>) debbieBeanInfo;
+                if (debbieBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
+                    mutableBeanInfo.setHasVirtualValue(true);
+                    injectedBeanFactory.factory(mutableBeanInfo, false);
+                }
+            } else if (debbieBeanInfo.optional().isEmpty()) {
                 injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
@@ -376,7 +399,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         Collection<BeanExecutableDependence> constructorBeanDependent = beanInfo.getConstructorBeanDependent();
         for (BeanExecutableDependence dependence : constructorBeanDependent) {
             var type = dependence.getType();
-            DebbieBeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
+            BeanInfo<?> debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {
                 if (type == ApplicationContext.class) {
                     dependence.setValue(applicationContext);
@@ -385,8 +408,13 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 }
                 continue;
             }
-            if (debbieBeanInfo.optional().isEmpty() && debbieBeanInfo.hasNoVirtualValue()) {
-                debbieBeanInfo.setHasVirtualValue(true);
+            if (debbieBeanInfo instanceof MutableBeanInfo) {
+                DebbieClassBeanInfo<?> mutableBeanInfo = (DebbieClassBeanInfo<?>) debbieBeanInfo;
+                if (debbieBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
+                    mutableBeanInfo.setHasVirtualValue(true);
+                    injectedBeanFactory.factory(mutableBeanInfo, false);
+                }
+            } else if (debbieBeanInfo.optional().isEmpty()) {
                 injectedBeanFactory.factory(debbieBeanInfo, false);
             }
         }
@@ -427,11 +455,18 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 String serviceName = bean.getServiceName();
                 LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
                         "dependent " + serviceName);
-                Object beanValue = bean.getBean();
-                if (required && bean.hasNoVirtualValue() && beanValue == null) {
-                    throw new NoBeanException("bean " + serviceName + " value is null .");
+                if (bean instanceof DebbieClassBeanInfo) {
+                    DebbieClassBeanInfo<?> localBeanInfo = (DebbieClassBeanInfo<?>) bean;
+                    if (required && localBeanInfo.hasNoVirtualValue() && localBeanInfo.isEmpty()) {
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
+                    }
+                } else {
+                    if (required && bean.isEmpty()) {
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
+                    }
                 }
-                if (beanValue != null) {
+                if (bean.isPresent()) {
+                    Object beanValue = bean.getBean();
                     LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
                     values[i] = beanValue;
                 }
@@ -514,11 +549,11 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         });
     }
 
-    private void collectFieldsDependent(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
+    private void collectFieldsDependent(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap) {
         try {
             // find all field its has BeanInject or Inject annotation
             List<FieldInfo> fields = beanInfo.getFields();
-            Map<FieldInfo, DebbieBeanInfo<?>> map = new HashMap<>();
+            Map<FieldInfo, BeanInfo<?>> map = new HashMap<>();
             for (FieldInfo fieldInfo : fields) {
                 if (fieldInfo.hasValue()) continue;
 
@@ -592,9 +627,8 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private void resolveFieldValue() {
         String keyPrefix = null;
 
-        Map<Class<? extends Annotation>, Annotation> classAnnotations = beanInfo.getClassAnnotations();
-        if (classAnnotations.containsKey(PropertiesConfiguration.class)) {
-            var beanConfiguration = (PropertiesConfiguration) classAnnotations.get(PropertiesConfiguration.class);
+        if (beanInfo.containClassAnnotation(PropertiesConfiguration.class)) {
+            var beanConfiguration = beanInfo.getClassAnnotation(PropertiesConfiguration.class);
             keyPrefix = beanConfiguration.keyPrefix();
             if (!keyPrefix.isBlank() && !keyPrefix.endsWith(".")) {
                 keyPrefix += ".";

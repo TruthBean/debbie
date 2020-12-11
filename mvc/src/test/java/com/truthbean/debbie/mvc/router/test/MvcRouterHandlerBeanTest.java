@@ -47,7 +47,6 @@ class MvcRouterHandlerBeanTest {
         for (RouterInfo routerInfo : routerInfos) {
             System.out.println();
             System.out.println(routerInfo);
-            System.out.println(routerInfo.getMethod());
             routerInfo.getRequest().getPathAttributes().forEach((key, value) -> {
                 System.out.println(key + ":");
                 System.out.println(value);

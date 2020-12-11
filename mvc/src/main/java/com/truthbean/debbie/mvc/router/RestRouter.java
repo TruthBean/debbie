@@ -27,6 +27,7 @@ import java.lang.annotation.*;
 @Documented
 @BeanComponent(type = BeanType.SINGLETON)
 @Watcher(type = WatcherType.HTTP)
+@Router
 public @interface RestRouter {
     /**
      * bean name
@@ -42,7 +43,18 @@ public @interface RestRouter {
     @AliasFor(annotation = Router.class, attribute = "urlPatterns")
     String[] value() default "";
 
+    /**
+     * @return router title
+     */
     String title() default "";
 
+    /**
+     * @return router description
+     */
     String desc() default "";
+
+    /**
+     * @return router version
+     */
+    String version() default "";
 }

@@ -47,7 +47,13 @@ public class BeanComponentInfo {
         return lazy;
     }
 
-    public void setLazy(boolean lazy) {
+    public void setLazy(Boolean lazy) {
+        if (lazy == null) {
+            // default value is true
+            this.lazy = true;
+            return;
+        }
+
         this.lazy = lazy;
     }
 
@@ -57,6 +63,7 @@ public class BeanComponentInfo {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void setFactory(Class<? extends BeanFactory> factory) {
-        this.factory = (Class<? extends BeanFactory<?>>) factory;
+        if (factory != null)
+            this.factory = (Class<? extends BeanFactory<?>>) factory;
     }
 }

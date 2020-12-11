@@ -15,12 +15,13 @@
 module com.truthbean.debbie.tomcat {
     requires transitive com.truthbean.debbie.servlet;
     requires transitive com.truthbean.debbie.server;
+    requires transitive com.truthbean.logger.juli;
 
     requires org.apache.tomcat.embed.core;
     requires java.management;
 
-    provides com.truthbean.debbie.boot.AbstractApplicationFactory with
-            com.truthbean.debbie.tomcat.TomcatServerApplicationFactory;
+    provides com.truthbean.debbie.boot.AbstractApplication with
+            com.truthbean.debbie.tomcat.TomcatServerApplication;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter with com.truthbean.debbie.tomcat.TomcatModuleStarter;
 }

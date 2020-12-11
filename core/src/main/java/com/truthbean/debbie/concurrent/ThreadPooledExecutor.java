@@ -11,6 +11,8 @@ package com.truthbean.debbie.concurrent;
 
 import com.truthbean.debbie.lang.Callback;
 import com.truthbean.debbie.properties.BaseProperties;
+import com.truthbean.logger.LogLevel;
+import com.truthbean.logger.LoggerFactory;
 
 import java.util.concurrent.*;
 
@@ -26,7 +28,10 @@ public class ThreadPooledExecutor implements Executor {
     private final ExecutorService executorService;
 
     public ThreadPooledExecutor() {
-        this(10, 200, new NamedThreadFactory(), 5000L);
+        this(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() * 10,
+                new NamedThreadFactory()
+                .setUncaughtExceptionHandler((t, e) ->
+                        LoggerFactory.getLogger(LogLevel.ERROR, t.getClass()).error("", e)), 5000L);
     }
 
     public ThreadPooledExecutor(int coreSize, int maximumPoolSize, ThreadFactory threadFactory) {

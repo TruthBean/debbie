@@ -19,15 +19,6 @@ dependencyManagement {
         imports {
             mavenBom("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
         }
-        /*dependency("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-        dependency("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-        dependency("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-        dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-        dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
-        dependency("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-        dependency("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
-        dependency("com.fasterxml.jackson.module:jackson-module-afterburner:$jacksonVersion")
-        dependency("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")*/
         val snakeyamlVersion: String by project
         dependency("org.yaml:snakeyaml:$snakeyamlVersion")
         val slf4jVersion: String by project
@@ -50,21 +41,8 @@ dependencyManagement {
 
         // logs
         val loggerVersion: String by project
-        dependency("com.truthbean.logger:logger-core:${loggerVersion}")
-        dependency("com.truthbean.logger:jdk-adapter:${loggerVersion}")
-        dependency("com.truthbean.logger:log4j-adapter:${loggerVersion}")
-        dependency("com.truthbean.logger:log4j2-adapter:${loggerVersion}")
-        dependency("com.truthbean.logger:slf4j-adapter:${loggerVersion}")
-        dependency("com.truthbean.logger:stdout-adapter:${loggerVersion}")
-        dependency("com.truthbean.logger:log4j2-boot:${loggerVersion}")
-        dependency("com.truthbean.logger:slf4j-boot:${loggerVersion}")
-        val log4j2Version: String by project
-        dependency("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-        dependency("org.apache.logging.log4j:log4j-api:$log4j2Version")
-        dependency("org.apache.logging.log4j:log4j-core:$log4j2Version")
-        val logbackVersion: String by project
-        dependency("ch.qos.logback:logback-classic:$logbackVersion") {
-            exclude("org.slf4j:slf4j-api")
+        imports {
+            mavenBom("com.truthbean.logger:logger-dependence:$loggerVersion")
         }
 
         // jdbc-test
@@ -117,22 +95,6 @@ dependencyManagement {
         imports {
             mavenBom("io.netty:netty-bom:$nettyVersion")
         }
-        /*dependency("io.netty:netty-codec-http2:$nettyVersion")
-        dependency("io.netty:netty-transport-native-epoll:$nettyVersion")
-        dependency("io.netty:netty-transport-native-kqueue:$nettyVersion")
-        dependency("io.netty:netty-transport-native-epoll:$nettyVersion")
-        dependency("io.netty:netty-transport-native-kqueue:$nettyVersion")
-        dependency("io.netty:netty-resolver-dns:$nettyVersion")
-        dependency("io.netty:netty-handler-proxy:$nettyVersion")
-        dependency("io.netty:netty-codec-mqtt:$nettyVersion")
-        dependency("io.netty:netty-transport-rxtx:$nettyVersion")
-        dependency("io.netty:netty-codec-stomp:$nettyVersion")
-        dependency("io.netty:netty-transport-sctp:$nettyVersion")
-        dependency("io.netty:netty-transport-udt:$nettyVersion")
-        dependency("io.netty:netty-codec-haproxy:$nettyVersion")
-        dependency("io.netty:netty-codec-redis:$nettyVersion")
-        dependency("io.netty:netty-codec-memcache:$nettyVersion")
-        dependency("io.netty:netty-codec-smtp:$nettyVersion")*/
 
         // debbie
         val projectVersion: String by project

@@ -14,10 +14,10 @@ dependencies {
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
     val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2-adapter:$loggerVersion")
+    testImplementation("com.truthbean.logger:stdout-adapter:$loggerVersion")
 
-    val log4j2Version: String by project
-    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    // val log4j2Version: String by project
+    // testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
 
     testImplementation(project(":debbie-aio"))
     testImplementation(project(":debbie-test"))

@@ -9,7 +9,9 @@
  */
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.DebbieClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -24,8 +26,8 @@ import java.util.*;
  */
 public class MethodProxyResolver {
     private final ApplicationContext applicationContext;
-    private final DebbieBeanInfo<?> classInfo;
-    public MethodProxyResolver(ApplicationContext applicationContext, DebbieBeanInfo<?> classInfo) {
+    private final DebbieClassBeanInfo<?> classInfo;
+    public MethodProxyResolver(ApplicationContext applicationContext, DebbieClassBeanInfo<?> classInfo) {
         this.applicationContext = applicationContext;
         this.classInfo = classInfo;
     }
@@ -157,15 +159,15 @@ public class MethodProxyResolver {
                     methodProxyHandler.setApplicationContext(applicationContext);
                     methodProxyHandlers.add(methodProxyHandler);
                 } else {
-                    Map<Class<? extends Annotation>, Annotation> classAnnotations = classInfo.getClassAnnotations();
+                    Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = classInfo.getClassAnnotations();
                     if (classAnnotations != null && !classAnnotations.isEmpty()) {
-                        for (Map.Entry<Class<? extends Annotation>, Annotation> classAnnotationEntry : classAnnotations.entrySet()) {
-                            Annotation annotation = classAnnotationEntry.getValue();
+                        for (Map.Entry<Class<? extends Annotation>, AnnotationInfo> classAnnotationEntry : classAnnotations.entrySet()) {
+                            AnnotationInfo annotation = classAnnotationEntry.getValue();
                             var annotationType = classAnnotationEntry.getKey();
                             if (annotationClass == annotationType) {
-                                addMethodProxyHandler(method, annotationType, proxyHandlers, annotation, methodProxyHandlers);
+                                addMethodProxyHandler(method, annotationType, proxyHandlers, annotation.getOrigin(), methodProxyHandlers);
                             } else {
-                                var handler = getMethodProxyHandler(annotationType, annotation, method);
+                                var handler = getMethodProxyHandler(annotationType, annotation.getOrigin(), method);
                                 if (handler != null) {
                                     methodProxyHandlers.add(handler);
                                 }

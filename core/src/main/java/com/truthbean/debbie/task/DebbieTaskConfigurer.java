@@ -11,6 +11,7 @@ package com.truthbean.debbie.task;
 
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.BaseProperties;
@@ -28,7 +29,8 @@ public class DebbieTaskConfigurer {
         debbieTaskFactory.setApplicationContext(applicationContext);
 
         var time = new BaseProperties().getLongValue("debbie.thread-pool-executor.await-termination-time", 5000L);
-        var factory = new ThreadPooledExecutor(10, 200, new NamedThreadFactory(), time);
+        var factory = new ThreadPooledExecutor(10, 200,
+                new NamedThreadFactory().setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler()), time);
         register.registerSingletonBean(factory, ThreadPooledExecutor.class, "threadPooledExecutor");
 
         debbieTaskFactory.registerTask();

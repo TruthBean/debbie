@@ -8,13 +8,13 @@ public interface BeanInfoFactory {
 
     void autoCreateSingletonBeans(GlobalBeanFactory beanFactory);
 
-    Set<DebbieBeanInfo<?>> getAllDebbieBeanInfo();
+    Set<BeanInfo<?>> getAllDebbieBeanInfo();
 
-    <T, K extends T> List<DebbieBeanInfo<K>> getBeanInfoList(Class<T> type, boolean require);
+    <T, K extends T> List<BeanInfo<K>> getBeanInfoList(Class<T> type, boolean require);
 
-    <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require);
+    <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require);
 
-    <T> DebbieBeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException);
+    <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException);
 
-    void destroy(DebbieBeanInfo<?> beanInfo);
+    void destroy(BeanInfo<?> beanInfo);
 }

@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.MutableBeanInfo;
 import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
@@ -38,7 +39,7 @@ public class DataSourceFactoryBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerDataSourceFactory() {
-        DebbieBeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = initialization.getRegisterRawBean(DataSourceFactory.class);
+        MutableBeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = initialization.getRegisterRawBean(DataSourceFactory.class);
         Class<? extends DataSourceConfiguration> configurationClass = DataSourceConfiguration.class;
         try {
             configurationClass = (Class<? extends DataSourceConfiguration>) Class.forName("com.truthbean.debbie.hikari.HikariConfiguration");

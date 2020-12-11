@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -25,10 +26,14 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.*;
 
 /**
@@ -75,12 +80,12 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         this.sessionManager = sessionManager;
 
         // 创建线程池
-        var threadFactory = Executors.defaultThreadFactory();
+        var threadFactory = NamedThreadFactory.defaultThreadFactory();
         int core = Runtime.getRuntime().availableProcessors();
         var executor = new ThreadPoolExecutor(core, core * 10,
                 0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(1024), threadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
-        // 异步通道管理器
+        // 用于资源共享的异步通道管理器
         var asyncChannelGroup = AsynchronousChannelGroup.withThreadPool(executor);
         // 创建 用在服务端的异步Socket.以下简称服务器socket。
         // 异步通道管理器，会把服务端所用到的相关参数
@@ -88,26 +93,23 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
     }
 
-    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("aio-server-application-");
+    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("aio-server-application-")
+            .setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
     private final ThreadPooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     @Override
-    protected void start(long beforeStartTime, String... args) {
+    protected void start(Instant beforeStartTime, String... args) {
         LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
         printlnWebUrl(LOGGER, configuration.getPort());
-        double uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        LOGGER.info(() -> "application start time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms" +
-                " ( JVM running for " + uptime + "ms )");
+        printStartTime();
         postBeforeStart();
         singleThreadPool.execute(this);
     }
 
     @Override
-    protected void exit(long beforeStartTime, String... args) {
+    protected void exit(Instant beforeStartTime, String... args) {
         LOGGER.debug(() -> "destroy running thread");
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("application running time spends " + (System.currentTimeMillis() - beforeStartTime) + "ms");
-        }
+        printExitTime();
         singleThreadPool.destroy();
     }
 
@@ -119,7 +121,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
             // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
             // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
             // 即是listener。另一个参数V，就是原型中的客户端socket
-            var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, applicationContext, server);
+            var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, applicationContext);
             server.accept(server, mvcCompletionHandler);
         } catch (Exception e) {
             LOGGER.error("", e);

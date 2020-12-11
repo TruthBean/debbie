@@ -18,19 +18,19 @@ public interface InjectedBeanFactory {
 
     Class<? extends Annotation> getInjectType();
 
-    <T> T factory(DebbieBeanInfo<T> beanInfo);
+    <T> T factory(BeanInfo<T> beanInfo);
 
-    <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory);
+    <T> T factory(BeanInfo<T> beanInfo, boolean skipFactory);
 
-    <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
+    <T> T factory(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
 
     <T> T factory(BeanCreator<T> creator);
 
     <T> T factory(BeanCreator<T> creator, Object firstParamValue);
 
-    <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo, boolean skipFactory);
+    <T> BeanCreator<T> factoryBeanPreparation(BeanInfo<T> beanInfo, boolean skipFactory);
 
-    void resolveFieldValue(DebbieBeanInfo<?> beanInfo, FieldInfo field, String keyPrefix);
+    void resolveFieldValue(BeanInfo<?> beanInfo, FieldInfo field, String keyPrefix);
 
     void resolveAwareValue(InjectedBeanFactory injectedBeanFactory, Object object, Class<?> clazz);
 

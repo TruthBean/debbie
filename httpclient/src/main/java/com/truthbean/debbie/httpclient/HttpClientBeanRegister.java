@@ -9,9 +9,7 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 
@@ -34,9 +32,9 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerHttpClient() {
-        Set<DebbieBeanInfo<?>> annotatedClass = initialization.getAnnotatedClass(HttpClientRouter.class);
+        Set<DebbieClassBeanInfo<?>> annotatedClass = initialization.getAnnotatedClass(HttpClientRouter.class);
         if (annotatedClass != null && !annotatedClass.isEmpty()) {
-            for (DebbieBeanInfo<?> httpClientRouter : annotatedClass) {
+            for (DebbieClassBeanInfo httpClientRouter : annotatedClass) {
                 httpClientRouter.setBeanFactory(new HttpClientBeanFactory<>(httpClientRouter.getBeanClass(), handler));
                 registerSingletonBean(httpClientRouter);
             }
@@ -44,7 +42,7 @@ public class HttpClientBeanRegister extends SingletonBeanRegister {
     }
 
     public void registerHttpClientFactory() {
-        DebbieBeanInfo<HttpClientFactory> httpClientFactoryBeanInfo = initialization.getRegisterRawBean(HttpClientFactory.class);
+        MutableBeanInfo<HttpClientFactory> httpClientFactoryBeanInfo = initialization.getRegisterRawBean(HttpClientFactory.class);
         if (httpClientFactoryBeanInfo == null) {
             registerSingletonBean(handler, HttpClientFactory.class, "httpClientFactory");
         } else if (httpClientFactoryBeanInfo.isEmpty()) {

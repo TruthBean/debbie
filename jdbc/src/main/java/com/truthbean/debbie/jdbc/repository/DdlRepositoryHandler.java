@@ -61,7 +61,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
     public <E> void createTable(TransactionInfo transaction, Class<E> entity) {
         ClassInfo<E> classInfo = new ClassInfo<>(entity);
         var entityInfo = new EntityInfo<E>();
-        SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
+        SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class).getOrigin();
         var entityClass = classInfo.getClazz();
         var table = EntityResolver.getTableName(sqlEntity, entityClass);
         entityInfo.setTable(table);

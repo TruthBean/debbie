@@ -13,6 +13,10 @@ public class SeTestRunner {
     @BeanInject
     private SeTestService seTestService;
 
+    public void setSeTestService(SeTestService seTestService) {
+        this.seTestService = seTestService;
+    }
+
     @DebbieTask(async = false)
     public void printId() {
         for (int i = 0; i < 10; i++) {

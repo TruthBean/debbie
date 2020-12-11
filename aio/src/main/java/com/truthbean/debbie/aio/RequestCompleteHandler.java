@@ -20,6 +20,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -37,11 +40,44 @@ class RequestCompleteHandler {
 
     RouterRequest handle(AsynchronousSocketChannel channel, final SessionManager sessionManager) {
         try {
+            // 请求内容
+            StringBuilder stringBuilder = new StringBuilder();
+
             // ByteBuffer是非线程安全的，如果要在多个线程间共享同一个ByteBuffer，需要考虑线程安全性问题
-            var readByteBuffer = ByteBuffer.allocate(2048);
-            var read = channel.read(readByteBuffer);
+            var byteBuffer = ByteBuffer.allocate(128);
+            while (true) {
+                var read = channel.read(byteBuffer);
+                Integer size;
+                try {
+                    size = read.get(200, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    size = 0;
+                    LOG.warn("remote client message is null, it could be a options request.", e);
+                }
+                if (size <= 0) {
+                    break;
+                }
+
+                // 重置 position和mark
+                byteBuffer.flip();
+                var remaining = byteBuffer.remaining();
+                var reqBytes = new byte[remaining];
+                byteBuffer.get(reqBytes);
+                byteBuffer.clear();
+
+                var part = new String(reqBytes);
+                stringBuilder.append(part);
+            }
             SocketAddress remoteAddress = channel.getRemoteAddress();
-            return completed(read.get(), readByteBuffer, remoteAddress, sessionManager);
+            // return completed(read.get(), readByteBuffer, remoteAddress, sessionManager);
+
+            var request = stringBuilder.toString();
+            LOG.debug("client message: " + request);
+            List<String> lines = request.lines().collect(Collectors.toList());
+            if (lines.isEmpty() || lines.size() == 1)
+                return null;
+
+            return new RawRequestWrapper(lines, remoteAddress, sessionManager);
         } catch (InterruptedException | ExecutionException | IOException e) {
             LOG.error("", e);
         }
@@ -56,6 +92,7 @@ class RequestCompleteHandler {
             LOG.warn("httpRequest from client error!");
             return null;
         } else {
+            // 重置 position和mark
             readByteBuffer.flip();
             var remaining = readByteBuffer.remaining();
             var reqBytes = new byte[remaining];

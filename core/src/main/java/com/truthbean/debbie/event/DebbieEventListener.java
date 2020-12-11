@@ -24,6 +24,10 @@ public interface DebbieEventListener<E extends AbstractDebbieEvent> extends Even
         return true;
     }
 
+    default boolean allowConcurrent() {
+        return false;
+    }
+
     /**
      * Handle an application event.
      *

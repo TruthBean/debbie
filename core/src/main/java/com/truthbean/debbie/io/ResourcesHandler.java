@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -18,6 +18,7 @@ import com.truthbean.logger.LoggerFactory;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -141,7 +142,7 @@ public final class ResourcesHandler {
     }
 
     public static synchronized List<Class<?>> getClassesByResources(final Collection<String> resources,
-                                                       final ClassLoader classLoader) {
+                                                                    final ClassLoader classLoader) {
         final List<Class<?>> classes = new ArrayList<>();
         if (resources == null || resources.isEmpty() || classLoader == null)
             return classes;
@@ -156,12 +157,15 @@ public final class ResourcesHandler {
             }
             if (name.endsWith(".class")) {
                 var className = name.replace('/', '.').substring(0, name.length() - 6);
+                Class<?> clazz = null;
                 try {
                     // 添加到classes
-                    classes.add(classLoader.loadClass(className));
+                    clazz = classLoader.loadClass(className);
                 } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                    if (LOGGER.isTraceEnabled())
-                        LOGGER.error(() -> "load class<" + className + "> error.\n", e);
+                    LOGGER.debug(() -> "load class<" + className + "> error because " + e.getMessage());
+                }
+                if (clazz != null) {
+                    classes.add(clazz);
                 }
             }
         }
@@ -196,16 +200,21 @@ public final class ResourcesHandler {
         try {
             InputStream in = handle(resource);
             if (in == null) return null;
-            InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
-            StringWriter writer = new StringWriter();
+            String result = null;
+            try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
+                 StringWriter writer = new StringWriter()) {
 
-            char[] buffer = new char[DEFAULT_BUFFER_SIZE];
-            int n;
-            while (-1 != (n = reader.read(buffer))) {
-                writer.write(buffer, 0, n);
+                char[] buffer = new char[DEFAULT_BUFFER_SIZE];
+                int n;
+                while (-1 != (n = reader.read(buffer))) {
+                    writer.write(buffer, 0, n);
+                }
+
+                writer.flush();
+                result = writer.toString();
             }
 
-            return writer.toString();
+            return result;
         } catch (Exception e) {
             LOGGER.error("", e);
         }
@@ -216,13 +225,14 @@ public final class ResourcesHandler {
     public static byte[] handleStaticBytesResource(String resource) {
         InputStream inputStream = handle(resource);
         if (inputStream == null) return null;
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            // inputStream.transferTo(output);
             copy(inputStream, output);
+            return output.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
-        return output.toByteArray();
+        return new byte[0];
     }
 
     public static long copy(InputStream input, OutputStream output) throws IOException {
@@ -232,7 +242,7 @@ public final class ResourcesHandler {
 
         long count = 0;
         int n;
-        while (eof != (n = input.read(buffer))) {
+        while (eof != (n = input.read(buffer, 0, DEFAULT_BUFFER_SIZE))) {
             output.write(buffer, 0, n);
             count += n;
         }

@@ -56,6 +56,10 @@ public class AnnotationMethodInfo {
         return value;
     }
 
+    public boolean isDefaultValue() {
+        return value == null || value == method.getDefaultValue() || value.equals(method.getDefaultValue());
+    }
+
     public void setValue(Object value) {
         this.value = value;
     }

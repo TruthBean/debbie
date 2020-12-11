@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.annotation.AliasFor;
+
 import java.lang.annotation.*;
 
 /**
@@ -25,12 +27,14 @@ public @interface BeanComponent {
      * @since 0.0.2
      * @return bean name
      */
+    @AliasFor(attribute = "value")
     String name() default "";
 
     /**
      * @since 0.0.1
      * @return bean name
      */
+    @AliasFor(attribute = "name")
     String value() default "";
 
     BeanType type() default BeanType.NO_LIMIT;

@@ -11,6 +11,7 @@ package com.truthbean.debbie.reflection;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 /**
@@ -24,6 +25,10 @@ public class FieldInfo {
 
     public FieldInfo(Field field) {
         this.field = field;
+        int modifiers = this.field.getModifiers();
+        if (Modifier.isFinal(modifiers)) {
+            hasValue = true;
+        }
     }
 
     public Field getField() {

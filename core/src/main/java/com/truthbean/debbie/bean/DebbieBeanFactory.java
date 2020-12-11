@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import java.util.Objects;
+
 /**
  * @author TruthBean
  * @since 0.0.2
@@ -16,17 +18,17 @@ package com.truthbean.debbie.bean;
  */
 public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
 
-    private DebbieBeanInfo<Bean> beanInfo;
+    private BeanInfo<Bean> beanInfo;
     private GlobalBeanFactory globalBeanFactory;
 
     public DebbieBeanFactory() {
     }
 
-    public DebbieBeanFactory(DebbieBeanInfo<Bean> beanInfo) {
+    public DebbieBeanFactory(BeanInfo<Bean> beanInfo) {
         this.beanInfo = beanInfo;
     }
 
-    public void setBeanInfo(DebbieBeanInfo<Bean> beanInfo) {
+    public void setBeanInfo(BeanInfo<Bean> beanInfo) {
         this.beanInfo = beanInfo;
     }
 
@@ -45,9 +47,10 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
         if (beanInfo.isSingleton() && beanInfo.isPresent()) {
             return beanInfo.getBean();
         }
-        if (canNew()) {
-            Bean bean = globalBeanFactory.factoryBeanByDependenceProcessor(beanInfo, true);
-            beanInfo.setBean(bean);
+        if (canNew() && ClassDetailedMutableBeanInfo.class.isAssignableFrom(beanInfo.getClass())) {
+            ClassDetailedMutableBeanInfo<Bean> multableBeanInfo = (ClassDetailedMutableBeanInfo<Bean>) beanInfo;
+            Bean bean = globalBeanFactory.factoryBeanByDependenceProcessor(multableBeanInfo, true);
+            multableBeanInfo.setBean(bean);
             return bean;
         }
         return beanInfo.getBean();
@@ -66,5 +69,19 @@ public class DebbieBeanFactory<Bean> implements BeanFactory<Bean> {
     @Override
     public void destroy() {
         // do nothing
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DebbieBeanFactory<?> that = (DebbieBeanFactory<?>) o;
+        return Objects.equals(beanInfo, that.beanInfo) &&
+                Objects.equals(globalBeanFactory, that.globalBeanFactory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanInfo, globalBeanFactory);
     }
 }

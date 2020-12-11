@@ -40,8 +40,8 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     private DebbieBeanInfoFactory beanInfoFactory;
     private DebbieGlobalBeanFactory globalBeanFactory;
 
-    final Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap = new ConcurrentHashMap<>();
-    private final Map<DebbieBeanInfo<?>, BeanCreator<?>> preparations = new LinkedHashMap<>();
+    final Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap = new ConcurrentHashMap<>();
+    private final Map<BeanInfo<?>, BeanCreator<?>> preparations = new LinkedHashMap<>();
 
     private final Set<Class<? extends Annotation>> injectTypes = new HashSet<>(2);
     private Class<? extends Annotation> injectType;
@@ -98,19 +98,19 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     }
 
     @Override
-    public <T> T factory(DebbieBeanInfo<T> beanInfo) {
+    public <T> T factory(BeanInfo<T> beanInfo) {
         BeanCreator<T> creator = createIfNotExist(beanInfo, false);
         return factory(creator);
     }
 
     @Override
-    public <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
+    public <T> T factory(BeanInfo<T> beanInfo, boolean skipFactory) {
         BeanCreator<T> creator = createIfNotExist(beanInfo, skipFactory);
         return factory(creator);
     }
 
     @Override
-    public <T> T factory(DebbieBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
+    public <T> T factory(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
         BeanCreator<T> creator = createIfNotExist(beanInfo, skipFactory);
         return factory(creator, firstParamValue);
     }
@@ -142,10 +142,12 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public <T> BeanCreator<T> factoryBeanPreparation(DebbieBeanInfo<T> beanInfo, boolean skipFactory) {
+    public <T> BeanCreator<T> factoryBeanPreparation(BeanInfo<T> beanInfo, boolean skipFactory) {
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             BeanCreator<T> beanCreator = (BeanCreator<T>) singletonBeanCreatorMap.get(beanInfo);
-            beanInfo.setBean(beanCreator.getCreatedBean());
+            if (beanInfo instanceof MutableBeanInfo) {
+                ((MutableBeanInfo)beanInfo).setBean(beanCreator.getCreatedBean());
+            }
         }
         if (preparations.containsKey(beanInfo)) {
             return (BeanCreator<T>) preparations.get(beanInfo);
@@ -166,7 +168,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     }
 
     @Override
-    public void resolveFieldValue(DebbieBeanInfo<?> beanInfo, FieldInfo field, String keyPrefix) {
+    public void resolveFieldValue(BeanInfo<?> beanInfo, FieldInfo field, String keyPrefix) {
         var propertyInject = field.getAnnotation(PropertyInject.class);
         if (propertyInject != null) {
             resolvePropertiesInject(beanInfo.getBean(), field.getField(), keyPrefix, propertyInject);
@@ -320,11 +322,13 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     }
 
     @SuppressWarnings({"unchecked"})
-    private <Bean> BeanCreator<Bean> createIfNotExist(DebbieBeanInfo<Bean> beanInfo, boolean skipFactory) {
+    private <Bean> BeanCreator<Bean> createIfNotExist(BeanInfo<Bean> beanInfo, boolean skipFactory) {
         BeanCreator<Bean> creator = null;
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             creator = (BeanCreator<Bean>) singletonBeanCreatorMap.get(beanInfo);
-            beanInfo.setBean(creator.getCreatedBean());
+            if (beanInfo.isEmpty() && beanInfo instanceof MutableBeanInfo) {
+                ((MutableBeanInfo)beanInfo).setBean(creator.getCreatedBean());
+            }
         }
         if (creator == null) {
             if (preparations.containsKey(beanInfo)) {
@@ -349,7 +353,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void resolveFieldDependentBean(DebbieBeanInfo<?> beanInfo, FieldInfo fieldInfo, Annotation inject) {
+    private void resolveFieldDependentBean(BeanInfo<?> beanInfo, FieldInfo fieldInfo, Annotation inject) {
         String name = null;
         Field field = fieldInfo.getField();
         if (inject instanceof BeanInject) {
@@ -369,31 +373,39 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         if (inject instanceof BeanInject) {
             required = ((BeanInject) inject).require();
         }
-        var fieldBeanInfoMap = beanInfo.getFieldBeanDependent();
-        if (fieldBeanInfoMap == null || fieldBeanInfoMap.isEmpty()) {
-            if (required)
-                throw new NoBeanException("no bean " + name + " found .");
-            else
-                return;
-        }
-        DebbieBeanInfo fieldBeanInfo = fieldBeanInfoMap.get(fieldInfo);
-        if (fieldBeanInfo != null) {
-            Object value;
-            if (fieldBeanInfo.isPresent()) {
-                value = fieldBeanInfo.getBean();
-            } else {
-                BeanCreator<?> creator = createIfNotExist(fieldBeanInfo, false);
-                if (creator.isCreated()) {
-                    fieldBeanInfo.setBean(creator.getCreatedBean());
-                } else {
-                    fieldBeanInfo.setBean(factory(creator));
-                }
-                value = globalBeanFactory.factoryAfterCreatedByProxy(fieldBeanInfo, BeanProxyType.ASM);
+        if (beanInfo instanceof DebbieClassBeanInfo) {
+            DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) beanInfo;
+            var fieldBeanInfoMap = classBeanInfo.getFieldBeanDependent();
+            if (fieldBeanInfoMap == null || fieldBeanInfoMap.isEmpty()) {
+                if (required)
+                    throw new NoBeanException("no bean " + name + " found .");
+                else
+                    return;
             }
-            ReflectionHelper.invokeFieldBySetMethod(beanInfo.getBean(), field, value);
+            BeanInfo fieldBeanInfo = fieldBeanInfoMap.get(fieldInfo);
+            if (fieldBeanInfo != null) {
+                Object value = null;
+                if (fieldBeanInfo.isPresent()) {
+                    value = fieldBeanInfo.getBean();
+                } else if (fieldBeanInfo instanceof MutableBeanInfo){
+                    MutableBeanInfo mutableBeanInfo = (MutableBeanInfo) fieldBeanInfo;
+                    BeanCreator<?> creator = createIfNotExist(mutableBeanInfo, false);
+                    if (creator.isCreated()) {
+                        mutableBeanInfo.setBean(creator.getCreatedBean());
+                    } else {
+                        mutableBeanInfo.setBean(factory(creator));
+                    }
+                    value = globalBeanFactory.factoryAfterCreatedByProxy(mutableBeanInfo, BeanProxyType.ASM);
+                }
+                ReflectionHelper.invokeFieldBySetMethod(beanInfo.getBean(), field, value);
+            } else {
+                if (required)
+                    throw new NoBeanException("no bean " + name + " found .");
+            }
+        } else if (required) {
+            throw new NoBeanException("no bean " + name + " found .");
         } else {
-            if (required)
-                throw new NoBeanException("no bean " + name + " found .");
+            ReflectionHelper.invokeFieldBySetMethod(beanInfo.getBean(), field, null);
         }
     }
 

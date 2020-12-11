@@ -54,8 +54,8 @@ public class EventListenerBeanRegister {
         register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
         eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的
-        Set<DebbieBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
-        for (DebbieBeanInfo debbieBeanInfo : classInfoSet) {
+        Set<DebbieClassBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);
+        for (DebbieClassBeanInfo debbieBeanInfo : classInfoSet) {
             Class<?> beanType = debbieBeanInfo.getBeanClass();
             if (DebbieEventListener.class.isAssignableFrom(beanType)) {
                 List<Type> actualTypes = debbieBeanInfo.getActualTypes();
@@ -72,9 +72,9 @@ public class EventListenerBeanRegister {
             }
         }
         // 处理 EventMethodListener
-        Set<DebbieBeanInfo<?>> beanInfoList = beanInitialization.getAnnotatedMethodBean(EventMethodListener.class);
+        Set<DebbieClassBeanInfo<?>> beanInfoList = beanInitialization.getAnnotatedMethodBean(EventMethodListener.class);
         if (beanInfoList != null && !beanInfoList.isEmpty()) {
-            for (DebbieBeanInfo debbieBeanInfo : beanInfoList) {
+            for (DebbieClassBeanInfo debbieBeanInfo : beanInfoList) {
                 Class<?> beanType = debbieBeanInfo.getBeanClass();
                 Object bean = globalBeanFactory.factory(beanType);
                 Set<Method> methods = debbieBeanInfo.getMethods();
@@ -88,6 +88,7 @@ public class EventListenerBeanRegister {
                             if (AbstractDebbieEvent.class.isAssignableFrom(type)) {
                                 var listener = new EventMethodListenerFactory(bean, type, method);
                                 listener.setAsync(annotation.async());
+                                listener.setAllowConcurrent(annotation.allowConcurrent());
 
                                 DebbieBeanInfo listenerBeanInfo = new DebbieBeanInfo<>(EventMethodListenerFactory.class);
                                 listenerBeanInfo.setBean(listener);

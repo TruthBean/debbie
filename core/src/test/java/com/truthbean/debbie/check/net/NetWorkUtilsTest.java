@@ -70,4 +70,11 @@ class NetWorkUtilsTest {
     @Test
     void calcSubnetAddress() {
     }
+
+    @Test
+    void strToAddr() {
+        var addr = NetWorkUtils.strToAddr("192.168.180.120");
+        System.out.println(addr.getHostAddress());
+    }
+
 }

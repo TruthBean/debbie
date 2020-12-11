@@ -21,15 +21,15 @@ import java.util.function.Supplier;
  */
 public interface BeanCreator<Bean> extends BaseBeanCreator<Bean> {
 
-    DebbieBeanInfo<Bean> getBeanInfo();
+    BeanInfo<Bean> getBeanInfo();
 
-    void createPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Object firstParamValue);
+    void createPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Object firstParamValue);
 
     void createPreparationByDependence(ApplicationContext applicationContext);
 
     void postConstructor();
 
-    void postPreparation(Map<DebbieBeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
+    void postPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
 
     void postCreated();
 
