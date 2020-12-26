@@ -45,6 +45,7 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     private final Class<Bean> beanClass;
     private BeanFactory<Bean> beanFactory;
     private Bean bean;
+    private final Map<String, Object> properties = new HashMap<>();
 
     public DebbieBeanInfo(Class<Bean> beanClass) {
         this.beanClass = beanClass;
@@ -72,55 +73,6 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     @Override
     public boolean hasBeanFactory() {
         return beanFactory != null;
-    }
-
-    private boolean resolveBeanComponent(Annotation value) {
-        if (value == null)
-            return false;
-        if (value.annotationType() == BeanComponent.class) {
-            var beanService = ((BeanComponent) value);
-            var info = new DefaultBeanComponentParser().parse(beanService);
-            setBeanComponent(info);
-            return true;
-        }
-        return false;
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void setBeanComponent(BeanComponentInfo info) {
-        if (beanNames.isEmpty()) {
-            if (info.hasName()) {
-                beanNames.add(info.getName());
-            }
-        }
-        if (beanType == null)
-            beanType = info.getType();
-
-        if (lazyCreate == null)
-            lazyCreate = info.isLazy();
-        else {
-            // note: default value is true
-            lazyCreate = true;
-        }
-
-        if (beanFactory == null && info.getFactory() != null) {
-            Class<? extends BeanFactory> factory = info.getFactory();
-            if (factory != null && factory != BeanFactory.class) {
-                BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{BeanInfo.class},
-                        new Object[]{this});
-                setBeanFactory(beanFactory);
-            }
-        }
-    }
-
-    private boolean resolveComponent(Class<? extends Annotation> key, Annotation value) {
-        var info = BeanComponentParser.parse(key, value);
-        if (info != null) {
-            setBeanComponent(info);
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -188,6 +140,16 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     @Override
     public void setBean(Supplier<Bean> bean) {
         this.bean = bean.get();
+    }
+
+    @Override
+    public void addProperty(String name, Object value) {
+        properties.put(name, value);
+    }
+
+    @Override
+    public Object getProperty(String name) {
+        return properties.get(name);
     }
 
     @Override
@@ -261,7 +223,6 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
 
     @Override
     public void release() {
-        beanNames.clear();
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {
@@ -286,6 +247,8 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
                 }
             }
         }
+        order = 0;
+        bean = null;
     }
 
     @Override

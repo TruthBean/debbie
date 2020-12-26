@@ -31,7 +31,7 @@ public class DebbieStartedEvent extends AbstractDebbieEvent implements Applicati
         super(source);
     }
 
-    public ApplicationContext getDebbieApplicationContext() {
+    public ApplicationContext getApplicationContext() {
         return debbieApplicationContext;
     }
 

@@ -35,7 +35,7 @@ dependencies {
     // test =========================================================================================================
 
     testImplementation(project(":debbie-test"))
-    testImplementation("com.truthbean.logger:stdout-adapter:$loggerVersion")
+    testImplementation("com.truthbean.logger:stdout-boot:$loggerVersion")
 
     testImplementation("org.javassist:javassist:$javassistVersion")
     val cglibVersion: String by project

@@ -14,7 +14,7 @@ package com.truthbean.debbie.bean;
  * @since 0.1.0
  * Created on 2020-07-01 11:41.
  */
-public interface GlobalBeanFactoryAware {
+public interface GlobalBeanFactoryAware extends Aware {
 
     void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory);
 }

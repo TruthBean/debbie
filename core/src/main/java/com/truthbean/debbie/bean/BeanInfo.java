@@ -9,8 +9,12 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.logger.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -86,4 +90,39 @@ public interface BeanInfo<Bean> {
     default void consumer(Consumer<Bean> consumer) {
         consumer.accept(getBean());
     }
+
+    default BeanInfo<Bean> copy() {
+        return this;
+    }
+
+    default void release() {
+        BeanFactory<Bean> beanFactory = getBeanFactory();
+        if (beanFactory != null) {
+            beanFactory.destroy();
+        } else {
+            Class<Bean> beanClass = getBeanClass();
+            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
+                var bean = getBean();
+                if (BeanClosure.class.isAssignableFrom(beanClass)) {
+                    ((BeanClosure) bean).destroy();
+                }
+                if (Closeable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((Closeable) bean).close();
+                    } catch (IOException e) {
+                        LOGGER.error("", e);
+                    }
+                }
+                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((AutoCloseable) bean).close();
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                    }
+                }
+            }
+        }
+    }
+
+    static final Logger LOGGER = LoggerFactory.getLogger(BeanInfo.class);
 }

@@ -9,11 +9,14 @@
  */
 package com.truthbean.debbie.concurrent;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.lang.Callback;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.logger.LogLevel;
 import com.truthbean.logger.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -21,7 +24,7 @@ import java.util.concurrent.*;
  * @since 0.0.2
  * Created on 2020-04-03 14:00.
  */
-public class ThreadPooledExecutor implements Executor {
+public class ThreadPooledExecutor implements PooledExecutor {
 
     private final long awaitTerminationTime;
 
@@ -52,23 +55,41 @@ public class ThreadPooledExecutor implements Executor {
             this.executorService.execute(task);
     }
 
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout) {
+        try {
+            return this.executorService.invokeAll(tasks, timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("executorService.invokeAll error. ", e);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public boolean isRunning() {
         return !executorService.isShutdown() && !executorService.isTerminated();
     }
 
+    @Override
     public <R> Future<R> submit(Callback<R> task, Object...args) {
         return this.executorService.submit(() -> task.call(args));
     }
 
+    @Override
     public void destroy() {
         if (isRunning()) {
             try {
                 executorService.shutdown();
-                executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS);
+                while (!executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS)) {
+                    // wait
+                    LOGGER.info("waiting for executorService termination");
+                }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.error("executorService.destroy error. ", e);
                 executorService.shutdownNow();
             }
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThreadPooledExecutor.class);
 }

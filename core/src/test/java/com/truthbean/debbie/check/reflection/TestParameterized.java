@@ -22,6 +22,7 @@ public class TestParameterized extends AbstractParameterized<BeanB, ReflectionTa
 
 abstract class AbstractParameterized<A extends BeanA, S> implements AAAA, AA {
 
+    @SuppressWarnings("unchecked")
     public Class<S> getS(A a, String sClassName) {
         System.out.println(sClassName);
         System.out.println(a.getA());

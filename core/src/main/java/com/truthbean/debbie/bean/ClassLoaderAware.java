@@ -14,7 +14,7 @@ package com.truthbean.debbie.bean;
  * @since 0.1.0
  * Created on 2020-07-02 23:04
  */
-public interface ClassLoaderAware {
+public interface ClassLoaderAware extends Aware {
 
     void setClassLoader(ClassLoader classloader);
 }

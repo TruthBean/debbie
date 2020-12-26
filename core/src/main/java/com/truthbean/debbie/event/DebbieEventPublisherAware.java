@@ -9,11 +9,13 @@
  */
 package com.truthbean.debbie.event;
 
+import com.truthbean.debbie.bean.Aware;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  */
-public interface DebbieEventPublisherAware {
+public interface DebbieEventPublisherAware extends Aware {
 
     void setEventPublisher(DebbieEventPublisher eventPublisher);
 

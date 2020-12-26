@@ -12,46 +12,31 @@ package com.truthbean.debbie.task;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-08-10 19:37
  */
-public class MethodTaskInfo {
+public class MethodTaskInfo extends TaskInfo {
+
     private Class<?> taskBeanClass;
-    private Supplier<?> taskBean;
+    private Object taskBean;
     private Method taskMethod;
     private DebbieTask taskAnnotation;
-    private Consumer<MethodTaskInfo> consumer;
 
     public MethodTaskInfo() {
+        super();
     }
 
-    public MethodTaskInfo(Class<?> taskBeanClass, Supplier<?> taskBean, Method taskMethod, DebbieTask taskAnnotation,
-                          Consumer<MethodTaskInfo> consumer) {
+    public MethodTaskInfo(Class<?> taskBeanClass, Object taskBean, Method taskMethod, DebbieTask taskAnnotation,
+                          Consumer<TaskInfo> consumer) {
+        super(new MethodTaskRunnable(taskMethod, taskBeanClass, taskBean), new DebbieTaskConfig(taskAnnotation));
+        super.setConsumer(consumer);
         this.taskBeanClass = taskBeanClass;
         this.taskBean = taskBean;
         this.taskMethod = taskMethod;
         this.taskAnnotation = taskAnnotation;
-        this.consumer = consumer;
-    }
-
-    public Class<?> getTaskBeanClass() {
-        return taskBeanClass;
-    }
-
-    public void setTaskBeanClass(Class<?> taskBeanClass) {
-        this.taskBeanClass = taskBeanClass;
-    }
-
-    public Supplier<?> getTaskBean() {
-        return taskBean;
-    }
-
-    public void setTaskBean(Supplier<?> taskBean) {
-        this.taskBean = taskBean;
     }
 
     public Method getTaskMethod() {
@@ -70,16 +55,20 @@ public class MethodTaskInfo {
         this.taskAnnotation = taskAnnotation;
     }
 
-    public Consumer<MethodTaskInfo> getConsumer() {
-        return consumer;
+    public Class<?> getTaskBeanClass() {
+        return taskBeanClass;
     }
 
-    public void setConsumer(Consumer<MethodTaskInfo> consumer) {
-        this.consumer = consumer;
+    public void setTaskBeanClass(Class<?> taskBeanClass) {
+        this.taskBeanClass = taskBeanClass;
     }
 
-    public void accept() {
-        this.consumer.accept(this);
+    public Object getTaskBean() {
+        return taskBean;
+    }
+
+    public void setTaskBean(Object taskBean) {
+        this.taskBean = taskBean;
     }
 
     @Override

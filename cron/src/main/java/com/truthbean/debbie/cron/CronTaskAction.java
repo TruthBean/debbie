@@ -14,6 +14,7 @@ import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.task.MethodTaskInfo;
 import com.truthbean.debbie.task.TaskAction;
+import com.truthbean.debbie.task.TaskInfo;
 import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 import org.quartz.*;
@@ -27,12 +28,15 @@ public class CronTaskAction implements TaskAction {
     private GlobalBeanFactory globalBeanFactory;
 
     @Override
-    public void prepare(MethodTaskInfo taskInfo) {
-        var cron = taskInfo.getTaskAnnotation().cron();
+    public void prepare(TaskInfo taskInfo) {
+        var cron = taskInfo.getTaskConfig().getCron();
         if (StringUtils.isBlank(cron))
             return;
+        if (!(taskInfo instanceof MethodTaskInfo)) {
+            return;
+        }
 
-        DebbieSchedulerJobInfo jobInfo = new DebbieSchedulerJobInfo(taskInfo);
+        DebbieSchedulerJobInfo jobInfo = new DebbieSchedulerJobInfo((MethodTaskInfo)taskInfo);
         Scheduler scheduler = globalBeanFactory.factory(Scheduler.class);
         JobDetail job = JobBuilder.newJob(SchedulerJobProxy.class)
                 .withIdentity(jobInfo.getJobName(), jobInfo.getGroupName())

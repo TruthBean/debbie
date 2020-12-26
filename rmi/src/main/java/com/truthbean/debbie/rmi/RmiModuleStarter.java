@@ -9,8 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
@@ -46,11 +45,14 @@ public class RmiModuleStarter implements DebbieModuleStarter {
 
     private Set<Class<?>> getRmiServiceMappers(BeanInitialization beanInitialization) {
         Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
-        Set<DebbieBeanInfo<?>> beanInfoSet = beanInitialization.getRegisteredRawBeans();
-        for (DebbieBeanInfo<?> beanInfo : beanInfoSet) {
-            DebbieRmiMapper classAnnotation = beanInfo.getClassAnnotation(DebbieRmiMapper.class);
-            if (classAnnotation != null && beanInfo.getBeanClass().isInterface()) {
-                rmiServiceMappers.add(beanInfo.getBeanClass());
+        Set<MutableBeanInfo<?>> beanInfoSet = beanInitialization.getRegisteredRawBeans();
+        for (MutableBeanInfo<?> beanInfo : beanInfoSet) {
+            if (beanInfo instanceof DebbieClassBeanInfo) {
+                DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) beanInfo;
+                DebbieRmiMapper classAnnotation = classBeanInfo.getClassAnnotation(DebbieRmiMapper.class);
+                if (classAnnotation != null && classBeanInfo.getBeanClass().isInterface()) {
+                    rmiServiceMappers.add(classBeanInfo.getBeanClass());
+                }
             }
         }
         return rmiServiceMappers;

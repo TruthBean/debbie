@@ -132,6 +132,12 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
+    public BeanInitialization initBeanInfo(BeanInfo<?> beanInfo) {
+        beanRegisterCenter.register(beanInfo);
+        return this;
+    }
+
+    @Override
     public void initSingletonBean(MutableBeanInfo<?> beanInfo) {
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanRegisterCenter.register(beanInfo);
@@ -206,10 +212,11 @@ class DebbieBeanInitialization implements BeanInitialization {
             return null;
         }
         Bean resultBean = registerRawBean.getBean();
-        BeanFactory<Bean> beanFactory = registerRawBean.getBeanFactory();
         if (resultBean != null) {
             return resultBean;
-        } else if (beanFactory != null) {
+        }
+        BeanFactory<Bean> beanFactory = registerRawBean.getBeanFactory();
+        if (beanFactory != null) {
             return beanFactory.getBean();
         } else {
             throw new NoBeanException("bean " + bean.getName() + " has no registered! ");
@@ -219,7 +226,7 @@ class DebbieBeanInitialization implements BeanInitialization {
     @Override
     public Set<BeanInfo<?>> getRegisteredBeans() {
         Set<BeanInfo<?>> result = new HashSet<>();
-        Collection<BeanInfo<?>> registerRawBeans = new CopyOnWriteArrayList<>(beanRegisterCenter.getRegisterRawBeans());
+        Collection<BeanInfo<?>> registerRawBeans = new CopyOnWriteArrayList<>(beanRegisterCenter.getRegisteredBeans());
         if (!registerRawBeans.isEmpty()) {
             for (BeanInfo<?> registerRawBean : registerRawBeans) {
                 if (registerRawBean.isPresent() || registerRawBean.getBeanFactory() != null) {

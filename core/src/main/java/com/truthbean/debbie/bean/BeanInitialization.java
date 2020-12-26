@@ -44,6 +44,8 @@ public interface BeanInitialization {
 
     void initBean(BeanInfo<?> beanInfo);
 
+    BeanInitialization initBeanInfo(BeanInfo<?> beanInfo);
+
     void initSingletonBean(MutableBeanInfo<?> beanInfo);
 
     void refreshSingletonBean(MutableBeanInfo<?> beanInfo);

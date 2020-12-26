@@ -15,7 +15,7 @@ import java.lang.annotation.*;
  * @author TruthBean
  * @since 0.0.1
  */
-@Target({ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.PARAMETER})
+@Target({ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface BeanInject {

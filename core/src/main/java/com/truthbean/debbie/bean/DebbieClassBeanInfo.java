@@ -46,6 +46,8 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     private BeanFactory<Bean> beanFactory;
     private Bean bean;
 
+    private final Map<String, Object> properties = new HashMap<>();
+
     private boolean noInterface = false;
     private Class<?> beanInterface;
 
@@ -389,6 +391,16 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     }
 
     @Override
+    public void addProperty(String name, Object value) {
+        properties.put(name, value);
+    }
+
+    @Override
+    public Object getProperty(String name) {
+        return properties.get(name);
+    }
+
+    @Override
     public boolean isLazyCreate() {
         return lazyCreate != null && lazyCreate;
     }
@@ -454,12 +466,17 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
         if (beanType != null)
             beanInfo.setBeanType(beanType);
 
+        if (!properties.isEmpty()) {
+            beanInfo.properties.putAll(properties);
+        }
+
         return beanInfo;
     }
 
     @Override
     public void release() {
         beanNames.clear();
+        properties.clear();
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {
@@ -484,11 +501,27 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
                 }
             }
         }
+        order = 0;
+        bean = null;
+        if (constructorBeanDependent != null) {
+            constructorBeanDependent.clear();
+        }
+        constructorBeanDependent = null;
+        if (initMethodBeanDependent != null) {
+            initMethodBeanDependent.clear();
+        }
+        initMethodBeanDependent = null;
+        if (fieldBeanDependent != null) {
+            fieldBeanDependent.clear();
+        }
+        fieldBeanDependent = null;
+        hasVirtualValue = false;
     }
 
     @Override
     public String toString() {
         return "\"DebbieClassBeanInfo\":{" +
+                "\"beanClass\":" + getBeanClass() + "," +
                 "\"beanNames\":" + beanNames + "," +
                 "\"order\":" + order + "," +
                 "\"beanType\":" + beanType + "," +

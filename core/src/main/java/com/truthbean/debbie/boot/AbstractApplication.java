@@ -12,11 +12,14 @@ package com.truthbean.debbie.boot;
 import com.truthbean.Logger;
 import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.PooledExecutor;
+import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.logger.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -52,8 +55,9 @@ public abstract class AbstractApplication implements DebbieApplication {
     /**
      * startup and shutdown thread
      */
-    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true);
-    private final ThreadPooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
+    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true)
+            .setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
+    private final PooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
 
     private boolean useProperties = true;
 
@@ -76,6 +80,11 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     @Override
     public ApplicationContext getApplicationContext() {
+        return this.applicationContext;
+    }
+
+    @Override
+    public ApplicationContext getContext() {
         return this.applicationContext;
     }
 
@@ -110,8 +119,14 @@ public abstract class AbstractApplication implements DebbieApplication {
         startupShutdownThreadPool.execute(() -> {
             if (running.compareAndSet(false, true) && exited.get()) {
                 registerShutdownHook(args);
-                start(beforeStartTime, args);
-                exited.set(false);
+                try {
+                    start(beforeStartTime, args);
+                    exited.set(false);
+                } catch (Exception e) {
+                    exited.set(false);
+                    logger.error("Application start error: \n", e);
+                    exit(args);
+                }
             }
         });
     }
@@ -174,6 +189,7 @@ public abstract class AbstractApplication implements DebbieApplication {
             }
         });
         startupShutdownThreadPool.destroy();
+        LoggerFactory.destroy();
     }
 
     /**
@@ -211,6 +227,7 @@ public abstract class AbstractApplication implements DebbieApplication {
                     this.running.set(false);
                 } catch (IllegalStateException ex) {
                     // ignore - VM is already shutting down
+                    ex.printStackTrace();
                 }
             }
         }

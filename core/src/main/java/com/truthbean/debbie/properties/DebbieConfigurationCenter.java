@@ -37,9 +37,12 @@ import java.util.Set;
 public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     @SuppressWarnings({"rawtypes"})
+    // TODO
     private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
+    private static final String PROPERTIES_NAME = "debbie.properties.class-name";
 
     private ApplicationContext applicationContext;
+    private BeanInitialization beanInitialization;
 
     public DebbieConfigurationCenter() {
     }
@@ -47,6 +50,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.beanInitialization = applicationContext.getBeanInitialization();
     }
 
     public static <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration,
@@ -56,19 +60,21 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         beanInfo.setBean(configuration);
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanInfo.addBeanName(beanName);
+        // beanInfo.addProperty(PROPERTIES_NAME);
         beanInitialization.initSingletonBean(beanInfo);
     }
 
     public <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration) {
-        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
+        addConfiguration(configurationClass, configuration, beanInitialization);
     }
 
     public <P extends DebbieProperties<S>, C extends DebbieConfiguration, S extends C>
     void register(Class<P> propertiesClass, Class<C> configurationClass) {
+        // TODO 不用反射的形式....
         DebbieProperties<S> properties = ReflectionHelper.newInstance(propertiesClass);
         C configuration = properties.toConfiguration(applicationContext);
-        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
         configurations.put(propertiesClass, configuration);
+        addConfiguration(configurationClass, configuration, beanInitialization);
         applicationContext.refreshBeans();
     }
 
@@ -110,7 +116,11 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
                 return (C) value;
             }
         }
-        return null;
+        return beanInitialization.getRegisterBean(configurationClass);
+    }
+
+    public static <C extends DebbieConfiguration> C factoryConfiguration(Class<C> configurationClass, ApplicationContext applicationContext) {
+        return applicationContext.getBeanInitialization().getRegisterBean(configurationClass);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

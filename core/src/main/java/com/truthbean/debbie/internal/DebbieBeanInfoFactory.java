@@ -15,12 +15,7 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -40,7 +35,7 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     }
 
     @Override
-    public void refreshBeans() {
+    public BeanInfoFactory refreshBeans() {
         // 重新计算hashcode，因为map的key存的是最开始put进去的值的hashcode，但是key更新的话，hashcode并没有更新
         Map<BeanInfo<?>, Object> copy = new ConcurrentHashMap<>(beanServiceInfoSet);
         beanServiceInfoSet.clear();
@@ -89,6 +84,7 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
             }
         });
         beanServiceInfoSet.putAll(copy);
+        return this;
     }
 
     @Override
@@ -158,10 +154,8 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
     synchronized void destroyBeans(Collection<BeanInfo<?>> beans) {
         if (beans != null && !beans.isEmpty()) {
             for (BeanInfo<?> bean : beans) {
-                if (bean instanceof MutableBeanInfo) {
-                    LOGGER.trace(() -> "release bean " + bean.getBeanClass() + " with name " + bean.getServiceName());
-                    ((MutableBeanInfo<?>)bean).release();
-                }
+                LOGGER.trace(() -> "release bean " + bean.getBeanClass() + " with name " + bean.getServiceName());
+                bean.release();
             }
         }
     }
@@ -272,16 +266,28 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
             if ((serviceName == null || serviceName.isBlank()) && type != null) {
                 serviceName = type.getName();
             }
-            throw new OneMoreBeanRegisteredException(serviceName + " must be only one");
+            Iterator<BeanInfo<?>> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                BeanInfo<?> next = iterator.next();
+                if (next.getBeanClass() != type) {
+                    list.remove(next);
+                }
+            }
+            if (list.size() != 1 ) {
+                throw new OneMoreBeanRegisteredException(serviceName + " must be only one");
+            }
         }
 
         var ele = list.get(0);
-        // @SuppressWarnings("unchecked") DebbieBeanInfo<T> beanInfo = (DebbieBeanInfo<T>) list.get(0);
         if (type == null || type.isAssignableFrom(ele.getBeanClass())) {
             if (ele.getBeanType() == BeanType.SINGLETON) {
-                return (BeanInfo<T>) ele;
-            } else if (ele instanceof MutableBeanInfo){
-                return ((MutableBeanInfo<T>)ele).copy();
+                @SuppressWarnings("unchecked")
+                BeanInfo<T> result = (BeanInfo<T>) ele;
+                return result;
+            } else {
+                @SuppressWarnings("unchecked")
+                BeanInfo<T> result = (BeanInfo<T>) ele.copy();
+                return result;
             }
         }
         if (throwException)

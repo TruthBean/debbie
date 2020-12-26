@@ -20,6 +20,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface DebbieTask {
 
+    long NO_RATE = -2;
+
     int order() default Integer.MAX_VALUE;
 
     boolean async() default true;

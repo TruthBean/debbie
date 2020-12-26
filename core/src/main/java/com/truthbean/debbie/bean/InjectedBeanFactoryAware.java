@@ -14,7 +14,7 @@ package com.truthbean.debbie.bean;
  * @since 0.1.0
  * Created on 2020-06-24 10:07.
  */
-public interface InjectedBeanFactoryAware {
+public interface InjectedBeanFactoryAware extends Aware {
 
     void setInjectedBeanFactory(InjectedBeanFactory injectedBeanFactory);
 }

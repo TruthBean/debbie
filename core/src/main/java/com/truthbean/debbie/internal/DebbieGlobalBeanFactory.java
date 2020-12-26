@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -78,6 +79,16 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
     public <T> Optional<T> factoryIfPresent(String beanName) {
         LOGGER.trace(() -> "factory bean with name " + beanName + " if present");
         return Optional.ofNullable(factory(beanName, null, false, false));
+    }
+
+    @Override
+    public <T> Supplier<T> supply(String beanName) {
+        return () -> factory(beanName, null, true, false);
+    }
+
+    @Override
+    public <T> Supplier<T> supply(Class<T> type) {
+        return () -> factory(null, type, true, false);
     }
 
     @Override

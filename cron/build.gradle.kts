@@ -13,14 +13,8 @@ dependencies {
         exclude("org.slf4j", "slf4j-api")
     }
 
-    val slf4jVersion: String by project
-    testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
-
     val loggerVersion: String by project
     testImplementation("com.truthbean.logger:slf4j-boot:$loggerVersion")
-
-    val logbackVersion: String by project
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     testImplementation(project(":debbie-test"))
 }

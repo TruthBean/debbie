@@ -21,6 +21,11 @@ public class OtherPackageBean {
 
     @DebbieTask(fixedRate = 1000)
     public void task() {
-        System.out.println("123");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 123");
     }
 }

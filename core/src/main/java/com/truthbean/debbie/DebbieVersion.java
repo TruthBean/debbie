@@ -20,6 +20,7 @@ public final class DebbieVersion {
 
     public static String getVersion() {
         Package pkg = DebbieVersion.class.getPackage();
-        return pkg != null ? pkg.getImplementationVersion() : "0.1.0-RELEASE";
+        return pkg != null && !"null".equalsIgnoreCase(pkg.getImplementationVersion())
+                ? pkg.getImplementationVersion() : "0.2.0-RELEASE";
     }
 }

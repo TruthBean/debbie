@@ -52,6 +52,7 @@ public class EventListenerBeanRegister {
         // 先注册系统相关的
         SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
         register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
+        register.registerSingletonBean(eventPublisher, EventMulticaster.class, "eventMulticaster");
         eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的
         Set<DebbieClassBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(EventBeanListener.class);

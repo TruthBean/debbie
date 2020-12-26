@@ -13,6 +13,7 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
@@ -25,6 +26,7 @@ import com.truthbean.logger.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -146,7 +148,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             BeanCreator<T> beanCreator = (BeanCreator<T>) singletonBeanCreatorMap.get(beanInfo);
             if (beanInfo instanceof MutableBeanInfo) {
-                ((MutableBeanInfo)beanInfo).setBean(beanCreator.getCreatedBean());
+                ((MutableBeanInfo) beanInfo).setBean(beanCreator.getCreatedBean());
             }
         }
         if (preparations.containsKey(beanInfo)) {
@@ -230,38 +232,33 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void resolveAwareValue(InjectedBeanFactory injectedBeanFactory, Object object, Class<?> clazz) {
-        BeanAware aware = (BeanAware) object;
-        Class<?> beanClass = aware.getBeanClass();
+        if (object instanceof BeanAware) {
+            BeanAware aware = (BeanAware) object;
+            Class<?> beanClass = aware.getBeanClass();
 
-        String name = null;
-        Set<Method> setBeanMethods = ReflectionHelper.getDeclaredMethods(clazz, "setBean");
-        if (setBeanMethods.size() == 1) {
-            Method method = setBeanMethods.iterator().next();
-            Parameter[] parameters = method.getParameters();
-            if (parameters[0].isNamePresent()) {
-                name = parameters[0].getName();
-            }
-        }
-
-        var values = globalBeanFactory.getBeanList(beanClass);
-        if (!values.isEmpty()) {
-            aware.setBeans(values);
-            if (name != null) {
-                var beanInfo = this.beanInfoFactory.getBeanInfo(name, beanClass, true);
-                if (beanInfo != null) {
-                    BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo, false);
-                    aware.setBean(() -> value);
+            String name = null;
+            Set<Method> setBeanMethods = ReflectionHelper.getDeclaredMethods(clazz, "setBean");
+            if (setBeanMethods.size() == 1) {
+                Method method = setBeanMethods.iterator().next();
+                Parameter[] parameters = method.getParameters();
+                if (parameters[0].isNamePresent()) {
+                    name = parameters[0].getName();
                 }
-            } else if (values.size() == 1) {
-                aware.setBean(values.get(0));
             }
-        }
-
-    }
-
-    @Override
-    public void resolveMethodValue(Object object, Method method) {
-        if (object instanceof ClassLoaderAware) {
+            var values = globalBeanFactory.getBeanList(beanClass);
+            if (!values.isEmpty()) {
+                aware.setBeans(values);
+                if (name != null) {
+                    var beanInfo = this.beanInfoFactory.getBeanInfo(name, beanClass, true);
+                    if (beanInfo != null) {
+                        BeanCreator<?> value = injectedBeanFactory.factoryBeanPreparation(beanInfo, false);
+                        aware.setBean(() -> value);
+                    }
+                } else if (values.size() == 1) {
+                    aware.setBean(values.get(0));
+                }
+            }
+        } else if (object instanceof ClassLoaderAware) {
             ((ClassLoaderAware) object).setClassLoader(applicationContext.getClassLoader());
         } else if (object instanceof ApplicationContextAware) {
             ((ApplicationContextAware) object).setApplicationContext(applicationContext);
@@ -270,7 +267,37 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         } else if (object instanceof InjectedBeanFactoryAware) {
             ((InjectedBeanFactoryAware) object).setInjectedBeanFactory(applicationContext.getInjectedBeanFactory());
         } else if (object instanceof DebbieEventPublisherAware) {
-            // todo
+            ((DebbieEventPublisherAware) object).setEventPublisher(applicationContext.factory("eventPublisher"));
+        }
+
+    }
+
+    @Override
+    public void resolveMethodValue(Object object, Method method) {
+        BeanInject beanInject = method.getAnnotation(BeanInject.class);
+        if (beanInject == null) {
+            return;
+        }
+        if (method.getParameterCount() != 1) {
+            LOGGER.error("BeanInject method(" + method + ") must have only one parameter");
+            return;
+        }
+        String name = null;
+        Parameter[] parameters = method.getParameters();
+        Parameter parameter = parameters[0];
+        Class<?> beanClass = parameter.getType();
+        if (parameter.isNamePresent()) {
+            name = parameter.getName();
+        }
+        var value = globalBeanFactory.factory(beanClass);
+        if (value != null) {
+            try {
+                method.invoke(object, value);
+            } catch (IllegalAccessException e) {
+                LOGGER.error("method (" + method + ") have no access. ", e);
+            } catch (InvocationTargetException e) {
+                LOGGER.error("method (" + method + ") invoke error. ", e);
+            }
         }
     }
 
@@ -327,7 +354,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             creator = (BeanCreator<Bean>) singletonBeanCreatorMap.get(beanInfo);
             if (beanInfo.isEmpty() && beanInfo instanceof MutableBeanInfo) {
-                ((MutableBeanInfo)beanInfo).setBean(creator.getCreatedBean());
+                ((MutableBeanInfo) beanInfo).setBean(creator.getCreatedBean());
             }
         }
         if (creator == null) {
@@ -387,7 +414,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 Object value = null;
                 if (fieldBeanInfo.isPresent()) {
                     value = fieldBeanInfo.getBean();
-                } else if (fieldBeanInfo instanceof MutableBeanInfo){
+                } else if (fieldBeanInfo instanceof MutableBeanInfo) {
                     MutableBeanInfo mutableBeanInfo = (MutableBeanInfo) fieldBeanInfo;
                     BeanCreator<?> creator = createIfNotExist(mutableBeanInfo, false);
                     if (creator.isCreated()) {

@@ -25,6 +25,26 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
     private final BeanType beanType;
     private final Set<String> beanNames;
 
+    @SuppressWarnings("unchecked")
+    public SimpleBeanInfo(Bean bean, BeanType beanType) {
+        this.bean = bean;
+        this.beanFactory = null;
+        this.beanClass = (Class<Bean>) bean.getClass();
+        this.beanType = beanType;
+        this.beanNames = new HashSet<>();
+        this.beanNames.add(this.beanClass.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    public SimpleBeanInfo(Bean bean, BeanType beanType, String beanName) {
+        this.bean = bean;
+        this.beanFactory = null;
+        this.beanClass = (Class<Bean>) bean.getClass();
+        this.beanType = beanType;
+        this.beanNames = new HashSet<>();
+        this.beanNames.add(beanName);
+    }
+
     public SimpleBeanInfo(Bean bean,
                           Class<Bean> beanClass, BeanType beanType, String beanName) {
         this.beanFactory = null;
@@ -115,5 +135,13 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
                 "\"beanClass\":" + beanClass + "," +
                 "\"beanType\":" + beanType + "," +
                 "\"beanNames\":" + beanNames + "}";
+    }
+
+    @Override
+    public SimpleBeanInfo<Bean> copy() {
+        if (beanType == BeanType.SINGLETON) {
+            return this;
+        }
+        return new SimpleBeanInfo<>(beanFactory, beanClass, beanType, new HashSet<>(beanNames));
     }
 }

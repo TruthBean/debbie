@@ -17,6 +17,7 @@ import com.truthbean.logger.SystemOutLogger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,20 +27,24 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DebbieLoggerConfig implements LoggerConfig {
 
-    private final BaseProperties properties;
+    private final Properties properties;
     private final Map<String, LogLevel> levelMap = new ConcurrentHashMap<>();
 
     public DebbieLoggerConfig() {
-        this.properties = new BaseProperties(new SystemOutLogger().setClass(BaseProperties.class).setDefaultLevel(LogLevel.DEBUG));
+        var logger = new SystemOutLogger()
+                .setName("com.truthbean.debbie.properties.BaseProperties")
+                .setDefaultLevel(LogLevel.DEBUG);
+        BaseProperties baseProperties = new BaseProperties(logger);
+        this.properties = baseProperties.getProperties();
         Runtime.getRuntime().addShutdownHook(new Thread(levelMap::clear));
     }
 
     @Override
     public Map<String, LogLevel> getLoggers() {
         Map<String, LogLevel> map = new HashMap<>();
-        properties.getProperties().forEach((key, value) -> {
+        properties.forEach((key, value) -> {
             var name = (String) key;
-            if (name.startsWith("logging.level.")) {
+            if (name.startsWith(LoggerConfig.LOGGING_LEVEL)) {
                 var level = (String) value;
                 var l = LogLevel.of(level);
                 l.ifPresent(logLevel -> map.put(name.substring(14), logLevel));

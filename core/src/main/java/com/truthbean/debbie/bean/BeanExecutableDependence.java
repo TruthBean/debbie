@@ -69,6 +69,13 @@ public class BeanExecutableDependence {
         this.value = value;
     }
 
+    public void clear() {
+        this.value = null;
+        if (this.beanInfo != null) {
+            this.beanInfo.release();;
+        }
+    }
+
     @Override
     public String toString() {
         return "\"BeanExecutableDependence\":{" +

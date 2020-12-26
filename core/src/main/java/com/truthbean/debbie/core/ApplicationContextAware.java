@@ -9,12 +9,14 @@
  */
 package com.truthbean.debbie.core;
 
+import com.truthbean.debbie.bean.Aware;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-07-01 12:36.
  */
-public interface ApplicationContextAware {
+public interface ApplicationContextAware extends Aware {
 
     void setApplicationContext(ApplicationContext applicationContext);
 }

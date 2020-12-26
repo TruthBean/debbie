@@ -10,6 +10,7 @@
 package com.truthbean.debbie.cron;
 
 import com.truthbean.debbie.task.MethodTaskInfo;
+import com.truthbean.debbie.task.TaskInfo;
 
 /**
  * @author TruthBean/Rogar·Q

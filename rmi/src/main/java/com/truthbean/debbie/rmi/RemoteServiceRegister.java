@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
+import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -117,7 +118,7 @@ public class RemoteServiceRegister {
     public <S, SI extends S> void bind(Class<S> serviceClass) {
         try {
             GlobalBeanFactory globalBeanFactory = handler.getGlobalBeanFactory();
-            DebbieBeanInfo<S> beanInfo = globalBeanFactory.getBeanInfoWithBean(serviceClass);
+            BeanInfo<S> beanInfo = globalBeanFactory.getBeanInfoWithBean(serviceClass);
             S bean = beanInfo.getBean();
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(bean);
 

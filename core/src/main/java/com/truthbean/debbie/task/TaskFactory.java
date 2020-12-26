@@ -10,8 +10,7 @@
 package com.truthbean.debbie.task;
 
 import com.truthbean.debbie.bean.*;
-import com.truthbean.debbie.concurrent.NamedThreadFactory;
-import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.concurrent.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -24,22 +23,24 @@ import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 /**
  * @author TruthBean
  * @since 0.0.2
  */
-public class TaskFactory implements ApplicationContextAware, BeanClosure {
+public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanClosure {
 
     private ApplicationContext applicationContext;
     private GlobalBeanFactory globalBeanFactory;
     private volatile boolean taskRunning;
 
     private final Set<TaskAction> taskActions;
-    private final Set<DebbieClassBeanInfo<?>> taskBeans = new LinkedHashSet<>();
-    private final Set<MethodTaskInfo> taskList = new LinkedHashSet<>();
+    private final Set<BeanInfo<?>> taskBeans = new LinkedHashSet<>();
+    private final Set<TaskInfo> taskList = new LinkedHashSet<>();
 
     TaskFactory() {
         var classLoader = ClassLoaderUtils.getClassLoader(TaskAction.class);
@@ -63,22 +64,38 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         }
     }
 
+    @Override
+    public TaskRegister registerTask(TaskInfo taskInfo) {
+        TaskRunnable taskRunnable = taskInfo.getTaskExecutor();
+        BeanInfo<?> taskBeanInfo = new SimpleBeanInfo<>(taskRunnable, BeanType.SINGLETON, taskRunnable.getName());
+        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        beanInitialization.initBean(taskBeanInfo);
+        applicationContext.refreshBeans();
+        taskBeans.add(taskBeanInfo);
+        taskInfo.setConsumer(this::doTask);
+        taskList.add(taskInfo);
+        return this;
+    }
+
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieTask", true);
-    private final ThreadPooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
-    private final Timer timer = new Timer();
+    private final PooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
+    private final ScheduledPooledExecutor scheduledPooledExecutor = new ScheduledThreadPooledExecutor(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public void prepare() {
-        final Set<DebbieClassBeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
-        for (DebbieClassBeanInfo<?> taskBean : taskBeanSet) {
+        final Set<BeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
+        for (BeanInfo<?> taskBean : taskBeanSet) {
             Object task = globalBeanFactory.factory(taskBean.getServiceName());
             LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
-            Set<Method> methods = taskBean.getAnnotationMethod(DebbieTask.class);
-            for (Method method : methods) {
-                DebbieTask annotation = method.getAnnotation(DebbieTask.class);
-                var taskInfo = new MethodTaskInfo(taskBean.getBeanClass(), () -> task, method, annotation, this::doMethodTask);
-                taskList.add(taskInfo);
-                for (TaskAction taskAction : taskActions) {
-                    taskAction.prepare(taskInfo);
+            if (taskBean instanceof DebbieClassBeanInfo) {
+                DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) taskBean;
+                Set<Method> methods = classBeanInfo.getAnnotationMethod(DebbieTask.class);
+                for (Method method : methods) {
+                    DebbieTask annotation = method.getAnnotation(DebbieTask.class);
+                    var taskInfo = new MethodTaskInfo(taskBean.getBeanClass(), task, method, annotation, this::doTask);
+                    taskList.add(taskInfo);
+                    for (TaskAction taskAction : taskActions) {
+                        taskAction.prepare(taskInfo);
+                    }
                 }
             }
         }
@@ -86,11 +103,11 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
 
     public void doTask() {
         final ThreadPooledExecutor executor = globalBeanFactory.factory("threadPooledExecutor");
-        final Set<MethodTaskInfo> taskSet = new LinkedHashSet<>(this.taskList);
+        final Set<TaskInfo> taskSet = new LinkedHashSet<>(this.taskList);
         taskThreadPool.execute(() -> {
             LOGGER.trace("do task....");
-            for (MethodTaskInfo taskInfo : taskSet) {
-                doTask(executor, taskInfo, timer);
+            for (TaskInfo taskInfo : taskSet) {
+                doTask(executor, taskInfo);
             }
         });
         for (TaskAction taskAction : taskActions) {
@@ -98,15 +115,15 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         }
     }
 
-    private void doTask(final ThreadPooledExecutor executor, final MethodTaskInfo taskInfo, final Timer timer) {
-        DebbieTask annotation = taskInfo.getTaskAnnotation();
-        if (!annotation.async()) {
-            doMethodTask(taskInfo, annotation, timer);
+    private void doTask(final ThreadPooledExecutor executor, final TaskInfo taskInfo) {
+        DebbieTaskConfig annotation = taskInfo.getTaskConfig();
+        if (!annotation.isAsync()) {
+            doMethodTask(taskInfo, annotation);
         } else {
             try {
                 executor.execute(() -> {
                     try {
-                        doMethodTask(taskInfo, annotation, timer);
+                        doMethodTask(taskInfo, annotation);
                     } catch (Throwable ex) {
                         LOGGER.error("", ex);
                     }
@@ -117,34 +134,22 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         }
     }
 
-    private void doMethodTask(final MethodTaskInfo taskInfo, final DebbieTask annotation, final Timer timer) {
-        var fixedRate = annotation.fixedRate();
-        var cron = annotation.cron();
-        long delay = annotation.initialDelay();
+    private void doMethodTask(final TaskInfo taskInfo, final DebbieTaskConfig annotation) {
+        var fixedRate = annotation.getFixedRate();
+        var cron = annotation.getCron();
+        long delay = annotation.getInitialDelay();
         if (fixedRate > -1) {
             if (delay <= 0)
                 delay = 0;
-            timer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        taskInfo.accept();
-                    } catch (Throwable ex) {
-                        LOGGER.error("error in timerTask. ", ex);
-                    }
-                }
-            }, delay, fixedRate);
+            final long finalDelay = delay;
+            taskInfo.getTaskRunnableIfPresent(LOGGER, timerTask -> {
+                scheduledPooledExecutor.scheduleAtFixedRate(timerTask, finalDelay, fixedRate);
+            });
         } else if (fixedRate == -1 && delay > -1) {
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        taskInfo.accept();
-                    } catch (Exception e) {
-                        LOGGER.error("error in timerTask. ", e);
-                    }
-                }
-            }, delay);
+            final long finalDelay = delay;
+            taskInfo.getTaskRunnableIfPresent(LOGGER, timerTask -> {
+                scheduledPooledExecutor.schedule(timerTask, finalDelay);
+            });
         } else if (StringUtils.hasText(cron)) {
             // todo cron
         } else {
@@ -152,18 +157,25 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         }
     }
 
-    private void doMethodTask(MethodTaskInfo taskInfo) {
-        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(taskInfo.getTaskMethod(), globalBeanFactory, applicationContext.getClassLoader());
-        Object[] params = new Object[methodParams.size()];
-        for (int i = 0; i < methodParams.size(); i++) {
-            params[i] = methodParams.get(i).getValue();
+    private void doTask(TaskInfo taskInfo) {
+        if (taskInfo instanceof MethodTaskInfo) {
+            MethodTaskInfo methodTaskInfo = (MethodTaskInfo) taskInfo;
+            List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(methodTaskInfo.getTaskMethod(), globalBeanFactory, applicationContext.getClassLoader());
+            Object[] params = new Object[methodParams.size()];
+            for (int i = 0; i < methodParams.size(); i++) {
+                params[i] = methodParams.get(i).getValue();
+            }
+            taskRunning = true;
+            ReflectionHelper.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
+            taskRunning = false;
+        } else {
+            taskRunning = true;
+            taskInfo.getTaskExecutor().run();
+            taskRunning = false;
         }
-        taskRunning = true;
-        ReflectionHelper.invokeMethod(taskInfo.getTaskBean().get(), taskInfo.getTaskMethod(), params);
-        taskRunning = false;
     }
 
-    public boolean isTaskRunning() {
+    boolean isTaskRunning() {
         return taskRunning;
     }
 
@@ -173,7 +185,7 @@ public class TaskFactory implements ApplicationContextAware, BeanClosure {
         if (isTaskRunning()) {
             // TODO: 清除正在运行的任务
         }
-        timer.cancel();
+        scheduledPooledExecutor.destroy();
         taskThreadPool.destroy();
         taskBeans.clear();
     }

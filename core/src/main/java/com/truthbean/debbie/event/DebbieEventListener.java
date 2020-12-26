@@ -20,6 +20,10 @@ import java.util.EventListener;
 @FunctionalInterface
 public interface DebbieEventListener<E extends AbstractDebbieEvent> extends EventListener {
 
+    default String getName() {
+        return this.getClass().getName();
+    }
+
     default boolean async() {
         return true;
     }

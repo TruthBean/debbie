@@ -130,7 +130,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         resolveFieldValue();
 
         Class<?> clazz = beanInfo.getClazz();
-        if (BeanAware.class.isAssignableFrom(clazz)) {
+        if (Aware.class.isAssignableFrom(clazz)) {
             injectedBeanFactory.resolveAwareValue(injectedBeanFactory, bean, clazz);
         }
 
@@ -143,15 +143,19 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     @Override
     public void postCreated() {
         beanInfo.setBean(bean);
+        this.created = true;
     }
 
     @Override
     public Bean getCreatedBean() {
         if (created) {
-            return bean;
-        } else {
-            return null;
+            if (this.bean != null) {
+                return bean;
+            } else if (this.beanInfo.isPresent()) {
+                return this.beanInfo.getBean();
+            }
         }
+        return null;
     }
 
     @Override
@@ -175,6 +179,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     @Override
     public void create(Supplier<Bean> bean) {
         this.bean = bean.get();
+        this.created = true;
     }
 
     @SuppressWarnings("unchecked")

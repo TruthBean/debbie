@@ -7,19 +7,6 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-/*plugins {
-    id("de.jjohannes.extra-java-module-info") version "0.1"
-}*/
-
-/*extraJavaModuleInfo {
-    val tomcatVersion: String by project
-    automaticModule("tomcat-embed-core-${tomcatVersion}.jar", "org.apache.tomcat.embed.core")
-    automaticModule("tomcat-embed-jasper-${tomcatVersion}.jar", "org.apache.tomcat.embed.jasper")
-    automaticModule("tomcat-embed-el-${tomcatVersion}.jar", "org.apache.tomcat.embed.el")
-    automaticModule("tomcat-annotations-api-${tomcatVersion}.jar", "org.apache.tomcat.annotations.api")
-    automaticModule("ecj-3.18.0.jar", "org.eclipse.jdt.ecj")
-}*/
-
 dependencies {
     api(project(":debbie-servlet"))
     api(project(":debbie-server"))
@@ -30,13 +17,9 @@ dependencies {
     api("org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion")
 
     val loggerVersion: String by project
-    api("com.truthbean.logger:juli-impl:$loggerVersion")
+    api("com.truthbean.logger:juli-bridge:$loggerVersion")
 
     testImplementation(project(":debbie-test"))
 
-    testImplementation("com.truthbean.logger:stdout-adapter:$loggerVersion")
-
-    val jacksonVersion: String by project
-    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    testImplementation("com.truthbean.logger:logger-stdout:$loggerVersion")
 }

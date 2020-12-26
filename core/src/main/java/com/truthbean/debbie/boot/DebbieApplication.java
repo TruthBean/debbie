@@ -26,6 +26,13 @@ public interface DebbieApplication {
 
     ApplicationContext getApplicationContext();
 
+    /**
+     * get application context
+     * same as getApplicationContext
+     * @return ApplicationContext
+     */
+    ApplicationContext getContext();
+
     static void run(Class<?> applicationClass, String... args) {
         DebbieApplicationFactory.create(applicationClass, args).start(args);
     }

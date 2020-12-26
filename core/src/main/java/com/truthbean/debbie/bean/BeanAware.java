@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * @since 0.0.2
  * Created on 2020-06-14 14:44
  */
-public interface BeanAware<Bean> {
+public interface BeanAware<Bean> extends Aware {
 
     Class<Bean> getBeanClass();
 

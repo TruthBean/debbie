@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.debbie.concurrent.PooledExecutor;
 import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -95,7 +96,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
 
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("aio-server-application-")
             .setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
-    private final ThreadPooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
+    private final PooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     @Override
     protected void start(Instant beforeStartTime, String... args) {

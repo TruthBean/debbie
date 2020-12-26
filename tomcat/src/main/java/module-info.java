@@ -17,7 +17,9 @@ module com.truthbean.debbie.tomcat {
     requires transitive com.truthbean.debbie.server;
     requires transitive com.truthbean.logger.juli;
 
-    requires org.apache.tomcat.embed.core;
+    requires transitive org.apache.tomcat.embed.core;
+    requires transitive org.apache.tomcat.embed.jasper;
+    requires transitive org.apache.tomcat.embed.el;
     requires java.management;
 
     provides com.truthbean.debbie.boot.AbstractApplication with

@@ -28,6 +28,7 @@ import java.util.UUID;
 public class BeanInitializationTest {
 
     @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void init() {
         var applicationFactory = ApplicationFactory.configure(BeanInitializationTest.class);
         var context = applicationFactory.getApplicationContext();

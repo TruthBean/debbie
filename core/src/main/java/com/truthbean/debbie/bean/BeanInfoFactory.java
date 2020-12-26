@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface BeanInfoFactory {
-    void refreshBeans();
+    BeanInfoFactory refreshBeans();
 
     void autoCreateSingletonBeans(GlobalBeanFactory beanFactory);
 

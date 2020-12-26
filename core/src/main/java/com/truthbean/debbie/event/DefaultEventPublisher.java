@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * @author truthbean
  * @since 0.0.2
  */
-public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventMulticaster, BeanClosure {
+public class DefaultEventPublisher implements DebbieEventPublisher, EventMulticaster, BeanClosure {
     private final ConcurrentMap<Class<? extends AbstractDebbieEvent>, ConcurrentHashSet<BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>>>> eventListenerMap;
     private final ConcurrentMap<Class<? extends AbstractDebbieEvent>, ConcurrentHashSet<DebbieEventListener<? extends AbstractDebbieEvent>>> cache = new ConcurrentHashMap<>();
 
@@ -51,29 +51,9 @@ public class DefaultEventPublisher implements DebbieEventPublisher, DebbieEventM
     }
 
     @Override
-    public void addEventListenerBean(String listenerBeanName) {
-        // todo
-    }
-
-    @Override
-    public void removeEventListener(DebbieEventListener<? extends AbstractDebbieEvent> listener) {
-        /*var eventType = listener.getEventType();
-        var set = eventListenerMap.getOrDefault(eventType, new ConcurrentHashSet<>());
-        set.remove(listener);
-        eventListenerMap.put(eventType, set);*/
-    }
-
-    @Override
-    public void removeEventListener(BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> listenerBeanFactory) {
-        /*var eventType = listener.getEventType();
-        var set = eventListenerMap.getOrDefault(eventType, new ConcurrentHashSet<>());
-        set.remove(listenerBeanFactory);
-        eventListenerMap.put(eventType, set);*/
-    }
-
-    @Override
-    public void removeEventListenerBean(String listenerBeanName) {
-        // todo
+    public void removeAllListeners(Class<? extends AbstractDebbieEvent> eventClass) {
+        eventListenerMap.remove(eventClass);
+        cache.remove(eventClass);
     }
 
     @Override

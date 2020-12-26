@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -31,7 +33,39 @@ public interface MutableBeanInfo<Bean> extends BeanInfo<Bean> {
 
     void setBean(Supplier<Bean> bean);
 
-    MutableBeanInfo<Bean> copy();
+    void addProperty(String name, Object value);
 
-    void release();
+    Object getProperty(String name);
+
+    @Override
+    default void release() {
+        BeanFactory<Bean> beanFactory = getBeanFactory();
+        if (beanFactory != null) {
+            beanFactory.destroy();
+            setBeanFactory(null);
+        } else {
+            Class<Bean> beanClass = getBeanClass();
+            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
+                var bean = getBean();
+                if (BeanClosure.class.isAssignableFrom(beanClass)) {
+                    ((BeanClosure) bean).destroy();
+                }
+                if (Closeable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((Closeable) bean).close();
+                    } catch (IOException e) {
+                        LOGGER.error("", e);
+                    }
+                }
+                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
+                    try {
+                        ((AutoCloseable) bean).close();
+                    } catch (Exception e) {
+                        LOGGER.error("", e);
+                    }
+                }
+            }
+        }
+        setBean((Bean) null);
+    }
 }

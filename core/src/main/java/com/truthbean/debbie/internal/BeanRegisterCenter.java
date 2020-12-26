@@ -142,12 +142,16 @@ final class BeanRegisterCenter {
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         LOGGER.trace(() -> "refresh class " + beanClass.getName());
 
-        MutableBeanInfo<Bean> beanInfo = (MutableBeanInfo<Bean>) BEAN_CLASSES.get(beanClass);
+        BeanInfo<?> beanInfo = BEAN_CLASSES.get(beanClass);
         if (beanInfo == null) {
             throw new NoBeanException("bean " + beanClass + " has not registered. ");
         }
-        beanInfo.setBean(beanClassInfo.getBean());
-        beanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+        if (beanInfo instanceof MutableBeanInfo) {
+            MutableBeanInfo<Bean> mutableBeanInfo = (MutableBeanInfo<Bean>) BEAN_CLASSES.get(beanClass);
+            mutableBeanInfo.setBean(beanClassInfo.getBean());
+            mutableBeanInfo.setBeanFactory(beanClassInfo.getBeanFactory());
+        }
+
     }
 
     public boolean support(Class<?> beanClass) {
@@ -268,6 +272,11 @@ final class BeanRegisterCenter {
         if (info instanceof DebbieBeanInfo)
             return (DebbieBeanInfo<Bean>) BEAN_CLASSES.get(bean);
         return null;
+    }
+
+    Collection<BeanInfo<?>> getRegisteredBeans() {
+        Collection<BeanInfo<?>> values = BEAN_CLASSES.values();
+        return Collections.unmodifiableCollection(values);
     }
 
     Collection<MutableBeanInfo<?>> getRegisterRawBeans() {

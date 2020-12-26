@@ -1,3 +1,6 @@
+# NOTE
+This project will never update, it move to https://github.com/truthbean/truthbean-projects
+
 # debbie
 This project is target for a microservice project, including IOC, MVC, JDBC, httpclient, test, server and other modules.
 It also supports running jdk, graalvm, etc., and supports third-party frameworks, such as spring(https://github. com/truthbean/debbie-spring), mybatis (https://github.com/truthbean/debbie-mybatis), etc., 
@@ -67,6 +70,6 @@ latest version: 0.1.1-RELEASE
 
 ~~12.踩完java11 module的坑..~~
 
-13.适配graalvm
+13.适配graalvm，尽量减少反射的使用
 
 14.待续...

@@ -35,6 +35,7 @@ public class DebbieTaskConfigurer {
 
         debbieTaskFactory.registerTask();
         register.registerSingletonBean(debbieTaskFactory, TaskFactory.class, "taskFactory");
+        register.registerSingletonBean(debbieTaskFactory, TaskRegister.class, "taskRegister");
         applicationContext.refreshBeans();
     }
 }
