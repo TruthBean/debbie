@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,8 +10,8 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,6 +28,12 @@ import java.util.function.Supplier;
  */
 public interface BeanInfo<Bean> {
 
+    default Set<BeanCondition> getConditions() {
+        Set<BeanCondition> conditions = new HashSet<>();
+        conditions.add(DefaultBeanCondition.INSTANCE);
+        return conditions;
+    }
+
     default boolean isLazyCreate() {
         return true;
     }
@@ -38,6 +44,10 @@ public interface BeanInfo<Bean> {
 
     default boolean hasBeanFactory() {
         return getBeanFactory() != null;
+    }
+
+    default boolean hasSkipCreatedBeanFactory() {
+        return hasBeanFactory() && SkipCreatedBeanFactory.class.isAssignableFrom(getBeanFactory().getClass());
     }
 
     default boolean isSingleton() {
@@ -79,7 +89,7 @@ public interface BeanInfo<Bean> {
         return getBean() == null;
     }
 
-    default  boolean isPresent() {
+    default boolean isPresent() {
         return getBean() != null;
     }
 
@@ -95,34 +105,38 @@ public interface BeanInfo<Bean> {
         return this;
     }
 
-    default void release() {
-        BeanFactory<Bean> beanFactory = getBeanFactory();
-        if (beanFactory != null) {
-            beanFactory.destroy();
-        } else {
-            Class<Bean> beanClass = getBeanClass();
-            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
-                var bean = getBean();
-                if (BeanClosure.class.isAssignableFrom(beanClass)) {
-                    ((BeanClosure) bean).destroy();
+    default void close() {
+        Class<Bean> beanClass = getBeanClass();
+        if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
+            var bean = getBean();
+            if (BeanClosure.class.isAssignableFrom(beanClass)) {
+                ((BeanClosure) bean).destroy();
+            }
+            if (Closeable.class.isAssignableFrom(beanClass)) {
+                try {
+                    ((Closeable) bean).close();
+                } catch (IOException e) {
+                    LOGGER.error("", e);
                 }
-                if (Closeable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((Closeable) bean).close();
-                    } catch (IOException e) {
-                        LOGGER.error("", e);
-                    }
-                }
-                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((AutoCloseable) bean).close();
-                    } catch (Exception e) {
-                        LOGGER.error("", e);
-                    }
+            }
+            if (AutoCloseable.class.isAssignableFrom(beanClass)) {
+                try {
+                    ((AutoCloseable) bean).close();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
                 }
             }
         }
     }
 
-    static final Logger LOGGER = LoggerFactory.getLogger(BeanInfo.class);
+    default void release() {
+        BeanFactory<Bean> beanFactory = getBeanFactory();
+        if (beanFactory != null) {
+            beanFactory.destroy();
+        } else {
+            close();
+        }
+    }
+
+    Logger LOGGER = LoggerFactory.getLogger(BeanInfo.class);
 }

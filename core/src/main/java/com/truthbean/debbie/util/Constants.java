@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.util;
 
+import com.truthbean.common.mini.CommonConstants;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -17,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  * @since 0.0.1
  * Created on 2018-02-18 19:00
  */
-public interface Constants {
+public interface Constants extends CommonConstants {
 
     String HTTP_PROTOCOL = "http";
 
@@ -45,9 +47,7 @@ public interface Constants {
 
     String FORM_DATA = "Content-Disposition: form-data;";
 
-    String TRUE = "true";
 
-    String FALSE = "false";
 
     /**
      * Default character set (UTF-8)
@@ -60,16 +60,7 @@ public interface Constants {
 
     boolean USE_HTTPS = true;
 
-    int EOF = -1;
-
-    char ZERO = '0';
-    char NINE = '9';
-    char LOWERCASE_A = 'a';
-    char LOWERCASE_F = 'f';
-    char UPPERCASE_A = 'A';
-    char UPPERCASE_F = 'F';
-
-    Class<?>[] EMPTY_CLASS_ARRAY = {};
+    
 
     String CONFIG_LOCATION_DELIMITERS = ",; \t\n";
 }

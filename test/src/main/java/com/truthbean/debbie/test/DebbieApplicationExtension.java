@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -20,7 +20,7 @@ import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import org.junit.jupiter.api.extension.*;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -192,8 +192,10 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     public void afterAll(ExtensionContext context) throws Exception {
         logger.debug("afterAll...");
         ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
-        DebbieApplication debbieApplication = store.getOrComputeIfAbsent(DebbieApplication.class);
-        debbieApplication.exit();
+        DebbieApplication debbieApplication = store.get(DebbieApplication.class, DebbieApplication.class);
+        if (debbieApplication != null) {
+            debbieApplication.exit();
+        }
     }
 
     @Override

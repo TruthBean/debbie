@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -25,14 +25,15 @@ import java.util.concurrent.Callable;
 public class AioApplicationTest {
 
     public static void main(String[] args) {
-        var application = ApplicationFactory.create(AioApplicationTest.class);
-        application.start(args);
+        // var application = ApplicationFactory.create(AioApplicationTest.class);
+        var application = ApplicationFactory.create(args);
+        application.start();
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        application.exit(args);
+        application.exit();
     }
 
     @Test

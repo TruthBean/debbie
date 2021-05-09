@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.annotation;
 
+import com.truthbean.common.mini.util.ClassHelper;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 
@@ -65,7 +66,7 @@ public class AnnotationParser {
                 if (!annotationInAnnotation.isEmpty()) {
                     for (Annotation ann : annotationInAnnotation) {
                         Class<? extends Annotation> annotationType = ann.annotationType();
-                        if (TypeHelper.filterAnnotation(annotationType)) {
+                        if (ClassHelper.filterAnnotation(annotationType)) {
                             map.put(ann.annotationType(), new AnnotationInfo(ann));
                             classAnnotations.add(ann);
                         }

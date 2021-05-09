@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -21,7 +21,7 @@ import com.truthbean.debbie.proxy.asm.AbstractProxy;
 import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Modifier;
 import java.security.AccessControlContext;
@@ -160,7 +160,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
             return beanInfo.getBean();
         }
         var beanFactory = beanInfo.getBeanFactory();
-        if (beanFactory != null) {
+        if (beanFactory != null && !beanFactory.isSkipCreatedBeanFactory()) {
             beanFactory.setGlobalBeanFactory(this);
             K bean = beanFactory.factoryBean();
             if (beanInfo instanceof MutableBeanInfo) {
@@ -198,6 +198,9 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
     }
 
     private <T> T factoryBeanByFactory(BeanInfo<T> beanInfo, BeanFactory<T> beanFactory) {
+        if (beanFactory.isSkipCreatedBeanFactory()) {
+            return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+        }
         T bean = beanFactory.factoryBean();
         if (beanInfo instanceof MutableBeanInfo) {
             ((MutableBeanInfo<T>) beanInfo).setBean(bean);

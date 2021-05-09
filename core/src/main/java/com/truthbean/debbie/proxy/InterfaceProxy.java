@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,7 +12,7 @@ package com.truthbean.debbie.proxy;
 import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ReflectionExceptionUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -87,6 +87,11 @@ public class InterfaceProxy<T> implements InvocationHandler {
         }
     }
 
+    @Override
+    public String toString() {
+        return getClass().getName() + "<" + interfaceType.getName() + ">@" + Integer.toHexString(hashCode());
+    }
+
     private AbstractMethodExecutor cachedMethodExecutor(Method method) {
         return methodCache.computeIfAbsent(method, v ->
                 MethodExecutorFactory.factory(executorClass, interfaceType, method, classLoader, configuration));
@@ -104,7 +109,9 @@ public class InterfaceProxy<T> implements InvocationHandler {
                 .newInstance(declaringClass,
                         MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
                                 | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
-                .unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
+                .unreflectSpecial(method, declaringClass)
+                .bindTo(proxy)
+                .invokeWithArguments(args);
     }
 
     /**

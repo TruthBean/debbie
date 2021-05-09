@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,17 +14,14 @@ import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
-
-import java.io.Closeable;
-import java.io.IOException;
+import com.truthbean.LoggerFactory;
 
 /**
  * @author TruthBean
  * @since 0.0.2
  * Created on 2019-11-24 20:58.
  */
-public class SecurityFilter implements RouterFilter, Closeable {
+public class SecurityFilter implements RouterFilter, AutoCloseable {
 
     private MvcConfiguration configuration;
 
@@ -34,6 +31,11 @@ public class SecurityFilter implements RouterFilter, Closeable {
     public SecurityFilter setMvcConfiguration(MvcConfiguration configuration) {
         this.configuration = configuration;
         return this;
+    }
+
+    @Override
+    public boolean notFilter(RouterRequest request) {
+        return !this.configuration.isEnableSecurity();
     }
 
     @Override
@@ -87,7 +89,7 @@ public class SecurityFilter implements RouterFilter, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws Exception {
         this.attacked.remove();
     }
 

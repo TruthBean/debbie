@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -8,6 +8,8 @@
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.bean;
+
+import com.truthbean.debbie.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
@@ -18,6 +20,9 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@BeanComponent
+@BeanComponent(type = BeanType.SINGLETON)
 public @interface BeanConfiguration {
+
+    @AliasFor(attribute = "conditions", annotation = BeanComponent.class)
+    Class<? extends BeanCondition>[] conditions() default {};
 }

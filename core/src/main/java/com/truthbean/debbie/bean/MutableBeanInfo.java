@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -44,27 +44,7 @@ public interface MutableBeanInfo<Bean> extends BeanInfo<Bean> {
             beanFactory.destroy();
             setBeanFactory(null);
         } else {
-            Class<Bean> beanClass = getBeanClass();
-            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
-                var bean = getBean();
-                if (BeanClosure.class.isAssignableFrom(beanClass)) {
-                    ((BeanClosure) bean).destroy();
-                }
-                if (Closeable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((Closeable) bean).close();
-                    } catch (IOException e) {
-                        LOGGER.error("", e);
-                    }
-                }
-                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((AutoCloseable) bean).close();
-                    } catch (Exception e) {
-                        LOGGER.error("", e);
-                    }
-                }
-            }
+            close();
         }
         setBean((Bean) null);
     }

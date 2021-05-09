@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -25,7 +25,7 @@ public class MvcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(MvcProperties.class, MvcConfiguration.class);
+        configurationFactory.register(new MvcProperties(), MvcConfiguration.class);
     }
 
     @Override

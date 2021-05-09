@@ -3,7 +3,7 @@ package com.truthbean.debbie.io;
 import com.truthbean.Logger;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;

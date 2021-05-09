@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -50,5 +50,11 @@ public @interface BeanComponent {
      * @return BeanFactory class
      */
     Class<? extends BeanFactory> factory() default BeanFactory.class;
+
+    /**
+     * All {@link BeanCondition} classes that must {@linkplain BeanCondition#matches match}
+     * in order for the component to be registered.
+     */
+    Class<? extends BeanCondition>[] conditions() default DefaultBeanCondition.class;
 
 }

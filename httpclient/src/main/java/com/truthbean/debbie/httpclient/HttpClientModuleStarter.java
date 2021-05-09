@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,6 +12,7 @@ package com.truthbean.debbie.httpclient;
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 /**
@@ -20,6 +21,13 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public class HttpClientModuleStarter implements DebbieModuleStarter {
 
+    private static final String ENABLE_KEY = "debbie.httpclient.enable";
+
+    @Override
+    public boolean enable(EnvironmentContent envContent) {
+        return envContent.getBooleanValue(ENABLE_KEY, true);
+    }
+
     @Override
     public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
         // do nothing
@@ -27,7 +35,7 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(HttpClientProperties.class, HttpClientConfiguration.class);
+        configurationFactory.register(new HttpClientProperties(), HttpClientConfiguration.class);
 
         HttpClientBeanRegister register = new HttpClientBeanRegister(applicationContext);
         register.registerHttpClient();

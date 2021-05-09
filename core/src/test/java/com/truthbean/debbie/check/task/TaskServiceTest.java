@@ -4,7 +4,7 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.check.event.TestBean;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+// import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
  * @author truthbean/Rogar·Q
  * @since 0.0.2
  */
-@DebbieApplicationTest(scan = @DebbieScan(basePackages = {"demo.raw"}))
+// @DebbieApplicationTest(scan = @DebbieScan(basePackages = {"demo.raw"}))
 public class TaskServiceTest {
 
     @BeanInject

@@ -16,7 +16,7 @@
 package com.truthbean.debbie.net.uri;
 
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.common.mini.util.StringUtils;
 
 import java.net.URI;
 import java.net.URLDecoder;

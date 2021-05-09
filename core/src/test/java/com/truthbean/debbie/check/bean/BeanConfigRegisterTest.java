@@ -5,11 +5,11 @@ import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.inter.*;
 import com.truthbean.debbie.bean.lifecycle.LifecycleBeanTest;
 import com.truthbean.debbie.check.properties.PropertiesConfigurationTest;
-import com.truthbean.debbie.data.transformer.DataTransformer;
-import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+import com.truthbean.transformer.DataTransformer;
+// import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-@DebbieApplicationTest
+// @DebbieApplicationTest
 class BeanConfigRegisterTest {
 
     @Test

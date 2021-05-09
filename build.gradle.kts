@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -18,7 +18,7 @@ buildscript {
     }
 }
 
-group = "com.truthbean.debbie"
+group = "com.truthbean"
 
 allprojects {
     repositories {
@@ -44,7 +44,7 @@ val mavenRepositoryUrl =
         if (isReleaseBuild) {
             "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
         } else {
-            "https://oss.sonatype.org/content/repositories/snapshots"
+            "https://oss.sonatype.org/content/repositories/snapshots/"
         }
 
 subprojects {
@@ -67,6 +67,7 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
 
+    apply(plugin = "version-catalog")
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
 
@@ -129,7 +130,6 @@ subprojects {
                 }
             }
 
-
             val javadocJar by tasks.registering(Jar::class) {
                 group = "jar"
                 dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
@@ -152,13 +152,10 @@ subprojects {
             publications {
                 create<MavenPublication>("uploadToMavenRepository") {
                     artifactId = project.name
-                    group = "com.truthbean.debbie"
+                    group = "com.truthbean"
                     version = projectVersion
                     from(components["java"])
                     artifact(tasks["sourcesJar"])
-                    if (project.name != "debbie-dependencies") {
-                        artifact(tasks["javadocJar"])
-                    }
                     versionMapping {
                         usage("java-api") {
                             fromResolutionOf("runtimeClasspath")
@@ -170,7 +167,7 @@ subprojects {
                     pom {
                         artifactId = project.name
                         name.set(project.name)
-                        group = "com.truthbean.debbie"
+                        group = "com.truthbean"
                         version = projectVersion
 
                         description.set("a java microservice project")

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -20,24 +20,30 @@ public interface DebbieApplication {
 
     String SHUTDOWN_HOOK_THREAD_NAME = "DebbieApplicationShutdownHook";
 
-    void start(String... args);
+    void start();
 
-    void exit(String... args);
-
-    ApplicationContext getApplicationContext();
+    void exit();
 
     /**
      * get application context
      * same as getApplicationContext
      * @return ApplicationContext
      */
-    ApplicationContext getContext();
+    ApplicationContext getApplicationContext();
 
     static void run(Class<?> applicationClass, String... args) {
-        DebbieApplicationFactory.create(applicationClass, args).start(args);
+        DebbieApplicationFactory.create(applicationClass, args).start();
     }
 
     static DebbieApplication create(Class<?> applicationClass, String... args) {
         return DebbieApplicationFactory.create(applicationClass, args);
+    }
+
+    static void run(String... args) {
+        DebbieApplicationFactory.create(args).start();
+    }
+
+    static DebbieApplication create(String... args) {
+        return DebbieApplicationFactory.create(args);
     }
 }

@@ -6,7 +6,7 @@ import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.debbie.watcher.WatcherType;
 
 /**
- * @author OceanAi/武汉魅瞳科技有限公司
+ * @author truthbean
  * @since 1.0.0
  * Created on 2020-10-13 16:55
  */

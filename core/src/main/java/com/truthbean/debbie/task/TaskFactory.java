@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -19,8 +19,8 @@ import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.debbie.spi.SpiLoader;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
@@ -36,7 +36,6 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
 
     private ApplicationContext applicationContext;
     private GlobalBeanFactory globalBeanFactory;
-    private volatile boolean taskRunning;
 
     private final Set<TaskAction> taskActions;
     private final Set<BeanInfo<?>> taskBeans = new LinkedHashSet<>();
@@ -165,26 +164,26 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
             for (int i = 0; i < methodParams.size(); i++) {
                 params[i] = methodParams.get(i).getValue();
             }
-            taskRunning = true;
-            ReflectionHelper.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
-            taskRunning = false;
+            taskInfo.setRunning(true);
+            try {
+                ReflectionHelper.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
+            } catch (Exception e) {
+                LOGGER.error("task(" + taskInfo.toString());
+            }
         } else {
-            taskRunning = true;
+            taskInfo.setRunning(true);
             taskInfo.getTaskExecutor().run();
-            taskRunning = false;
         }
-    }
-
-    boolean isTaskRunning() {
-        return taskRunning;
+        taskInfo.setRunning(false);
     }
 
     @Override
     public synchronized void destroy() {
         LOGGER.info("destroy tasks bean");
-        if (isTaskRunning()) {
-            // TODO: 清除正在运行的任务
+        for (TaskAction taskAction : taskActions) {
+            taskAction.stop();
         }
+        scheduledPooledExecutor.destroy();
         scheduledPooledExecutor.destroy();
         taskThreadPool.destroy();
         taskBeans.clear();

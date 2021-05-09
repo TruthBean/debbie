@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
 import com.truthbean.debbie.properties.ClassesScanProperties;
@@ -26,6 +27,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private AioServerConfiguration configuration = null;
 
     // ===========================================================================
+    private static final String ENABLE_KEY = "debbie.server.aio.enable";
     private static final String HTTP_VERSION = "debbie.server.aio.http.version";
     private static final String SERVER_MESSAGE = "debbie.server.aio.message";
     // ===========================================================================
@@ -54,5 +56,9 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
         properties.loadAndSet(properties, configuration);
 
         return configuration;
+    }
+
+    public static boolean enableAio(EnvironmentContent envContent) {
+        return envContent.getBooleanValue(ENABLE_KEY, true);
     }
 }

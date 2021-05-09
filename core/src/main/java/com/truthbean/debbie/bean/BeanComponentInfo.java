@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -22,6 +22,8 @@ public class BeanComponentInfo {
     private boolean lazy;
 
     private Class<? extends BeanFactory<?>> factory;
+
+    private Class<? extends BeanCondition>[] condition;
 
     public String getName() {
         return name;
@@ -65,5 +67,15 @@ public class BeanComponentInfo {
     public void setFactory(Class<? extends BeanFactory> factory) {
         if (factory != null)
             this.factory = (Class<? extends BeanFactory<?>>) factory;
+    }
+
+    public Class<? extends BeanCondition>[] getCondition() {
+        return condition;
+    }
+
+    public void setCondition(Class<? extends BeanCondition>[] condition) {
+        if (condition != null && condition.length > 0) {
+            this.condition = condition;
+        }
     }
 }

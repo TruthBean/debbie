@@ -5,7 +5,7 @@ import com.truthbean.debbie.bean.DebbieBeanInfo;
 import com.truthbean.debbie.bean.DebbieClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;

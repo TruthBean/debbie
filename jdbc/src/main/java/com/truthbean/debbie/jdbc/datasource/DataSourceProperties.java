@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,10 +10,10 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.common.mini.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends BaseProperties implements DebbieProperties<DataSourceConfiguration> {
+public class DataSourceProperties extends EnvironmentContentHolder implements DebbieProperties<DataSourceConfiguration> {
     private final DataSourceConfiguration configuration;
 
     //=================================================================================================================

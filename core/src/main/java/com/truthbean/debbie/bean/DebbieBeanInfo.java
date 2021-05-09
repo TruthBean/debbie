@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,23 +10,11 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.annotation.AnnotationInfo;
-import com.truthbean.debbie.core.ApplicationContextAware;
-import com.truthbean.debbie.event.DebbieEventPublisherAware;
-import com.truthbean.debbie.properties.DebbieConfiguration;
-import com.truthbean.debbie.properties.DebbieProperties;
-import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
-import com.truthbean.debbie.reflection.ClassInfo;
-import com.truthbean.debbie.reflection.FieldInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -41,6 +29,8 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
 
     private BeanType beanType;
     private Boolean lazyCreate;
+
+    private final Set<BeanCondition> conditions = new HashSet<>();
 
     private final Class<Bean> beanClass;
     private BeanFactory<Bean> beanFactory;
@@ -58,6 +48,21 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
         this.addBeanNames(beanInfo.getBeanNames());
         this.beanFactory = beanInfo.getBeanFactory();
         this.beanType = beanInfo.getBeanType();
+    }
+
+    @Override
+    public Set<BeanCondition> getConditions() {
+        return conditions;
+    }
+
+    public void addConditions(Set<BeanCondition> conditions) {
+        this.conditions.addAll(conditions);
+    }
+
+    public void addCondition(BeanCondition... conditions) {
+        if (conditions != null && conditions.length > 0) {
+            this.conditions.addAll(Arrays.asList(conditions));
+        }
     }
 
     @Override
@@ -226,26 +231,7 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {
-            Class<Bean> beanClass = getBeanClass();
-            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && bean != null) {
-                if (BeanClosure.class.isAssignableFrom(beanClass)) {
-                    ((BeanClosure) bean).destroy();
-                }
-                if (Closeable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((Closeable) bean).close();
-                    } catch (IOException e) {
-                        LOGGER.error("", e);
-                    }
-                }
-                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((AutoCloseable) bean).close();
-                    } catch (Exception e) {
-                        LOGGER.error("", e);
-                    }
-                }
-            }
+            close();
         }
         order = 0;
         bean = null;

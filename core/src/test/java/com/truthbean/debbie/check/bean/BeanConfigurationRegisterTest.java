@@ -10,7 +10,7 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.check.properties.PropertiesConfigurationTest;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
-import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.transformer.DataTransformer;
 import org.junit.jupiter.api.*;
 
 @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))

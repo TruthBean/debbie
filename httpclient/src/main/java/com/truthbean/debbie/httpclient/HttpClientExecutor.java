@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.data.transformer.TransformerFactory;
+import com.truthbean.debbie.mvc.router.RouterAnnotationInfoParser;
+import com.truthbean.transformer.TransformerFactory;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
@@ -21,9 +22,9 @@ import com.truthbean.debbie.proxy.AbstractMethodExecutor;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.TypeHelper;
 import com.truthbean.debbie.util.JacksonUtils;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -70,9 +71,10 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             this.configuration = new HttpClientConfiguration();
         }
 
-        final RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method, classLoader);
+        final RouterAnnotationInfo router = RouterAnnotationInfoParser.getRouterAnnotation(method, classLoader);
+        String traceMessage = interfaceType.getName() + "." + method.getName();
         if (router == null) {
-            throw new IllegalArgumentException(method.getName() + " have no Router annotation ");
+            throw new IllegalArgumentException(traceMessage + " have no Router annotation ");
         }
         this.httpClientAction = new HttpClientAction(this.configuration);
 
@@ -80,7 +82,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
         if (routerBaseUrl.length > 0) {
             urls = RouterPathSplicer.splicePaths(Arrays.asList(routerBaseUrl), router);
         } else {
-            urls = RouterPathSplicer.splicePaths(router);
+            urls = RouterPathSplicer.splicePaths(router, traceMessage);
         }
 
         final var routerMethod = router.method();

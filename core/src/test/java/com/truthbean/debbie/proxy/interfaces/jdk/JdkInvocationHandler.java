@@ -5,7 +5,7 @@ import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.proxy.bean.TargetInterface;
 import com.truthbean.debbie.proxy.interfaces.TargetProxyHandler;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

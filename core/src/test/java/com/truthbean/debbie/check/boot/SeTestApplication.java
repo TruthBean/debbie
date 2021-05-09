@@ -16,23 +16,23 @@ public class SeTestApplication {
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplication.create(SeTestApplication.class);
+        DebbieApplication application = DebbieApplication.create(SeTestApplication.class, args);
 
-        new Thread(() -> application.start(args)).start();
+        new Thread(application::start).start();
 
         Package pkg = SeTestApplication.class.getPackage();
         String result = pkg != null ? pkg.getImplementationVersion() : null;
         System.out.println(result);
 
-        new Thread(() -> application.start(args)).start();
-        application.start(args);
-        new Thread(() -> application.start(args)).start();
-        new Thread(() -> application.start(args)).start();
-        new Thread(() -> application.start(args)).start();
+        new Thread(application::start).start();
+        application.start();
+        new Thread(application::start).start();
+        new Thread(application::start).start();
+        new Thread(application::start).start();
 
-        new Thread(() -> application.exit(args)).start();
-        application.exit(args);
-        new Thread(() -> application.exit(args)).start();
+        new Thread(application::exit).start();
+        application.exit();
+        new Thread(application::exit).start();
 
         try {
             Thread.sleep(10000);
@@ -40,7 +40,7 @@ public class SeTestApplication {
             e.printStackTrace();
         }
 
-        application.exit(args);
-        new Thread(() -> application.exit(args)).start();
+        application.exit();
+        new Thread(application::exit).start();
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -30,7 +30,7 @@ import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.watcher.Watcher;
 import com.truthbean.debbie.watcher.WatcherType;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -81,7 +81,7 @@ public class MvcRouterRegister {
         info.setAnnotationInfo(annotationInfo);
 
         List<RouterPathFragments> routerPathFragments =
-                RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), null, annotationInfo);
+                RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), null, annotationInfo, router.getClass().getName());
         info.setPaths(routerPathFragments);
 
         RouterResponse response = new RouterResponse();
@@ -195,7 +195,7 @@ public class MvcRouterRegister {
         var methods = classInfo.getMethods();
         var clazz = classInfo.getClazz();
         for (var method : methods) {
-            RouterAnnotationInfo router = RouterAnnotationParser.getRouterAnnotation(method, classLoader);
+            RouterAnnotationInfo router = RouterAnnotationInfoParser.getRouterAnnotation(method, classLoader);
             List<ExecutableArgument> methodParams = RouterMethodArgumentHandler.typeOf(method, clazz, classLoader);
             if (router != null) {
                 MethodRouterExecutor routerExecutor = new MethodRouterExecutor();
@@ -208,7 +208,7 @@ public class MvcRouterRegister {
                 LOGGER.debug(() -> "register router method: " + stackMethod);
 
                 List<RouterPathFragments> routerPathFragments =
-                        RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), httpRouterInfo, router);
+                        RouterPathSplicer.splicePathFragment(webConfiguration.getDispatcherMapping(), httpRouterInfo, router, stackMethod);
                 routerInfo.setPaths(routerPathFragments);
 
                 RouterResponse response = new RouterResponse();

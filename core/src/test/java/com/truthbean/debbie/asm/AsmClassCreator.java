@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,9 +10,8 @@
 package com.truthbean.debbie.asm;
 
 import com.truthbean.debbie.bean.BeanComponent;
-import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
-import com.truthbean.debbie.util.OsUtils;
+import com.truthbean.common.mini.util.OsUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -22,7 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -33,7 +32,7 @@ public class AsmClassCreator {
 
     public String randomClassName() {
         StringBuilder className = new StringBuilder();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         // 首字母
         int i = random.nextInt(23);
         char first = (char)('A' + i);

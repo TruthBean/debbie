@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,12 +10,13 @@
 package com.truthbean.debbie.core;
 
 import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.data.transformer.ClassTransformer;
-import com.truthbean.debbie.data.transformer.collection.ListStringTransformer;
-import com.truthbean.debbie.data.transformer.collection.SetStringTransformer;
+import com.truthbean.transformer.ClassTransformer;
+import com.truthbean.transformer.DataTransformerCenter;
+import com.truthbean.transformer.collection.ListStringTransformer;
+import com.truthbean.transformer.collection.SetStringTransformer;
 import com.truthbean.debbie.data.transformer.date.DateSqlDateTransformer;
 import com.truthbean.debbie.data.transformer.date.DateSqlTimeTransformer;
-import com.truthbean.debbie.data.transformer.date.DefaultTimeTransformer;
+import com.truthbean.transformer.date.DefaultTimeTransformer;
 import com.truthbean.debbie.data.transformer.date.TimestampCalendarTransformer;
 import com.truthbean.debbie.data.transformer.date.TimestampDateTransformer;
 import com.truthbean.debbie.data.transformer.date.TimestampInstantTransformer;
@@ -27,21 +28,21 @@ import com.truthbean.debbie.data.transformer.date.TimestampSqlDateTransformer;
 import com.truthbean.debbie.data.transformer.date.TimestampSqlTimeTransformer;
 import com.truthbean.debbie.data.transformer.jdbc.BlobToByteArrayTransformer;
 import com.truthbean.debbie.data.transformer.jdbc.BlobToStringTransformer;
-import com.truthbean.debbie.data.transformer.numeric.BigDecimalToIntegerTransformer;
-import com.truthbean.debbie.data.transformer.numeric.BigDecimalToLongTransformer;
-import com.truthbean.debbie.data.transformer.numeric.IntegerToBooleanTransformer;
-import com.truthbean.debbie.data.transformer.numeric.LongToBooleanTransformer;
-import com.truthbean.debbie.data.transformer.numeric.LongToIntegerTransformer;
-import com.truthbean.debbie.data.transformer.text.BigDecimalTransformer;
-import com.truthbean.debbie.data.transformer.text.BigIntegerTransformer;
-import com.truthbean.debbie.data.transformer.text.BooleanTransformer;
-import com.truthbean.debbie.data.transformer.text.DoubleArrayTransformer;
-import com.truthbean.debbie.data.transformer.text.FloatArrayTransformer;
-import com.truthbean.debbie.data.transformer.text.FloatTransformer;
-import com.truthbean.debbie.data.transformer.text.IntegerTransformer;
+import com.truthbean.transformer.numeric.BigDecimalToIntegerTransformer;
+import com.truthbean.transformer.numeric.BigDecimalToLongTransformer;
+import com.truthbean.transformer.numeric.IntegerToBooleanTransformer;
+import com.truthbean.transformer.numeric.LongToBooleanTransformer;
+import com.truthbean.transformer.numeric.LongToIntegerTransformer;
+import com.truthbean.transformer.text.BigDecimalTransformer;
+import com.truthbean.transformer.text.BigIntegerTransformer;
+import com.truthbean.transformer.text.BooleanTransformer;
+import com.truthbean.transformer.text.DoubleArrayTransformer;
+import com.truthbean.transformer.text.FloatArrayTransformer;
+import com.truthbean.transformer.text.FloatTransformer;
+import com.truthbean.transformer.text.IntegerTransformer;
 import com.truthbean.debbie.data.transformer.text.JsonNodeTransformer;
-import com.truthbean.debbie.data.transformer.text.LongTransformer;
-import com.truthbean.debbie.data.transformer.text.ShortTransformer;
+import com.truthbean.transformer.text.LongTransformer;
+import com.truthbean.transformer.text.ShortTransformer;
 import com.truthbean.debbie.data.transformer.text.UrlTransformer;
 
 import java.math.BigDecimal;
@@ -71,46 +72,46 @@ class DataTransformerRegister {
     }
 
     public void registerTransformer() {
-        beanInitialization.registerDataTransformer(new DefaultTimeTransformer(), Date.class, String.class);
+        DataTransformerCenter.register(DefaultTimeTransformer.getInstance(), Date.class, String.class);
         beanInitialization.registerDataTransformer(new TimestampLongTransformer(), Timestamp.class, Long.class);
         beanInitialization.registerDataTransformer(new TimestampCalendarTransformer(), Timestamp.class, Calendar.class);
-        beanInitialization.registerDataTransformer(new TimestampInstantTransformer(), Timestamp.class, Instant.class);
-        beanInitialization.registerDataTransformer(new TimestampLocalDateTimeTransformer(), Timestamp.class, LocalDateTime.class);
-        beanInitialization.registerDataTransformer(new TimestampLocalDateTransformer(), Timestamp.class, LocalDate.class);
-        beanInitialization.registerDataTransformer(new TimestampLocalTimeTransformer(), Timestamp.class, LocalTime.class);
-        beanInitialization.registerDataTransformer(new TimestampDateTransformer(), Timestamp.class, Date.class);
-        beanInitialization.registerDataTransformer(new TimestampSqlDateTransformer(), Timestamp.class, java.sql.Date.class);
-        beanInitialization.registerDataTransformer(new TimestampSqlTimeTransformer(), Timestamp.class, Time.class);
-        beanInitialization.registerDataTransformer(new DateSqlDateTransformer(), Date.class, java.sql.Date.class);
-        beanInitialization.registerDataTransformer(new DateSqlTimeTransformer(), Date.class, Time.class);
+        DataTransformerCenter.register(new TimestampInstantTransformer(), Timestamp.class, Instant.class);
+        DataTransformerCenter.register(new TimestampLocalDateTimeTransformer(), Timestamp.class, LocalDateTime.class);
+        DataTransformerCenter.register(new TimestampLocalDateTransformer(), Timestamp.class, LocalDate.class);
+        DataTransformerCenter.register(new TimestampLocalTimeTransformer(), Timestamp.class, LocalTime.class);
+        DataTransformerCenter.register(new TimestampDateTransformer(), Timestamp.class, Date.class);
+        DataTransformerCenter.register(new TimestampSqlDateTransformer(), Timestamp.class, java.sql.Date.class);
+        DataTransformerCenter.register(new TimestampSqlTimeTransformer(), Timestamp.class, Time.class);
+        DataTransformerCenter.register(new DateSqlDateTransformer(), Date.class, java.sql.Date.class);
+        DataTransformerCenter.register(new DateSqlTimeTransformer(), Date.class, Time.class);
         try {
             Class<?> jsonNode = getClass().getClassLoader().loadClass("com.fasterxml.jackson.databind.JsonNode");
-            beanInitialization.registerDataTransformer(new JsonNodeTransformer(), jsonNode, String.class);
+            DataTransformerCenter.register(new JsonNodeTransformer(), jsonNode, String.class);
         } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
         }
-        beanInitialization.registerDataTransformer(new UrlTransformer(), URL.class, String.class);
+        DataTransformerCenter.register(new UrlTransformer(), URL.class, String.class);
 
-        beanInitialization.registerDataTransformer(new BigDecimalTransformer(), BigDecimal.class, String.class);
-        beanInitialization.registerDataTransformer(new BigIntegerTransformer(), BigInteger.class, String.class);
-        beanInitialization.registerDataTransformer(new BooleanTransformer(), Boolean.class, String.class);
-        beanInitialization.registerDataTransformer(new FloatTransformer(), Float.class, String.class);
-        beanInitialization.registerDataTransformer(new IntegerTransformer(), Integer.class, String.class);
-        beanInitialization.registerDataTransformer(new LongTransformer(), Long.class, String.class);
-        beanInitialization.registerDataTransformer(new ShortTransformer(), Short.class, String.class);
-        beanInitialization.registerDataTransformer(new FloatArrayTransformer(), float[].class, String.class);
-        beanInitialization.registerDataTransformer(new DoubleArrayTransformer(), double[].class, String.class);
+        DataTransformerCenter.register(BigDecimalTransformer.INSTANCE, BigDecimal.class, String.class);
+        DataTransformerCenter.register(BigIntegerTransformer.INSTANCE, BigInteger.class, String.class);
+        DataTransformerCenter.register(BooleanTransformer.INSTANCE, Boolean.class, String.class);
+        DataTransformerCenter.register(FloatTransformer.INSTANCE, Float.class, String.class);
+        DataTransformerCenter.register(IntegerTransformer.INSTANCE, Integer.class, String.class);
+        DataTransformerCenter.register(LongTransformer.INSTANCE, Long.class, String.class);
+        DataTransformerCenter.register(ShortTransformer.INSTANCE, Short.class, String.class);
+        DataTransformerCenter.register(FloatArrayTransformer.getInstance(), float[].class, String.class);
+        DataTransformerCenter.register(DoubleArrayTransformer.getInstance(), double[].class, String.class);
 
-        beanInitialization.registerDataTransformer(new IntegerToBooleanTransformer(), Integer.class, Boolean.class);
-        beanInitialization.registerDataTransformer(new LongToIntegerTransformer(), Long.class, Integer.class);
-        beanInitialization.registerDataTransformer(new LongToBooleanTransformer(), Long.class, Boolean.class);
-        beanInitialization.registerDataTransformer(new BigDecimalToLongTransformer(), BigDecimal.class, Long.class);
-        beanInitialization.registerDataTransformer(new BigDecimalToIntegerTransformer(), BigDecimal.class, Integer.class);
+        DataTransformerCenter.register(IntegerToBooleanTransformer.getInstance(), Integer.class, Boolean.class);
+        DataTransformerCenter.register(LongToIntegerTransformer.getInstance(), Long.class, Integer.class);
+        DataTransformerCenter.register(LongToBooleanTransformer.getInstance(), Long.class, Boolean.class);
+        DataTransformerCenter.register(BigDecimalToLongTransformer.getInstance(), BigDecimal.class, Long.class);
+        DataTransformerCenter.register(BigDecimalToIntegerTransformer.getInstance(), BigDecimal.class, Integer.class);
 
-        beanInitialization.registerDataTransformer(new SetStringTransformer());
-        beanInitialization.registerDataTransformer(new ListStringTransformer());
-        beanInitialization.registerDataTransformer(new ClassTransformer(), Class.class, String.class);
+        DataTransformerCenter.register(SetStringTransformer.getInstance());
+        DataTransformerCenter.register(ListStringTransformer.getInstance());
+        DataTransformerCenter.register(ClassTransformer.INSTANCE, Class.class, String.class);
 
-        beanInitialization.registerDataTransformer(new BlobToStringTransformer(), Blob.class, String.class);
+        DataTransformerCenter.register(new BlobToStringTransformer(), Blob.class, String.class);
         beanInitialization.registerDataTransformer(new BlobToByteArrayTransformer(), Blob.class, byte[].class);
     }
 }

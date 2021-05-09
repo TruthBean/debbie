@@ -3,7 +3,7 @@ package com.truthbean.debbie.rmi;
 import com.truthbean.debbie.bean.BeanInject;
 import org.junit.jupiter.api.Test;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 public class TestClient {
 

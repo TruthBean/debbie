@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,8 +10,15 @@
 dependencies {
     api(project(":debbie-mvc"))
 
-    val loggerVersion: String by project
-    testImplementation("com.truthbean.logger:log4j2-boot:$loggerVersion")
+    // ===============================================================================================================
+    val truthbeanVersion: String by project
+    testImplementation("com.truthbean:log4j2-boot:$truthbeanVersion")
+
+    implementation(platform("com.truthbean:parent:$truthbeanVersion"))
 
     testImplementation(project(":debbie-test"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
 }

@@ -1,8 +1,8 @@
 package com.truthbean.debbie.check.data.transformer;
 
-import com.truthbean.debbie.data.transformer.DataTransformer;
-import com.truthbean.debbie.data.transformer.Transformer;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.transformer.DataTransformer;
+import com.truthbean.transformer.Transformer;
+import com.truthbean.common.mini.util.StringUtils;
 
 /**
  * @author TruthBean/Rogar·Q

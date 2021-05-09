@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -76,7 +76,7 @@ public class ChainBeanTest {
 
     public static void main(String[] args) {
         DebbieApplication application = DebbieApplication.create(ChainBeanTest.class, args);
-        ApplicationContext applicationContext = application.getContext();
+        ApplicationContext applicationContext = application.getApplicationContext();
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         String bean001Name = "bean001";
         Bean001 bean001 = new Bean001("bean001");
@@ -111,7 +111,7 @@ public class ChainBeanTest {
         DebbieEventPublisher eventPublisher = applicationContext.factory(DebbieEventPublisher.class);
         eventPublisher.publishEvent(new TestBeanEvent(new ChainBeanTest()));
 
-        application.start(args);
-        application.exit(args);
+        application.start();
+        application.exit();
     }
 }

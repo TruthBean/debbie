@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,13 +9,11 @@
  */
 package com.truthbean.debbie.spi;
 
-import com.truthbean.Logger;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.MethodProxyHandler;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,11 +47,11 @@ public class SpiLoader {
     }
 
     public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader, S defaultService) {
-        ServiceLoader<S> serviceLoader = null;
+        ServiceLoader<S> serviceLoader;
         try {
             serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         } catch (Exception e) {
-            LOGGER.error("", e);
+            LOGGER.log(System.Logger.Level.ERROR, "", e);
             return null;
         }
         Iterator<S> search = serviceLoader.iterator();
@@ -80,7 +78,7 @@ public class SpiLoader {
         try {
             serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         } catch (Throwable e) {
-            LOGGER.error("", e);
+            LOGGER.log(System.Logger.Level.ERROR, "", e);
             return result;
         }
         for (S s : serviceLoader) {
@@ -106,21 +104,21 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url::toString);
+                LOGGER.log(System.Logger.Level.DEBUG, url::toString);
                 var file = new File(url.getFile());
                 if (file.exists() && file.isDirectory()) {
                     result.add(file);
                     String[] list = file.list();
                     if (list != null) {
                         for (String s : list) {
-                            LOGGER.debug(() -> s);
+                            LOGGER.log(System.Logger.Level.DEBUG, () -> s);
                         }
                     }
 
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("", e);
+            LOGGER.log(System.Logger.Level.ERROR, "", e);
         }
 
         return result;
@@ -135,7 +133,7 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url::toString);
+                LOGGER.log(System.Logger.Level.DEBUG, url::toString);
                 var protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());
@@ -147,7 +145,7 @@ public class SpiLoader {
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("", e);
+            LOGGER.log(System.Logger.Level.ERROR, "", e);
         }
 
         return result;
@@ -162,7 +160,7 @@ public class SpiLoader {
             try {
                 propertiesClass = (Class<P>) classLoader.loadClass(split[0]);
             } catch (Exception e) {
-                LOGGER.error("", e);
+                LOGGER.log(System.Logger.Level.ERROR, "", e);
             }
 
             Class<?> configClass = null;
@@ -188,7 +186,7 @@ public class SpiLoader {
             Enumeration<URL> resources = classLoader.getResources(spi);
             while (resources.hasMoreElements()) {
                 var url = resources.nextElement();
-                LOGGER.debug(url::toString);
+                LOGGER.log(System.Logger.Level.DEBUG, url::toString);
                 var protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     var file = new File(url.getFile());
@@ -238,5 +236,5 @@ public class SpiLoader {
         }
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpiLoader.class);
+    private static final System.Logger LOGGER = System.getLogger(SpiLoader.class.getName());
 }

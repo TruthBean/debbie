@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,8 +14,8 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -36,6 +36,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<Class<? extends Annotation>> customInjectType;
 
     private volatile ClassLoader classLoader;
+    private volatile Class<?> applicationClass;
 
     public BeanScanConfiguration() {
         this.scanClasses = new HashSet<>();
@@ -67,6 +68,14 @@ public class BeanScanConfiguration implements DebbieConfiguration {
 
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    public void setApplicationClass(Class<?> applicationClass) {
+        this.applicationClass = applicationClass;
+    }
+
+    public Class<?> getApplicationClass() {
+        return applicationClass;
     }
 
     public Set<Class<? extends Annotation>> getCustomInjectType() {
@@ -117,6 +126,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         boolean flag = scanBasePackages.size() == 1 && scanExcludeClasses.isEmpty() && scanExcludePackages.isEmpty();
         if (flag) {
             return scanBasePackages.iterator().next();
+        } else if (scanBasePackages.isEmpty()) {
+            return null;
         } else {
             throw new UnsupportedOperationException("scan rule is complex, you cannot do this");
         }
@@ -182,7 +193,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
                 List<Class<?>> classList = scanClasses(resourceResolver, packageName);
-                classes.removeAll(classList);
+                classList.forEach(classes::remove);
             });
         }
         scannedClasses.addAll(classes);
@@ -190,20 +201,18 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     }
 
     private synchronized List<Class<?>> scanClasses(final ResourceResolver resourceResolver, final String packageName) {
-        List<Class<?>> classList = new ArrayList<>();
         if (classLoader == null) {
             LOGGER.error("classLoader is null!");
-            return classList;
+            return new ArrayList<>();
         }
         if (resourceResolver != null) {
             List<String> resources =
                     ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
             resourceResolver.addResource(resources);
-            classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+            return ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
         } else {
-            classList = ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+            return ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
         }
-        return classList;
     }
 
     public Set<Class<?>> getScannedClasses() {

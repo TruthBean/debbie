@@ -2,10 +2,10 @@ package com.truthbean.debbie.check.proxy;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.proxy.bean.TargetObject;
-import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+// import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-@DebbieApplicationTest
+// @DebbieApplicationTest
 class CustomServiceTest {
 
     @BeanInject

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,6 +11,7 @@ package com.truthbean.debbie.core;
 
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ import java.util.function.Consumer;
 public interface ApplicationFactory {
     void config(BeanScanConfiguration configuration);
 
-    void release(String... args);
+    void release();
 
     DebbieApplication factoryApplication();
 
@@ -31,6 +32,72 @@ public interface ApplicationFactory {
     DebbieApplication postCreateApplication();
 
     DebbieApplication createApplication(Class<?> applicationClass);
+
+    /**
+     * register module starter before configure or create
+     *
+     * @param moduleStarter debbie module starter
+     * @return this instance
+     */
+    ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter);
+
+    /**
+     * configure properties and register beans
+     *
+     * @param applicationClass main class which annotated by DebbieBootApplication
+     * @return custom life ApplicationFactory
+     */
+    ApplicationFactory init(Class<?> applicationClass);
+
+    /**
+     * configure properties and register beans
+     *
+     * @return custom life ApplicationFactory
+     */
+    ApplicationFactory init();
+
+    ApplicationFactory createApplicationFactory();
+
+    DebbieApplication createApplication();
+
+    /**
+     * custom to do register, config, create, release and so on
+     * <p>
+     * eg:
+     * ApplicationFactory.custom(Class<?> applicationClass, String... args)
+     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
+     * -- ApplicationFactory.init(Class<?> applicationClass)
+     * -- ApplicationFactory.createApplicationFactory()
+     * -- ApplicationFactory.createApplication()
+     * -- ..
+     * -- ApplicationFactory.release()
+     *
+     * @param applicationClass main class which annotated by DebbieBootApplication
+     * @param args             main function args
+     * @return custom life ApplicationFactory
+     */
+    static ApplicationFactory custom(Class<?> applicationClass, String... args) {
+        return DebbieApplicationFactory.custom(applicationClass, args);
+    }
+
+    /**
+     * custom to do register, config, create, release and so on
+     * <p>
+     * eg:
+     * ApplicationFactory.custom(String... args)
+     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
+     * -- ApplicationFactory.init()
+     * -- ApplicationFactory.createApplicationFactory()
+     * -- ApplicationFactory.createApplication()
+     * -- ..
+     * -- ApplicationFactory.release()
+     *
+     * @param args             main function args
+     * @return custom life ApplicationFactory
+     */
+    static ApplicationFactory custom(String... args) {
+        return DebbieApplicationFactory.custom(args);
+    }
 
     static DebbieApplication create(Class<?> applicationClass, String... args) {
         return DebbieApplicationFactory.create(applicationClass, args);
@@ -42,5 +109,13 @@ public interface ApplicationFactory {
 
     static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
         return DebbieApplicationFactory.configure(classLoader, consumer, args);
+    }
+
+    static DebbieApplication create(String... args) {
+        return DebbieApplicationFactory.create(args);
+    }
+
+    static ApplicationFactory configure(String... args) {
+        return DebbieApplicationFactory.configure(args);
     }
 }

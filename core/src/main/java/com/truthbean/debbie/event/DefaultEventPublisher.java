@@ -1,12 +1,15 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ConcurrentHashSet;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import com.truthbean.logger.LoggerFactory;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
@@ -20,6 +23,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, EventMultica
     private final ConcurrentMap<Class<? extends AbstractDebbieEvent>, ConcurrentHashSet<DebbieEventListener<? extends AbstractDebbieEvent>>> cache = new ConcurrentHashMap<>();
 
     private final ThreadPooledExecutor executor;
+
     public DefaultEventPublisher(ThreadPooledExecutor threadPooledExecutor) {
         this.executor = threadPooledExecutor;
         this.eventListenerMap = new ConcurrentHashMap<>();
@@ -73,21 +77,14 @@ public class DefaultEventPublisher implements DebbieEventPublisher, EventMultica
         long start = System.currentTimeMillis();
         consumeEventListener(event.getClass(), (eventListener) -> {
             if (!eventListener.async()) {
-                eventListener.onEvent(event);
+                onEvent(eventListener, event);
             } else if (eventListener.allowConcurrent()) {
                 synchronized (this) {
-                    eventListener.onEvent(event);
+                    onEvent(eventListener, event);
                 }
-            }
-            else {
+            } else {
                 try {
-                    executor.execute(() -> {
-                        try {
-                            eventListener.onEvent(event);
-                        } catch (Exception ex) {
-                            LOGGER.error("", ex);
-                        }
-                    });
+                    executor.execute(() -> onEvent(eventListener, event));
                 } catch (Exception e) {
                     LOGGER.error("", e);
                 }
@@ -95,6 +92,28 @@ public class DefaultEventPublisher implements DebbieEventPublisher, EventMultica
         });
         long end = System.currentTimeMillis();
         LOGGER.debug(() -> "publishEvent spend time: " + (end - start) + "ms");
+    }
+
+    private <E extends AbstractDebbieEvent> void onEvent(DebbieEventListener<E> eventListener, E event) {
+        try {
+            eventListener.onEvent(event);
+        } catch (Throwable ex) {
+            Throwable cause = ex.getCause();
+            int i = 0;
+            while (i < 6 && cause != null) {
+                i++;
+                if (cause instanceof InvocationTargetException || cause instanceof UndeclaredThrowableException) {
+                    Throwable cause1 = ex.getCause();
+                    if (cause1 != null)
+                        cause = cause1;
+                } else {
+                    break;
+                }
+            }
+            if (cause == null)
+                cause = ex;
+            LOGGER.error("listener handler event(" + event + ") error. ", cause);
+        }
     }
 
     public List<BeanFactory<? extends DebbieEventListener<?>>> getEventListenerFactory(Class<?> eventClass) {

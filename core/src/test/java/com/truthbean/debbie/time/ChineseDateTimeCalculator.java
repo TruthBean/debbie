@@ -1,7 +1,7 @@
 package com.truthbean.debbie.time;
 
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import static com.truthbean.debbie.time.ChineseDateTimeConstant.*;
 

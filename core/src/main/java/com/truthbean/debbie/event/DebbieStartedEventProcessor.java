@@ -1,15 +1,16 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -50,24 +51,74 @@ public class DebbieStartedEventProcessor {
                     Class<DebbieStartedEvent> eventType = startedEventListener.getEventType();
                     if (eventType == DebbieStartedEvent.class) {
                         if (startedEventListener.async()) {
-                            startedEventThreadPool.execute(() -> startedEventListener.onEvent(startedEvent));
+                            startedEventThreadPool.execute(() -> {
+                                try {
+                                    startedEventListener.onEvent(startedEvent);
+                                } catch (Throwable e) {
+                                    Throwable cause = e.getCause();
+                                    if (cause == null) {
+                                        cause = e;
+                                    }
+                                    LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                                }
+                            });
                         } else if (startedEventListener.allowConcurrent()) {
                             synchronized (this) {
-                                startedEventListener.onEvent(startedEvent);
+                                try {
+                                    startedEventListener.onEvent(startedEvent);
+                                } catch (Throwable e) {
+                                    Throwable cause = e.getCause();
+                                    if (cause == null) {
+                                        cause = e;
+                                    }
+                                    LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                                }
                             }
                         } else {
-                            startedEventListener.onEvent(startedEvent);
+                            try {
+                                startedEventListener.onEvent(startedEvent);
+                            } catch (Throwable e) {
+                                Throwable cause = e.getCause();
+                                if (cause == null) {
+                                    cause = e;
+                                }
+                                LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                            }
                         }
                     } else {
                         DebbieStartedEvent event = globalBeanFactory.factory(eventType);
                         if (startedEventListener.async()) {
-                            startedEventThreadPool.execute(() -> startedEventListener.onEvent(event));
+                            try {
+                                startedEventThreadPool.execute(() -> startedEventListener.onEvent(event));
+                            } catch (Throwable e) {
+                                Throwable cause = e.getCause();
+                                if (cause == null) {
+                                    cause = e;
+                                }
+                                LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                            }
                         } else if (startedEventListener.allowConcurrent()) {
                             synchronized (this) {
-                                startedEventListener.onApplicationEvent(event);
+                                try {
+                                    startedEventListener.onApplicationEvent(event);
+                                } catch (Throwable e) {
+                                    Throwable cause = e.getCause();
+                                    if (cause == null) {
+                                        cause = e;
+                                    }
+                                    LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                                }
                             }
                         } else
-                            startedEventListener.onEvent(event);
+                            try {
+                                startedEventListener.onEvent(event);
+                            } catch (Throwable e) {
+                                Throwable cause = e.getCause();
+                                if (cause == null) {
+                                    cause = e;
+                                }
+                                LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
+                            }
                     }
                 }
             }
@@ -78,4 +129,6 @@ public class DebbieStartedEventProcessor {
         multicastEventThreadPool.destroy();
         startedEventThreadPool.destroy();
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieStartedEventProcessor.class);
 }

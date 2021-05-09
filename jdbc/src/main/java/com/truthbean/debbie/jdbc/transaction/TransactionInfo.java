@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,7 @@ package com.truthbean.debbie.jdbc.transaction;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.Closeable;
 import java.lang.reflect.Method;
@@ -142,6 +142,9 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setAutoCommit(boolean autoCommit) {
+        if (connection == null) {
+            return null;
+        }
         try {
             this.connection.setAutoCommit(autoCommit);
         } catch (SQLException e) {
@@ -151,6 +154,9 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setTransactionIsolation(TransactionIsolationLevel transactionIsolationLevel) {
+        if (connection == null) {
+            return null;
+        }
         try {
             this.connection.setTransactionIsolation(transactionIsolationLevel.getLevel());
         } catch (SQLException e) {
@@ -160,6 +166,9 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setTransactionIsolation(int transactionIsolationLevel) {
+        if (connection == null) {
+            return null;
+        }
         try {
             this.connection.setTransactionIsolation(transactionIsolationLevel);
         } catch (SQLException e) {
@@ -194,6 +203,8 @@ public class TransactionInfo implements Closeable {
             if (!connection.isReadOnly() && !connection.getAutoCommit()) {
                 LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " commit ...");
                 connection.commit();
+            } else {
+                LOGGER.warn(() -> "Connection(" + connection + ") " + connection.hashCode() + " is readonly or autocommited, cannot commit manually!");
             }
         } catch (SQLException e) {
             LOGGER.error("commit error for " + e.getMessage());
@@ -228,6 +239,8 @@ public class TransactionInfo implements Closeable {
             if (!connection.isReadOnly()) {
                 LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " rollback ...");
                 connection.rollback();
+            } else {
+                LOGGER.warn(() -> "Connection(" + connection + ") " + connection.hashCode() + " is readonly, cannot rollback!");
             }
         } catch (SQLException e) {
             LOGGER.error("rollback error for " + e.getMessage());
@@ -262,7 +275,7 @@ public class TransactionInfo implements Closeable {
             if (hasMethod())
                 LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ")  and remove it. ");
             else
-                LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
+                 LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
             try {
                 if (!connection.isClosed()) {
                     connection.close();
@@ -277,6 +290,8 @@ public class TransactionInfo implements Closeable {
             // clear
             resources.clear();
             resourceHolders.clear();
+        } else {
+            LOGGER.warn(() -> id + ": connection(" + connection + ") " + connection.hashCode() + " is using, cannot remove it! ");
         }
     }
 

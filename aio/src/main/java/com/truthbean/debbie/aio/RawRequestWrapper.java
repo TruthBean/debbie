@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,7 +23,7 @@ import com.truthbean.debbie.net.uri.QueryStringDecoder;
 import com.truthbean.debbie.net.uri.UriUtils;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -148,7 +148,7 @@ class RawRequestWrapper implements RouterRequest {
                     String value = "";
                     if (list.length == 2)
                         value = list[1];
-                    this.routerRequestCache.addHeader(key.trim(), value.trim());
+                    this.routerRequestCache.addHeader(key.strip(), value.strip());
 
                     var prefix = "Content-Type: multipart/form-data; boundary=";
                     if (line.startsWith(prefix)) {

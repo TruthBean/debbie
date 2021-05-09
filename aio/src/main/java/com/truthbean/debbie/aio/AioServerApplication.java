@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.PooledExecutor;
@@ -23,17 +24,13 @@ import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
 
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
-import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.*;
 
@@ -55,6 +52,10 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     public DebbieApplication init(DebbieConfigurationCenter factory, ApplicationContext applicationContext,
                                   ClassLoader classLoader) {
         final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, applicationContext);
+        if (configuration == null) {
+            LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
+            return null;
+        }
         var beanInitialization = applicationContext.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, applicationContext);
         RouterFilterManager.registerFilter(configuration, beanInitialization);
@@ -99,7 +100,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     private final PooledExecutor singleThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
 
     @Override
-    protected void start(Instant beforeStartTime, String... args) {
+    protected void start(Instant beforeStartTime, ApplicationArgs args) {
         LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
         printlnWebUrl(LOGGER, configuration.getPort());
         printStartTime();
@@ -108,7 +109,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     }
 
     @Override
-    protected void exit(Instant beforeStartTime, String... args) {
+    protected void exit(Instant beforeStartTime, ApplicationArgs args) {
         LOGGER.debug(() -> "destroy running thread");
         printExitTime();
         singleThreadPool.destroy();

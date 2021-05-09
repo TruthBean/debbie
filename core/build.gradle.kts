@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -7,40 +7,33 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-/*plugins {
-    id("de.jjohannes.extra-java-module-info") version "0.1"
-}
-
-extraJavaModuleInfo {
-    val javassistVersion: String by project
-    module("javassist-${javassistVersion}.jar", "javassist", javassistVersion)
-    // module("jakarta.inject-api-${javassistVersion}.jar", "jakarta.inject.api", "1.0")
-}*/
 dependencies {
-    val loggerVersion: String by project
-    api("com.truthbean.logger:logger-core:$loggerVersion")
+    // import a BOM. The versions used in this file will override any other version found in the graph
+    val truthbeanVersion: String by project
+    api(platform("com.truthbean:parent:$truthbeanVersion"))
 
-    // val graalvmVersion: String by project
-    // compileOnly("org.graalvm.sdk:graal-sdk:$graalvmVersion")
-    val asmVersion: String by project
-    api("org.ow2.asm:asm:$asmVersion")
+    api("com.truthbean:logger-core:$truthbeanVersion")
+    api("com.truthbean:transformer:$truthbeanVersion")
 
-    val javassistVersion: String by project
-    // compileOnly("org.javassist:javassist:$javassistVersion")
+    api("org.ow2.asm:asm")
 
-    val jacksonVersion: String by project
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
     // test =========================================================================================================
 
     testImplementation(project(":debbie-test"))
-    testImplementation("com.truthbean.logger:stdout-boot:$loggerVersion")
+    testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
+        exclude(group = "com.truthbean", module = "logger-kotlin")
+    }
 
-    testImplementation("org.javassist:javassist:$javassistVersion")
-    val cglibVersion: String by project
-    testImplementation("cglib:cglib:$cglibVersion")
+    testImplementation("org.javassist:javassist")
+    testImplementation("cglib:cglib")
 
-    val injectVersion: String by project
-    testImplementation("jakarta.inject:jakarta.inject-api:$injectVersion")
+    testImplementation("jakarta.inject:jakarta.inject-api")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+
 }

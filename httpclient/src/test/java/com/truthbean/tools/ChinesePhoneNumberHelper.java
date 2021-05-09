@@ -1,7 +1,7 @@
 package com.truthbean.tools;
 
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.util.Random;
 import java.util.regex.Pattern;

@@ -8,10 +8,10 @@ import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.event.DebbieEventPublisher;
-import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+// import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-@DebbieApplicationTest
+// @DebbieApplicationTest
 class EventBeanTest {
 
     @Test
@@ -38,7 +38,7 @@ class EventBeanTest {
         beanInfo.setBean(new TestStartedEvent(test, null));
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanInfo.addBeanName("testStartedEvent");
-        ApplicationFactory factory = ApplicationFactory.configure(EventBeanTest.class);
+        ApplicationFactory factory = ApplicationFactory.configure(EventBeanTest.class, args);
         ApplicationContext context = factory.getApplicationContext();
         context.getBeanInitialization().initSingletonBean(beanInfo);
         context.refreshBeans();
@@ -48,8 +48,8 @@ class EventBeanTest {
         GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
         DebbieEventPublisher eventPublisher = globalBeanFactory.factory("eventPublisher");
         eventPublisher.publishEvent(new TestStartedEvent(test, null));
-        application.start(args);
+        application.start();
 
-        application.exit(args);
+        application.exit();
     }
 }

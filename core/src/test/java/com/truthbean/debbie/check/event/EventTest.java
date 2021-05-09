@@ -40,14 +40,16 @@ class EventTest {
 
         DebbieEventPublisher eventPublisher = globalBeanFactory.factory(DebbieEventPublisher.class);
 
-        long start1 = System.currentTimeMillis();
-        Test2Event testEvent = new Test2Event(this, 2333);
-        eventPublisher.publishEvent(testEvent);
-        Test2Event testEvent1 = new Test2Event(this, 44444);
-        eventPublisher.publishEvent(testEvent1);
-        long end = System.currentTimeMillis();
-        System.out.println(end - start1);
-        System.out.println(end - start);
+        for (int i = 0; i < 100; i++) {
+            long start1 = System.currentTimeMillis();
+            Test2Event testEvent = new Test2Event(this, 2333 + i);
+            eventPublisher.publishEvent(testEvent);
+            Test2Event testEvent1 = new Test2Event(this, 44444 + i);
+            eventPublisher.publishEvent(testEvent1);
+            long end = System.currentTimeMillis();
+            System.out.println(end - start1);
+            System.out.println(end - start);
+        }
     }
 
     @Test

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -31,5 +31,15 @@ public class UserHttpClientTest {
         var body = "{\"username\": \"admin\",\"password\": \"admin\"}";
         List<String> response = userHttpClient.login(body);
         System.out.println(response);
+    }
+
+    @Test
+    public void test() {
+        String s = userHttpClient.toString();
+        System.out.println("toString: " + s);
+        Class<? extends UserHttpClient> clas = userHttpClient.getClass();
+        System.out.println("getClass: " + clas);
+        int i = userHttpClient.hashCode();
+        System.out.println("hashCode: " + i);
     }
 }

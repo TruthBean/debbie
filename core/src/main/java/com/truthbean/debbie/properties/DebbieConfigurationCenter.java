@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,15 +14,13 @@ import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
-import com.truthbean.debbie.properties.BaseProperties;
-import com.truthbean.debbie.properties.DebbieConfiguration;
-import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -78,8 +76,18 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         applicationContext.refreshBeans();
     }
 
+    @SuppressWarnings("unchecked")
+    public <P extends DebbieProperties<S>, C extends DebbieConfiguration, S extends C>
+    void register(P properties, Class<C> configurationClass) {
+        var propertiesClass = (Class<? extends DebbieProperties<S>>) properties.getClass();
+        C configuration = properties.toConfiguration(applicationContext);
+        configurations.put(propertiesClass, configuration);
+        addConfiguration(configurationClass, configuration, beanInitialization);
+        applicationContext.refreshBeans();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <P extends BaseProperties, C extends BeanScanConfiguration>
+    public <P extends EnvironmentContent, C extends BeanScanConfiguration>
     C getConfigurationBySuperClassOrPropertiesClass(Class<C> superConfigurationClass, Class<P> propertiesClass,
                                                     ApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
@@ -141,7 +149,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     }
 
     @SuppressWarnings("unchecked")
-    public <P extends BaseProperties, C extends BeanScanConfiguration>
+    public <P extends EnvironmentContent, C extends BeanScanConfiguration>
     C factory(Class<C> configurationClass, Class<P> propertiesClass, ApplicationContext applicationContext) {
         if (configurations.isEmpty()) {
             return null;
@@ -168,7 +176,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     public void reset() {
         configurations.forEach((properties, configurations) -> configurations.reset());
         configurations.clear();
-        BaseProperties.reset();
+        EnvironmentContentHolder.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieConfigurationCenter.class);

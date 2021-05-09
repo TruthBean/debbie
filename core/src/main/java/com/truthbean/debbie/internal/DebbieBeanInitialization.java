@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,12 +11,13 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
-import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.transformer.DataTransformer;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.lang.Nullable;
-import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.transformer.DataTransformerCenter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -34,7 +35,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class DebbieBeanInitialization implements BeanInitialization {
     private final BeanRegisterCenter beanRegisterCenter;
     private final BeanConfigurationRegister beanConfigurationRegister;
-    private DebbieBeanInitialization(@Nullable Class<?> applicationClass, ClassLoader classLoader, ResourceResolver resourceResolver) {
+    private DebbieBeanInitialization(@Nullable Class<?> applicationClass, ClassLoader classLoader,
+                                     ResourceResolver resourceResolver, EnvironmentContent envContent) {
         List<String> resources = ResourcesHandler.getAllClassPathResources("", classLoader);
         resourceResolver.addResource(resources);
         resources = ResourcesHandler.getAllClassPathResources(".", classLoader);
@@ -45,7 +47,7 @@ class DebbieBeanInitialization implements BeanInitialization {
             resources = ResourcesHandler.getAllClassPathResources(applicationClass.getPackageName().replace(".", "/"), classLoader);
             resourceResolver.addResource(resources);
         }
-        beanRegisterCenter = new BeanRegisterCenter();
+        beanRegisterCenter = new BeanRegisterCenter(envContent);
         beanRegisterCenter.registerBeanAnnotation(BeanComponent.class, new DefaultBeanComponentParser());
         beanConfigurationRegister = new BeanConfigurationRegister(beanRegisterCenter, resourceResolver);
     }
@@ -53,11 +55,12 @@ class DebbieBeanInitialization implements BeanInitialization {
     private static BeanInitialization initialization;
     private static ResourceResolver resourceResolver;
 
-    static BeanInitialization getInstance(@Nullable Class<?> applicationClass, ClassLoader classLoader, ResourceResolver resourceResolver) {
+    static BeanInitialization getInstance(@Nullable Class<?> applicationClass, ClassLoader classLoader,
+                                          ResourceResolver resourceResolver, EnvironmentContent envContent) {
         if (initialization == null) {
             synchronized (BeanInitialization.class) {
                 if (initialization == null) {
-                    initialization = new DebbieBeanInitialization(applicationClass, classLoader, resourceResolver);
+                    initialization = new DebbieBeanInitialization(applicationClass, classLoader, resourceResolver, envContent);
                     DebbieBeanInitialization.resourceResolver = resourceResolver;
                 }
             }
@@ -84,19 +87,15 @@ class DebbieBeanInitialization implements BeanInitialization {
 
     @Override
     public <D extends DataTransformer<?,?>> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
-        Type[] types = new Type[2];
-        types[0] = argsType1;
-        types[1] = argsType2;
-        DataTransformerFactory.register(dataTransformer, types);
+        DataTransformerCenter.register(dataTransformer, argsType1, argsType2);
     }
     @Override
     public <D extends DataTransformer<?,?>> void registerDataTransformer(D transformer) {
-        Type[] argsType = ReflectionHelper.getActualTypes(transformer.getClass());
-        DataTransformerFactory.register(transformer, argsType);
+        DataTransformerCenter.register(transformer);
     }
     @Override
     public <O, T> T transform(final O origin, final Class<T> target) {
-        return DataTransformerFactory.transform(origin, target);
+        return DataTransformerCenter.transform(origin, target);
     }
 
     @Override

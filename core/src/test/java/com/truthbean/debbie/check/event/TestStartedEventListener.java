@@ -3,7 +3,7 @@ package com.truthbean.debbie.check.event;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 /**
  * @author TruthBean

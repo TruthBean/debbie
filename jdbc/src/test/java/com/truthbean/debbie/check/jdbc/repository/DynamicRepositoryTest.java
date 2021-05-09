@@ -42,4 +42,9 @@ class DynamicRepositoryTest {
         System.out.println(result);
     }
 
+    @Test
+    void testDynamicSql() {
+
+    }
+
 }

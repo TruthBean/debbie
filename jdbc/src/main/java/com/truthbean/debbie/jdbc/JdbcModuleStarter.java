@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -17,7 +17,7 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactoryBeanRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
-import com.truthbean.debbie.jdbc.repository.CustomRepositoryFactory;
+import com.truthbean.debbie.jdbc.repository.JdbcRepositoryFactory;
 import com.truthbean.debbie.jdbc.repository.DdlRepository;
 import com.truthbean.debbie.jdbc.repository.DdlRepositoryFactory;
 import com.truthbean.debbie.jdbc.repository.JdbcRepository;
@@ -59,7 +59,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
         Set<DebbieClassBeanInfo<?>> repository = beanInitialization.getAnnotatedClass(SqlRepository.class);
         for (DebbieClassBeanInfo<?> debbieBeanInfo : repository) {
             if (debbieBeanInfo.isAssignable(JdbcRepository.class)) {
-                BeanFactory repositoryFactory = new CustomRepositoryFactory(debbieBeanInfo);
+                BeanFactory repositoryFactory = new JdbcRepositoryFactory(debbieBeanInfo);
                 repositoryFactory.setGlobalBeanFactory(beanFactory);
                 debbieBeanInfo.setBeanFactory(repositoryFactory);
             }
@@ -68,8 +68,8 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class);
-        configurationFactory.register(DefaultDataSourcePoolProperties.class, DataSourceConfiguration.class);
+        configurationFactory.register(new DataSourceProperties(), DataSourceConfiguration.class);
+        configurationFactory.register(new DefaultDataSourcePoolProperties(), DataSourceConfiguration.class);
 
         var register = new DataSourceFactoryBeanRegister(configurationFactory, applicationContext);
         register.registerDataSourceFactory();

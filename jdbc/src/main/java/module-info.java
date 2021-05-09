@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,7 +15,7 @@
 module com.truthbean.debbie.jdbc {
     exports com.truthbean.debbie.jdbc.annotation;
     exports com.truthbean.debbie.jdbc.datasource;
-    exports com.truthbean.debbie.jdbc.datasource.pool to com.truthbean.debbie.core;
+    exports com.truthbean.debbie.jdbc.datasource.pool to com.truthbean.common.mini, com.truthbean.debbie.core;
     exports com.truthbean.debbie.jdbc.domain;
     exports com.truthbean.debbie.jdbc.repository;
     exports com.truthbean.debbie.jdbc.transaction;

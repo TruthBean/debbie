@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,6 +11,7 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContentHolder;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.Set;
  * Created on 2019/3/5 21:58.
  */
 @SuppressWarnings({"unchecked"})
-public class ClassesScanProperties extends BaseProperties implements DebbieProperties<BeanScanConfiguration> {
+public class ClassesScanProperties extends EnvironmentContentHolder implements DebbieProperties<BeanScanConfiguration> {
     private static final BeanScanConfiguration configuration = new BeanScanConfiguration();
 
     //===========================================================================

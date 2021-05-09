@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -17,7 +17,7 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -49,6 +49,7 @@ class DebbieBootApplicationResolver {
         applicationContext.refreshBeans();
     }
 
+    @SuppressWarnings("unused")
     void resolverClasses(DebbieScan scan, BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
         if (scan != null) {
             resolveDebbieScan(configuration, scan);
@@ -59,7 +60,7 @@ class DebbieBootApplicationResolver {
 
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
-        LOGGER.debug(() -> "applicationClass: " + applicationClass);
+        LOGGER.info(() -> "application entry class: " + applicationClass);
         if (notSupport(applicationClass)) return;
 
         var beanInitialization = this.applicationContext.getBeanInitialization();
@@ -78,13 +79,13 @@ class DebbieBootApplicationResolver {
             }
 
             DebbieConfigurationCenter configurationCenter = this.applicationContext.getConfigurationCenter();
+            configuration.setApplicationClass(applicationClass);
             configurationCenter.addConfiguration(BeanScanConfiguration.class, configuration);
             applicationContext.refreshBeans();
             return;
         }
 
         DebbieBootApplication debbieBootApplication = applicationClass.getAnnotation(DebbieBootApplication.class);
-        // debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
         if (debbieBootApplication != null) {
             DebbieScan scan = debbieBootApplication.scan();
             resolveDebbieScan(configuration, scan);
@@ -98,6 +99,7 @@ class DebbieBootApplicationResolver {
             configuration.addCustomInjectType(injectTypes);
 
             DebbieConfigurationCenter configurationCenter = this.applicationContext.getConfigurationCenter();
+            configuration.setApplicationClass(applicationClass);
             configurationCenter.addConfiguration(BeanScanConfiguration.class, configuration);
             applicationContext.refreshBeans();
         } else {

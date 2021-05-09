@@ -2,6 +2,7 @@ package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.boot.AbstractApplication;
+import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -17,7 +18,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -141,12 +142,12 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    protected void start(Instant beforeStartTime, String... args) {
+    protected void start(Instant beforeStartTime, ApplicationArgs args) {
         run(configuration, sessionManager, applicationContext, beforeStartTime);
     }
 
     @Override
-    protected void exit(Instant beforeStartTime, String... args) {
+    protected void exit(Instant beforeStartTime, ApplicationArgs args) {
         shutdown();
         super.printExitTime();
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.proxy.asm;
 
+import com.truthbean.common.mini.util.ReflectionUtils;
 import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
@@ -17,10 +18,10 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.asm.AsmClassInfo;
 import com.truthbean.debbie.reflection.asm.AsmConstructorInfo;
 import com.truthbean.debbie.reflection.asm.AsmMethodInfo;
-import com.truthbean.debbie.util.OsUtils;
+import com.truthbean.common.mini.util.OsUtils;
 import org.objectweb.asm.*;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -57,6 +58,7 @@ public class AsmProxy<B> extends AbstractProxy<B> {
     @SuppressWarnings("unchecked")
     @Override
     public synchronized B proxy(Supplier<B> bean) {
+
         Class<B> beanClass = getBeanClass();
         if (beanAndProxy.containsKey(beanClass)) {
             return doProxy((Class<? extends B>) beanAndProxy.get(beanClass), beanClass, bean);
@@ -140,10 +142,10 @@ public class AsmProxy<B> extends AbstractProxy<B> {
     }
 
     private B doProxy(Class<? extends B> proxyClass, Class<B> beanClass, Supplier<B> bean) {
-        B proxy = ReflectionHelper.newInstance(proxyClass);
+        B proxy = ReflectionUtils.newInstance(proxyClass);
 
-        ReflectionHelper.invokeSetMethod(proxy, HANDLER, getHandler(), getHandlerClass());
-        ReflectionHelper.invokeSetMethod(proxy, TARGET, bean.get(), beanClass);
+        ReflectionUtils.invokeSetMethod(proxy, HANDLER, getHandler(), getHandlerClass());
+        ReflectionUtils.invokeSetMethod(proxy, TARGET, bean.get(), beanClass);
 
         return proxy;
     }

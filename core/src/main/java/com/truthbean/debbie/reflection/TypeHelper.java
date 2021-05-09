@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,178 +10,27 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.util.Constants;
-import com.truthbean.debbie.util.NumericUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.common.mini.CommonConstants;
+import com.truthbean.common.mini.util.ClassHelper;
+import com.truthbean.common.mini.util.NumericUtils;
+import com.truthbean.common.mini.util.ReflectionUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.lang.annotation.*;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-09 14:37
  */
-public final class TypeHelper {
+public final class TypeHelper extends ClassHelper {
     private TypeHelper() {
-    }
-
-    private static final Map<String, Class<?>> CLASS_MAP = new HashMap<>();
-
-    private static final Map<Class<?>, Class<?>> BASE_TYPE_MAP = new HashMap<>();
-
-    static {
-        CLASS_MAP.put(Integer.class.getName(), Integer.class);
-        CLASS_MAP.put(int.class.getName(), int.class);
-        CLASS_MAP.put(Short.class.getName(), Short.class);
-        CLASS_MAP.put(short.class.getName(), short.class);
-        CLASS_MAP.put(long.class.getName(), long.class);
-        CLASS_MAP.put(Long.class.getName(), Long.class);
-        CLASS_MAP.put(float.class.getName(), Float.class);
-        CLASS_MAP.put(Float.class.getName(), float.class);
-        CLASS_MAP.put(Double.class.getName(), Double.class);
-        CLASS_MAP.put(double.class.getName(), double.class);
-        CLASS_MAP.put(Boolean.class.getName(), Boolean.class);
-        CLASS_MAP.put(boolean.class.getName(), boolean.class);
-        CLASS_MAP.put(Character.class.getName(), Character.class);
-        CLASS_MAP.put(char.class.getName(), char.class);
-        CLASS_MAP.put(Byte.class.getName(), Byte.class);
-        CLASS_MAP.put(byte.class.getName(), byte.class);
-        CLASS_MAP.put(Object.class.getName(), Object.class);
-
-        BASE_TYPE_MAP.put(int.class, Integer.class);
-        BASE_TYPE_MAP.put(short.class, Short.class);
-        BASE_TYPE_MAP.put(long.class, Long.class);
-        BASE_TYPE_MAP.put(float.class, Float.class);
-        BASE_TYPE_MAP.put(double.class, Double.class);
-        BASE_TYPE_MAP.put(boolean.class, Boolean.class);
-        BASE_TYPE_MAP.put(char.class, Character.class);
-        BASE_TYPE_MAP.put(byte.class, Byte.class);
-    }
-
-    public static Class<?> getWrapperClass(Class<?> baseType) {
-        for (Map.Entry<Class<?>, Class<?>> classClassEntry : BASE_TYPE_MAP.entrySet()) {
-            if (classClassEntry.getKey() == baseType) {
-                return classClassEntry.getValue();
-            }
-        }
-        return baseType;
-    }
-
-    public static Class<?> getClass(String className) {
-        return CLASS_MAP.get(className);
-    }
-
-    public static boolean isInt(Class<?> clazz) {
-        return clazz == Integer.class || clazz == int.class;
-    }
-
-    public static boolean isShort(Class<?> clazz) {
-        return clazz == Short.class || clazz == short.class;
-    }
-
-    public static boolean isLong(Class<?> clazz) {
-        return clazz == Long.class || clazz == long.class;
-    }
-
-    public static boolean isFloat(Class<?> clazz) {
-        return clazz == float.class || clazz == Float.class;
-    }
-
-    public static boolean isDouble(Class<?> clazz) {
-        return clazz == Double.class || clazz == double.class;
-    }
-
-    public static boolean isBoolean(Class<?> clazz) {
-        return clazz == Boolean.class || clazz == boolean.class;
-    }
-
-    public static boolean isChar(Class<?> clazz) {
-        return clazz == Character.class || clazz == char.class;
-    }
-
-    public static boolean isByte(Class<?> clazz) {
-        return clazz == Byte.class || clazz == byte.class;
-    }
-
-    public static boolean isObject(Class<?> clazz) {
-        return clazz == Object.class;
-    }
-
-    public static boolean isBaseType(java.lang.reflect.Type type) {
-        if (type instanceof Class) {
-            Class<?> clazz = (Class<?>) type;
-            return isBoolean(clazz) || isDouble(clazz) || isFloat(clazz)
-                    || isInt(clazz) || isLong(clazz) || isShort(clazz)
-                    || isChar(clazz) || isByte(clazz)
-                    || clazz == String.class || isObject(clazz);
-        }
-        return false;
-    }
-
-    public static boolean isRawBaseType(Class<?> clazz) {
-        return boolean.class == clazz || double.class == clazz || float.class == clazz || int.class == clazz || long.class == clazz || short.class == clazz || char.class == clazz || byte.class == clazz;
-    }
-
-    public static boolean isSameType(Class<?> aType, Class<?> bType) {
-        return (isInt(aType) && isInt(bType)
-                || (isShort(aType) && isShort(bType))
-                || (isLong(aType) && isLong(bType))
-                || (isFloat(aType)) && isFloat(bType)
-                || (isDouble(aType) && isDouble(bType))
-                || (isBoolean(aType) && isBoolean(bType))
-                || (isChar(aType) && isChar(bType))
-                || (isByte(aType)) && isByte(bType)
-                || (aType == bType));
-    }
-
-    public static boolean isArrayType(Class<?> clazz) {
-        return clazz == Set.class || clazz == Map.class || clazz == List.class;
-    }
-
-    public static boolean isArrayType(java.lang.reflect.Type type) {
-        if (type instanceof Class) {
-            Class<?> clazz = (Class<?>) type;
-            return clazz == Set.class || clazz == Map.class || clazz == List.class;
-        } else if (type instanceof ParameterizedType) {
-            java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
-            return rawType == Set.class || rawType == Map.class || rawType == List.class;
-        }
-        return false;
-    }
-
-    public static boolean isTimeType(java.lang.reflect.Type type) {
-        if (type instanceof Class) {
-            Class<?> clazz = (Class<?>) type;
-            return clazz == Date.class || clazz == Calendar.class
-                    || clazz == java.sql.Date.class || clazz == Timestamp.class || clazz == Time.class
-                    || (clazz.getPackageName().startsWith("java.time"));
-        } else if (type instanceof ParameterizedType) {
-            java.lang.reflect.Type rawType = ((ParameterizedType) type).getRawType();
-            return rawType == Set.class || rawType == Map.class || rawType == List.class;
-        }
-        return false;
-    }
-
-    public static boolean isAbstractOrInterface(Class<?> type) {
-        return Modifier.isAbstract(type.getModifiers()) || type.isInterface();
-    }
-
-    public static boolean hasDefaultConstructor(Class<?> type) {
-        Constructor<?>[] constructors = type.getConstructors();
-        for (Constructor<?> constructor : constructors) {
-            if (constructor.getParameterCount() == 0) {
-                return true;
-            }
-        }
-        return false;
+        super();
     }
 
     public static int getAccessByModifiers(int modifier) {
@@ -199,35 +48,6 @@ public final class TypeHelper {
             return Opcodes.ACC_SYNCHRONIZED;
         }
         return 0;
-    }
-
-    public static String[] getExceptions(Class<?>[] exceptionTypes) {
-        if (exceptionTypes != null && exceptionTypes.length > 0) {
-            String[] exceptions = new String[exceptionTypes.length];
-            for (int i = 0; i < exceptionTypes.length; i++) {
-                Class<?> exceptionType = exceptionTypes[i];
-                exceptions[i] = exceptionType.getName().replace(".", "/");
-            }
-            return exceptions;
-        }
-        return null;
-    }
-
-    public static boolean isOrValueOf(Class<?> clazz, String target) {
-        if (target.getClass().equals(clazz)) {
-            return true;
-        } else {
-            if (NumericUtils.isInteger(target)) {
-                return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
-            }
-
-            if (NumericUtils.isDecimal(target)) {
-                return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
-            }
-
-            return (Constants.TRUE.equalsIgnoreCase(target.trim()) || Constants.FALSE.equalsIgnoreCase(target.trim())) && (clazz == Boolean.class || clazz == boolean.class);
-
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -322,8 +142,8 @@ public final class TypeHelper {
     @SuppressWarnings("unchecked")
     public static <T> List<T> valueOf(Class<T> clazz, @SuppressWarnings("rawtypes") List values) {
         if (clazz == List.class) {
-            java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(values.getClass());
-            java.lang.reflect.Type[] typeActualTypes = ReflectionHelper.getActualTypes(clazz);
+            java.lang.reflect.Type[] valueActualTypes = ReflectionUtils.getActualTypes(values.getClass());
+            java.lang.reflect.Type[] typeActualTypes = ReflectionUtils.getActualTypes(clazz);
             if (valueActualTypes[0] == typeActualTypes[0]) {
                 return (List<T>) values;
             } else {
@@ -434,80 +254,7 @@ public final class TypeHelper {
         return null;
     }
 
-    public static Object unwarp(Object value) {
-        if (value instanceof Integer) {
-            try {
-                return ((Integer) value).intValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
 
-        if (value instanceof Short) {
-            try {
-                return ((Short) value).shortValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Long) {
-            try {
-                return ((Long) value).longValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Float) {
-            try {
-                return ((Float) value).floatValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Double) {
-            try {
-                return ((Double) value).doubleValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Boolean) {
-            try {
-                return ((Boolean) value).booleanValue();
-            } catch (Exception e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Byte) {
-            try {
-                return ((Byte) value).byteValue();
-            } catch (NumberFormatException e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-
-        if (value instanceof Character) {
-            try {
-                return ((Character) value).charValue();
-            } catch (Exception e) {
-                logger.error("", e);
-                return null;
-            }
-        }
-        return null;
-    }
 
     public static boolean isSameList(Class<?> actualTypes, @SuppressWarnings("rawtypes") List value) {
         if (value == null || value.isEmpty()) return true;
@@ -579,7 +326,7 @@ public final class TypeHelper {
                 return isOrValueOf(clazz, (List) value);
             } else if (value instanceof String) {
                 if (type == List.class) {
-                    java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(clazz);
+                    java.lang.reflect.Type[] valueActualTypes = ReflectionUtils.getActualTypes(clazz);
                     return isSameList((Class<?>) valueActualTypes[0], (List) value);
                 } else {
                     return isOrValueOf(clazz, (String) value);
@@ -593,7 +340,7 @@ public final class TypeHelper {
             java.lang.reflect.Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             if (rawType == List.class) {
                 if (value instanceof List) {
-                    java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
+                    java.lang.reflect.Type[] valueActualTypes = ReflectionUtils.getActualTypes(value.getClass());
                     if (actualTypeArguments[0] == valueActualTypes[0]) {
                         return true;
                     } else
@@ -642,7 +389,7 @@ public final class TypeHelper {
                 return clazz == Float.class || clazz == float.class || clazz == Double.class || clazz == double.class;
             }
 
-            return (Constants.TRUE.equalsIgnoreCase(str.trim()) || Constants.FALSE.equalsIgnoreCase(str.trim())) && (clazz == Boolean.class || clazz == boolean.class);
+            return (CommonConstants.TRUE.equalsIgnoreCase(str.trim()) || CommonConstants.FALSE.equalsIgnoreCase(str.trim())) && (clazz == Boolean.class || clazz == boolean.class);
 
         }
         return false;
@@ -659,14 +406,7 @@ public final class TypeHelper {
         return types;
     }
 
-    public static boolean filterAnnotation(Class<? extends Annotation> annotationType) {
-        return  !Target.class.equals(annotationType) && !Retention.class.equals(annotationType) &&
-                !Repeatable.class.equals(annotationType) && !Inherited.class.equals(annotationType) &&
-                !Documented.class.equals(annotationType) && !Deprecated.class.equals(annotationType) &&
-                !Native.class.equals(annotationType) && !SafeVarargs.class.equals(annotationType) &&
-                !FunctionalInterface.class.equals(annotationType) &&
-                !SuppressWarnings.class.equals(annotationType) && !Override.class.equals(annotationType);
-    }
+
 
     private static final Logger logger = LoggerFactory.getLogger(TypeHelper.class);
 }

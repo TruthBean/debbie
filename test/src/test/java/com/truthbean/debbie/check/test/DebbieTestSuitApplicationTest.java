@@ -11,8 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 @DebbieApplicationTest(customInjectType = Autowired.class)
 class DebbieTestSuitApplicationTest {
 
-    @Autowired
     private TestSuitService testSuitService;
+
+    @Autowired
+    public void setTestSuitService(TestSuitService testSuitService) {
+        this.testSuitService = testSuitService;
+    }
 
     // @BeforeAll
     static void beforeAll() {

@@ -13,7 +13,7 @@ import com.truthbean.debbie.proxy.interfaces.jdk.JdkInvocationHandler;
 // import net.sf.cglib.proxy.Enhancer;
 import org.junit.jupiter.api.Test;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

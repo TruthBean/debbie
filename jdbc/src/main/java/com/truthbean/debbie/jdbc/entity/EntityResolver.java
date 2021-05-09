@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.entity;
 
+import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
@@ -18,8 +19,10 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 璩诗斌
@@ -63,8 +66,15 @@ public class EntityResolver {
     }
 
     public static String getTableName(ClassInfo classInfo) {
-        SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class);
-        if (sqlEntity == null) {
+        Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = classInfo.getClassAnnotations();
+        SqlEntity sqlEntity = null;
+        if (classAnnotations.containsKey(SqlEntity.class)) {
+            AnnotationInfo annotationInfo = classAnnotations.get(SqlEntity.class);
+            sqlEntity = (SqlEntity) annotationInfo.getOrigin();
+            if (sqlEntity == null) {
+                throw new SqlEntityNullException(classInfo.getClazz().getName() + " has no @SqlEntity !");
+            }
+        } else {
             throw new SqlEntityNullException(classInfo.getClazz().getName() + " has no @SqlEntity !");
         }
         var entityClass = classInfo.getClazz();

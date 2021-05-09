@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -19,8 +19,8 @@ import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.util.StringUtils;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -58,6 +58,8 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     private List<BeanExecutableDependence> initMethodBeanDependent;
     private Map<FieldInfo, BeanInfo<?>> fieldBeanDependent;
     private boolean hasVirtualValue;
+
+    private final Set<BeanCondition> conditions = new HashSet<>();
 
     public DebbieClassBeanInfo(Class<Bean> beanClass) {
         super(beanClass);
@@ -106,6 +108,11 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
         this.addBeanNames(beanInfo.getBeanNames());
         this.beanFactory = beanInfo.getBeanFactory();
         this.beanType = beanInfo.getBeanType();
+    }
+
+    @Override
+    public Set<BeanCondition> getConditions() {
+        return conditions;
     }
 
     public void setInitMethod(Method initMethod) {
@@ -233,7 +240,7 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
 
     @Override
     public Class<Bean> getBeanClass() {
-        return (Class<Bean>) this.getClazz();
+        return this.getClazz();
     }
 
     @Override
@@ -286,6 +293,18 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
                 BeanFactory beanFactory = ReflectionHelper.newInstance(factory, new Class[]{BeanInfo.class},
                         new Object[]{this});
                 setBeanFactory(beanFactory);
+            }
+        }
+
+        Class<? extends BeanCondition>[] condition = info.getCondition();
+        if (condition != null && condition.length > 0) {
+            for (Class<? extends BeanCondition> conditionClass : condition) {
+                if (conditionClass == DefaultBeanCondition.class) {
+                    this.conditions.add(DefaultBeanCondition.INSTANCE);
+                } else {
+                    BeanCondition beanCondition = ReflectionHelper.newInstance(conditionClass);
+                    this.conditions.add(beanCondition);
+                }
             }
         }
     }
@@ -480,26 +499,7 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
         if (beanFactory != null) {
             beanFactory.destroy();
         } else {
-            Class<Bean> beanClass = getClazz();
-            if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && bean != null) {
-                if (BeanClosure.class.isAssignableFrom(beanClass)) {
-                    ((BeanClosure) bean).destroy();
-                }
-                if (Closeable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((Closeable) bean).close();
-                    } catch (IOException e) {
-                        LOGGER.error("", e);
-                    }
-                }
-                if (AutoCloseable.class.isAssignableFrom(beanClass)) {
-                    try {
-                        ((AutoCloseable) bean).close();
-                    } catch (Exception e) {
-                        LOGGER.error("", e);
-                    }
-                }
-            }
+            close();
         }
         order = 0;
         bean = null;

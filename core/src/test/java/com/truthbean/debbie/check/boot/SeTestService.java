@@ -2,7 +2,7 @@ package com.truthbean.debbie.check.boot;
 
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.util.UUID;
 

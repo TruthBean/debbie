@@ -4,9 +4,13 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,13 +32,17 @@ class CustomBeanAnnotatedBeanTest {
         final CountDownLatch countDownLatch = new CountDownLatch(total);
         for (int i = 0; i < total; i++) {
             service.execute(() -> {
-                LOGGER.debug("???????????????????????????????????????????????????????????????????????????????????????????????");
-                ApplicationFactory applicationFactory = ApplicationFactory.configure(CustomBeanAnnotatedBeanTest.class);
-                ApplicationContext context = applicationFactory.getApplicationContext();
-                GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
-                CustomBeanAnnotatedBean bean = globalBeanFactory.factory(CustomBeanAnnotatedBean.class);
-                LOGGER.debug(String.valueOf(bean.getA()));
-                applicationFactory.release();
+                try {
+                    LOGGER.debug("???????????????????????????????????????????????????????????????????????????????????????????????");
+                    ApplicationFactory applicationFactory = ApplicationFactory.configure(CustomBeanAnnotatedBeanTest.class);
+                    ApplicationContext context = applicationFactory.getApplicationContext();
+                    GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
+                    CustomBeanAnnotatedBean bean = globalBeanFactory.factory(CustomBeanAnnotatedBean.class);
+                    LOGGER.debug(String.valueOf(bean.getA()));
+                    applicationFactory.release();
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
                 countDownLatch.countDown();
             });
         }

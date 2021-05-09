@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.data.transformer.date;
 
-import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.transformer.DataTransformer;
 
 import java.sql.Timestamp;
 import java.time.Instant;

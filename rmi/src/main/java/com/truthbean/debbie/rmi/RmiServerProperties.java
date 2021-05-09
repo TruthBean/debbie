@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,18 +10,18 @@
 package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.properties.BaseProperties;
-import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 /**
  * @author truthbean
  * @since 0.0.2
  */
-public class RmiServerProperties extends BaseProperties implements DebbieProperties<RmiServerConfiguration> {
+public class RmiServerProperties extends EnvironmentContentHolder implements DebbieProperties<RmiServerConfiguration> {
 
     private final RmiServerConfiguration configuration;
 
+    public static final String ENABLE_KEY = "debbie.rmi.enable";
     //=================================================================================================================
     private static final String RMI_SERVER_HOST = "debbie.rmi.server.host";
     private static final String RMI_SERVER_PORT = "debbie.rmi.server.port";

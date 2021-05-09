@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.util.Assert;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.common.mini.util.StringUtils;
 
 /**
  * Ant-style path patterns.

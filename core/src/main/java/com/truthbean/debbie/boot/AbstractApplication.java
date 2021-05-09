@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -19,7 +19,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -27,7 +27,10 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author truthbean/Rogar·Q
@@ -46,6 +49,7 @@ public abstract class AbstractApplication implements DebbieApplication {
      * Synchronization monitor for the "refresh" and "destroy".
      */
     private final Object startupShutdownMonitor = new Object();
+    // private final Lock startupShutdownLock = new ReentrantLock(true);
 
     /**
      * Reference to the JVM shutdown hook, if registered.
@@ -83,11 +87,6 @@ public abstract class AbstractApplication implements DebbieApplication {
         return this.applicationContext;
     }
 
-    @Override
-    public ApplicationContext getContext() {
-        return this.applicationContext;
-    }
-
     protected void setLogger(Logger logger) {
         this.logger = logger;
     }
@@ -115,17 +114,18 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     @Override
-    public final void start(String... args) {
+    public final void start() {
         startupShutdownThreadPool.execute(() -> {
             if (running.compareAndSet(false, true) && exited.get()) {
-                registerShutdownHook(args);
+                ApplicationArgs applicationArgs = applicationContext.getApplicationArgs();
+                registerShutdownHook();
                 try {
-                    start(beforeStartTime, args);
+                    start(beforeStartTime, applicationArgs);
                     exited.set(false);
                 } catch (Exception e) {
                     exited.set(false);
                     logger.error("Application start error: \n", e);
-                    exit(args);
+                    exit();
                 }
             }
         });
@@ -137,7 +137,7 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @param beforeStartTime time of application starting spending
      * @param args            args
      */
-    protected abstract void start(Instant beforeStartTime, String... args);
+    protected abstract void start(Instant beforeStartTime, ApplicationArgs args);
 
     protected void printStartTime() {
         final RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
@@ -160,14 +160,14 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @see #exit
      * @see #doExit
      */
-    private void registerShutdownHook(String... args) {
+    private void registerShutdownHook() {
         if (this.shutdownHook == null) {
             // No shutdown hook registered yet.
             this.shutdownHook = new Thread(SHUTDOWN_HOOK_THREAD_NAME) {
                 @Override
                 public void run() {
-                    synchronized (startupShutdownMonitor) {
-                        exit(args);
+                    while (!exited.get()) {
+                        exit();
                     }
                 }
             };
@@ -180,12 +180,12 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     @Override
-    public final void exit(String... args) {
+    public final void exit() {
         startupShutdownThreadPool.execute(() -> {
             if (running.get() && exited.compareAndSet(false, true)) {
-                logger.info("application is exiting...");
-                beforeExit(applicationContext, args);
-                doExit(args);
+                logger.debug("application is exiting...");
+                beforeExit(applicationContext);
+                doExit(applicationContext.getApplicationArgs());
             }
         });
         startupShutdownThreadPool.destroy();
@@ -197,7 +197,7 @@ public abstract class AbstractApplication implements DebbieApplication {
      * @param beforeStartTime before start time, long timestamp
      * @param args args
      */
-    protected abstract void exit(Instant beforeStartTime, String... args);
+    protected abstract void exit(Instant beforeStartTime, ApplicationArgs args);
 
     protected void printExitTime() {
         RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
@@ -205,31 +205,41 @@ public abstract class AbstractApplication implements DebbieApplication {
         Duration between = Duration.between(beforeStartTime, now);
         long uptime = mxBean.getUptime();
         long startTime = mxBean.getStartTime();
-        logger.info(() -> "JVM started at "  + new Timestamp(startTime) + ", running for "  + uptime + "ms");
-        logger.info(() -> "application start spends " + between.toDays() + " days");
-        logger.info(() -> "application start spends " + between.toMinutes() + " minutes");
-        logger.info(() -> "application start spends " + between.toSeconds() + " seconds");
-        logger.info(() -> "application start spends " + between.toMillis() + " million seconds");
-        logger.info(() -> "application start spends " + between.toNanos() + " nano seconds");
+        logger.info(() -> "JVM started at "  + new Timestamp(startTime) + ", had run for "  + uptime + "ms");
+        if (logger.isDebugEnabled()) {
+            logger.debug(() -> "application start spends " + between.toDays() + " days");
+            logger.debug(() -> "application start spends " + between.toMinutes() + " minutes");
+            logger.debug(() -> "application start spends " + between.toSeconds() + " seconds");
+            logger.debug(() -> "application start spends " + between.toMillis() + " million seconds");
+            logger.debug(() -> "application start spends " + between.toNanos() + " nano seconds");
+        }
     }
 
-    public final void doExit(String... args) {
-        synchronized (this.startupShutdownMonitor) {
-            exit(beforeStartTime, args);
-            if (applicationFactory instanceof DebbieApplicationFactory) {
-                applicationFactory.release(args);
-            }
-            // If we registered a JVM shutdown hook, we don't need it anymore now:
-            // We've already explicitly closed the context.
-            if (this.shutdownHook != null) {
-                try {
-                    Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
-                    this.running.set(false);
-                } catch (IllegalStateException ex) {
-                    // ignore - VM is already shutting down
-                    ex.printStackTrace();
+    public final void doExit(ApplicationArgs args) {
+        // if (startupShutdownLock.tryLock()) {
+            try {
+                exit(beforeStartTime, args);
+                if (applicationFactory instanceof DebbieApplicationFactory) {
+                    applicationFactory.release();
                 }
+                // If we registered a JVM shutdown hook, we don't need it anymore now:
+                // We've already explicitly closed the context.
+                if (this.shutdownHook != null) {
+                    try {
+                        Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
+                        this.running.set(false);
+                    } catch (IllegalStateException ex) {
+                        // VM is already shutting down
+                        logger.info("JVM is shutting down (" + ex.getMessage() + ")");
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("do application exiting error. ", e);
+            } finally {
+                // startupShutdownLock.unlock();
+                // call gc
+                System.gc();
             }
-        }
+        // }
     }
 }

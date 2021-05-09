@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -83,14 +83,21 @@ public class DefaultDataSource implements DataSource {
                         driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
                     }
                 } catch (ClassNotFoundException e) {
-                    if (dataSourceDriverName == DataSourceDriverName.mysql8) {
-                        dataSourceDriverName = DataSourceDriverName.mysql;
-                        driverName = dataSourceDriverName.getDriverName();
-                        if (driverClassLoader != null) {
-                            driverType = Class.forName(driverName, true, driverClassLoader);
-                        } else {
-                            driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                    System.getLogger(DefaultDataSource.class.getName())
+                            .log(System.Logger.Level.WARNING,
+                                    "No driver(" + driverName + ") found, fall to use mysql driver!");
+                    try {
+                        if (dataSourceDriverName == DataSourceDriverName.mysql8) {
+                            dataSourceDriverName = DataSourceDriverName.mysql;
+                            driverName = dataSourceDriverName.getDriverName();
+                            if (driverClassLoader != null) {
+                                driverType = Class.forName(driverName, true, driverClassLoader);
+                            } else {
+                                driverType = ClassLoader.getSystemClassLoader().loadClass(driverName);
+                            }
                         }
+                    } catch (ClassNotFoundException classNotFoundException) {
+                        throw new SQLException("No driver(" + driverName + ") found found. ");
                     }
                 }
                 if (driverType != null) {
@@ -98,7 +105,7 @@ public class DefaultDataSource implements DataSource {
                     DriverManager.registerDriver(driverInstance);
                     REGISTERED_DRIVERS.put(driverName, driverInstance);
                 } else {
-                    throw new SQLException("No driver found. ");
+                    throw new SQLException("No driver(" + driverName + ") found found. ");
                 }
             } catch (Exception e) {
                 throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);

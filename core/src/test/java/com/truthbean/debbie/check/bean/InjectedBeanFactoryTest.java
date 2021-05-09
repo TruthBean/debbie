@@ -5,7 +5,7 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.bean.inter.Abc;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 import demo.raw.NoBeanTest;
 import org.junit.jupiter.api.Test;
 

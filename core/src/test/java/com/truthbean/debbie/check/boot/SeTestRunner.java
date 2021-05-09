@@ -5,7 +5,7 @@ import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.task.DebbieTask;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 @BeanComponent(lazy = false, type = BeanType.SINGLETON)
 public class SeTestRunner {

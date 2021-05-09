@@ -2,7 +2,7 @@ package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 @DebbieRmiService("test")
 public class TestRmiServiceImpl implements TestRmiService {

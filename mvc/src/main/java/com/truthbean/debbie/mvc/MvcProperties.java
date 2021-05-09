@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,10 +10,10 @@
 package com.truthbean.debbie.mvc;
 
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.nio.charset.Charset;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @since 0.0.1
  * Created on 2019/2/25 22:02.
  */
-public class MvcProperties extends BaseProperties implements DebbieProperties<MvcConfiguration> {
+public class MvcProperties extends EnvironmentContentHolder implements DebbieProperties<MvcConfiguration> {
     //===========================================================================
     /**
      * static resources mapping and location, only support /XX/**=XX, like /static/**=static, or /resources/**=META-INF/resources;/webjar/**=/META-INF/resources/webjars

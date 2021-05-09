@@ -2,7 +2,7 @@ package com.truthbean.debbie.check.bean;
 
 import com.truthbean.debbie.bean.BeanConfiguration;
 import com.truthbean.debbie.bean.DebbieBean;
-import com.truthbean.debbie.data.transformer.DataTransformer;
+import com.truthbean.transformer.DataTransformer;
 
 @BeanConfiguration
 public class BeanConfigurationTest {

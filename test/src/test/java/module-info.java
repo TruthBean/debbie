@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,12 @@
  */
 module com.truthbean.debbie.test.test {
     requires com.truthbean.debbie.test;
-    requires jul.to.slf4j;
 
+    requires com.truthbean.logger.stdout.boot;
     opens com.truthbean.debbie.check.test;
+
+    requires org.opentest4j;
+
+    requires jdk.unsupported;
+    requires jdk.jdwp.agent;
 }

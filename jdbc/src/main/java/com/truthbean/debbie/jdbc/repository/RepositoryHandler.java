@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.data.transformer.TransformerFactory;
+import com.truthbean.transformer.TransformerFactory;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
@@ -24,9 +24,9 @@ import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import com.truthbean.debbie.lang.Callback;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
-import com.truthbean.debbie.util.StringUtils;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.util.ObjectStringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -157,7 +157,9 @@ public class RepositoryHandler {
         try {
             transaction.setUsing(true);
             var connection = transaction.getConnection();
-
+            if (connection == null) {
+                throw new TransactionException("connection is null");
+            }
             preparedStatement = connection.prepareStatement(sql);
             if (args != null) {
                 for (int e = 0; e < args.length; ++e) {
@@ -269,7 +271,7 @@ public class RepositoryHandler {
 
     private void loggerSqlAndParameters(String sql, Object[] args) {
         LOGGER.debug("Preparing >>> " + sql);
-        LOGGER.debug("Parameters >>> " + StringUtils.getParameterValueString(args));
+        LOGGER.debug("Parameters >>> " + ObjectStringUtils.getParameterValueString(args));
     }
 
     @SuppressWarnings("unchecked")

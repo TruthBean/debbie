@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,12 +12,13 @@ package com.truthbean.debbie.internal;
 import com.truthbean.Logger;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -30,7 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created on 2019/3/23 11:17.
  */
 final class BeanRegisterCenter {
-    BeanRegisterCenter() {
+    private final EnvironmentContent content;
+    BeanRegisterCenter(EnvironmentContent content) {
+        this.content = content;
     }
 
     public static final Object value = new Object();
@@ -56,6 +59,12 @@ final class BeanRegisterCenter {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     synchronized <Bean> void register(BeanInfo<Bean> beanClassInfo) {
+        Set<BeanCondition> conditions = beanClassInfo.getConditions();
+        for (BeanCondition condition : conditions) {
+            if (!condition.matches(content)) {
+                return;
+            }
+        }
         Class<Bean> beanClass = beanClassInfo.getBeanClass();
         if (BEAN_CLASSES.containsKey(beanClass)) {
             // merge
@@ -181,7 +190,7 @@ final class BeanRegisterCenter {
                 }
                 register(beanClassInfo);
             } catch (Throwable e) {
-                LOGGER.error("", e);
+                LOGGER.error("register class<" + beanClass + "> error. ", e);
             }
         }
     }

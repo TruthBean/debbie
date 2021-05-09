@@ -25,6 +25,33 @@ class SimpleApplicationFactoryTest {
     }
 
     @Test
+    void custom() {
+        var mainClass = SimpleApplicationFactoryTest.class;
+        ApplicationFactory.custom(mainClass, "test")
+                .init(mainClass)
+                .createApplicationFactory()
+                .createApplication()
+                .start();
+    }
+
+    @Test
+    void custom2() {
+        ApplicationFactory.custom("test")
+                .init()
+                .createApplicationFactory()
+                .createApplication()
+                .start();
+    }
+
+    public static void main(String[] args) {
+        ApplicationFactory.custom("test")
+                .init()
+                .createApplicationFactory()
+                .createApplication()
+                .start();
+    }
+
+    @Test
     void test() {
         int a, b, c, d;
         for (a = 1; a <= 9; a++) {

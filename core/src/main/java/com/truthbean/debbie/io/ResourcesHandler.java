@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,14 +11,13 @@ package com.truthbean.debbie.io;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.debbie.util.StringUtils;
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,8 +146,8 @@ public final class ResourcesHandler {
         if (resources == null || resources.isEmpty() || classLoader == null)
             return classes;
         for (String name : resources) {
-            // 如果是以/开头的
-            if (name.charAt(0) == '/') {
+            // 如果是以/或.开头
+            while (name.charAt(0) == '/' || name.charAt(0) == '.') {
                 // 获取后面的字符串
                 name = name.substring(1);
             }
@@ -161,6 +160,7 @@ public final class ResourcesHandler {
                 try {
                     // 添加到classes
                     clazz = classLoader.loadClass(className);
+                    LOGGER.trace("load class<" + className + "> to preparing registered. ");
                 } catch (NoClassDefFoundError | ClassNotFoundException e) {
                     LOGGER.debug(() -> "load class<" + className + "> error because " + e.getMessage());
                 }

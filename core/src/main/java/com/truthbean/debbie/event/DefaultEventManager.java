@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,10 +10,10 @@
 package com.truthbean.debbie.event;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ConcurrentHashSet;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import com.truthbean.logger.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +27,12 @@ import java.util.function.Consumer;
  * @since 0.2.0
  * Created on 2020-12-21 16:56
  */
-public class DefaultEventManager  implements DebbieEventPublisher, EventManager, BeanClosure {
+public class DefaultEventManager implements DebbieEventPublisher, EventManager, BeanClosure {
     private final ConcurrentMap<Class<? extends AbstractDebbieEvent>, ConcurrentHashSet<EventListenerInfo>> eventListenerMap;
 
     private final GlobalBeanFactory beanFactory;
     private final ThreadPooledExecutor executor;
+
     public DefaultEventManager(final ThreadPooledExecutor threadPooledExecutor, final GlobalBeanFactory beanFactory) {
         this.executor = threadPooledExecutor;
         this.eventListenerMap = new ConcurrentHashMap<>();
@@ -87,7 +88,7 @@ public class DefaultEventManager  implements DebbieEventPublisher, EventManager,
         if (!(eventListener instanceof DebbieEventListener)) {
             throw new EventListenerRegisterException("bean(" + listenerBeanName + ") is not DebbieEventListener ");
         }
-        addEventListener((DebbieEventListener<? extends AbstractDebbieEvent>)eventListener);
+        addEventListener((DebbieEventListener<? extends AbstractDebbieEvent>) eventListener);
     }
 
     @Override
@@ -153,23 +154,42 @@ public class DefaultEventManager  implements DebbieEventPublisher, EventManager,
         long start = System.currentTimeMillis();
         consumeEventListener(event.getClass(), (eventListener) -> {
             if (!eventListener.async()) {
-                eventListener.onEvent(event);
+                try {
+                    eventListener.onEvent(event);
+                } catch (Throwable e) {
+                    Throwable cause = e.getCause();
+                    if (cause == null)
+                        cause = e;
+                    LOGGER.error("listener handler event(" + event + ") error. ", cause);
+                }
             } else if (eventListener.allowConcurrent()) {
                 synchronized (this) {
-                    eventListener.onEvent(event);
+                    try {
+                        eventListener.onEvent(event);
+                    } catch (Exception e) {
+                        Throwable cause = e.getCause();
+                        if (cause == null)
+                            cause = e;
+                        LOGGER.error("listener handler event(" + event + ") error. ", cause);
+                    }
                 }
-            }
-            else {
+            } else {
                 try {
                     executor.execute(() -> {
                         try {
                             eventListener.onEvent(event);
                         } catch (Exception ex) {
-                            LOGGER.error("", ex);
+                            Throwable cause = ex.getCause();
+                            if (cause == null)
+                                cause = ex;
+                            LOGGER.error("listener handler event(" + event + ") error. ", cause);
                         }
                     });
                 } catch (Exception e) {
-                    LOGGER.error("", e);
+                    Throwable cause = e.getCause();
+                    if (cause == null)
+                        cause = e;
+                    LOGGER.error("listener handler event(" + event + ") error. ", cause);
                 }
             }
         });
@@ -188,7 +208,7 @@ public class DefaultEventManager  implements DebbieEventPublisher, EventManager,
         hashSet.forEach(info -> {
             if (info.getEventListener() != null) {
                 value.add(info.getEventListener());
-            } else if (info.getBeanFactory() != null) {
+            } else if (info.getBeanFactory() != null && !info.getBeanFactory().isSkipCreatedBeanFactory()) {
                 DebbieEventListener<? extends AbstractDebbieEvent> bean = info.getBeanFactory().factoryBean();
                 info.setEventListener(bean);
                 value.add(bean);
@@ -206,7 +226,7 @@ public class DefaultEventManager  implements DebbieEventPublisher, EventManager,
             if (info.getEventListener() != null) {
                 DebbieEventListener<? extends AbstractDebbieEvent> eventListener = info.getEventListener();
                 consumer.accept(eventListener);
-            } else if (info.getBeanFactory() != null) {
+            } else if (info.getBeanFactory() != null && !info.getBeanFactory().isSkipCreatedBeanFactory()) {
                 DebbieEventListener<? extends AbstractDebbieEvent> bean = info.getBeanFactory().factoryBean();
                 info.setEventListener(bean);
                 consumer.accept(bean);

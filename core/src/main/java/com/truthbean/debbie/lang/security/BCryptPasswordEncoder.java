@@ -1,7 +1,7 @@
 package com.truthbean.debbie.lang.security;
 
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.security.SecureRandom;
 import java.util.regex.Pattern;

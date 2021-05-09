@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,12 +13,13 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
-import com.truthbean.debbie.task.TaskFactory;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.transformer.DataTransformerCenter;
 
 /**
  * @author TruthBean
@@ -39,14 +40,17 @@ class DebbieApplicationContext implements ApplicationContext {
     private final DebbieGlobalBeanFactory globalBeanFactory;
 
     private final ApplicationArgs applicationArgs;
+    private final EnvironmentContent envContent;
 
     private static final Object object = new Object();
 
-    protected DebbieApplicationContext(@Nullable Class<?> applicationClass, ClassLoader classLoader, ApplicationArgs applicationArgs) {
+    protected DebbieApplicationContext(@Nullable Class<?> applicationClass, ClassLoader classLoader,
+                                       ApplicationArgs applicationArgs, EnvironmentContent envContent) {
         synchronized (object) {
             this.applicationArgs = applicationArgs;
+            this.envContent = envContent;
             resourceResolver = new ResourceResolver();
-            beanInitialization = DebbieBeanInitialization.getInstance(applicationClass, classLoader, resourceResolver);
+            beanInitialization = DebbieBeanInitialization.getInstance(applicationClass, classLoader, resourceResolver, envContent);
             this.configurationCenter = new DebbieConfigurationCenter();
             // methodProxyHandlerRegister = new MethodProxyHandlerRegister();
 
@@ -106,6 +110,11 @@ class DebbieApplicationContext implements ApplicationContext {
     }
 
     @Override
+    public EnvironmentContent getEnvContent() {
+        return envContent;
+    }
+
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -151,7 +160,7 @@ class DebbieApplicationContext implements ApplicationContext {
 
     @Override
     public <O, T> T transform(final O origin, final Class<T> target) {
-        return DataTransformerFactory.transform(origin, target);
+        return DataTransformerCenter.transform(origin, target);
     }
 
     @Override
@@ -177,7 +186,7 @@ class DebbieApplicationContext implements ApplicationContext {
 
             beanInitialization.reset();
             resourceResolver.cleanResources();
-            DataTransformerFactory.reset();
+            DataTransformerCenter.reset();
             LOGGER.info("release all bean.");
         }
     }

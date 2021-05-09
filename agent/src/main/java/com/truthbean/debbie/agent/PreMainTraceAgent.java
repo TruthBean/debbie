@@ -1,7 +1,7 @@
 package com.truthbean.debbie.agent;
 
 import com.truthbean.Logger;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean .LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 TruthBean(Rogar·Q)
+ * Copyright (c) 2021 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,21 +12,21 @@ package com.truthbean.debbie.internal;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContextAware;
-import com.truthbean.debbie.data.transformer.DataTransformer;
-import com.truthbean.debbie.event.DebbieEventPublisher;
+import com.truthbean.debbie.env.EnvContentAware;
+import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.transformer.DataTransformer;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
-import com.truthbean.debbie.properties.BaseProperties;
 import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
 import com.truthbean.debbie.properties.PropertiesException;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.logger.LoggerFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.transformer.DataTransformerCenter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -48,18 +48,23 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     private final Set<Class<? extends Annotation>> injectTypes = new HashSet<>(2);
     private Class<? extends Annotation> injectType;
 
-    @SuppressWarnings("unchecked")
     DebbieInjectedBeanFactory() {
         injectTypes.add(BeanInject.class);
         injectTypes.add(PropertyInject.class);
+        registerInjectType("javax.inject.Inject");
+        registerInjectType("jakarta.inject.Inject");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void registerInjectType(String inject) {
         try {
-            Class<?> injectType = Class.forName("javax.inject.Inject");
+            Class<?> injectType = Class.forName(inject);
             if (Annotation.class.isAssignableFrom(injectType)) {
                 this.injectType = (Class<Annotation>) injectType;
                 injectTypes.add(this.injectType);
             }
         } catch (ClassNotFoundException e) {
-            LOGGER.info("class javax.inject.Inject not found");
+            LOGGER.info("class " + inject + " not found");
         }
     }
 
@@ -82,7 +87,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
 
     @Override
     public Set<Class<? extends Annotation>> getInjectTypes() {
-        return injectTypes;
+        return new HashSet<>(injectTypes);
     }
 
     @Override
@@ -143,7 +148,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     }
 
     @Override
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> BeanCreator<T> factoryBeanPreparation(BeanInfo<T> beanInfo, boolean skipFactory) {
         if (singletonBeanCreatorMap.containsKey(beanInfo)) {
             BeanCreator<T> beanCreator = (BeanCreator<T>) singletonBeanCreatorMap.get(beanInfo);
@@ -159,7 +164,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 creator.create(beanInfo.getBean());
                 return creator;
             }
-            if (!skipFactory && beanInfo.hasBeanFactory()) {
+            if (!skipFactory && beanInfo.hasBeanFactory() && !beanInfo.hasSkipCreatedBeanFactory()) {
                 creator.create(beanInfo.getBeanFactory().factoryBean());
                 return creator;
             }
@@ -268,14 +273,23 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
             ((InjectedBeanFactoryAware) object).setInjectedBeanFactory(applicationContext.getInjectedBeanFactory());
         } else if (object instanceof DebbieEventPublisherAware) {
             ((DebbieEventPublisherAware) object).setEventPublisher(applicationContext.factory("eventPublisher"));
+        } else if (object instanceof EnvContentAware) {
+            ((EnvContentAware) object).setEnvContent(applicationContext.getEnvContent());
         }
 
     }
 
     @Override
     public void resolveMethodValue(Object object, Method method) {
-        BeanInject beanInject = method.getAnnotation(BeanInject.class);
-        if (beanInject == null) {
+        boolean containInject = false;
+        for (Class<? extends Annotation> type : injectTypes) {
+            Annotation inject = method.getAnnotation(type);
+            if (inject != null) {
+                containInject = true;
+                break;
+            }
+        }
+        if (!containInject) {
             return;
         }
         if (method.getParameterCount() != 1) {
@@ -289,19 +303,33 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         if (parameter.isNamePresent()) {
             name = parameter.getName();
         }
-        var value = globalBeanFactory.factory(beanClass);
-        if (value != null) {
-            try {
-                method.invoke(object, value);
+        Optional<Object> o = globalBeanFactory.factoryIfPresent(name);
+        if (o.isPresent()) {
+            ReflectionHelper.invokeMethod(object, method, o.get());
+            /*try {
+                method.invoke(object, o.get());
             } catch (IllegalAccessException e) {
                 LOGGER.error("method (" + method + ") have no access. ", e);
             } catch (InvocationTargetException e) {
                 LOGGER.error("method (" + method + ") invoke error. ", e);
+            }*/
+        } else {
+            var value = globalBeanFactory.factory(beanClass);
+            if (value != null) {
+                ReflectionHelper.invokeMethod(object, method, value);
+                /*try {
+                    method.invoke(object, value);
+                } catch (IllegalAccessException e) {
+                    LOGGER.error("method (" + method + ") have no access. ", e);
+                } catch (InvocationTargetException e) {
+                    LOGGER.error("method (" + method + ") invoke error. ", e);
+                }*/
             }
         }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object factoryProperty(Class<?> valueType, String keyPrefix, PropertyInject propertyInject) {
         String key = keyPrefix;
         if (propertyInject == null && keyPrefix == null) {
@@ -321,8 +349,8 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 }
             }
         }
-        BaseProperties properties = new BaseProperties();
-        String value = properties.getValue(key);
+        EnvironmentContent envContent = applicationContext.getEnvContent();
+        String value = envContent.getValue(key);
         if (value == null && propertyInject != null) {
             value = propertyInject.defaultValue();
         }
@@ -334,10 +362,26 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         }
         Object transform = null;
         if (propertyInject != null) {
-            Class<? extends DataTransformer<?, String>> transformer = propertyInject.transformer();
+            Class<? extends DataTransformer<?, String>> transformerClass = propertyInject.transformer();
             try {
-                DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformer);
-                transform = dataTransformer.reverse(value);
+                DataTransformer<?, String> transformer = DataTransformerCenter.getTransformer(transformerClass);
+                if (transformer != null) {
+                    transform = transformer.reverse(value);
+                } else if (transformerClass.isEnum()) {
+                    DataTransformer<?, String>[] dataTransformers = transformerClass.getEnumConstants();
+                    DataTransformer<?, String> dataTransformer = dataTransformers[0];
+                    transform = dataTransformer.reverse(value);
+                } else {
+                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformerClass);
+                    if (dataTransformer != null) {
+                        transform = dataTransformer.reverse(value);
+                    } else {
+                        dataTransformer = (DataTransformer<?, String>) ReflectionHelper.invokeStaticMethod("getInstance", transformerClass);
+                        if (dataTransformer != null) {
+                            transform = dataTransformer.reverse(value);
+                        }
+                    }
+                }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
