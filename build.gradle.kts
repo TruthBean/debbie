@@ -37,7 +37,7 @@ plugins {
 
 val projectVersion: String by project
 // 根据我们在gradle.properties中声明的版本名称,来分辨是release版本还是snapshots版本
-val isReleaseBuild = !projectVersion.endsWith("SNAPSHOT")
+val isReleaseBuild = projectVersion.endsWith("RELEASE")
 
 // 声明变量记录maven库地址，判断是发布到正式库,还是snapshots库
 val mavenRepositoryUrl =

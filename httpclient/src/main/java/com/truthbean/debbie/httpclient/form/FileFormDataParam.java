@@ -18,7 +18,7 @@ import java.io.File;
  * @since 0.0.2
  * Created on 2020-02-24 14:29
  */
-public class FileFormDataParam extends FormDataParamName {
+public class FileFormDataParam extends FormDataParam {
     private File file;
 
     private MediaTypeInfo fileType;

@@ -81,9 +81,13 @@ public class ThreadPooledExecutor implements PooledExecutor {
         if (isRunning()) {
             try {
                 executorService.shutdown();
-                while (!executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS)) {
+                while (!executorService.isTerminated() && ! executorService.isShutdown()) {
                     // wait
+                    boolean termination = executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS);
                     LOGGER.info("waiting for executorService termination");
+                    if (termination) {
+                        break;
+                    }
                 }
             } catch (InterruptedException e) {
                 LOGGER.error("executorService.destroy error. ", e);

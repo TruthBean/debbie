@@ -52,6 +52,10 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     public DebbieApplication init(DebbieConfigurationCenter factory, ApplicationContext applicationContext,
                                      ClassLoader classLoader) {
         NettyConfiguration configuration = factory.factory(NettyConfiguration.class, applicationContext);
+        if (configuration == null) {
+            LOGGER.warn("debbie-netty module is disabled, debbie.netty.enable is false");
+            return null;
+        }
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         MvcRouterRegister.registerRouter(configuration, applicationContext);
         RouterFilterManager.registerFilter(configuration, beanInitialization);

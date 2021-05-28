@@ -62,7 +62,7 @@ module com.truthbean.debbie.core {
     requires com.fasterxml.jackson.module.jaxb;
     requires org.yaml.snakeyaml;
 
-    exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet;
+    exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
 
     uses com.truthbean.debbie.boot.DebbieModuleStarter;
     uses com.truthbean.debbie.boot.AbstractApplication;

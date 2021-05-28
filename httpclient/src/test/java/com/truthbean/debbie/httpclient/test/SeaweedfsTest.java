@@ -11,11 +11,20 @@ package com.truthbean.debbie.httpclient.test;
 
 import com.truthbean.debbie.httpclient.HttpClientHandler;
 import com.truthbean.debbie.httpclient.HttpClientProperties;
+import com.truthbean.debbie.httpclient.HttpResponseType;
+import com.truthbean.debbie.httpclient.form.FileFormDataParam;
+import com.truthbean.debbie.httpclient.seaweedfs.DirAssignResponse;
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 public class SeaweedfsTest {
@@ -30,9 +39,35 @@ public class SeaweedfsTest {
 
     @Test
     public void testDirLookup() {
-        String url = "http://192.168.1.11:31819/dir/lookup?volumeId=3&pretty=y";
+        String url = "http://192.168.1.11:9333/dir/lookup?volumeId=3&pretty=y";
         String s = httpClientHandler.get(url);
         System.out.println(s);
+    }
+
+    @Test
+    public void testSeaweedfsDirAssign() {
+        var seaWeedFSUrl = "http://192.168.1.11:9333";
+        var dirAssign = seaWeedFSUrl + "/dir/assign";
+        String response = httpClientHandler.get(dirAssign);
+        System.out.println(response);
+
+        DirAssignResponse assign = JacksonUtils.jsonToBean(response, DirAssignResponse.class);
+        System.out.println(assign);
+        String url = "http://" + assign.getPublicUrl() + "/" + assign.getFid();
+        FileFormDataParam param = new FileFormDataParam();
+        param.setName("123456");
+        param.setFile(new File("F:\\data\\images\\tongsiyu.jpg"));
+
+        String boundary = Long.toHexString(System.currentTimeMillis());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        httpClientHandler.buildForm(List.of(param), boundary, output);
+
+        String contentType = "multipart/form-data; boundary=" + boundary;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", contentType);
+
+        String form = httpClientHandler.post(url, output.toByteArray(), headers);
+        System.out.println(form);
     }
 
     public static void main(String[] args) {
@@ -50,7 +85,7 @@ public class SeaweedfsTest {
                 body.append(i + j).append(",");
             }
             body.append(i + 9).append("]}]");
-            String delete = test.httpClientHandler.delete(url, body.toString(), head, MediaType.APPLICATION_JSON_UTF8);
+            String delete = test.httpClientHandler.delete(url, body.toString(), head, HttpResponseType.STRING);
             System.out.println(delete);
         }
 

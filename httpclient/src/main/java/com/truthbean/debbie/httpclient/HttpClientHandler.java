@@ -9,14 +9,18 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.lang.NonNull;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,25 +40,14 @@ public class HttpClientHandler extends HttpClientAction {
     }
 
     public String get(String url, List<HttpCookie> cookies) {
-        return (String) get(url, cookies, MediaType.TEXT_ANY_UTF8.info());
+        return (String) get(url, cookies, HttpResponseType.STRING);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object get(String url, List<HttpCookie> cookies, MediaTypeInfo responseType) {
-        long startTime = System.nanoTime();
-        LOGGER.debug(() -> OPERATION_NAME + "开始GET通信，目标url: " + url);
-        HttpRequest.Builder builder = HttpRequest.newBuilder();
-        if (cookies != null && !cookies.isEmpty()) {
-            var cookie = buildCookies(cookies);
-            LOGGER.debug(() -> "request Cookie: " + cookie);
-            builder = builder.header("Cookie", cookie);
-        }
-        HttpRequest httpRequest = builder.uri(URI.create(url)).build();
-        HttpClientResponse action = action(httpRequest, startTime, responseType);
-        return action(action);
+    public Object get(String url, List<HttpCookie> cookies, HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.GET, null, cookies, null, responseType);
     }
 
-    private <T> T action(HttpClientResponse<T> map) {
+    public  <T> T getBody(HttpClientResponse<T> map) {
         if (map != null && map.hasBody()) {
             return map.getBody();
         }
@@ -62,95 +55,73 @@ public class HttpClientHandler extends HttpClientAction {
     }
 
     public String get(String url, Map<String, String> headers) {
-        HttpClientResponse<String> action = doGet(url, headers);
-        return action(action);
+        HttpClientResponse<String> response = doGet(url, headers, HttpResponseType.STRING);
+        return getBody(response);
     }
 
     @SuppressWarnings({"unchecked"})
-    public HttpClientResponse<String> doGet(String url, Map<String, String> headers) {
-        long startTime = System.nanoTime();
-        LOGGER.debug(() -> OPERATION_NAME + "开始GET通信，目标url: " + url);
-        HttpRequest.Builder builder = HttpRequest.newBuilder();
-        if (headers != null && !headers.isEmpty()) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
-            }
-        }
-        HttpRequest httpRequest = builder.uri(URI.create(url)).build();
-        return action(httpRequest, startTime, MediaType.TEXT_ANY_UTF8.info());
+    public HttpClientResponse<String> doGet(String url, Map<String, String> headers, HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.GET, headers, null, null, responseType);
     }
 
     // =================================================================================================================
 
-    public String post(String url, String jsonContent) {
-        return post(url, jsonContent, null);
+    public String post(String url, String body) {
+        return post(url, body, null);
     }
 
-    public String post(String url, String jsonContent, Map<String, String> headers) {
-        HttpClientResponse<String> action = doPost(url, jsonContent, headers);
-        return action(action);
+    public String post(String url, String body, Map<String, String> headers) {
+        HttpClientResponse<String> response = doPost(url, body, headers);
+        return getBody(response);
+    }
+
+    public String post(String url, byte[] body, Map<String, String> headers) {
+        HttpClientResponse<String> response = doPost(url, body, headers);
+        return getBody(response);
     }
 
     @SuppressWarnings({"unchecked"})
-    public HttpClientResponse<String> doPost(String url, String jsonContent, Map<String, String> headers) {
-        return doPost(url, jsonContent, headers, MediaType.TEXT_ANY_UTF8.info());
+    public HttpClientResponse<String> doPost(String url, String body, Map<String, String> headers) {
+        return doPost(url, body, headers, HttpResponseType.STRING);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public HttpClientResponse<String> doPost(String url, byte[] body, Map<String, String> headers) {
+        return doPost(url, body, headers, HttpResponseType.STRING);
     }
 
     @SuppressWarnings({"rawtypes"})
-    public HttpClientResponse doPost(String url, String jsonContent, Map<String, String> headers,
-                                      MediaTypeInfo responseType) {
-        long startTime = System.nanoTime();
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug(OPERATION_NAME + "开始POST通信，目标url: " + url + " ，内容：" + jsonContent);
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
-        if (headers != null && !headers.isEmpty()) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
-            }
-        }
-        if (jsonContent == null) {
-            jsonContent = "{}";
-        }
-        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(jsonContent);
-        HttpRequest httpRequest = builder.POST(body).build();
-        return action(httpRequest, startTime, responseType);
+    public HttpClientResponse doPost(String url, String body, Map<String, String> headers,
+                                     HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.POST, headers, null, body.getBytes(), responseType);
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    public HttpClientResponse doPost(String url, byte[] body, Map<String, String> headers,
+                                     HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.POST, headers, null, body, responseType);
     }
 
     // =================================================================================================================
 
-    public String put(String url, String jsonContent) {
-        return put(url, jsonContent, null);
+    public String put(String url, String body) {
+        return put(url, body, null);
     }
 
-    public String put(String url, String jsonContent,
-                             Map<String, String> headers) {
-        HttpClientResponse<String> action = doPut(url, jsonContent, headers);
-        return action(action);
+    public String put(String url, String body, Map<String, String> headers) {
+        HttpClientResponse<String> response = doPut(url, body, headers);
+        return getBody(response);
     }
 
     @SuppressWarnings({"unchecked"})
-    public HttpClientResponse<String> doPut(String url, String jsonContent, Map<String, String> headers) {
-        return doPut(url, jsonContent, headers, MediaType.TEXT_ANY_UTF8.info());
+    public HttpClientResponse<String> doPut(String url, String body, Map<String, String> headers) {
+        return doPut(url, body, headers, HttpResponseType.STRING);
     }
 
     @SuppressWarnings({"rawtypes"})
-    public HttpClientResponse doPut(String url, String jsonContent, Map<String, String> headers,
-                                            MediaTypeInfo responseType) {
-        long startTime = System.nanoTime();
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug(OPERATION_NAME + "开始PUT通信，目标url: " + url + " ，内容：" + jsonContent);
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
-        if (headers != null && !headers.isEmpty()) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
-            }
-        }
-        if (jsonContent == null) {
-            jsonContent = "{}";
-        }
-        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(jsonContent);
-        HttpRequest httpRequest = builder.PUT(body).build();
-        return action(httpRequest, startTime, responseType);
+    public HttpClientResponse doPut(String url, String body, Map<String, String> headers,
+                                    HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.PUT, headers, null, body.getBytes(), responseType);
     }
 
     // =================================================================================================================
@@ -159,22 +130,22 @@ public class HttpClientHandler extends HttpClientAction {
         return delete(url, null, null);
     }
 
-    public String delete(String url, String jsonContent) {
-        return delete(url, jsonContent, null);
+    public String delete(String url, String body) {
+        return delete(url, body, null);
     }
 
     public String delete(String url, Map<String, String> headers) {
         return delete(url, null, headers);
     }
 
-    public String delete(String url, String jsonContent, Map<String, String> headers) {
-        return action(doDelete(url, jsonContent, headers));
+    public String delete(String url, String body, Map<String, String> headers) {
+        return getBody(doDelete(url, body, headers));
     }
 
     @SuppressWarnings({"unchecked"})
-    public String delete(String url, String jsonContent, Map<String, String> headers, MediaType responseType) {
-        HttpClientResponse<String> delete = doDelete(url, jsonContent, headers, responseType.info());
-        return action(delete);
+    public String delete(String url, String body, Map<String, String> headers, HttpResponseType responseType) {
+        HttpClientResponse<String> response = doDelete(url, body, headers, responseType);
+        return getBody(response);
     }
 
     public HttpClientResponse<String> doDelete(String url, Map<String, String> headers) {
@@ -182,28 +153,57 @@ public class HttpClientHandler extends HttpClientAction {
     }
 
     @SuppressWarnings({"unchecked"})
-    public HttpClientResponse<String> doDelete(String url, String jsonContent, Map<String, String> headers) {
-        return doDelete(url, jsonContent, headers, MediaType.TEXT_ANY_UTF8.info());
+    public HttpClientResponse<String> doDelete(String url, String body, Map<String, String> headers) {
+        return doDelete(url, body, headers, HttpResponseType.STRING);
     }
 
     @SuppressWarnings({"rawtypes"})
-    public HttpClientResponse doDelete(String url, String jsonContent, Map<String, String> headers,
-                                       MediaTypeInfo responseType) {
+    public HttpClientResponse doDelete(String url, String body, Map<String, String> headers,
+                                       HttpResponseType responseType) {
+        return doHttp(url, HttpMethod.DELETE, headers, null, body.getBytes(), responseType);
+    }
+
+    // =================================================================================================================
+
+    @SuppressWarnings({"rawtypes"})
+    public HttpClientResponse doHttp(String url, HttpMethod method, Map<String, String> queries,
+                                     Map<String, String> headers, List<HttpCookie> cookies,
+                                     byte[] body,
+                                     HttpResponseType responseType) {
+        StringBuilder queryStringBuilder = new StringBuilder();
+        if (queries != null && !queries.isEmpty()) {
+            StringUtils.joining(queries, "&", "=", queryStringBuilder);
+            String finalUrl = url + "?" + queryStringBuilder;
+            return doHttp(finalUrl, method, headers, cookies, body, responseType);
+        }
+        return doHttp(url, method, headers, cookies, body, responseType);
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    public HttpClientResponse doHttp(String url, @NonNull HttpMethod method,
+                                     Map<String, String> headers, List<HttpCookie> cookies,
+                                     byte[] body,
+                                     HttpResponseType responseType) {
         long startTime = System.nanoTime();
-        LOGGER.debug(() -> OPERATION_NAME + "开始DELETE通信，目标url: " + url + " ，内容：" + jsonContent);
+        LOGGER.debug(() -> OPERATION_NAME + "开始" + method.name() + "通信，目标url: " + url + " ，内容：" + Arrays.toString(body));
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url));
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 builder = builder.header(entry.getKey(), entry.getValue());
             }
         }
-        HttpRequest httpRequest;
-        if (jsonContent == null) {
-            httpRequest = builder.DELETE().build();
-        } else {
-            HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(jsonContent);
-            httpRequest = builder.method("DELETE", body).build();
+        if (cookies != null && !cookies.isEmpty()) {
+            var cookie = buildCookies(cookies);
+            LOGGER.debug(() -> "request Cookie: " + cookie);
+            builder = builder.header("Cookie", cookie);
         }
+        HttpRequest.BodyPublisher bodyPublisher;
+        if (body == null) {
+            bodyPublisher = HttpRequest.BodyPublishers.noBody();
+        } else {
+            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(body);
+        }
+        HttpRequest httpRequest = builder.method(method.name(), bodyPublisher).build();
         return action(httpRequest, startTime, responseType);
     }
 

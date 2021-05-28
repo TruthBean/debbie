@@ -18,7 +18,6 @@ public class ErrorResponseData {
     private String uri;
     private Long timestamp;
     private String method;
-    private Throwable exception;
 
     public String getUri() {
         return uri;
@@ -43,13 +42,4 @@ public class ErrorResponseData {
     public void setMethod(String method) {
         this.method = method;
     }
-
-    public Throwable getException() {
-        return exception;
-    }
-
-    public void setException(Throwable exception) {
-        this.exception = exception;
-    }
-
 }

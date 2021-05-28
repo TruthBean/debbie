@@ -3,19 +3,26 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.httpclient.form.FileFormDataParam;
+import com.truthbean.debbie.httpclient.form.FormDataParam;
+import com.truthbean.debbie.httpclient.form.TextFromDataParam;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.MultipartFile;
 
 import javax.net.ssl.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.net.http.HttpRequest;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -130,14 +137,16 @@ public class HttpHandler {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    } if (it instanceof File) {
+                    }
+                    if (it instanceof File) {
                         try {
                             var path = ((File) it).toPath();
                             buildPart(byteArrays, key, path);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    } if (it instanceof MultipartFile) {
+                    }
+                    if (it instanceof MultipartFile) {
                         var file = (MultipartFile) it;
                         byteArrays.add(("\"" + key + "\"; filename=\"" + file.getFileName()
                                 + "\"\r\nContent-Type: " + file.getContentType().toString() + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
@@ -153,6 +162,86 @@ public class HttpHandler {
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
     }
 
+    public void buildForm(List<FormDataParam> params, String boundary, OutputStream output) {
+
+        // Line separator required by multipart/form-data.
+        final String CRLF = "\r\n";
+
+        // params
+        if (params != null && !params.isEmpty()) {
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(output), true)) {
+                // true = autoFlush, important!
+
+                for (FormDataParam param : params) {
+                    if (param instanceof TextFromDataParam) {
+                        var text = (TextFromDataParam) param;
+                        // normal param
+                        writer.append("--").append(boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data;name=\"").append(text.getName()).append("\"").append(CRLF);
+
+                        String charset = text.getCharset();
+                        if (charset != null) {
+                            writer.append("Content-Type: text/plain; charset=").append(charset).append(CRLF);
+                        } else {
+                            writer.append("Content-Type: text/plain").append(CRLF);
+                        }
+                        writer.append(CRLF);
+                        writer.append(text.getValue()).append(CRLF).flush();
+                    } else if (param instanceof FileFormDataParam) {
+                        var file = (FileFormDataParam) param;
+                        var binaryFile = file.getFile();
+                        var mediaType = file.getFileType();
+                        if (mediaType == null || mediaType.isAny()) {
+                            String typeFromName = URLConnection.guessContentTypeFromName(binaryFile.getName());
+                            mediaType = MediaTypeInfo.parse(typeFromName);
+                        }
+                        // 二次判断
+                        if (mediaType == null || mediaType.isAny()) {
+                            mediaType = MediaType.APPLICATION_OCTET_STREAM.info();
+                        }
+                        var charset = mediaType.charset(Charset.defaultCharset());
+                        writer.append("--").append(boundary).append(CRLF);
+                        writer.append("Content-Disposition: form-data; name=\"").append(file.getName()).append("\"; filename=\"").append(binaryFile.getName()).append("\"")
+                                .append(CRLF);
+                        writer.append("Content-Type: ").append(mediaType.toString()).append(CRLF);
+                        if (mediaType.isText()) {
+                            // text file
+                            try (var fis = new FileInputStream(binaryFile);
+                                 var isr = new InputStreamReader(fis, charset);
+                                 BufferedReader reader = new BufferedReader(isr)) {
+                                for (String line; (line = reader.readLine()) != null; ) {
+                                    writer.append(line).append(CRLF);
+                                }
+                            }
+                        } else {
+                            // binaryFile file
+                            writer.append("Content-Transfer-Encoding: binary").append(CRLF);
+                            writer.append(CRLF).flush();
+                            try (InputStream input = new FileInputStream(binaryFile)) {
+                                byte[] buffer = new byte[4096];
+                                for (int length = 0; (length = input.read(buffer)) > -1; ) {
+                                    output.write(buffer, 0, length);
+                                }
+                                // Important! Output cannot be closed.
+                                // Close of writer will close output as well.
+                                output.flush();
+                            }
+                        }
+                        writer.append(CRLF).flush();
+                    }
+                }
+
+                // CRLF is important! It indicates end of binary boundary.
+                writer.append(CRLF).flush();
+                // End of multipart/form-data.
+                writer.append("--").append(boundary).append("--").append(CRLF).flush();
+
+            } catch (IOException e) {
+                LOGGER.error("", e);
+            }
+        }
+    }
+
     private void buildPart(ArrayList<byte[]> byteArrays, String key, Path path) throws IOException {
         String mimeType = Files.probeContentType(path);
         byteArrays.add(("\"" + key + "\"; filename=\"" + path.getFileName()
@@ -160,4 +249,6 @@ public class HttpHandler {
         byteArrays.add(Files.readAllBytes(path));
         byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
 }

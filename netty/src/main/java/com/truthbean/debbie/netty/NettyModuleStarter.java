@@ -22,7 +22,7 @@ public class NettyModuleStarter implements DebbieModuleStarter {
 
     @Override
     public boolean enable(EnvironmentContent envContent) {
-        return envContent.getBooleanValue(NettyProperties.ENABLE_KEY, true);
+        return envContent.getBooleanValue(NettyProperties.ENABLE_KEY, false);
     }
 
     @Override

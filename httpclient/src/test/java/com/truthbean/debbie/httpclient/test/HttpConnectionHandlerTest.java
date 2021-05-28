@@ -63,7 +63,7 @@ public class HttpConnectionHandlerTest {
 
     @Test
     public void testSeaweedfsDirAssign() {
-        var seaWeedFSUrl = "http://192.168.1.12:9333";
+        var seaWeedFSUrl = "http://192.168.1.11:9333";
         var dirAssign = seaWeedFSUrl + "/dir/assign";
         String response = httpClientHandler.get(dirAssign);
         System.out.println(response);
@@ -72,8 +72,8 @@ public class HttpConnectionHandlerTest {
         System.out.println(assign);
         String url = "http://" + assign.getPublicUrl() + "/" + assign.getFid();
         FileFormDataParam param = new FileFormDataParam();
-        param.setName("file");
-        param.setFile(new File("F:\\data\\images\\童思雨.jpg"));
+        param.setName("f-tongsiyu");
+        param.setFile(new File("F:\\data\\images\\tongsiyu.jpg"));
 
         String form = httpClientHandler.form(url, List.of(param));
         System.out.println(form);

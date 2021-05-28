@@ -53,7 +53,7 @@ public final class RouterErrorResponseHandler {
         Throwable throwable = getRealThrowable(e);
         ResponseEntity<Object> data = ResponseHelper.error(throwable.getMessage());
 
-        var value = new ErrorResponseData();
+        var value = new FullStackErrorResponseData();
         value.setUri(routerRequest.getUrl());
         value.setTimestamp(System.currentTimeMillis());
         value.setException(throwable);

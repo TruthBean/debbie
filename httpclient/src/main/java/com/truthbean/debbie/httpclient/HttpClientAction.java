@@ -11,6 +11,7 @@ package com.truthbean.debbie.httpclient;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.lang.TypeNotSupportedException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.HttpStatus;
@@ -114,7 +115,13 @@ public class HttpClientAction extends HttpHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    public HttpClientResponse action(final RouterRequest request, final MediaTypeInfo responseType) {
+    public HttpClientResponse action(final RouterRequest request, final MediaTypeInfo responseTypeInfo) {
+        HttpResponseType responseType;
+        if (responseTypeInfo.isText()) {
+            responseType = HttpResponseType.STRING;
+        } else {
+            responseType = HttpResponseType.BYTES;
+        }
         final long startTime = System.nanoTime();
         LOGGER.debug(() -> OPERATION_NAME + "开始通信: " + request);
 
@@ -240,28 +247,35 @@ public class HttpClientAction extends HttpHandler {
         CompletableFuture future = null;
         if (type == String.class) {
             future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
-        }
-        if (type == byte[].class) {
+        } else if (type == byte[].class) {
             future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
-        }
-        if (type == Stream.class) {
+        } else if (type == Stream.class) {
             future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines());
-        }
-        if (type == InputStream.class) {
+        } else if (type == InputStream.class) {
             future = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        } else {
+            throw new TypeNotSupportedException("Only support String, byte[], Stream<String>, InputStream");
         }
-        // TODO: 2019-11-23 more type
         return future;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected HttpClientResponse action(final HttpRequest httpRequest, final long startTime, final MediaTypeInfo mediaType) {
+    protected HttpClientResponse action(final HttpRequest httpRequest, final long startTime, final HttpResponseType type) {
         HttpClientResponse result = null;
         CompletableFuture<HttpResponse> future;
-        if (mediaType.isText()) {
-            future = sendAsync(httpRequest, String.class);
-        } else {
-            future = sendAsync(httpRequest, InputStream.class);
+        switch (type) {
+            case BYTES:
+                future = sendAsync(httpRequest, byte[].class);
+                break;
+            case INPUTSTREAM:
+                future = sendAsync(httpRequest, InputStream.class);
+                break;
+            case STREAM_STRING:
+                future = sendAsync(httpRequest, Stream.class);
+                break;
+            default:
+                future = sendAsync(httpRequest, String.class);
+                break;
         }
         HttpResponse<String> response;
         if (configuration.retry()) {

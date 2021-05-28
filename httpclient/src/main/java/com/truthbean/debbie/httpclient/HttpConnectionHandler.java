@@ -3,33 +3,31 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.httpclient.form.FileFormDataParam;
-import com.truthbean.debbie.httpclient.form.FormDataParamName;
-import com.truthbean.debbie.httpclient.form.TextFromDataParam;
-import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.io.StreamHelper;
-import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.httpclient.form.FormDataParam;
+import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.io.StreamHelper;
+import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +97,7 @@ public class HttpConnectionHandler extends HttpHandler {
     }
 
     public String post(String url, List<HttpCookie> cookies, Map<String, String> headers,
-                      MediaType contentType, byte[] body) {
+                       MediaType contentType, byte[] body) {
         HttpURLConnection connection = prepare(url, HttpMethod.POST, cookies, headers, contentType, body);
         if (connection != null) {
             return getResponse(connection);
@@ -107,7 +105,7 @@ public class HttpConnectionHandler extends HttpHandler {
         return null;
     }
 
-    public String form(String url, List<FormDataParamName> params) {
+    public String form(String url, List<FormDataParam> params) {
         HttpURLConnection connection = prepare(url, HttpMethod.POST);
         if (connection == null) {
             return null;
@@ -117,83 +115,14 @@ public class HttpConnectionHandler extends HttpHandler {
         String boundary = Long.toHexString(System.currentTimeMillis());
         String contentType = "multipart/form-data; boundary=" + boundary;
         // Line separator required by multipart/form-data.
-        final String CRLF = "\n";
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", contentType);
 
-        // params
-        if (params != null && !params.isEmpty()) {
-            PrintWriter writer = null;
-            try {
-                OutputStream output = connection.getOutputStream();
-                // true = autoFlush, important!
-                writer = new PrintWriter(new OutputStreamWriter(output), true);
-
-                for (FormDataParamName param : params) {
-                    if (param instanceof TextFromDataParam) {
-                        var text = (TextFromDataParam) param;
-                        // normal param
-                        writer.append("--").append(boundary).append(CRLF);
-                        writer.append("Content-Disposition: form-data;name=\"").append(text.getName()).append("\"").append(CRLF);
-
-                        String charset = text.getCharset();
-                        if (charset != null) {
-                            writer.append("Content-Type: text/plain; charset=").append(charset).append(CRLF);
-                        } else {
-                            writer.append("Content-Type: text/plain").append(CRLF);
-                        }
-                        writer.append(CRLF);
-                        writer.append(text.getValue()).append(CRLF).flush();
-                    } else if (param instanceof FileFormDataParam) {
-                        var file = (FileFormDataParam) param;
-                        var binaryFile = file.getFile();
-                        var mediaType = file.getFileType();
-                        if (mediaType == null || mediaType.isAny()) {
-                            String typeFromName = URLConnection.guessContentTypeFromName(binaryFile.getName());
-                            mediaType = MediaTypeInfo.parse(typeFromName);
-                        }
-                        var charset = mediaType.charset(Charset.defaultCharset());
-                        writer.append("--").append(boundary).append(CRLF);
-                        writer.append("Content-Disposition: form-data; name=\"").append(file.getName()).append("\"; filename=\"").append(binaryFile.getName()).append("\"")
-                                .append(CRLF);
-                        writer.append("Content-Type: ").append(mediaType.toString()).append(CRLF);
-                        if (mediaType.isText()) {
-                            // text file
-                            try(var fis = new FileInputStream(binaryFile);
-                                var isr = new InputStreamReader(fis, charset);
-                                BufferedReader reader = new BufferedReader(isr)) {
-                                for (String line; (line = reader.readLine()) != null;) {
-                                    writer.append(line).append(CRLF);
-                                }
-                            }
-                        } else {
-                            // binaryFile file
-                            writer.append("Content-Transfer-Encoding: binary").append(CRLF);
-                            writer.append(CRLF).flush();
-                            try (InputStream input = new FileInputStream(binaryFile)) {
-                                byte[] buffer = new byte[1024];
-                                for (int length = 0; (length = input.read(buffer)) > 0;) {
-                                    output.write(buffer, 0, length);
-                                }
-                                // Important! Output cannot be closed.
-                                // Close of writer will close output as well.
-                                output.flush();
-                            }
-                        }
-                        writer.flush();
-                    }
-                }
-
-                // CRLF is important! It indicates end of binary boundary.
-                writer.append(CRLF).flush();
-                // End of multipart/form-data.
-                writer.append("--").append(boundary).append("--").append(CRLF).flush();
-
-            } catch (IOException e) {
-                LOGGER.error("", e);
-            } finally {
-                if (writer != null) writer.close();
-            }
+        try {
+            OutputStream output = connection.getOutputStream();
+            buildForm(params, boundary, output);
+        } catch (IOException e) {
+            LOGGER.error("", e);
         }
 
         return getResponse(connection);

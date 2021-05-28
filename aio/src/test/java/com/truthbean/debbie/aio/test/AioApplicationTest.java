@@ -33,7 +33,7 @@ public class AioApplicationTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        application.exit();
+        // application.exit();
     }
 
     @Test

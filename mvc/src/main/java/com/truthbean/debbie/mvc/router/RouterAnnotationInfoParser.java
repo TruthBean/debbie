@@ -9,9 +9,12 @@
  */
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.spi.SpiLoader;
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
@@ -71,7 +74,7 @@ public class RouterAnnotationInfoParser {
             return new RouterAnnotationInfo(connectRouter);
         }
 
-        Set<RouterAnnotationParser> parsers = SpiLoader.loadProviderSet(RouterAnnotationParser.class, classLoader);
+        Set<RouterAnnotationParser> parsers = loadRouterAnnotationParserProviderSet(classLoader);
         for (RouterAnnotationParser parser : parsers) {
             RouterAnnotationInfo info = parser.parse(method);
             if (info != null) {
@@ -81,4 +84,21 @@ public class RouterAnnotationInfoParser {
 
         return null;
     }
+
+    private static Set<RouterAnnotationParser> loadRouterAnnotationParserProviderSet(ClassLoader classLoader) {
+        Set<RouterAnnotationParser> result = new HashSet<>();
+        ServiceLoader<RouterAnnotationParser> serviceLoader;
+        try {
+            serviceLoader = ServiceLoader.load(RouterAnnotationParser.class, classLoader);
+        } catch (Throwable e) {
+            LOGGER.error("", e);
+            return result;
+        }
+        for (RouterAnnotationParser s : serviceLoader) {
+            result.add(s);
+        }
+        return result;
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RouterAnnotationInfoParser.class);
 }

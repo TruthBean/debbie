@@ -30,6 +30,6 @@ public class NettyApplicationTest {
     public static void main(String[] args) {
         DebbieApplication application = ApplicationFactory.create(NettyApplicationTest.class, args);
         application.start();
-        // application.exit();
+        application.exit();
     }
 }
