@@ -156,6 +156,7 @@ subprojects {
                     version = projectVersion
                     from(components["java"])
                     artifact(tasks["sourcesJar"])
+                    artifact(tasks["javadocJar"])
                     versionMapping {
                         usage("java-api") {
                             fromResolutionOf("runtimeClasspath")
