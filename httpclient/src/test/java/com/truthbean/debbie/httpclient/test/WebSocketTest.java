@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.httpclient.test;
 
+import com.truthbean.debbie.httpclient.ws.WebSocketListener;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -22,12 +23,14 @@ import java.util.concurrent.CompletableFuture;
  * @since 0.1.0
  * Created on 2020-08-22 10:22
  */
-public class webSocketTest {
+public class WebSocketTest {
 
     @Test
     void test() throws URISyntaxException {
         var httpClient = HttpClient.newBuilder().build();
-        CompletableFuture<WebSocket> webSocket = httpClient.newWebSocketBuilder().buildAsync(new URI("ws://192.168.1.19:8098/websocket"), new WebSocketListener());
+        CompletableFuture<WebSocket> webSocket = httpClient
+                .newWebSocketBuilder()
+                .buildAsync(new URI("ws://192.168.1.19:8098/websocket"), new WebSocketListener(new FirstMessageCallbackTest()));
         webSocket.join();
         while (true);
     }

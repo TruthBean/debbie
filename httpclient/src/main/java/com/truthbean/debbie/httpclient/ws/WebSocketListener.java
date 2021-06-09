@@ -7,16 +7,12 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-package com.truthbean.debbie.httpclient.test;
+package com.truthbean.debbie.httpclient.ws;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.data.serialize.JacksonJsonUtils;
-import com.truthbean.debbie.mvc.response.ResponseEntity;
 import com.truthbean.LoggerFactory;
 
 import java.net.http.WebSocket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,6 +26,12 @@ public class WebSocketListener implements WebSocket.Listener {
 
     private final AtomicBoolean first = new AtomicBoolean();
     private volatile StringBuffer stringBuffer = new StringBuffer();
+
+    private final FirstMessageCallback firstMessageCallback;
+
+    public WebSocketListener(FirstMessageCallback firstMessageCallback) {
+        this.firstMessageCallback = firstMessageCallback;
+    }
 
     @Override
     public void onOpen(WebSocket webSocket) {
@@ -45,35 +47,25 @@ public class WebSocketListener implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        error.printStackTrace();
+        LOGGER.error("onError. ", error);
     }
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         webSocket.request(1);
         if (first.compareAndSet(false, true)) {
-            LOGGER.debug(data.toString());
             var dataStr = data.toString();
-            ResponseEntity<?> response = JacksonJsonUtils.jsonToBean(dataStr, ResponseEntity.class);
-            if (response == null) {
+            LOGGER.debug("first message: " + dataStr);
+            boolean check = firstMessageCallback.callback(dataStr, webSocket, last);
+            if (check) {
                 return null;
-            }
-            if (response.getData() instanceof String) {
-                String o = (String) response.getData();
-                Map<String, Object> request = new HashMap<>();
-                request.put("request", 1);
-                request.put("requestId", o);
-                request.put("carriageId", 1);
-                var text = JacksonJsonUtils.toJson(request);
-                LOGGER.debug(text);
-                webSocket.sendText(text, last);
             }
         } else if (!last) {
             stringBuffer.append(data);
         } else {
             stringBuffer.append(data);
             var dataStr = stringBuffer.toString();
-            LOGGER.debug(dataStr);
+            LOGGER.debug("message: " + dataStr);
             stringBuffer = new StringBuffer();
         }
         return CompletableFuture.completedFuture(webSocket);

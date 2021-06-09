@@ -16,7 +16,7 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.response.ResponseEntity;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.mvc.util.JacksonUtils;
 import com.truthbean.tools.ChineseNameHelper;
 import com.truthbean.tools.ChineseNationalIdHelper;
 import com.truthbean.tools.ChinesePhoneNumberHelper;

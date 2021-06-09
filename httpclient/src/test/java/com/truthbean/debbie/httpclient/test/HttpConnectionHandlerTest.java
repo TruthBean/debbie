@@ -14,7 +14,7 @@ import com.truthbean.debbie.httpclient.HttpConnectionHandler;
 import com.truthbean.debbie.httpclient.form.FileFormDataParam;
 import com.truthbean.debbie.httpclient.seaweedfs.DirAssignResponse;
 import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.mvc.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

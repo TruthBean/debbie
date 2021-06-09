@@ -12,7 +12,7 @@ package com.truthbean.debbie.httpclient.test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.truthbean.debbie.httpclient.HttpClientHandler;
 import com.truthbean.debbie.httpclient.HttpClientProperties;
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.mvc.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

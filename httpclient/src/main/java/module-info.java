@@ -19,6 +19,7 @@ module com.truthbean.debbie.httpclient {
     exports com.truthbean.debbie.httpclient;
     exports com.truthbean.debbie.httpclient.annotation;
     exports com.truthbean.debbie.httpclient.form;
+    exports com.truthbean.debbie.httpclient.ws;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.httpclient.HttpClientModuleStarter;

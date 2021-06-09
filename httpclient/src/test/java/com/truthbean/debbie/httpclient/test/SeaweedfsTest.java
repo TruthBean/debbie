@@ -14,14 +14,12 @@ import com.truthbean.debbie.httpclient.HttpClientProperties;
 import com.truthbean.debbie.httpclient.HttpResponseType;
 import com.truthbean.debbie.httpclient.form.FileFormDataParam;
 import com.truthbean.debbie.httpclient.seaweedfs.DirAssignResponse;
-import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.mvc.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
