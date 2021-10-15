@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.common.mini.util.ReflectionUtils;
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
@@ -27,6 +29,7 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -66,15 +69,16 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         final SessionManager sessionManager = new SimpleSessionManager();
         try {
             doInit(applicationContext, configuration, sessionManager);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("create aio server error", e);
         }
         super.setLogger(LOGGER);
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     private void doInit(ApplicationContext applicationContext, AioServerConfiguration configuration,
-                        final SessionManager sessionManager) throws IOException {
+                        final SessionManager sessionManager) throws Exception {
         int port = configuration.getPort();
         this.applicationContext = applicationContext;
         this.configuration = configuration;
@@ -89,9 +93,18 @@ public class AioServerApplication extends AbstractWebServerApplication implement
                 new ThreadPoolExecutor.AbortPolicy());
         // 用于资源共享的异步通道管理器
         var asyncChannelGroup = AsynchronousChannelGroup.withThreadPool(executor);
-        // 创建 用在服务端的异步Socket.以下简称服务器socket。
-        // 异步通道管理器，会把服务端所用到的相关参数
-        SocketAddress socketAddress = new InetSocketAddress(port);
+        SocketAddress socketAddress;
+        if (StringUtils.hasText(configuration.getSocketPath())) {
+            Class<? extends SocketAddress> unixDomainSocketAddressClass = (Class<? extends SocketAddress>) Class.forName("java.net.UnixDomainSocketAddress");
+            Method method = ReflectionUtils.getMethod(unixDomainSocketAddressClass, "of", new Class[]{String.class});
+            Object o = ReflectionUtils.invokeStaticMethod(method, configuration.getSocketPath());
+            socketAddress = (SocketAddress) o;
+        } else {
+            // todo 区分 tcp/udp/unix/ssl socket
+            // 创建 用在服务端的异步Socket.以下简称服务器socket。
+            // 异步通道管理器，会把服务端所用到的相关参数
+            socketAddress = new InetSocketAddress(port);
+        }
         server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
     }
 

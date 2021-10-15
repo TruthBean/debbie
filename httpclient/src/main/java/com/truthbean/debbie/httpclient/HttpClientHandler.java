@@ -20,10 +20,7 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -135,7 +132,7 @@ public class HttpClientHandler extends HttpClientAction {
     }
 
     public String delete(String url, Map<String, String> headers) {
-        return delete(url, null, headers);
+        return delete(url, "", headers);
     }
 
     public String delete(String url, String body, Map<String, String> headers) {
@@ -160,7 +157,11 @@ public class HttpClientHandler extends HttpClientAction {
     @SuppressWarnings({"rawtypes"})
     public HttpClientResponse doDelete(String url, String body, Map<String, String> headers,
                                        HttpResponseType responseType) {
-        return doHttp(url, HttpMethod.DELETE, headers, null, body.getBytes(), responseType);
+        byte[] bytes = null;
+        if (body != null) {
+            bytes = body.getBytes();
+        }
+        return doHttp(url, HttpMethod.DELETE, headers, null, bytes, responseType);
     }
 
     // =================================================================================================================
@@ -198,7 +199,7 @@ public class HttpClientHandler extends HttpClientAction {
             builder = builder.header("Cookie", cookie);
         }
         HttpRequest.BodyPublisher bodyPublisher;
-        if (body == null) {
+        if (body == null || body.length == 0) {
             bodyPublisher = HttpRequest.BodyPublishers.noBody();
         } else {
             bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(body);

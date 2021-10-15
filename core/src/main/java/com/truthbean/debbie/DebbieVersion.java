@@ -22,6 +22,6 @@ public final class DebbieVersion {
         Package pkg = DebbieVersion.class.getPackage();
         return pkg != null && pkg.getImplementationVersion() != null
                 && !"null".equalsIgnoreCase(pkg.getImplementationVersion())
-                ? pkg.getImplementationVersion() : "0.5.0-RELEASE";
+                ? pkg.getImplementationVersion() : "0.5.1-RELEASE";
     }
 }

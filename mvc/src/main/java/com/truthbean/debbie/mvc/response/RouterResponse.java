@@ -11,7 +11,6 @@ package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.common.mini.util.StringUtils;
 
@@ -23,14 +22,13 @@ import java.util.*;
  * @author TruthBean
  * @since 0.0.1
  */
-public class RouterResponse implements Cloneable {
+public class RouterResponse extends BaseRouterResponse implements Cloneable {
     private boolean redirect;
 
     private boolean hasTemplate;
     private String templateSuffix;
     private String templatePrefix;
 
-    private final Map<String, String> headers = new HashMap<>();
     private final Set<HttpCookie> cookies = new HashSet<>();
 
     private final Map<String, Object> modelAttributes = new HashMap<>();
@@ -38,11 +36,9 @@ public class RouterResponse implements Cloneable {
     private MediaTypeInfo responseType;
 
     private Class<?> restResponseClass;
-    private Object content;
     private AbstractResponseContentHandler<?, ?> handler;
 
     private Charset charset;
-    private HttpStatus status;
 
     private boolean error;
 
@@ -57,14 +53,6 @@ public class RouterResponse implements Cloneable {
         this.redirect = redirect;
     }
 
-    public void addHeader(String name, String value) {
-        headers.put(name, value);
-    }
-
-    public void addHeader(HttpHeader.HttpHeaderName headerName, String value) {
-        headers.put(headerName.getName(), value);
-    }
-
     public void addCookie(HttpCookie cookie) {
         String name = cookie.getName();
         List<HttpCookie> copy = new ArrayList<>(cookies);
@@ -74,10 +62,6 @@ public class RouterResponse implements Cloneable {
             }
         }
         cookies.add(cookie);
-    }
-
-    public Map<String, String> getHeaders() {
-        return Map.copyOf(headers);
     }
 
     public Set<HttpCookie> getCookies() {
@@ -95,6 +79,7 @@ public class RouterResponse implements Cloneable {
     public MediaTypeInfo getResponseType() {
         if (responseType == null) {
             var contentType = "Content-Type";
+            Map<String, String> headers = getHeaders();
             if (headers.containsKey(contentType)) {
                 responseType = MediaTypeInfo.parse(headers.get(contentType));
             } else {
@@ -144,14 +129,6 @@ public class RouterResponse implements Cloneable {
         this.templatePrefix = templatePrefix;
     }
 
-    public Object getContent() {
-        return content;
-    }
-
-    public void setContent(Object content) {
-        this.content = content;
-    }
-
     public AbstractResponseContentHandler<?, ?> getHandler() {
         return handler;
     }
@@ -162,14 +139,6 @@ public class RouterResponse implements Cloneable {
 
     public Charset getCharset() {
         return charset;
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(HttpStatus status) {
-        this.status = status;
     }
 
     public void setHandler(AbstractResponseContentHandler<?, ?> handler) {
@@ -197,10 +166,8 @@ public class RouterResponse implements Cloneable {
     }
 
     public void copyFrom(RouterResponse response) {
+        super.copyFrom(response);
         this.redirect = response.redirect;
-        this.headers.putAll(response.headers);
-
-        this.content = response.content;
         this.handler = response.handler;
 
         this.cookies.addAll(response.cookies);
@@ -212,17 +179,12 @@ public class RouterResponse implements Cloneable {
 
         this.restResponseClass = response.restResponseClass;
 
-        this.status = response.status;
-
         this.error = response.error;
     }
 
     public void copyNoNull(RouterResponse response) {
+        super.copyNoNull(response);
         this.redirect = response.redirect;
-        this.headers.putAll(response.headers);
-
-        if (response.content != null)
-            this.content = response.content;
 
         if (response.handler != null)
             this.handler = response.handler;
@@ -241,9 +203,6 @@ public class RouterResponse implements Cloneable {
 
         if (response.restResponseClass != null)
             this.restResponseClass = response.restResponseClass;
-
-        if (response.status != null)
-            this.status = response.status;
     }
 
     @Override
@@ -255,13 +214,13 @@ public class RouterResponse implements Cloneable {
             response = new RouterResponse();
         }
 
+        response.copyFrom(this);
+
         response.redirect = this.redirect;
-        response.headers.putAll(this.headers);
 
         response.responseType = responseType;
 
         response.restResponseClass = this.restResponseClass;
-        response.content = this.content;
         response.handler = this.handler;
 
         response.cookies.addAll(this.cookies);
@@ -270,8 +229,6 @@ public class RouterResponse implements Cloneable {
         response.hasTemplate = this.hasTemplate;
         response.templatePrefix = this.templatePrefix;
         response.templateSuffix = this.templateSuffix;
-
-        response.status = this.status;
 
         response.error = this.error;
 
@@ -282,9 +239,10 @@ public class RouterResponse implements Cloneable {
     public String toString() {
         return "{" + "\"redirect\":" + redirect + "," + "\"hasTemplate\":" + hasTemplate + ","
                 + "\"templateSuffix\":\"" + templateSuffix + "\"" + ","
-                + "\"templatePrefix\":\"" + templatePrefix + "\"" + "," + "\"headers\":" + headers + ","
+                + "\"templatePrefix\":\"" + templatePrefix + "\"" + "," + "\"headers\":" + getHeaders() + ","
                 + "\"cookies\":" + cookies + "," + "\"responseType\":" + responseType + ","
-                + "\"content\":" + content + "," + "\"handler\":" + handler + "}";
+                + "\"content\":" + getContent() + ","
+                + "\"status\":" + getStatus() + "," + "\"handler\":" + handler + "}";
     }
 
     public static class RouterJsonResponse {
@@ -362,12 +320,12 @@ public class RouterResponse implements Cloneable {
     public RouterJsonResponse toJsonInfo() {
         RouterJsonResponse response = new RouterJsonResponse();
         response.redirect = this.redirect;
-        response.headers.putAll(this.headers);
+        response.headers.putAll(this.getHeaders());
 
         response.responseType = responseType.toString();
 
         response.restResponseClass = this.restResponseClass.getName();
-        response.content = this.content;
+        response.content = this.getContent();
 
         response.cookies.addAll(this.cookies);
 

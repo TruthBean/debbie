@@ -28,8 +28,11 @@ public abstract class BaseServerProperties<C extends AbstractServerConfiguration
     private static final String SERVER_HOST = "debbie.server.host";
 
     private static final String SERVER_HEADER = "debbie.server.server-header";
-
     //===========================================================================
+    // unix domain socket
+    // NOTE: need java16 least
+    private static final String SOCKET_PATH = "debbie.server.unix.socket";
+    // ===========================================================================
 
     public <P extends BaseServerProperties<C>> void loadAndSet(P properties, C configuration) {
         String name = properties.getStringValue(APPLICATION_NAME, UUID.randomUUID().toString());

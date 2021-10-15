@@ -25,6 +25,12 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
 
     private String serverHeader;
 
+    /**
+     * NOTE: need java16 least
+     * unix domain socket path
+     */
+    private String socketPath;
+
     protected AbstractServerConfiguration(ClassLoader classLoader) {
         super(classLoader);
     }
@@ -75,11 +81,20 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
         return serverHeader;
     }
 
+    protected AbstractServerConfiguration socketPath(String socketPath) {
+        this.socketPath = socketPath;
+        return this;
+    }
+
+    public String getSocketPath() {
+        return socketPath;
+    }
+
     public void check() {
         if (web) {
-            boolean illegal = (host == null || host.isBlank()) || port <= 0;
+            boolean illegal = ((host == null || host.isBlank()) || port <= 0) || socketPath == null;
             if (illegal) {
-                throw new RuntimeException("host is null or port is wrong");
+                throw new RuntimeException("host is null or port is wrong, or java 16 unix domain socket path is null");
             }
         }
     }

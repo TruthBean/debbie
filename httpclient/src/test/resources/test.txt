@@ -96,11 +96,11 @@ http://ivi.bupt.edu.cn/hls/gdtv.m3u8                             广东卫视
 http://ivi.bupt.edu.cn/hls/ahtv.m3u8                             安徽卫视
 http://ivi.bupt.edu.cn/hls/sztv.m3u8                             深圳卫视
 
-rtsp://192.168.1.198:8554/channel0                               模拟测试1           测试
-rtsp://192.168.1.198:8554/channel1                               模拟测试2           测试
-rtsp://192.168.1.198:8554/channel2                               模拟测试3           测试
-rtsp://192.168.1.198:8554/channel3                               模拟测试4           测试
-rtsp://192.168.1.198:8554/channel4                               模拟测试5           测试
-rtsp://192.168.1.198:8554/channel5                               模拟测试6           测试
-rtsp://192.168.1.198:8554/channel6                               模拟测试7           测试
-rtsp://192.168.1.198:8554/channel7                               模拟测试8           测试
+rtsp://192.168.1.200:8554/channel0                               模拟测试1           测试
+rtsp://192.168.1.200:8554/channel1                               模拟测试2           测试
+rtsp://192.168.1.200:8554/channel2                               模拟测试3           测试
+rtsp://192.168.1.200:8554/channel3                               模拟测试4           测试
+rtsp://192.168.1.200:8554/channel4                               模拟测试5           测试
+rtsp://192.168.1.200:8554/channel5                               模拟测试6           测试
+rtsp://192.168.1.200:8554/channel6                               模拟测试7           测试
+rtsp://192.168.1.200:8554/channel7                               模拟测试8           测试

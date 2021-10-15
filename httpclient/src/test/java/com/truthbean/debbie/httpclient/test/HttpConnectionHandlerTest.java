@@ -14,7 +14,7 @@ import com.truthbean.debbie.httpclient.HttpConnectionHandler;
 import com.truthbean.debbie.httpclient.form.FileFormDataParam;
 import com.truthbean.debbie.httpclient.seaweedfs.DirAssignResponse;
 import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.mvc.util.JacksonUtils;
+import com.truthbean.debbie.util.JacksonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +51,7 @@ public class HttpConnectionHandlerTest {
                 "\t\"username\": \"user\",\n" +
                 "\t\"password\": \"password\"\n" +
                 "}";
-        var response = httpClientHandler.post("http://192.168.1.206:8080/login", body, MediaType.APPLICATION_JSON_UTF8);
+        var response = httpClientHandler.post("http://192.168.1.8:4002/login", body, MediaType.APPLICATION_JSON_UTF8);
         System.out.println(response);
     }
 
@@ -77,5 +77,12 @@ public class HttpConnectionHandlerTest {
 
         String form = httpClientHandler.form(url, List.of(param));
         System.out.println(form);
+    }
+
+    @Test
+    public void delete() {
+        String delete = httpClientHandler.delete("http://192.168.1.11:9333/551,041a097220d2359e");
+        System.out.println(delete);
+        System.out.println("-----------------------------------");
     }
 }

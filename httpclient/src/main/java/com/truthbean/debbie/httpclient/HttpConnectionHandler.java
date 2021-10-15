@@ -15,6 +15,8 @@ import com.truthbean.debbie.httpclient.form.FormDataParam;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
 import com.truthbean.debbie.mvc.request.HttpMethod;
+import com.truthbean.debbie.mvc.response.BaseRouterResponse;
+import com.truthbean.debbie.mvc.response.HttpStatus;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -23,10 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.HttpCookie;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
@@ -105,6 +104,32 @@ public class HttpConnectionHandler extends HttpHandler {
         return null;
     }
 
+    public String delete(String url) {
+        return delete(url, null, null, null, null);
+    }
+
+    public String delete(String url, List<HttpCookie> cookies, Map<String, String> headers,
+                         MediaType contentType, byte[] body) {
+        HttpURLConnection connection = prepare(url, HttpMethod.DELETE, cookies, headers, contentType, body);
+        if (connection != null) {
+            return getResponse(connection);
+        }
+        return null;
+    }
+
+    public String put(String url, String body, MediaType contentType) {
+        return put(url, null, null, contentType, body.getBytes());
+    }
+
+    public String put(String url, List<HttpCookie> cookies, Map<String, String> headers,
+                       MediaType contentType, byte[] body) {
+        HttpURLConnection connection = prepare(url, HttpMethod.POST, cookies, headers, contentType, body);
+        if (connection != null) {
+            return getResponse(connection);
+        }
+        return null;
+    }
+
     public String form(String url, List<FormDataParam> params) {
         HttpURLConnection connection = prepare(url, HttpMethod.POST);
         if (connection == null) {
@@ -126,6 +151,16 @@ public class HttpConnectionHandler extends HttpHandler {
         }
 
         return getResponse(connection);
+    }
+
+    public BaseRouterResponse request(String url, HttpMethod method,
+                                      List<HttpCookie> cookies, Map<String, String> headers,
+                                      String contentType, byte[] body) {
+        HttpURLConnection connection = prepare(url, method, cookies, headers, contentType, body);
+        if (connection != null) {
+            return getResponseInfo(connection);
+        }
+        return null;
     }
 
     private HttpURLConnection prepare(String url, HttpMethod method) {
@@ -154,6 +189,14 @@ public class HttpConnectionHandler extends HttpHandler {
                 connection = (HttpURLConnection) createUrlConnection(url);
             }
             connection.setRequestMethod(method.name());
+
+            final HttpClientConfiguration configuration = getConfiguration();
+            if (configuration != null) {
+                if (configuration.needAuth()) {
+                    connection.setAuthenticator(super.basicAuth());
+                }
+            }
+
             if (contentType != null) {
                 connection.setRequestProperty("Content-Type", contentType);
             }
@@ -220,6 +263,35 @@ public class HttpConnectionHandler extends HttpHandler {
         return null;
     }
 
+    protected BaseRouterResponse getResponseInfo(HttpURLConnection connection) {
+        int status;
+        try {
+            status = connection.getResponseCode();
+        } catch (IOException e) {
+            LOGGER.warn("IOException send message", e);
+            return null;
+        }
+
+        BaseRouterResponse response = new BaseRouterResponse();
+        response.setStatus(HttpStatus.ofOrNew(status, ""));
+
+        String responseBody = null;
+        try {
+            responseBody = StreamHelper.getAndClose(connection.getInputStream());
+        } catch (IOException e) {
+            LOGGER.warn("Exception reading response", e);
+        }
+        if (responseBody == null) {
+            try {
+                responseBody = StreamHelper.getAndClose(connection.getErrorStream());
+                LOGGER.error("Plain post error response: " + responseBody);
+            } catch (IOException e) {
+                LOGGER.warn("Exception reading response", e);
+            }
+        }
+        response.setContent(responseBody);
+        return null;
+    }
 
     public URLConnection createUrlConnection(String urlSpec) {
         try {
@@ -228,16 +300,28 @@ public class HttpConnectionHandler extends HttpHandler {
 
             var configuration = getConfiguration();
             if (configuration.useProxy()) {
+                HttpClientProxy proxy = configuration.getProxy();
                 LOGGER.trace("user proxy");
                 urlConnection = url.openConnection(createProxy());
+                if (proxy.needAuth()) {
+                    String encoded = Base64.getEncoder().encodeToString((proxy.getUser() + ":" + proxy.getPassword()).getBytes());
+                    urlConnection.setRequestProperty("Proxy-Authorization", "Basic " + encoded);
+                }
             } else {
                 urlConnection = url.openConnection();
             }
 
-            urlConnection.setConnectTimeout(configuration.getConnectTimeout());
+            if (configuration.getConnectTimeout() > 0) {
+                urlConnection.setConnectTimeout(configuration.getConnectTimeout());
+            }
+            if (configuration.getReadTimeout() > 0) {
+                urlConnection.setReadTimeout(configuration.getReadTimeout());
+            }
+            if (configuration.isUseCache()) {
+                urlConnection.setUseCaches(true);
+            }
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setDoOutput(true);
-            urlConnection.setReadTimeout(configuration.getReadTimeout());
 
             if (configuration.needAuth()) {
                 var basicAuth = (configuration.getAuthUser() + ":" + configuration.getAuthPassword()).getBytes();

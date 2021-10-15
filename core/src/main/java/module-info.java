@@ -59,7 +59,7 @@ module com.truthbean.debbie.core {
     requires transitive com.fasterxml.jackson.databind;
     requires transitive com.fasterxml.jackson.dataformat.xml;
     requires transitive com.fasterxml.jackson.dataformat.yaml;
-    requires com.fasterxml.jackson.module.jaxb;
+    // requires com.fasterxml.jackson.module.jaxb;
     requires org.yaml.snakeyaml;
 
     exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;

@@ -14,6 +14,11 @@ import java.security.ProtectionDomain;
  * Created on 2020-11-11 23:13
  */
 public class PreMainTraceAgent {
+    /**
+     * 执行java编程语言代码
+     * @param agentArgs 通过命令行传给 Java Agent 的参数
+     * @param inst Java Class 字节码转换的工具
+     */
     public static void premain(String agentArgs, Instrumentation inst) {
         LOGGER.trace("agentArgs : " + agentArgs);
         inst.addTransformer(new DefineTransformer(), true);

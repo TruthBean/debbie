@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.httpclient.test;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.httpclient.HttpClientHandler;
 import com.truthbean.debbie.httpclient.HttpClientProperties;
 import com.truthbean.debbie.httpclient.model.Ticket;
@@ -16,7 +18,7 @@ import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.HttpHeader;
 import com.truthbean.debbie.mvc.response.ResponseEntity;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.mvc.util.JacksonUtils;
+import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.tools.ChineseNameHelper;
 import com.truthbean.tools.ChineseNationalIdHelper;
 import com.truthbean.tools.ChinesePhoneNumberHelper;
@@ -31,6 +33,8 @@ import java.net.HttpCookie;
 import java.util.*;
 
 public class HttpClientHandlerTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientHandlerTest.class);
 
     private HttpClientHandler httpClientHandler;
 
@@ -75,32 +79,49 @@ public class HttpClientHandlerTest {
         while ((line = bufferedReader.readLine()) != null) {
             if (!line.isBlank()) {
                 Map<String, Object> map1 = new HashMap<>();
-                map1.put("manufacturer", "湖北");
-                map1.put("gpsx", 114.507695);
-                map1.put("gpsy", 30.457009);
-                map1.put("region_id", 1);
+                map1.put("manufacturer", "武汉");
+                map1.put("gpsx", 114.5076953435);
+                map1.put("gpsy", 30.45700912343);
+                map1.put("region_id", 7);
                 map1.put("status", 1);
                 map1.put("grab_choice", "rtsp");
                 map1.put("threshold", 75);
                 map1.put("framerate", 1);
-                map1.put("face_size", "80");
-                map1.put("tracking", "0");
+                map1.put("face_size", 60);
+                map1.put("tracking", 1);
 
                 System.out.println(line);
                 String[] split = line.split("\\s+");
                 map1.put("name", split[1]);
                 map1.put("address", split[0]);
+                map1.put("api_address", "");
+                map1.put("web_hook", "");
 
                 if (split.length == 2) {
                     map1.put("type", "卫视直播");
                 } else
                     map1.put("type", split[2]);
 
+                List<Map<String, Object>> libraryIds = new ArrayList<>();
                 Map<String, Object> libraryInfo1 = new LinkedHashMap<>();
                 libraryInfo1.put("libraryId", 2);
-                map1.put("libraryInfos", List.of(libraryInfo1));
+                libraryIds.add(libraryInfo1);
+
+                Map<String, Object> libraryInfo2 = new LinkedHashMap<>();
+                libraryInfo2.put("libraryId", 4);
+                libraryIds.add(libraryInfo2);
+
+                Map<String, Object> libraryInfo3 = new LinkedHashMap<>();
+                libraryInfo3.put("libraryId", 6);
+                libraryIds.add(libraryInfo3);
+
+                Map<String, Object> libraryInfo4 = new LinkedHashMap<>();
+                libraryInfo4.put("libraryId", 8);
+                libraryIds.add(libraryInfo4);
+
+                map1.put("libraryInfos", libraryIds);
                 map1.put("deploymentIds", null);
-                map1.put("door_id", "0");
+                map1.put("door_id", 0);
 
                 data.add(map1);
             }
@@ -112,9 +133,9 @@ public class HttpClientHandlerTest {
             System.out.println(body);
 
             var header = new HashMap<String, String>();
-            header.put("Authorization", "b34c891c-76ca-4c8d-9a85-0771b1cbcd1d");
+            header.put("Authorization", "8b409c54-eace-47a9-b8be-db96c158ffff");
             header.put("Content-Type", "application/json;charset=UTF-8");
-            var response = httpClientHandler.post("http://192.168.1.2:31202/cameras", body, header);
+            var response = httpClientHandler.post("http://192.168.1.11:4002/cameras", body, header);
             System.out.println(response);
         }
 
@@ -122,12 +143,19 @@ public class HttpClientHandlerTest {
 
     @Test
     public void delete() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 12; i++) {
             var header = new HashMap<String, String>();
-            header.put("Authorization", "b34c891c-76ca-4c8d-9a85-0771b1cbcd1d");
-            var r = httpClientHandler.delete("http://192.168.1.2:31202/cameras/" + (i), header);
+            header.put("Authorization", "9bef6a59-688e-49b6-8da8-ce31582e7e52");
+            var r = httpClientHandler.delete("http://192.168.1.11:4002/cameras/" + (i + 51), header);
             System.out.println(r);
         }
+    }
+
+    @Test
+    public void testDelete() {
+        String delete = httpClientHandler.delete("http://192.168.1.11:9333/551,041a097220d2359e");
+        LOGGER.info(delete);
+        LOGGER.info("-----------------------------------");
     }
 
     @Test

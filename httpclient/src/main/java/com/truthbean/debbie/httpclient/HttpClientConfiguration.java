@@ -16,8 +16,7 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
  * @since 0.0.1
  */
 public class HttpClientConfiguration implements DebbieConfiguration {
-    private String proxyHost;
-    private int proxyPort;
+    private HttpClientProxy proxy;
 
     /**
      * 重试次数
@@ -32,6 +31,8 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     private int responseTimeout;
 
+    private boolean useCache;
+
     /**
      * auth
      */
@@ -40,24 +41,16 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     private boolean insecure;
 
-    public String getProxyHost() {
-        return proxyHost;
+    public HttpClientProxy getProxy() {
+        return proxy;
     }
 
-    public void setProxyHost(String proxyHost) {
-        this.proxyHost = proxyHost;
-    }
-
-    public int getProxyPort() {
-        return proxyPort;
-    }
-
-    public void setProxyPort(int proxyPort) {
-        this.proxyPort = proxyPort;
+    public void setProxy(HttpClientProxy proxy) {
+        this.proxy = proxy;
     }
 
     public boolean useProxy() {
-        return proxyHost != null && !proxyHost.isBlank() && proxyPort > 0;
+        return proxy != null && proxy.useProxy();
     }
 
     public int getRetryTime() {
@@ -123,6 +116,14 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     public void setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public boolean isUseCache() {
+        return useCache;
+    }
+
+    public void setUseCache(boolean useCache) {
+        this.useCache = useCache;
     }
 
     @Override

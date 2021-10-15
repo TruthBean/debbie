@@ -12,6 +12,7 @@ package com.truthbean.debbie.jdbc.domain;
 import com.truthbean.debbie.data.Streamable;
 import com.truthbean.debbie.util.Assert;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -48,7 +49,7 @@ public class Page<T> implements Streamable<T> {
     /**
      * this page content
      */
-    private List<T> content;
+    private Collection<T> content;
 
     /**
      * total page
@@ -66,7 +67,7 @@ public class Page<T> implements Streamable<T> {
     }
 
     private Page(int currentPage, int offset, int pageSize,
-                 long totalCount, List<T> content,
+                 long totalCount, Collection<T> content,
                  long totalPage, int previousPage, long nextPage) {
         this.currentPage = currentPage;
         this.offset = offset;
@@ -88,7 +89,7 @@ public class Page<T> implements Streamable<T> {
      * @param content page content
      * @return Page
      */
-    public static <T> Page<T> createPage(int currentPage, int pageSize, long totalCounts, List<T> content) {
+    public static <T> Page<T> createPage(int currentPage, int pageSize, long totalCounts, Collection<T> content) {
         //总页数
         long totalPages = totalPages(pageSize, totalCounts);
         //前一页
@@ -109,7 +110,7 @@ public class Page<T> implements Streamable<T> {
      * @param content page content
      * @return Page
      */
-    public static <T> Page<T> createPage(PageRequest pageRequest, long totalCounts, List<T> content) {
+    public static <T> Page<T> createPage(PageRequest pageRequest, long totalCounts, Collection<T> content) {
         int pageSize = pageRequest.getPageSize();
         int currentPage = pageRequest.getCurrentPage();
         //总页数
@@ -197,7 +198,7 @@ public class Page<T> implements Streamable<T> {
         return offset;
     }
 
-    public List<T> getContent() {
+    public Collection<T> getContent() {
         return content;
     }
 

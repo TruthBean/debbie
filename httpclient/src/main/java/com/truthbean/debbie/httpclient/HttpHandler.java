@@ -98,14 +98,14 @@ public class HttpHandler {
     }
 
     public ProxySelector createProxySelector() {
-        InetSocketAddress inetSocketAddress =
-                new InetSocketAddress(configuration.getProxyHost(), configuration.getProxyPort());
+        HttpClientProxy proxy = configuration.getProxy();
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(proxy.getProxyHost(), proxy.getProxyPort());
         return ProxySelector.of(inetSocketAddress);
     }
 
     public Proxy createProxy() {
-        SocketAddress socketAddress =
-                new InetSocketAddress(configuration.getProxyHost(), configuration.getProxyPort());
+        HttpClientProxy proxy = configuration.getProxy();
+        SocketAddress socketAddress = new InetSocketAddress(proxy.getProxyHost(), proxy.getProxyPort());
         return new Proxy(Proxy.Type.HTTP, socketAddress);
     }
 

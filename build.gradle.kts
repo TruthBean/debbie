@@ -75,7 +75,7 @@ subprojects {
     apply(plugin = "eclipse")
 
     tasks.withType<Test> {
-        useJUnitPlatform()
+        // useJUnitPlatform()
     }
 
     afterEvaluate {

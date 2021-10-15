@@ -23,6 +23,8 @@ public class HttpClientProperties extends EnvironmentContentHolder implements De
     //===========================================================================
     private static final String PROXY_HOST_KEY = "debbie.httpclient.proxy.host";
     private static final String PROXY_PORT_KEY = "debbie.httpclient.proxy.port";
+    private static final String PROXY_BASIC_AUTH_USE_KEY = "debbie.httpclient.proxy.auth.basic.user";
+    private static final String PROXY_BASIC_AUTH_PASSWORD_KEY = "debbie.httpclient.proxy.auth.basic.password";
     private static final String RETRY_TIME_KEY = "debbie.httpclient.retry-time";
     private static final String CONNECTION_TIMEOUT_KEY = "debbie.httpclient.connection-timeout";
     private static final String READ_TIMEOUT_KEY = "debbie.httpclient.read-timeout";
@@ -34,8 +36,13 @@ public class HttpClientProperties extends EnvironmentContentHolder implements De
 
 
     public HttpClientProperties() {
-        configuration.setProxyHost(getValue(PROXY_HOST_KEY));
-        configuration.setProxyPort(getIntegerValue(PROXY_PORT_KEY, 0));
+        HttpClientProxy proxy = new HttpClientProxy();
+        proxy.setProxyHost(getValue(PROXY_HOST_KEY));
+        proxy.setProxyPort(getIntegerValue(PROXY_PORT_KEY, 0));
+        proxy.setUser(getValue(PROXY_BASIC_AUTH_USE_KEY));
+        proxy.setPassword(getValue(PROXY_BASIC_AUTH_PASSWORD_KEY));
+        configuration.setProxy(proxy);
+
         configuration.setRetryTime(getIntegerValue(RETRY_TIME_KEY, 0));
 
         configuration.setConnectTimeout(getIntegerValue(CONNECTION_TIMEOUT_KEY, 10000));

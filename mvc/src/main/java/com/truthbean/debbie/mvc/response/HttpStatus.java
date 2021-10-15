@@ -403,7 +403,12 @@ public enum HttpStatus {
     /**
      * 511 状态码指示客户端需要进行身份验证才能获得网络访问权限。
      */
-    NETWORK_AUTHENTICATION_REQUIRED(511, "Network Authentication Required");
+    NETWORK_AUTHENTICATION_REQUIRED(511, "Network Authentication Required"),
+
+    /**
+     * 自定义
+     */
+    CUSTOM(0, "");
 
     private int status;
     private String message;
@@ -424,10 +429,25 @@ public enum HttpStatus {
     public static HttpStatus valueOf(int status) {
         var values = values();
         for (var httpStatus: values) {
-            if (status == httpStatus.status) {
+            // skip custom
+            if (status != 0 && status == httpStatus.status) {
                 return httpStatus;
             }
         }
         throw new NoSuchHttpStatusException(status);
+    }
+
+    public static HttpStatus ofOrNew(int status, String message) {
+        var values = values();
+        for (var httpStatus: values) {
+            // skip custom here
+            if (status != 0 && status == httpStatus.status) {
+                return httpStatus;
+            }
+        }
+        HttpStatus httpStatus = CUSTOM;
+        httpStatus.status = status;
+        httpStatus.message = message;
+        return httpStatus;
     }
 }
