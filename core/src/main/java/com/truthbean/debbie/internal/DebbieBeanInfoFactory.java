@@ -266,10 +266,9 @@ class DebbieBeanInfoFactory implements BeanInfoFactory {
             if ((serviceName == null || serviceName.isBlank()) && type != null) {
                 serviceName = type.getName();
             }
-            Iterator<BeanInfo<?>> iterator = list.iterator();
-            while (iterator.hasNext()) {
-                BeanInfo<?> next = iterator.next();
-                if (next.getBeanClass() != type) {
+            List<BeanInfo<?>> copy = new ArrayList<>(list);
+            for (BeanInfo<?> next : copy) {
+                if (next.getBeanClass() != type || !next.getBeanNames().contains(serviceName)) {
                     list.remove(next);
                 }
             }

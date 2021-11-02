@@ -30,7 +30,7 @@ public class PreMainTraceAgent {
         public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
             LOGGER.trace("module ... premain load Class:" + className);
             if (className.startsWith("com/truthbean/debbie/agent")) {
-                System.out.println("debbie agent module ... ");
+                LOGGER.info("debbie agent module ... ");
             }
             return classfileBuffer;
         }
@@ -40,7 +40,7 @@ public class PreMainTraceAgent {
                 throws IllegalClassFormatException {
             LOGGER.trace("premain load Class:" + className);
             if (className.startsWith("com/truthbean/debbie/agent")) {
-                System.out.println("debbie agent module ... ");
+                LOGGER.info("debbie agent module ... ");
             }
             return classfileBuffer;
         }

@@ -413,7 +413,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
                 }
                 continue;
             }
-            if (debbieBeanInfo instanceof MutableBeanInfo) {
+            if (debbieBeanInfo instanceof DebbieClassBeanInfo) {
                 DebbieClassBeanInfo<?> mutableBeanInfo = (DebbieClassBeanInfo<?>) debbieBeanInfo;
                 if (debbieBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
                     mutableBeanInfo.setHasVirtualValue(true);

@@ -17,6 +17,8 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
  */
 public class RmiServerConfiguration implements DebbieConfiguration {
 
+    private String name;
+
     private String rmiBindAddress;
 
     private int rmiBindPort;
@@ -38,7 +40,16 @@ public class RmiServerConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public void reset() {
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void reset() {
+        this.name = null;
     }
 }

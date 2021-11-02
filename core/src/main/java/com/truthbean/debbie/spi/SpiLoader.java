@@ -38,6 +38,11 @@ public class SpiLoader {
         return loadProvider(serviceClass, classLoader);
     }
 
+    public static <S> S loadProvider(Class<S> serviceClass, S defaultService) {
+        var classLoader = ClassLoaderUtils.getClassLoader(serviceClass);
+        return loadProvider(serviceClass, classLoader, defaultService);
+    }
+
     public static <S> S loadProvider(Class<S> serviceClass, ClassLoader classLoader) {
         S service = loadProvider(serviceClass, classLoader, null);
         if (service == null) {
@@ -50,9 +55,9 @@ public class SpiLoader {
         ServiceLoader<S> serviceLoader;
         try {
             serviceLoader = ServiceLoader.load(serviceClass, classLoader);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(System.Logger.Level.ERROR, "", e);
-            return null;
+            return defaultService;
         }
         Iterator<S> search = serviceLoader.iterator();
         if (search.hasNext()) {
@@ -74,7 +79,7 @@ public class SpiLoader {
 
     public static <S> Set<S> loadProviderSet(Class<S> serviceClass, ClassLoader classLoader) {
         Set<S> result = new HashSet<>();
-        ServiceLoader<S> serviceLoader = null;
+        ServiceLoader<S> serviceLoader;
         try {
             serviceLoader = ServiceLoader.load(serviceClass, classLoader);
         } catch (Throwable e) {

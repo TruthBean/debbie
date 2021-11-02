@@ -12,6 +12,7 @@ package com.truthbean.debbie.bean;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -27,6 +28,10 @@ import java.util.function.Supplier;
  * Created on 2020-09-28 16:09
  */
 public interface BeanInfo<Bean> {
+
+    default BeanProxyType getBeanProxyType() {
+        return BeanProxyType.ASM;
+    }
 
     default Set<BeanCondition> getConditions() {
         Set<BeanCondition> conditions = new HashSet<>();

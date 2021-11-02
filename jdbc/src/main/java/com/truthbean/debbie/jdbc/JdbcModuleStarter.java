@@ -26,6 +26,7 @@ import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevelTransforme
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -68,7 +69,10 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new DataSourceProperties(), DataSourceConfiguration.class);
+        DataSourceProperties instance = DataSourceProperties.getInstance();
+        configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class, instance.getDefaultConfiguration());
+        Map<String, DataSourceConfiguration> configurationMap = instance.getConfigurationMap();
+        configurationMap.forEach((name, value) -> configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class, value));
         configurationFactory.register(new DefaultDataSourcePoolProperties(), DataSourceConfiguration.class);
 
         var register = new DataSourceFactoryBeanRegister(configurationFactory, applicationContext);

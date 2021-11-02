@@ -26,6 +26,7 @@ import java.util.*;
  * Created on 2019/3/5 23:16.
  */
 public class BeanScanConfiguration implements DebbieConfiguration {
+    private String name;
     private final Set<Class<?>> scanClasses;
 
     private final Set<String> scanBasePackages;
@@ -60,6 +61,15 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.customInjectType = new HashSet<>();
 
         this.classLoader = classLoader;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setClassLoader(ClassLoader classLoader) {
@@ -221,6 +231,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
 
     @Override
     public void reset() {
+        this.name = null;
         this.scanClasses.clear();
         this.scanBasePackages.clear();
         this.scanExcludePackages.clear();

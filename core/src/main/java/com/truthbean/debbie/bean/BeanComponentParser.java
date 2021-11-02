@@ -13,6 +13,7 @@ import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.annotation.AnnotationMethodInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.common.mini.util.StringUtils;
 
@@ -33,6 +34,7 @@ public interface BeanComponentParser {
         var info = new BeanComponentInfo();
         info.setName(componentInfo.invokeAttribute("name"));
         info.setType(componentInfo.invokeAttribute("type"));
+        info.setProxy(componentInfo.invokeAttribute("proxy"));
         info.setLazy(componentInfo.invokeAttribute("lazy"));
         info.setFactory(componentInfo.invokeAttribute("factory"));
         info.setCondition(componentInfo.invokeAttribute("conditions"));
@@ -46,6 +48,7 @@ public interface BeanComponentParser {
             Method valueMethod = null;
             Method nameMethod = null;
             Method typeMethod = null;
+            Method proxyMethod = null;
             Method lazyMethod = null;
             for (Method method : methods) {
                 AliasFor aliasFor = method.getAnnotation(AliasFor.class);
@@ -74,6 +77,11 @@ public interface BeanComponentParser {
                             typeMethod = method;
                             continue;
                         }
+                        if ("proxy".equals(attribute) || "proxy".equals(method.getName())
+                                && method.getReturnType() == BeanProxyType.class) {
+                            proxyMethod = method;
+                            continue;
+                        }
                         if ("lazy".equals(attribute) || "lazy".equals(method.getName())
                                 && method.getReturnType() == boolean.class) {
                             lazyMethod = method;
@@ -95,6 +103,10 @@ public interface BeanComponentParser {
 
                 if (typeMethod != null) {
                     info.setType(ReflectionHelper.invokeMethod(value, typeMethod));
+                }
+
+                if (proxyMethod != null) {
+                    info.setProxy(ReflectionHelper.invokeMethod(value, proxyMethod));
                 }
 
                 if (lazyMethod != null) {
@@ -119,6 +131,7 @@ public interface BeanComponentParser {
         String beanName = null;
         String nameValue = null;
         BeanType beanType = null;
+        BeanProxyType beanProxyType = null;
         boolean lazy = true;
         for (Map.Entry<String, AnnotationMethodInfo> entry : methods.entrySet()) {
             String name = entry.getKey();
@@ -136,6 +149,10 @@ public interface BeanComponentParser {
                     }
                     if (info.aliasFor("type", BeanType.class)) {
                         beanType = (BeanType) annotationInfo.properties().get(name).getValue();
+                        continue;
+                    }
+                    if (info.aliasFor("proxy", BeanProxyType.class)) {
+                        beanProxyType = (BeanProxyType) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
                     if (info.aliasFor("lazy", boolean.class)) {
@@ -156,6 +173,10 @@ public interface BeanComponentParser {
 
             if (beanType != null) {
                 info.setType(beanType);
+            }
+
+            if (beanProxyType != null) {
+                info.setProxy(beanProxyType);
             }
 
             info.setLazy(lazy);

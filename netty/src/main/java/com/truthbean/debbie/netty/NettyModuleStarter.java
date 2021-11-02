@@ -27,7 +27,7 @@ public class NettyModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(NettyProperties.class, NettyConfiguration.class);
+        configurationFactory.register(new NettyProperties(), NettyConfiguration.class);
     }
 
     @Override

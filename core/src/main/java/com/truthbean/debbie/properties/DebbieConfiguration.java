@@ -15,5 +15,8 @@ package com.truthbean.debbie.properties;
  * Created on 2019/4/20 22:23.
  */
 public interface DebbieConfiguration {
+
+    String getName();
+
     void reset();
 }

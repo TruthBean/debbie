@@ -14,6 +14,7 @@ import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.ConcurrentHashSet;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +69,7 @@ public class DefaultEventManager implements DebbieEventPublisher, EventManager, 
         var listenerType = (Class<DebbieEventListener<? extends AbstractDebbieEvent>>) listener.getClass();
         MutableBeanInfo<DebbieEventListener<? extends AbstractDebbieEvent>> beanInfo = new DebbieBeanInfo<>(listenerType);
         beanInfo.setBeanType(BeanType.SINGLETON);
+        beanInfo.setBeanProxyType(BeanProxyType.ASM);
         beanInfo.setBean(listener);
         listenerBeanFactory.setBeanInfo(beanInfo);
         var eventType = listener.getEventType();

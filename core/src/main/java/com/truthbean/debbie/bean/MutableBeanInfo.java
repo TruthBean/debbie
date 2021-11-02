@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
-import java.io.Closeable;
-import java.io.IOException;
+import com.truthbean.debbie.proxy.BeanProxyType;
+
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 public interface MutableBeanInfo<Bean> extends BeanInfo<Bean> {
 
     void setBeanFactory(BeanFactory<Bean> beanFactory);
+
+    void setBeanProxyType(BeanProxyType beanProxyType);
 
     void setBeanType(BeanType beanType);
 

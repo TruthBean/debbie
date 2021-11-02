@@ -2,6 +2,7 @@ package com.truthbean.debbie.check.annotation;
 
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since Created on 2020-11-25 15:31
  */
 class AnnotationParserTest {
+
+    static {
+        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "true");
+    }
 
     @Test
     void parse() {

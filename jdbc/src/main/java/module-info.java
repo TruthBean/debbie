@@ -20,6 +20,7 @@ module com.truthbean.debbie.jdbc {
     exports com.truthbean.debbie.jdbc.repository;
     exports com.truthbean.debbie.jdbc.transaction;
     exports com.truthbean.debbie.jdbc.column;
+    exports com.truthbean.debbie.jdbc.datasource.multi;
 
     requires transitive com.truthbean.debbie.core;
 

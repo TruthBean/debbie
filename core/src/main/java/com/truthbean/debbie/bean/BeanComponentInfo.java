@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.proxy.BeanProxyType;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -18,6 +20,8 @@ public class BeanComponentInfo {
     private String name;
 
     private BeanType type;
+
+    private BeanProxyType proxy;
 
     private boolean lazy;
 
@@ -43,6 +47,14 @@ public class BeanComponentInfo {
 
     public void setType(BeanType type) {
         this.type = type;
+    }
+
+    public BeanProxyType getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(BeanProxyType proxy) {
+        this.proxy = proxy;
     }
 
     public boolean isLazy() {

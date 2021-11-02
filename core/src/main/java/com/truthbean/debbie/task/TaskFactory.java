@@ -13,6 +13,7 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
@@ -66,7 +67,7 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     @Override
     public TaskRegister registerTask(TaskInfo taskInfo) {
         TaskRunnable taskRunnable = taskInfo.getTaskExecutor();
-        BeanInfo<?> taskBeanInfo = new SimpleBeanInfo<>(taskRunnable, BeanType.SINGLETON, taskRunnable.getName());
+        BeanInfo<?> taskBeanInfo = new SimpleBeanInfo<>(taskRunnable, BeanType.SINGLETON, BeanProxyType.ASM, taskRunnable.getName());
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         beanInitialization.initBean(taskBeanInfo);
         applicationContext.refreshBeans();

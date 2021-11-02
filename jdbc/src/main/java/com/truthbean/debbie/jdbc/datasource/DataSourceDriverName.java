@@ -21,6 +21,7 @@ public enum DataSourceDriverName {
     oracle("oracle.jdbc.driver.OracleDriver"),
     db2("COM.ibm.db2.jdbc.net.DB2Driver"),
     sybase("com.sybase.jdbc.SybDriver"),
+    sybase2("com.sybase.jdbc2.jdbc.SybDriver"),
     mckoi("com.mckoi.JDBCDriver"),
     /**
      * h2 数据库
@@ -35,6 +36,18 @@ public enum DataSourceDriverName {
     sqlserver("com.microsoft.jdbc.sqlserver.SQLServerDriver"),
     log4jdbc("net.sf.log4jdbc.DriverSpy"),
     derby("org.apache.derby.jdbc.EmbeddedDriver"),
+    cloudscape("COM.cloudscape.core.JDBCDriver"),
+    informix("com.informix.jdbc.IfxDriver"),
+    timesten("com.timesten.jdbc.TimesTenDriver"),
+    as400("com.ibm.as400.access.AS400JDBCDriver"),
+    sapdb("com.sap.dbtech.jdbc.DriverSapDB"),
+    jsql("com.jnetdirect.jsql.JSQLDriver"),
+    jturbo("com.newatlanta.jturbo.driver.Driver"),
+    firebirdsql("org.firebirdsql.jdbc.FBDriver"),
+    interbase("interbase.interclient.Driver"),
+    pointbase("com.pointbase.jdbc.jdbcUniversalDriver"),
+    edbc("ca.edbc.jdbc.EdbcDriver"),
+    mimer("com.mimer.jdbc.Driver"),
     custom();
 
     private String driverName;
@@ -52,5 +65,15 @@ public enum DataSourceDriverName {
 
     public String getDriverName() {
         return driverName;
+    }
+
+    public static DataSourceDriverName of(String driverName) {
+        DataSourceDriverName[] values = values();
+        for (DataSourceDriverName value : values) {
+            if (value.driverName.equals(driverName)) {
+                return value;
+            }
+        }
+        return custom;
     }
 }

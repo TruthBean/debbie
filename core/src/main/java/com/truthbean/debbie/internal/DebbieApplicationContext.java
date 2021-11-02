@@ -10,7 +10,9 @@
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.*;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
@@ -18,7 +20,6 @@ import com.truthbean.debbie.event.DebbieStartedEventProcessor;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
-import com.truthbean.LoggerFactory;
 import com.truthbean.transformer.DataTransformerCenter;
 
 /**

@@ -10,9 +10,9 @@
 package com.truthbean.debbie.env;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.data.TextData;
 import com.truthbean.debbie.properties.PropertiesException;
 import com.truthbean.debbie.properties.PropertiesHelper;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
 
 import java.nio.charset.Charset;
 import java.util.*;
@@ -21,18 +21,18 @@ import java.util.*;
  * @author TruthBean/Rogar·Q
  * @since 0.5.0
  */
-public interface EnvironmentContent {
+public interface EnvironmentContent extends TextData {
+
+    /**
+     * 获取优先级，数值越大越优先获取，加载顺序反之
+     */
+    int getPriority();
+
+    String getProfile();
 
     Properties getProperties();
 
-    EnvironmentContent setLogger(Logger logger);
-
     Logger getLogger();
-
-    default void addProperty(String name, String value) {
-        Properties properties = getProperties();
-        properties.put(name, value);
-    }
 
     default boolean containKey(String key) {
         return getProperties().containsKey(key);
@@ -74,132 +74,42 @@ public interface EnvironmentContent {
 
     default char getCharacterValue(String key, char defaultValue) {
         var value = getValue(key);
-        char result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            try {
-                result = value.charAt(0);
-            } catch (Exception e) {
-                getLogger().error(value + " to char error", e);
-                result = defaultValue;
-            }
-        }
-        return result;
+        return getCharacter(value, defaultValue);
     }
 
     default boolean getBooleanValue(String key, boolean defaultValue) {
         var value = getValue(key);
-        boolean result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            try {
-                result = Boolean.parseBoolean(value);
-            } catch (Exception e) {
-                getLogger().error(value + " to bool error", e);
-                result = defaultValue;
-            }
-        }
-        return result;
+        return getBoolean(value, defaultValue);
     }
 
     default int getIntegerValue(String key, int defaultValue) {
         var value = getValue(key);
-        int result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            try {
-                result = Integer.parseInt(value);
-            } catch (Exception e) {
-                getLogger().error(value + " to int error", e);
-                result = defaultValue;
-            }
-        }
-        return result;
+        return getInteger(value, defaultValue);
     }
 
     default double getDoubleValue(String key, double defaultValue) {
         var value = getValue(key);
-        double result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            try {
-                result = Double.parseDouble(value);
-            } catch (Exception e) {
-                getLogger().error(value + " to double error", e);
-                result = defaultValue;
-            }
-        }
-        return result;
+        return getDouble(value, defaultValue);
     }
 
     default long getLongValue(String key, long defaultValue) {
         var value = getValue(key);
-        long result;
-        if (value == null) {
-            result = defaultValue;
-        } else {
-            try {
-                result = Long.parseLong(value);
-            } catch (Exception e) {
-                getLogger().error(value + " to long error", e);
-                result = defaultValue;
-            }
-        }
-        return result;
+        return getLong(value, defaultValue);
     }
 
     default String[] getStringArrayValue(String key, String split) {
         var value = getValue(key);
-        if (split == null || split.isBlank()) {
-            throw new PropertiesException("illegal split");
-        }
-        if (value != null) {
-            return value.split(split);
-        }
-        return null;
+        return getStringArray(value, split);
     }
 
     default Charset getCharsetValue(String key, Charset defaultCharset) {
         var value = getValue(key);
-        Charset result;
-        if (value == null) {
-            result = defaultCharset;
-        } else {
-            try {
-                result = Charset.forName(value);
-            } catch (Exception e) {
-                getLogger().error(value + " to Charset error", e);
-                result = defaultCharset;
-            }
-        }
-        return result;
+        return getCharset(value, defaultCharset);
     }
 
     default Map<String, String> getMapValue(String key, String keyValueSplit, String split) {
         var value = getValue(key);
-        if (split == null || split.isBlank()) {
-            throw new PropertiesException("illegal split");
-        }
-        if (value != null) {
-            String[] splitValue = value.split(split);
-            Map<String, String> result = new HashMap<>();
-            for (String s : splitValue) {
-                if (s.contains(keyValueSplit)) {
-                    String[] keyValue = s.split(keyValueSplit);
-                    if (keyValue.length == 2) {
-                        result.put(keyValue[0], keyValue[1]);
-                    } else {
-                        throw new IllegalArgumentException("key and value must split by " + keyValueSplit);
-                    }
-                }
-            }
-            return result;
-        }
-        return null;
+        return getMap(value, keyValueSplit, split);
     }
 
     default List<String> getStringListValue(String key, String split) {
@@ -212,58 +122,17 @@ public interface EnvironmentContent {
     }
 
     default List<Class<?>> getClassListValue(String key, String split) {
-        var value = getStringArrayValue(key, split);
-        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-        List<Class<?>> result = null;
-        if (value != null) {
-            result = new ArrayList<>();
-            for (var className : value) {
-                if (className != null) {
-                    try {
-                        result.add(classLoader.loadClass(className));
-                    } catch (ClassNotFoundException e) {
-                        getLogger().error("class (" + className + ") not found", e);
-                    }
-                }
-            }
-        }
-        return result;
+        var value = getValue(key);
+        return getClassList(value, split);
     }
 
     default Class<?> getClassValue(String key, String defaultClass) {
-        var className = getStringValue(key, defaultClass);
-        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-        Class<?> result = null;
-        if (className != null) {
-            try {
-                result = classLoader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                getLogger().error("class (" + className + ") not found", e);
-            }
-        }
-        return result;
+        var value = getValue(key);
+        return getClass(value, defaultClass);
     }
 
     default Set<Class<?>> getClassSetValue(String key, String split) {
-        var value = getStringArrayValue(key, split);
-        var classLoader = ClassLoaderUtils.getDefaultClassLoader();
-        Set<Class<?>> result = null;
-        if (value != null) {
-            result = new HashSet<>();
-            for (var className : value) {
-                if (className != null) {
-                    try {
-                        result.add(classLoader.loadClass(className));
-                    } catch (ClassNotFoundException e) {
-                        getLogger().error("class (" + className + ") not found", e);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    default void reset() {
-        getProperties().clear();
+        var value = getValue(key);
+        return getClassSet(value, split);
     }
 }

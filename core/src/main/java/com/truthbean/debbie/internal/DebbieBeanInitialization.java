@@ -3,20 +3,20 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.transformer.DataTransformer;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.lang.Nullable;
-import com.truthbean.LoggerFactory;
+import com.truthbean.transformer.DataTransformer;
 import com.truthbean.transformer.DataTransformerCenter;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class DebbieBeanInitialization implements BeanInitialization {
     private final BeanRegisterCenter beanRegisterCenter;
     private final BeanConfigurationRegister beanConfigurationRegister;
+
     private DebbieBeanInitialization(@Nullable Class<?> applicationClass, ClassLoader classLoader,
                                      ResourceResolver resourceResolver, EnvironmentContent envContent) {
         List<String> resources = ResourcesHandler.getAllClassPathResources("", classLoader);
@@ -70,9 +71,9 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     /**
-     * @param <A> annotation type
+     * @param <A>            annotation type
      * @param annotationType registered by
-     *      @see BeanComponent
+     * @see BeanComponent
      * 标识的 annotation
      */
     @Override
@@ -86,13 +87,15 @@ class DebbieBeanInitialization implements BeanInitialization {
     }
 
     @Override
-    public <D extends DataTransformer<?,?>> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
+    public <D extends DataTransformer<?, ?>> void registerDataTransformer(D dataTransformer, Type argsType1, Type argsType2) {
         DataTransformerCenter.register(dataTransformer, argsType1, argsType2);
     }
+
     @Override
-    public <D extends DataTransformer<?,?>> void registerDataTransformer(D transformer) {
+    public <D extends DataTransformer<?, ?>> void registerDataTransformer(D transformer) {
         DataTransformerCenter.register(transformer);
     }
+
     @Override
     public <O, T> T transform(final O origin, final Class<T> target) {
         return DataTransformerCenter.transform(origin, target);

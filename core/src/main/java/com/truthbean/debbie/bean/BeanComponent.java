@@ -10,6 +10,7 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.annotation.AliasFor;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.lang.annotation.*;
 
@@ -38,6 +39,8 @@ public @interface BeanComponent {
     String value() default "";
 
     BeanType type() default BeanType.NO_LIMIT;
+
+    BeanProxyType proxy() default BeanProxyType.ASM;
 
     /**
      * lazy create bean, default true

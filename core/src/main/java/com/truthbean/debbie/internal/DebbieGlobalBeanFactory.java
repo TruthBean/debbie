@@ -10,6 +10,7 @@
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
@@ -21,12 +22,8 @@ import com.truthbean.debbie.proxy.asm.AbstractProxy;
 import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Modifier;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -109,7 +106,11 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
             beanCreator.setInjectedBeanFactory(injectedBeanFactory);
             T bean = injectedBeanFactory.factory(beanCreator);
             debbieBeanInfo.setBean(bean);
-            this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+            if (beanInfo != null) {
+                this.factoryAfterCreatedByProxy(debbieBeanInfo, beanInfo.getBeanProxyType());
+            } else {
+                this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+            }
         }
     }
 
@@ -128,7 +129,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
             if (bean instanceof MutableBeanInfo) {
                 ((MutableBeanInfo<T>) debbieBeanInfo).setBean(bean);
             }
-            return this.factoryAfterCreatedByProxy(debbieBeanInfo, BeanProxyType.ASM);
+            return this.factoryAfterCreatedByProxy(debbieBeanInfo, beanInfo.getBeanProxyType());
         }
     }
 
@@ -140,16 +141,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
         var beanFactory = beanInfo.getBeanFactory();
         if (beanFactory != null) {
             beanFactory.setGlobalBeanFactory(this);
-            if (System.getSecurityManager() != null) {
-                // TODO to set securityContextProvider
-                try {
-                    AccessControlContext securityContextProvider = AccessController.getContext();
-                    AccessController.doPrivileged((PrivilegedAction<T>) () -> factoryBeanByFactory(beanInfo, beanFactory), securityContextProvider);
-                } catch (Exception e) {
-                    LOGGER.error("getBean from factory via securityContextProvider error", e);
-                }
-            } else
-                return factoryBeanByFactory(beanInfo, beanFactory);
+            return factoryBeanByFactory(beanInfo, beanFactory);
         }
 
         return factoryBeanByDependenceProcessor(beanInfo, false);
@@ -178,7 +170,12 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
 
     @SuppressWarnings("unchecked")
     protected <T> T factory(String serviceName, Class<T> type, boolean require, boolean throwException) {
-        if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
+        if (serviceName != null && type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
+            DebbieConfiguration configuration = DebbieConfigurationCenter.getConfiguration((Class<? extends DebbieConfiguration>) type, serviceName);
+            if (configuration != null) {
+                return (T) configuration;
+            }
+        } else if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
             DebbieConfiguration configuration = DebbieConfigurationCenter.getConfiguration((Class<? extends DebbieConfiguration>) type);
             if (configuration != null) {
                 return (T) configuration;
@@ -199,13 +196,13 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
 
     private <T> T factoryBeanByFactory(BeanInfo<T> beanInfo, BeanFactory<T> beanFactory) {
         if (beanFactory.isSkipCreatedBeanFactory()) {
-            return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+            return this.factoryAfterCreatedByProxy(beanInfo, beanInfo.getBeanProxyType());
         }
         T bean = beanFactory.factoryBean();
         if (beanInfo instanceof MutableBeanInfo) {
             ((MutableBeanInfo<T>) beanInfo).setBean(bean);
         }
-        return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+        return this.factoryAfterCreatedByProxy(beanInfo, beanInfo.getBeanProxyType());
     }
 
     @Override
@@ -214,7 +211,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
         if (beanInfo instanceof MutableBeanInfo) {
             ((MutableBeanInfo<T>) beanInfo).setBean(bean);
         }
-        return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+        return this.factoryAfterCreatedByProxy(beanInfo, beanInfo.getBeanProxyType());
     }
 
     @Override
@@ -223,7 +220,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
         if (beanInfo instanceof MutableBeanInfo) {
             ((MutableBeanInfo<T>) beanInfo).setBean(bean);
         }
-        return this.factoryAfterCreatedByProxy(beanInfo, BeanProxyType.ASM);
+        return this.factoryAfterCreatedByProxy(beanInfo, beanInfo.getBeanProxyType());
     }
 
     @SuppressWarnings("unchecked")

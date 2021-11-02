@@ -11,6 +11,7 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.lang.annotation.*;
 
@@ -36,6 +37,8 @@ public @interface DebbieBootApplication {
      */
     @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
+
+    BeanProxyType proxy() default BeanProxyType.ASM;
 
     Class<? extends Annotation>[] customInjectType() default {};
 

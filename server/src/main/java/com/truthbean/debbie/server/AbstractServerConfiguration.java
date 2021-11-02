@@ -19,6 +19,7 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
 
     private String name;
 
+    // NOTE: 端口不能用short类型，因为short类型范围是-32768~32767，而Linux目前的端口最大可以为65535
     private int port = 8080;
     private String host = "localhost";
     private boolean web = true;

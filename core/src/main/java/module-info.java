@@ -8,6 +8,8 @@
  * See the Mulan PSL v2 for more details.
  */
 
+import com.truthbean.debbie.core.ApplicationFactory;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -70,6 +72,7 @@ module com.truthbean.debbie.core {
     uses com.truthbean.debbie.task.TaskAction;
     uses com.truthbean.debbie.env.EnvironmentContent;
     uses com.truthbean.debbie.env.EnvironmentContentProfile;
+    uses ApplicationFactory;
 
     provides com.truthbean.logger.LoggerConfig
             with com.truthbean.debbie.boot.DebbieLoggerConfig;

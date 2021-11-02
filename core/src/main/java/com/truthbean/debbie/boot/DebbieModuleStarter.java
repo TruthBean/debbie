@@ -17,9 +17,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author TruthBean
@@ -33,7 +31,7 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
      * @return is enable using the module
      */
     default boolean enable(EnvironmentContent envContent) {
-        return true;
+        return !envContent.getBoolean(DebbieApplication.DISABLE_DEBBIE, false);
     }
 
     int getOrder();

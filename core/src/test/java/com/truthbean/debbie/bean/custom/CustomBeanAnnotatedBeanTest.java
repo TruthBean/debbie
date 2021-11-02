@@ -2,6 +2,7 @@ package com.truthbean.debbie.bean.custom;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.LoggerFactory;
@@ -21,6 +22,10 @@ import java.util.concurrent.TimeUnit;
  * @since Created on 2020-07-03 17:14.
  */
 class CustomBeanAnnotatedBeanTest {
+
+    static {
+        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "true");
+    }
 
     @Test
     void getA() {

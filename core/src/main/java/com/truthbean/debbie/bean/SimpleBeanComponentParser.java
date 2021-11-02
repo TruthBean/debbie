@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.proxy.BeanProxyType;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -22,6 +24,7 @@ public class SimpleBeanComponentParser implements BeanComponentParser {
         var info = new BeanComponentInfo();
         info.setName(beanType.getName());
         info.setType(BeanType.NO_LIMIT);
+        info.setProxy(BeanProxyType.JDK);
         info.setLazy(false);
 
         return info;

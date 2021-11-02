@@ -16,6 +16,7 @@ import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.repository.DdlRepository;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
  * @author truthbean/Rogar·Q
@@ -26,17 +27,25 @@ import com.truthbean.debbie.jdbc.repository.DdlRepository;
 public class DataSourceConfigurationTest {
 
     private final DataSourceConfiguration configuration;
+    private final DataSourceConfiguration mariadbConfiguration;
+    private final DataSourceConfiguration h2Configuration;
 
     private final DdlRepository ddlRepository;
 
     public DataSourceConfigurationTest(@BeanInject DataSourceConfiguration configuration,
+                                       @BeanInject(name = "mariadb") DataSourceConfiguration mariadbConfiguration,
+                                       @BeanInject(name = "h2") DataSourceConfiguration h2Configuration,
                                        @BeanInject DdlRepository ddlRepository) {
         this.configuration = configuration;
+        this.mariadbConfiguration = mariadbConfiguration;
+        this.h2Configuration = h2Configuration;
         this.ddlRepository = ddlRepository;
     }
 
     public void print() {
         System.out.println(configuration);
+        System.out.println(mariadbConfiguration);
+        System.out.println(h2Configuration);
         System.out.println(ddlRepository.getTransaction().getDriverName());
     }
 

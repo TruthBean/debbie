@@ -9,6 +9,9 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.proxy.BeanProxyType;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,123 +26,122 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
     private final Bean bean;
     private final Class<Bean> beanClass;
     private final BeanType beanType;
+    private final BeanProxyType beanProxyType;
     private final Set<String> beanNames;
     private final Set<BeanCondition> conditions = new HashSet<>();
 
     @SuppressWarnings("unchecked")
-    public SimpleBeanInfo(Bean bean, BeanType beanType, BeanCondition...conditions) {
+    public SimpleBeanInfo(Bean bean, BeanType beanType, BeanProxyType beanProxyType, BeanCondition...conditions) {
         this.bean = bean;
         this.beanFactory = null;
         this.beanClass = (Class<Bean>) bean.getClass();
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = new HashSet<>();
         this.beanNames.add(this.beanClass.getName());
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public SimpleBeanInfo(Bean bean, BeanType beanType, String beanName, BeanCondition...conditions) {
+    public SimpleBeanInfo(Bean bean, BeanType beanType, BeanProxyType beanProxyType, String beanName, BeanCondition...conditions) {
         this.bean = bean;
         this.beanFactory = null;
         this.beanClass = (Class<Bean>) bean.getClass();
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = new HashSet<>();
         this.beanNames.add(beanName);
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(Bean bean,
-                          Class<Bean> beanClass, BeanType beanType, String beanName, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType, String beanName,
+                          BeanCondition...conditions) {
         this.beanFactory = null;
         this.bean = bean;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = new HashSet<>();
         this.beanNames.add(beanName);
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(Bean bean,
-                          Class<Bean> beanClass, BeanType beanType, Set<String> beanNames, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType,
+                          Set<String> beanNames, BeanCondition...conditions) {
         this.beanFactory = null;
         this.bean = bean;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = beanNames;
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(BeanFactory<Bean> beanFactory,
-                          Class<Bean> beanClass, BeanType beanType, String beanName, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType,
+                          String beanName, BeanCondition...conditions) {
         this.beanFactory = beanFactory;
         this.bean = null;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = new HashSet<>();
         this.beanNames.add(beanName);
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(BeanFactory<Bean> beanFactory,
-                          Class<Bean> beanClass, BeanType beanType, Set<String> beanNames, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType,
+                          Set<String> beanNames, BeanCondition...conditions) {
         this.beanFactory = beanFactory;
         this.bean = null;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = beanNames;
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(BeanFactory<Bean> beanFactory, Bean bean,
-                          Class<Bean> beanClass, BeanType beanType, String beanName, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType, String beanName,
+                          BeanCondition...conditions) {
         this.beanFactory = beanFactory;
         this.bean = bean;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = new HashSet<>();
         this.beanNames.add(beanName);
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
     public SimpleBeanInfo(BeanFactory<Bean> beanFactory, Bean bean,
-                          Class<Bean> beanClass, BeanType beanType, Set<String> beanNames, BeanCondition...conditions) {
+                          Class<Bean> beanClass, BeanType beanType, BeanProxyType beanProxyType,
+                          Set<String> beanNames, BeanCondition...conditions) {
         this.beanFactory = beanFactory;
         this.bean = bean;
         this.beanClass = beanClass;
         this.beanType = beanType;
+        this.beanProxyType = beanProxyType;
         this.beanNames = beanNames;
         if (conditions != null && conditions.length > 0) {
-            for (BeanCondition condition : conditions) {
-                this.conditions.add(condition);
-            }
+            Collections.addAll(this.conditions, conditions);
         }
     }
 
@@ -164,6 +166,11 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
     }
 
     @Override
+    public BeanProxyType getBeanProxyType() {
+        return beanProxyType;
+    }
+
+    @Override
     public Bean getBean() {
         return bean;
     }
@@ -180,6 +187,7 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
                 "\"bean\":" + bean + "," +
                 "\"beanClass\":" + beanClass + "," +
                 "\"beanType\":" + beanType + "," +
+                "\"beanProxyType\":" + beanProxyType + "," +
                 "\"beanNames\":" + beanNames + "}";
     }
 
@@ -188,6 +196,6 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
         if (beanType == BeanType.SINGLETON) {
             return this;
         }
-        return new SimpleBeanInfo<>(beanFactory, beanClass, beanType, new HashSet<>(beanNames));
+        return new SimpleBeanInfo<>(beanFactory, beanClass, beanType, beanProxyType, new HashSet<>(beanNames));
     }
 }

@@ -31,7 +31,7 @@ public class AioModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(AioServerProperties.class, AioServerConfiguration.class);
+        configurationFactory.register(new AioServerProperties(), AioServerConfiguration.class);
     }
 
     @Override

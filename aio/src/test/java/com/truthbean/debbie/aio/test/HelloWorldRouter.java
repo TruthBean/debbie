@@ -10,6 +10,8 @@
 package com.truthbean.debbie.aio.test;
 
 import com.truthbean.debbie.io.MediaType;
+import com.truthbean.debbie.mvc.request.RequestParameter;
+import com.truthbean.debbie.mvc.response.ResponseEntity;
 import com.truthbean.debbie.mvc.router.GetRouter;
 import com.truthbean.debbie.mvc.router.Router;
 import com.truthbean.debbie.watcher.Watcher;
@@ -26,5 +28,10 @@ public class HelloWorldRouter {
     @Router(value = "/hello-world", responseType = MediaType.TEXT_PLAIN_UTF8)
     public String helloWorld() {
         return "hello world";
+    }
+
+    @Router(value = "/custom/api")
+    public SimpleApiResponse<String> getCustomApi(@RequestParameter("id") Long id) {
+        return new SimpleApiResponse<>(200, "获取成功", "rtsp://192.168.1.200:8554/channel2");
     }
 }

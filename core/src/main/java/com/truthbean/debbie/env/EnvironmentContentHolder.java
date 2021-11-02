@@ -10,8 +10,6 @@
 package com.truthbean.debbie.env;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.properties.BaseProperties;
-import com.truthbean.debbie.spi.SpiLoader;
 
 import java.util.Properties;
 
@@ -21,41 +19,37 @@ import java.util.Properties;
  * Created on 2021-02-19 21:25
  */
 public class EnvironmentContentHolder implements EnvironmentContent {
-    private static final EnvironmentContent ENV_CONTENT;
-
-    private static final Properties CACHE = new Properties();
 
     static {
-        EnvironmentContent environmentContent;
-        try {
-            environmentContent = SpiLoader.loadProvider(EnvironmentContent.class);
-        } catch (Exception e) {
-            System.getLogger(EnvironmentContentHolder.class.getName())
-                    .log(System.Logger.Level.ERROR, "load com.truthbean.debbie.env.EnvironmentContent error.", e);
-            environmentContent = new BaseProperties();
-        }
-        ENV_CONTENT = environmentContent;
+        SimpleEnvironmentContentProfile.reload();
     }
 
-    public EnvironmentContentHolder() {
-    }
+    private static final Properties CACHE = new Properties();
+    private static final SimpleEnvironmentContentProfile PROFILE = new SimpleEnvironmentContentProfile();
 
-    public static EnvironmentContent getEnvironmentContent() {
-        return ENV_CONTENT;
+    private Logger logger;
+
+    @Override
+    public int getPriority() {
+        return -1;
     }
 
     @Override
+    public String getProfile() {
+        return "all";
+    }
+
     public EnvironmentContentHolder setLogger(Logger logger) {
-        ENV_CONTENT.setLogger(logger);
+        this.logger = logger;
+        PROFILE.setAllEnvLogger(logger);
         return this;
     }
 
     @Override
     public Logger getLogger() {
-        return ENV_CONTENT.getLogger();
+        return logger;
     }
 
-    @Override
     public void addProperty(String name, String value) {
         CACHE.put(name, value);
     }
@@ -71,27 +65,11 @@ public class EnvironmentContentHolder implements EnvironmentContent {
 
     @Override
     public Properties getProperties() {
-        if (CACHE.isEmpty()) {
-            Properties result = new Properties();
-            // OS environment variable
-            var env = System.getenv();
-            result.putAll(env);
-            // project properties
-            Properties properties = ENV_CONTENT.getProperties();
-            if (properties != null && !properties.isEmpty()) {
-                // custom properties will cover system properties
-                result.putAll(properties);
-            }
-            // jvm properties
-            var systemProperties = System.getProperties();
-            result.putAll(systemProperties);
-            CACHE.putAll(result);
-        }
-        return CACHE;
+        return PROFILE.getAllProperties();
     }
 
     public static void clear() {
         CACHE.clear();
-        ENV_CONTENT.reset();
+        PROFILE.clear();
     }
 }

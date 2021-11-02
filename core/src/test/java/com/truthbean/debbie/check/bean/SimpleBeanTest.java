@@ -14,6 +14,7 @@ import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.bean.SimpleBeanFactory;
 import com.truthbean.debbie.bean.SimpleBeanInfo;
 // import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,6 +29,6 @@ public class SimpleBeanTest {
     public void testSimpleBean() {
         final EmptyBean bean = new EmptyBean();
         BeanFactory<EmptyBean> beanFactory = new SimpleBeanFactory<>(bean, true);
-        var simpleBeanInfo = new SimpleBeanInfo<>(beanFactory, EmptyBean.class, BeanType.SINGLETON, "emptyBean");
+        var simpleBeanInfo = new SimpleBeanInfo<>(beanFactory, EmptyBean.class, BeanType.SINGLETON, BeanProxyType.NO, "emptyBean");
     }
 }

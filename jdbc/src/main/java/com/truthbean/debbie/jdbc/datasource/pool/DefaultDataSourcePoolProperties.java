@@ -42,7 +42,7 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties implem
             unpool = true;
         } else {
             unpool = false;
-            configuration = new DefaultDataSourcePoolConfiguration(super.getConfiguration());
+            configuration = new DefaultDataSourcePoolConfiguration(super.getDefaultConfiguration());
             configuration.setMaxActiveConnection(getIntegerValue(MAX_ACTIVE_CONNECTION_KEY, 10));
             configuration.setMaxIdleConnection(getIntegerValue(MAX_IDLE_CONNECTION_KEY, 5));
             configuration.setMaxCheckoutTime(getIntegerValue(MAX_CHECKOUT_TIME_KEY, 20000));
@@ -63,9 +63,9 @@ public class DefaultDataSourcePoolProperties extends DataSourceProperties implem
     @Override
     public DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
         if (unpool) {
-            return super.getConfiguration();
+            return super.getDefaultConfiguration();
         }
-        return toConfiguration(super.getConfiguration());
+        return toConfiguration(super.getDefaultConfiguration());
     }
 
     public static DefaultDataSourcePoolConfiguration toConfiguration(DataSourceConfiguration dataSourceConfiguration) {

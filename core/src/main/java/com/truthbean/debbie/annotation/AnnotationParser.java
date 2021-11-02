@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class AnnotationParser {
     public static AnnotationInfo parse(Annotation annotation) {
-        AnnotationInfo info = new AnnotationInfo(annotation);
+        var info = new AnnotationInfo(annotation);
         Class<? extends Annotation> type = annotation.annotationType();
         Method[] declaredMethods = type.getDeclaredMethods();
         for (Method declaredMethod : declaredMethods) {

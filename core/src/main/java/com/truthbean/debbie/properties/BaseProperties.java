@@ -12,7 +12,7 @@ package com.truthbean.debbie.properties;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.data.serialize.JacksonYamlUtils;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.env.ResourceEnvironmentContent;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
 
@@ -26,7 +26,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2018-03-19 12:27.
  */
-public class BaseProperties implements EnvironmentContent {
+public class BaseProperties implements ResourceEnvironmentContent {
 
     /**
      * logger
@@ -34,6 +34,16 @@ public class BaseProperties implements EnvironmentContent {
     private volatile Logger logger;
 
     public BaseProperties() {
+    }
+
+    @Override
+    public int getPriority() {
+        return 10;
+    }
+
+    @Override
+    public String getProfile() {
+        return "props";
     }
 
     @Override
@@ -48,6 +58,35 @@ public class BaseProperties implements EnvironmentContent {
             this.logger = LoggerFactory.getLogger(BaseProperties.class);
         }
         return logger;
+    }
+
+    @Override
+    public void load(String resourceUri) {
+
+    }
+
+    @Override
+    public void loadResource() {
+        Properties result = new Properties();
+        // OS environment variable
+        var env = System.getenv();
+        result.putAll(env);
+        // project properties
+        Properties properties = readPropertiesFile();
+        if (properties == null) {
+            properties = readYamlFile();
+        }
+        if (properties == null) {
+            properties = readYmlFile();
+        }
+        if (properties != null) {
+            // custom properties will cover system properties
+            result.putAll(properties);
+        }
+        // jvm properties
+        var systemProperties = System.getProperties();
+        result.putAll(systemProperties);
+        PROPERTIES.putAll(result);
     }
 
     /**
@@ -227,26 +266,7 @@ public class BaseProperties implements EnvironmentContent {
     @Override
     public Properties getProperties() {
         if (PROPERTIES.isEmpty()) {
-            Properties result = new Properties();
-            // OS environment variable
-            var env = System.getenv();
-            result.putAll(env);
-            // project properties
-            Properties properties = readPropertiesFile();
-            if (properties == null) {
-                properties = readYamlFile();
-            }
-            if (properties == null) {
-                properties = readYmlFile();
-            }
-            if (properties != null) {
-                // custom properties will cover system properties
-                result.putAll(properties);
-            }
-            // jvm properties
-            var systemProperties = System.getProperties();
-            result.putAll(systemProperties);
-            PROPERTIES.putAll(result);
+            loadResource();
         }
         return PROPERTIES;
     }
@@ -287,5 +307,4 @@ public class BaseProperties implements EnvironmentContent {
         result.putAll(systemProperties);
         return result;
     }
-
 }

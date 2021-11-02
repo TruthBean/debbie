@@ -24,7 +24,7 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public interface ApplicationContext {
     /**
-     * after DebbieApplication.start call
+     * after DebbieApplication#start call
      * @return application args
      */
     ApplicationArgs getApplicationArgs();

@@ -18,15 +18,12 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -36,7 +33,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     @SuppressWarnings({"rawtypes"})
     // TODO
-    private static final Map<Class<? extends DebbieProperties>, DebbieConfiguration> configurations = new HashMap<>();
+    private static final Map<Class<? extends DebbieProperties>, Set<DebbieConfiguration>> configurations = new HashMap<>();
     private static final String PROPERTIES_NAME = "debbie.properties.class-name";
 
     private ApplicationContext applicationContext;
@@ -53,13 +50,20 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     public static <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration,
                                                                         BeanInitialization beanInitialization) {
-        var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
         DebbieBeanInfo<C> beanInfo = new DebbieBeanInfo<>(configurationClass);
         beanInfo.setBean(configuration);
         beanInfo.setBeanType(BeanType.SINGLETON);
-        beanInfo.addBeanName(beanName);
+        beanInfo.setBeanProxyType(BeanProxyType.JDK);
+        String name = configuration.getName();
+        if (!StringUtils.hasText(name) || "default".equals(name)) {
+            var beanName = StringUtils.toFirstCharLowerCase(configurationClass.getName());
+            beanInfo.addBeanName(beanName);
+        }
+        if (StringUtils.hasText(name)) {
+            beanInfo.addBeanName(name);
+        }
         // beanInfo.addProperty(PROPERTIES_NAME);
-        beanInitialization.initSingletonBean(beanInfo);
+        beanInitialization.initBean(beanInfo);
     }
 
     public <C extends DebbieConfiguration> void addConfiguration(Class<C> configurationClass, C configuration) {
@@ -71,7 +75,14 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         // TODO 不用反射的形式....
         DebbieProperties<S> properties = ReflectionHelper.newInstance(propertiesClass);
         C configuration = properties.toConfiguration(applicationContext);
-        configurations.put(propertiesClass, configuration);
+        Set<DebbieConfiguration> list;
+        if (configurations.containsKey(propertiesClass)) {
+            list = configurations.get(propertiesClass);
+        } else {
+            list = new HashSet<>();
+        }
+        list.add(configuration);
+        configurations.put(propertiesClass, list);
         addConfiguration(configurationClass, configuration, beanInitialization);
         applicationContext.refreshBeans();
     }
@@ -81,7 +92,28 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     void register(P properties, Class<C> configurationClass) {
         var propertiesClass = (Class<? extends DebbieProperties<S>>) properties.getClass();
         C configuration = properties.toConfiguration(applicationContext);
-        configurations.put(propertiesClass, configuration);
+        Set<DebbieConfiguration> list;
+        if (configurations.containsKey(propertiesClass)) {
+            list = configurations.get(propertiesClass);
+        } else {
+            list = new HashSet<>();
+        }
+        list.add(configuration);
+        configurations.put(propertiesClass, list);
+        addConfiguration(configurationClass, configuration, beanInitialization);
+        applicationContext.refreshBeans();
+    }
+
+    public <P extends DebbieProperties<S>, C extends DebbieConfiguration, S extends C>
+    void register(Class<P> propertiesClass, Class<C> configurationClass, C configuration) {
+        Set<DebbieConfiguration> list;
+        if (configurations.containsKey(propertiesClass)) {
+            list = configurations.get(propertiesClass);
+        } else {
+            list = new HashSet<>();
+        }
+        list.add(configuration);
+        configurations.put(propertiesClass, list);
         addConfiguration(configurationClass, configuration, beanInitialization);
         applicationContext.refreshBeans();
     }
@@ -96,16 +128,18 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         if (configurations.containsKey(propertiesClass)) {
             return (C) configurations.get(propertiesClass);
         }
-        for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
+        for (Map.Entry<Class<? extends DebbieProperties>, Set<DebbieConfiguration>> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
-            var value = classObjectEntry.getValue();
-            if (superConfigurationClass.isAssignableFrom(key)) {
-                LOGGER.debug(() -> "configuration class: " + key.getName());
-                return (C) value;
-            }
-            if (superConfigurationClass == value.getClass()) {
-                LOGGER.debug(() -> "configuration class: " + key.getName());
-                return (C) value;
+            var list = classObjectEntry.getValue();
+            for (DebbieConfiguration value : list) {
+                if (superConfigurationClass.isAssignableFrom(key)) {
+                    LOGGER.debug(() -> "configuration class: " + key.getName());
+                    return (C) value;
+                }
+                if (superConfigurationClass == value.getClass()) {
+                    LOGGER.debug(() -> "configuration class: " + key.getName());
+                    return (C) value;
+                }
             }
         }
         return null;
@@ -116,12 +150,14 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         if (configurations.isEmpty()) {
             return null;
         }
-        for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
+        for (Map.Entry<Class<? extends DebbieProperties>, Set<DebbieConfiguration>> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
             var value = classObjectEntry.getValue();
-            if (configurationClass == value.getClass()) {
-                LOGGER.debug(() -> "configuration class: " + key.getName());
-                return (C) value;
+            for (DebbieConfiguration v : value) {
+                if (configurationClass == v.getClass()) {
+                    LOGGER.debug(() -> "configuration class: " + key.getName());
+                    return (C) v;
+                }
             }
         }
         return beanInitialization.getRegisterBean(configurationClass);
@@ -137,12 +173,14 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
         if (configurations.isEmpty()) {
             return new HashSet<>();
         }
-        for (Map.Entry<Class<? extends DebbieProperties>, DebbieConfiguration> classObjectEntry : configurations.entrySet()) {
+        for (Map.Entry<Class<? extends DebbieProperties>, Set<DebbieConfiguration>> classObjectEntry : configurations.entrySet()) {
             var key = classObjectEntry.getKey();
-            DebbieConfiguration value = classObjectEntry.getValue();
-            if (configurationClass == value.getClass()) {
-                LOGGER.debug(() -> "properties class: " + key.getName() + ", configuration class: " + value.getClass());
-                result.add((C) value);
+            Set<DebbieConfiguration> values = classObjectEntry.getValue();
+            for (DebbieConfiguration value : values) {
+                if (configurationClass == value.getClass()) {
+                    LOGGER.debug(() -> "properties class: " + key.getName() + ", configuration class: " + value.getClass());
+                    result.add((C) value);
+                }
             }
         }
         return result;
@@ -162,11 +200,28 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
 
     @SuppressWarnings("unchecked")
     public static <C extends DebbieConfiguration> C getConfiguration(Class<C> configurationClass) {
-        Collection<DebbieConfiguration> values = configurations.values();
+        Collection<Set<DebbieConfiguration>> values = configurations.values();
         if (!values.isEmpty()) {
-            for (DebbieConfiguration value : values) {
-                if (configurationClass == value.getClass()) {
-                    return (C) value;
+            for (Set<DebbieConfiguration> list : values) {
+                for (DebbieConfiguration value : list) {
+                    if (configurationClass == value.getClass()) {
+                        return (C) value;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <C extends DebbieConfiguration> C getConfiguration(Class<C> configurationClass, String name) {
+        Collection<Set<DebbieConfiguration>> values = configurations.values();
+        if (!values.isEmpty()) {
+            for (Set<DebbieConfiguration> list : values) {
+                for (DebbieConfiguration value : list) {
+                    if (configurationClass == value.getClass() && name.equals(value.getName())) {
+                        return (C) value;
+                    }
                 }
             }
         }
@@ -174,7 +229,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     }
 
     public void reset() {
-        configurations.forEach((properties, configurations) -> configurations.reset());
+        configurations.forEach((properties, configurations) -> configurations.forEach(DebbieConfiguration::reset));
         configurations.clear();
         EnvironmentContentHolder.clear();
     }

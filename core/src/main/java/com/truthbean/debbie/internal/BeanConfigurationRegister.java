@@ -11,6 +11,7 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -91,6 +92,7 @@ class BeanConfigurationRegister {
                 }
                 beanInfo.addBeanName(name);
                 beanInfo.setBeanType(BeanType.SINGLETON);
+                beanInfo.setBeanProxyType(BeanProxyType.JDK);
                 // todo params
                 beanInfo.setBean(() -> ReflectionHelper.invokeMethod(configuration, method));
                 beanInfo.setBeanFactory(new ConfigurationMethodBeanFactory<>(configuration, method));

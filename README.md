@@ -1,15 +1,17 @@
 # NOTE
-This project will never update, it move to https://github.com/truthbean/truthbean-projects
+This project is still alive and grow
 
 # debbie
 This project is target for a microservice project, including IOC, MVC, JDBC, httpclient, test, server and other modules.
-It also supports running jdk, graalvm, etc., and supports third-party frameworks, such as spring(https://github. com/truthbean/debbie-spring), mybatis (https://github.com/truthbean/debbie-mybatis), etc., 
-which will be gradually added to make it grow into a complete microservice project.
+It also supports running jdk, graalvm, etc., and supports third-party frameworks, ~~~such as spring(https://github. com/truthbean/debbie-spring), mybatis (https://github.com/truthbean/debbie-mybatis), etc~~~, 
+part of those third-party frameworks supported is merged to debbie-cloud(https://github.com/truthbean/debbie-cloud),
+which will be gradually added and completed to make it grow into a complete microservice project.
 
 该项目是从零开始的微服务项目，包含IOC、MVC、JDBC、httpclient、test、server等模块组成，同时支持再jdk、graalvm等运行，
-支持第三方框架，如spring(https://github.com/truthbean/debbie-spring)，
-mybatis(https://github.com/truthbean/debbie-mybatis) 等，
-后续陆续增加，使其成长为一个完整的微服务项目
+支持第三方框架，~~~如spring(https://github.com/truthbean/debbie-spring)，
+mybatis(https://github.com/truthbean/debbie-mybatis) 等~~，
+部分第三方框架已经移步到debbie-cloud(https://github.com/truthbean/debbie-cloud)目录中
+后续陆续增加、完善，使其成长为一个完整的微服务项目
 
 ## 说明
     该项目使用Java11开发，为什么不适用kotlin，因为jetbrain开发的ktor框架已经很好用了啊（[滑稽]）；
@@ -32,7 +34,7 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 [0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
 
-latest version: 0.1.1-RELEASE
+latest version: 0.5.2-RELEASE
 
 ```xml
 <dependency>
@@ -64,7 +66,7 @@ latest version: 0.1.1-RELEASE
 
 ~~10.使用javassist或者ASM增强bean proxy功能~~
 
-10.完善aio、rmi模块
+10.完善aio、~~~rmi模块~~~
 
 11.增加cache功能
 

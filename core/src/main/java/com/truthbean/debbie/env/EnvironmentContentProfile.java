@@ -18,6 +18,10 @@ import java.util.List;
  */
 public interface EnvironmentContentProfile {
 
+    String SYSTEM = "sys";
+
+    String JVM = "jvm";
+
     EnvironmentContent getEnvContent(String profile);
 
     List<EnvironmentContent> getEnvContents();

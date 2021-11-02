@@ -12,6 +12,7 @@ package com.truthbean.debbie.bean;
 import com.truthbean.Logger;
 import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     private int order;
 
     private BeanType beanType;
+    private BeanProxyType beanProxyType;
     private Boolean lazyCreate;
 
     private final Set<BeanCondition> conditions = new HashSet<>();
@@ -48,6 +50,8 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
         this.addBeanNames(beanInfo.getBeanNames());
         this.beanFactory = beanInfo.getBeanFactory();
         this.beanType = beanInfo.getBeanType();
+        this.beanProxyType = beanInfo.getBeanProxyType();
+        this.lazyCreate = beanInfo.isLazyCreate();
     }
 
     @Override
@@ -88,6 +92,16 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     @Override
     public void setBeanType(BeanType beanType) {
         this.beanType = beanType;
+    }
+
+    @Override
+    public BeanProxyType getBeanProxyType() {
+        return beanProxyType;
+    }
+
+    @Override
+    public void setBeanProxyType(BeanProxyType beanProxyType) {
+        this.beanProxyType = beanProxyType;
     }
 
     @Override
@@ -196,18 +210,46 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DebbieBeanInfo)) return false;
-        if (!super.equals(o)) return false;
+        // if (!super.equals(o)) return false;
         DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
         Set<String> beanNames = getBeanNames();
         Set<String> oBeanNames = beanInfo.getBeanNames();
         boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
         if (beanNameEmpty) return true;
-        return Objects.equals(beanNames, oBeanNames);
+        if (beanNames.size() == oBeanNames.size()) {
+            boolean[] equals = new boolean[beanNames.size()];
+            int i = 0;
+            for (String s1 : beanNames) {
+                for (String s2 : oBeanNames) {
+                    if (s1.equals(s2)) {
+                        equals[i] = true;
+                        break;
+                    }
+                }
+                i++;
+            }
+            for (boolean equal : equals) {
+                if (!equal) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.beanNames);
+        if (beanNames.isEmpty()) {
+            return Objects.hash(super.hashCode(), this.beanNames);
+        }
+        // 重新计算hashcode
+        int h = 0;
+        for (String obj : beanNames) {
+            if (obj != null)
+                h += obj.hashCode();
+        }
+        return h;
     }
 
     @Override
@@ -222,6 +264,10 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
         }
         if (beanType != null)
             beanInfo.setBeanType(beanType);
+
+        if (beanProxyType != null) {
+            beanInfo.setBeanProxyType(beanProxyType);
+        }
 
         return beanInfo;
     }

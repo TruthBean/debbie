@@ -15,9 +15,8 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.event.EventMulticaster;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.task.*;
-
-import java.security.Permission;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -29,50 +28,6 @@ public class ChainBeanTest {
     static {
         System.setProperty("logging.level.com.truthbean.debbie", "TRACE");
     }
-    static {
-        SecurityManager originalSecurityManager = System.getSecurityManager();
-        if (originalSecurityManager == null) {
-            // 创建自己的SecurityManager
-            SecurityManager sm = new SecurityManager() {
-                private void check(Permission perm) {
-                    String name = perm.getName();
-                    String actions = perm.getActions();
-                    // 禁止exec
-                    if (perm instanceof java.io.FilePermission) {
-                        if (actions != null && actions.contains("execute")) {
-                            throw new SecurityException("execute denied!");
-                        }
-                    }
-                    // 禁止设置新的SecurityManager，保护自己
-                    if (perm instanceof java.lang.RuntimePermission) {
-                        if (name != null && name.contains("setSecurityManager")) {
-                            throw new SecurityException("System.setSecurityManager denied!");
-                        }
-                    }
-                    // 反射
-                    if (perm instanceof java.lang.reflect.ReflectPermission) {
-                        // if (actions != null && actions.contains())
-                        System.out.println("reflection .....");
-                        System.out.println("actions: " + actions);
-                        System.out.println("name: " + name);
-                        System.out.println(perm.toString());
-                    }
-                }
-
-                @Override
-                public void checkPermission(Permission perm) {
-                    check(perm);
-                }
-
-                @Override
-                public void checkPermission(Permission perm, Object context) {
-                    check(perm);
-                }
-            };
-
-            System.setSecurityManager(sm);
-        }
-    }
 
     public static void main(String[] args) {
         DebbieApplication application = DebbieApplication.create(ChainBeanTest.class, args);
@@ -80,7 +35,7 @@ public class ChainBeanTest {
         BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
         String bean001Name = "bean001";
         Bean001 bean001 = new Bean001("bean001");
-        BeanInfo<Bean001> beanInfo = new SimpleBeanInfo<>(bean001, BeanType.SINGLETON, bean001Name);
+        BeanInfo<Bean001> beanInfo = new SimpleBeanInfo<>(bean001, BeanType.SINGLETON, BeanProxyType.NO, bean001Name);
         beanInitialization.initBean(beanInfo);
         applicationContext.refreshBeans();
 

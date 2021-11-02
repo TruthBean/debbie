@@ -35,7 +35,7 @@ public class RmiModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(RmiServerProperties.class, RmiServerConfiguration.class);
+        configurationFactory.register(new RmiServerProperties(), RmiServerConfiguration.class);
 
         RmiServerConfiguration configuration = configurationFactory.factory(RmiServerConfiguration.class, applicationContext);
 

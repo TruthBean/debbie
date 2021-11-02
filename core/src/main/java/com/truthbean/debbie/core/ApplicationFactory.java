@@ -12,7 +12,9 @@ package com.truthbean.debbie.core;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.empty.EmptyApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.spi.SpiLoader;
 
 import java.util.function.Consumer;
 
@@ -41,6 +43,8 @@ public interface ApplicationFactory {
      */
     ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter);
 
+    ApplicationFactory preInit(String... args);
+
     /**
      * configure properties and register beans
      *
@@ -56,6 +60,8 @@ public interface ApplicationFactory {
      */
     ApplicationFactory init();
 
+    ApplicationFactory config(Class<?> applicationClass);
+
     ApplicationFactory createApplicationFactory();
 
     DebbieApplication createApplication();
@@ -65,6 +71,7 @@ public interface ApplicationFactory {
      * <p>
      * eg:
      * ApplicationFactory.custom(Class<?> applicationClass, String... args)
+     * -- ApplicationFactory.preInit(String... args)
      * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
      * -- ApplicationFactory.init(Class<?> applicationClass)
      * -- ApplicationFactory.createApplicationFactory()
@@ -77,6 +84,9 @@ public interface ApplicationFactory {
      * @return custom life ApplicationFactory
      */
     static ApplicationFactory custom(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
+        }
         return DebbieApplicationFactory.custom(applicationClass, args);
     }
 
@@ -85,6 +95,7 @@ public interface ApplicationFactory {
      * <p>
      * eg:
      * ApplicationFactory.custom(String... args)
+     * -- ApplicationFactory.preInit(String... args)
      * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
      * -- ApplicationFactory.init()
      * -- ApplicationFactory.createApplicationFactory()
@@ -92,30 +103,56 @@ public interface ApplicationFactory {
      * -- ..
      * -- ApplicationFactory.release()
      *
-     * @param args             main function args
+     * @param args main function args
      * @return custom life ApplicationFactory
      */
     static ApplicationFactory custom(String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
+        }
         return DebbieApplicationFactory.custom(args);
     }
 
     static DebbieApplication create(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .createApplication(applicationClass);
+        }
         return DebbieApplicationFactory.create(applicationClass, args);
     }
 
     static ApplicationFactory configure(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .config(applicationClass);
+        }
         return DebbieApplicationFactory.configure(applicationClass, args);
     }
 
     static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args);
+        }
         return DebbieApplicationFactory.configure(classLoader, consumer, args);
     }
 
     static DebbieApplication create(String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .createApplication();
+        }
         return DebbieApplicationFactory.create(args);
     }
 
     static ApplicationFactory configure(String... args) {
-        return DebbieApplicationFactory.configure(args);
+        if (!DebbieApplication.isDisable()) {
+            return DebbieApplicationFactory.configure(args);
+        }
+        return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                .preInit(args);
     }
 }

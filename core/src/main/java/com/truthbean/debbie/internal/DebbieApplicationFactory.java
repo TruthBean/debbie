@@ -90,6 +90,11 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     }
 
     @Override
+    public ApplicationFactory preInit(String... args) {
+        return this;
+    }
+
+    @Override
     public ApplicationFactory init(Class<?> applicationClass) {
         config(applicationClass);
         return this;
@@ -101,13 +106,14 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         return this;
     }
 
-    protected synchronized void config(Class<?> applicationClass) {
+    public synchronized ApplicationFactory config(Class<?> applicationClass) {
         LOGGER.debug(() -> "init configuration");
         var classLoader = applicationContext.getClassLoader();
         var configuration = ClassesScanProperties.toConfiguration(classLoader);
         bootApplicationResolver.resolverApplicationClass(applicationClass, configuration, applicationContext.getResourceResolver());
         applicationContext.getInjectedBeanFactory().registerInjectType(configuration.getCustomInjectType());
         config(configuration);
+        return this;
     }
 
     protected synchronized void config() {

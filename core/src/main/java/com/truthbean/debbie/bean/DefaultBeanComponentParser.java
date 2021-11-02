@@ -38,6 +38,7 @@ public class DefaultBeanComponentParser implements BeanComponentParser {
             info.setName(beanName);
         }
         info.setType(value.type());
+        info.setProxy(value.proxy());
         info.setLazy(value.lazy());
         info.setFactory(value.factory());
 

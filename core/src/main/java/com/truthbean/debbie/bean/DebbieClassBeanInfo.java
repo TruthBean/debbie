@@ -15,6 +15,7 @@ import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
@@ -22,8 +23,6 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -41,6 +40,7 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     private int order;
 
     private BeanType beanType;
+    private BeanProxyType beanProxyType;
     private Boolean lazyCreate;
 
     private BeanFactory<Bean> beanFactory;
@@ -330,6 +330,11 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     }
 
     @Override
+    public void setBeanProxyType(BeanProxyType beanProxyType) {
+        this.beanProxyType = beanProxyType;
+    }
+
+    @Override
     public boolean isSingleton() {
         return this.beanType != null && this.beanType == BeanType.SINGLETON;
     }
@@ -386,6 +391,11 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     @Override
     public BeanType getBeanType() {
         return beanType;
+    }
+
+    @Override
+    public BeanProxyType getBeanProxyType() {
+        return beanProxyType;
     }
 
     @Override
@@ -484,6 +494,10 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
         }
         if (beanType != null)
             beanInfo.setBeanType(beanType);
+
+        if (beanProxyType != null) {
+            beanInfo.setBeanProxyType(beanProxyType);
+        }
 
         if (!properties.isEmpty()) {
             beanInfo.properties.putAll(properties);

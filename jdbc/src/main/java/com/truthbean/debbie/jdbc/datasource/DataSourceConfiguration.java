@@ -14,12 +14,15 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
 public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
+    private String name;
+
     private DataSourceDriverName driverName;
     private String url;
     private String user;
@@ -36,6 +39,7 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     }
 
     public DataSourceConfiguration(DataSourceConfiguration configuration) {
+        this.name = configuration.name;
         this.driverName = configuration.driverName;
         this.url = configuration.url;
         this.user = configuration.user;
@@ -48,6 +52,15 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
         this.driverProperties.putAll(configuration.driverProperties);
 
         this.dataSourceFactoryClass = configuration.dataSourceFactoryClass;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public DataSourceDriverName getDriverName() {
@@ -115,6 +128,19 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataSourceConfiguration that = (DataSourceConfiguration) o;
+        return Objects.equals(name, that.name) && driverName == that.driverName && Objects.equals(url, that.url) && Objects.equals(user, that.user) && Objects.equals(password, that.password) && Objects.equals(autoCommit, that.autoCommit) && defaultTransactionIsolationLevel == that.defaultTransactionIsolationLevel && Objects.equals(driverProperties, that.driverProperties) && Objects.equals(dataSourceFactoryClass, that.dataSourceFactoryClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, driverName, url, user, password, autoCommit, defaultTransactionIsolationLevel, driverProperties, dataSourceFactoryClass);
+    }
+
+    @Override
     protected DataSourceConfiguration clone() {
         DataSourceConfiguration clone;
         try {
@@ -132,8 +158,9 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     @Override
     public String toString() {
         return "{" +
-                "\"driverName\":" + driverName +
-                ",\"url\":\"" + url + '\"' +
+                "\"name\":" + name +
+                ",\"driverName\":\"" + driverName +
+                "\",\"url\":\"" + url + '\"' +
                 ",\"user\":\"" + user + '\"' +
                 ",\"password\":\"" + password + '\"' +
                 ",\"autoCommit\":" + autoCommit +
