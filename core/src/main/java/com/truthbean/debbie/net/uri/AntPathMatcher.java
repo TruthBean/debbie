@@ -93,7 +93,7 @@ public class AntPathMatcher {
     }
 
     /**
-     * A convenient, alternative constructor to use with a custom path separator.
+     * A convenient, alternative constructor to use with a customize path separator.
      * @param pathSeparator the path separator to use, must not be {@code null}.
      * @since 4.1
      */
@@ -426,7 +426,7 @@ public class AntPathMatcher {
      * <p>When encountering too many patterns to cache at runtime (the threshold is 65536),
      * it turns the default cache off, assuming that arbitrary permutations of patterns
      * are coming in, with little chance for encountering a recurring pattern.
-     * <p>This method may be overridden to implement a custom cache strategy.
+     * <p>This method may be overridden to implement a customize cache strategy.
      * @param pattern the pattern to match against (never {@code null})
      * @return a corresponding AntPathStringMatcher (never {@code null})
      * @see #setCachePatterns

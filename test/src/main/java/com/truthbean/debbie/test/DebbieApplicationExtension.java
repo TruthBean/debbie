@@ -186,7 +186,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         }
         ApplicationFactory applicationFactory = ApplicationFactory.configure(applicationClass);
         if (applicationFactory != null) {
-            DebbieApplication debbieApplication = applicationFactory.postCreateApplication();
+            DebbieApplication debbieApplication = applicationFactory.create().postCreate().build().factory();
             debbieApplication.start();
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
             ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);

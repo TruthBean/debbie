@@ -2,15 +2,17 @@ package com.truthbean.debbie.check.bean;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.bean.inter.*;
 import com.truthbean.debbie.bean.lifecycle.LifecycleBeanTest;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.check.properties.PropertiesConfigurationTest;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import com.truthbean.transformer.DataTransformer;
 // import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-// @DebbieApplicationTest
+@DebbieApplicationTest(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
 class BeanConfigRegisterTest {
 
     static {

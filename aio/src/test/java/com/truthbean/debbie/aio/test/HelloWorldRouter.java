@@ -30,7 +30,7 @@ public class HelloWorldRouter {
         return "hello world";
     }
 
-    @Router(value = "/custom/api")
+    @Router(value = "/customize/api")
     public SimpleApiResponse<String> getCustomApi(@RequestParameter("id") Long id) {
         return new SimpleApiResponse<>(200, "获取成功", "rtsp://192.168.1.200:8554/channel2");
     }

@@ -23,10 +23,10 @@ import java.time.Instant;
  * @author truthbean
  * @since 0.0.2
  */
-class SimpleApplicationFactory extends AbstractApplication {
-    private final Logger logger = LoggerFactory.getLogger(SimpleApplicationFactory.class);
+class SimpleApplication extends AbstractApplication {
+    private final Logger logger = LoggerFactory.getLogger(SimpleApplication.class);
 
-    SimpleApplicationFactory() {
+    SimpleApplication() {
         super();
     }
 

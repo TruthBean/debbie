@@ -16,7 +16,8 @@ import java.util.List;
  * @author TruthBean/Rogar·Q
  * @since Created on 2020-03-23 20:43
  */
-class ResourcesHandlerTest {
+class
+ResourcesHandlerTest {
 
     @Test
     void handleStaticResource() {

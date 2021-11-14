@@ -1,17 +1,15 @@
 package com.truthbean.debbie.check.event;
 
-import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.bean.BeanType;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 // import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-// @DebbieApplicationTest
+@DebbieApplicationTest(scan = @DebbieScan(basePackages = "com.truthbean.debbie.check.event"))
 class EventBeanTest {
 
     @Test
@@ -44,11 +42,11 @@ class EventBeanTest {
         context.refreshBeans();
 
         // todo
-        DebbieApplication application = factory.postCreateApplication();
         GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
         DebbieEventPublisher eventPublisher = globalBeanFactory.factory("eventPublisher");
-        eventPublisher.publishEvent(new TestStartedEvent(test, null));
+        DebbieApplication application = factory.create().postCreate().factory();
         application.start();
+        eventPublisher.publishEvent(new TestStartedEvent(test, null));
 
         application.exit();
     }

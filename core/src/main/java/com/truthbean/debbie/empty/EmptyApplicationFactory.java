@@ -13,41 +13,7 @@ import com.truthbean.debbie.core.ApplicationFactory;
 public class EmptyApplicationFactory implements ApplicationFactory {
 
     private final DebbieApplication debbieApplication = new EmptyDebbieApplication();
-
-    @Override
-    public void config(BeanScanConfiguration configuration) {
-
-    }
-
-    @Override
-    public void release() {
-
-    }
-
-    @Override
-    public DebbieApplication factoryApplication() {
-        return debbieApplication;
-    }
-
-    @Override
-    public ApplicationContext getApplicationContext() {
-        return debbieApplication.getApplicationContext();
-    }
-
-    @Override
-    public DebbieApplication postCreateApplication() {
-        return debbieApplication;
-    }
-
-    @Override
-    public DebbieApplication createApplication(Class<?> applicationClass) {
-        return debbieApplication;
-    }
-
-    @Override
-    public ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter) {
-        return this;
-    }
+    private final ApplicationContext applicationContext = new EmptyApplicationContext();
 
     @Override
     public ApplicationFactory preInit(String... args) {
@@ -55,7 +21,7 @@ public class EmptyApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory init(Class<?> applicationClass) {
+    public ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter) {
         return this;
     }
 
@@ -65,17 +31,57 @@ public class EmptyApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory config(Class<?> applicationClass) {
+    public ApplicationFactory init(Class<?> applicationClass) {
         return this;
     }
 
     @Override
-    public ApplicationFactory createApplicationFactory() {
+    public ApplicationFactory init(ClassLoader classLoader) {
         return this;
     }
 
     @Override
-    public DebbieApplication createApplication() {
+    public ApplicationFactory init(Class<?> applicationClass, ClassLoader classLoader) {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory config() {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory config(BeanScanConfiguration configuration) {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory create() {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory postCreate() {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory build() {
+        return this;
+    }
+
+    @Override
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    @Override
+    public DebbieApplication factory() {
         return debbieApplication;
+    }
+
+    @Override
+    public void release() {
+
     }
 }

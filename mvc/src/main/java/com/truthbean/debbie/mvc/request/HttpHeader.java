@@ -121,7 +121,7 @@ public class HttpHeader {
 
         @Override
         public String toString() {
-            return "{\"name\":\"custom\",\"value\":\"" + name + "\"}";
+            return "{\"name\":\"customize\",\"value\":\"" + name + "\"}";
         }
 
         @Override

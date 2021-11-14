@@ -15,7 +15,6 @@ import com.truthbean.common.mini.util.AbstractPropertiesUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.empty.EmptyApplicationFactory;
-import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.logger.LoggerConfig;
 
@@ -36,6 +35,7 @@ public interface DebbieApplication {
     /**
      * get application context
      * same as getApplicationContext
+     *
      * @return ApplicationContext
      */
     ApplicationContext getApplicationContext();
@@ -52,36 +52,72 @@ public interface DebbieApplication {
     }
 
     static void run(Class<?> applicationClass, String... args) {
+        ApplicationFactory applicationFactory;
         if (isDisable()) {
-            ApplicationFactory applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-            applicationFactory.preInit(args).preInit(args).init(applicationClass).createApplication().start();
+            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         } else {
-            DebbieApplicationFactory.create(applicationClass, args).start();
+            applicationFactory = ApplicationFactory.newEmpty();
         }
+        applicationFactory
+                .preInit(args)
+                .init(applicationClass)
+                .config()
+                .create()
+                .postCreate()
+                .build()
+                .factory()
+                .start();
     }
 
     static DebbieApplication create(Class<?> applicationClass, String... args) {
+        ApplicationFactory applicationFactory;
         if (isDisable()) {
-            ApplicationFactory applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-            return applicationFactory.preInit(args).createApplication(applicationClass);
+            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
+        } else {
+            applicationFactory = ApplicationFactory.newEmpty();
         }
-        return DebbieApplicationFactory.create(applicationClass, args);
+        return applicationFactory
+                .preInit(args)
+                .init(applicationClass)
+                .config()
+                .create()
+                .postCreate()
+                .build()
+                .factory();
     }
 
     static void run(String... args) {
+        ApplicationFactory applicationFactory;
         if (isDisable()) {
-            ApplicationFactory applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-            applicationFactory.preInit(args).createApplication().start();
+            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         } else {
-            DebbieApplicationFactory.create(args).start();
+            applicationFactory = ApplicationFactory.newEmpty();
         }
+        applicationFactory
+                .preInit(args)
+                .init()
+                .config()
+                .create()
+                .postCreate()
+                .build()
+                .factory()
+                .start();
     }
 
     static DebbieApplication create(String... args) {
+        ApplicationFactory applicationFactory;
         if (isDisable()) {
-            ApplicationFactory applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-            return applicationFactory.preInit(args).createApplication();
+            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
+        } else {
+            applicationFactory = ApplicationFactory.newEmpty();
         }
-        return DebbieApplicationFactory.create(args);
+        return applicationFactory
+                .preInit(args)
+                .init()
+                .config()
+                .create()
+                .postCreate()
+                .build()
+                .factory();
     }
 }

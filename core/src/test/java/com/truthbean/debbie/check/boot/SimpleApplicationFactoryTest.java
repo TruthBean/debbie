@@ -1,7 +1,9 @@
 package com.truthbean.debbie.check.boot;
 
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.core.DebbieCoreModuleStarter;
 import org.junit.jupiter.api.Test;
 
 @DebbieBootApplication
@@ -14,7 +16,7 @@ class SimpleApplicationFactoryTest {
 
     @Test
     void testApplication() {
-        var application = ApplicationFactory.create(SimpleApplicationFactoryTest.class);
+        var application = DebbieApplication.create(SimpleApplicationFactoryTest.class);
         application.start();
         try {
             Thread.sleep(1000);
@@ -25,29 +27,38 @@ class SimpleApplicationFactoryTest {
     }
 
     @Test
-    void custom() {
+    void customize() {
         var mainClass = SimpleApplicationFactoryTest.class;
-        ApplicationFactory.custom(mainClass, "test")
+        ApplicationFactory.newEmpty()
+                .preInit("test")
                 .init(mainClass)
-                .createApplicationFactory()
-                .createApplication()
+                .config()
+                .create()
+                .build()
+                .factory()
                 .start();
     }
 
     @Test
     void custom2() {
-        ApplicationFactory.custom("test")
+        ApplicationFactory.newEmpty()
+                .preInit("test")
                 .init()
-                .createApplicationFactory()
-                .createApplication()
+                .config()
+                .create()
+                .build()
+                .factory()
                 .start();
     }
 
     public static void main(String[] args) {
-        ApplicationFactory.custom("test")
+        ApplicationFactory.newEmpty()
+                .preInit(args)
                 .init()
-                .createApplicationFactory()
-                .createApplication()
+                .config()
+                .create()
+                .build()
+                .factory()
                 .start();
     }
 

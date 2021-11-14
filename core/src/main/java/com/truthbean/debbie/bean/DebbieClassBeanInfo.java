@@ -87,7 +87,7 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
             var componentInfo = BeanComponentParser.parse(value);
             setBeanComponent(componentInfo);
         } else {
-            // resolve custom component annotation
+            // resolve customize component annotation
             LOGGER.debug("class(" + beanClass + ") no @BeanComponent");
             for (Map.Entry<Class<? extends Annotation>, BeanComponentParser> entry : componentAnnotationTypes.entrySet()) {
                 var type = entry.getKey();
@@ -467,19 +467,47 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebbieBeanInfo)) return false;
-        if (!super.equals(o)) return false;
-        DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
+        if (!(o instanceof BeanInfo)) return false;
+        // if (!super.equals(o)) return false;
+        BeanInfo<?> beanInfo = (BeanInfo<?>) o;
         Set<String> beanNames = getBeanNames();
         Set<String> oBeanNames = beanInfo.getBeanNames();
         boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
         if (beanNameEmpty) return true;
-        return Objects.equals(beanNames, oBeanNames);
+        if (beanNames.size() == oBeanNames.size()) {
+            boolean[] equals = new boolean[beanNames.size()];
+            int i = 0;
+            for (String s1 : beanNames) {
+                for (String s2 : oBeanNames) {
+                    if (s1.equals(s2)) {
+                        equals[i] = true;
+                        break;
+                    }
+                }
+                i++;
+            }
+            for (boolean equal : equals) {
+                if (!equal) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.beanNames);
+        if (beanNames.isEmpty()) {
+            return Objects.hash(super.hashCode(), this.beanNames);
+        }
+        // 重新计算hashcode
+        int h = 0;
+        for (String obj : beanNames) {
+            if (obj != null)
+                h += obj.hashCode();
+        }
+        return h;
     }
 
     @Override

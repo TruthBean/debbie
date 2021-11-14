@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 class CustomBeanAnnotatedBeanTest {
 
     static {
-        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "true");
+        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "false");
+        System.setProperty("logging.level.root", "debug");
+        System.setProperty("logging.level.com.truthbean", "trace");
     }
 
     @Test

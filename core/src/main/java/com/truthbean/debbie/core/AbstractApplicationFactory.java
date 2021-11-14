@@ -18,14 +18,15 @@ import com.truthbean.debbie.internal.DebbieApplicationFactory;
 public abstract class AbstractApplicationFactory extends DebbieApplicationFactory {
 
     protected AbstractApplicationFactory(Class<?> applicationClass, String... args) {
-        super(applicationClass, args);
+        super();
+        super.preInit(args).init(applicationClass);
     }
 
     protected AbstractApplicationFactory(ClassLoader classLoader, String... args) {
-        super(classLoader, args);
+        super.preInit(args).init(classLoader);
     }
 
     public AbstractApplicationFactory(Class<?> applicationClass, ClassLoader classLoader, String... args) {
-        super(applicationClass, classLoader, args);
+        super.preInit(args).init(applicationClass, classLoader);
     }
 }

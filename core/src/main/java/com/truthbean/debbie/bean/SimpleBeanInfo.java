@@ -13,6 +13,7 @@ import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -189,6 +190,52 @@ public class SimpleBeanInfo<Bean> implements BeanInfo<Bean> {
                 "\"beanType\":" + beanType + "," +
                 "\"beanProxyType\":" + beanProxyType + "," +
                 "\"beanNames\":" + beanNames + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BeanInfo)) return false;
+        // if (!super.equals(o)) return false;
+        BeanInfo<?> beanInfo = (BeanInfo<?>) o;
+        Set<String> beanNames = getBeanNames();
+        Set<String> oBeanNames = beanInfo.getBeanNames();
+        boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
+        if (beanNameEmpty) return true;
+        if (beanNames.size() == oBeanNames.size()) {
+            boolean[] equals = new boolean[beanNames.size()];
+            int i = 0;
+            for (String s1 : beanNames) {
+                for (String s2 : oBeanNames) {
+                    if (s1.equals(s2)) {
+                        equals[i] = true;
+                        break;
+                    }
+                }
+                i++;
+            }
+            for (boolean equal : equals) {
+                if (!equal) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        if (beanNames.isEmpty()) {
+            return Objects.hash(super.hashCode(), this.beanNames);
+        }
+        // 重新计算hashcode
+        int h = 0;
+        for (String obj : beanNames) {
+            if (obj != null)
+                h += obj.hashCode();
+        }
+        return h;
     }
 
     @Override

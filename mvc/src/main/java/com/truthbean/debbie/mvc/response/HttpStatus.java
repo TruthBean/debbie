@@ -429,7 +429,7 @@ public enum HttpStatus {
     public static HttpStatus valueOf(int status) {
         var values = values();
         for (var httpStatus: values) {
-            // skip custom
+            // skip customize
             if (status != 0 && status == httpStatus.status) {
                 return httpStatus;
             }
@@ -440,7 +440,7 @@ public enum HttpStatus {
     public static HttpStatus ofOrNew(int status, String message) {
         var values = values();
         for (var httpStatus: values) {
-            // skip custom here
+            // skip customize here
             if (status != 0 && status == httpStatus.status) {
                 return httpStatus;
             }

@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.reflection;
 
+import java.util.Objects;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -53,7 +55,7 @@ public class ClassLoaderUtils {
         }
         if (cl == null) {
             // No thread context class loader -> use class loader of this class.
-            cl = clazz.getClassLoader();
+            cl = Objects.requireNonNullElse(clazz, ClassLoaderUtils.class).getClassLoader();
             if (cl == null) {
                 try {
                     cl = ClassLoader.getPlatformClassLoader();

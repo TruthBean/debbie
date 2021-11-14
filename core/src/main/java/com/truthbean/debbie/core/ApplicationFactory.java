@@ -23,17 +23,8 @@ import java.util.function.Consumer;
  * @since 0.1.0
  */
 public interface ApplicationFactory {
-    void config(BeanScanConfiguration configuration);
 
-    void release();
-
-    DebbieApplication factoryApplication();
-
-    ApplicationContext getApplicationContext();
-
-    DebbieApplication postCreateApplication();
-
-    DebbieApplication createApplication(Class<?> applicationClass);
+    ApplicationFactory preInit(String... args);
 
     /**
      * register module starter before configure or create
@@ -43,116 +34,59 @@ public interface ApplicationFactory {
      */
     ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter);
 
-    ApplicationFactory preInit(String... args);
-
     /**
      * configure properties and register beans
      *
-     * @param applicationClass main class which annotated by DebbieBootApplication
-     * @return custom life ApplicationFactory
-     */
-    ApplicationFactory init(Class<?> applicationClass);
-
-    /**
-     * configure properties and register beans
-     *
-     * @return custom life ApplicationFactory
+     * @return customize life ApplicationFactory
      */
     ApplicationFactory init();
 
-    ApplicationFactory config(Class<?> applicationClass);
-
-    ApplicationFactory createApplicationFactory();
-
-    DebbieApplication createApplication();
-
     /**
-     * custom to do register, config, create, release and so on
-     * <p>
-     * eg:
-     * ApplicationFactory.custom(Class<?> applicationClass, String... args)
-     * -- ApplicationFactory.preInit(String... args)
-     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
-     * -- ApplicationFactory.init(Class<?> applicationClass)
-     * -- ApplicationFactory.createApplicationFactory()
-     * -- ApplicationFactory.createApplication()
-     * -- ..
-     * -- ApplicationFactory.release()
+     * configure properties and register beans
      *
      * @param applicationClass main class which annotated by DebbieBootApplication
-     * @param args             main function args
-     * @return custom life ApplicationFactory
+     * @return customize life ApplicationFactory
      */
-    static ApplicationFactory custom(Class<?> applicationClass, String... args) {
-        if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
-        }
-        return DebbieApplicationFactory.custom(applicationClass, args);
-    }
+    ApplicationFactory init(Class<?> applicationClass);
 
-    /**
-     * custom to do register, config, create, release and so on
-     * <p>
-     * eg:
-     * ApplicationFactory.custom(String... args)
-     * -- ApplicationFactory.preInit(String... args)
-     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
-     * -- ApplicationFactory.init()
-     * -- ApplicationFactory.createApplicationFactory()
-     * -- ApplicationFactory.createApplication()
-     * -- ..
-     * -- ApplicationFactory.release()
-     *
-     * @param args main function args
-     * @return custom life ApplicationFactory
-     */
-    static ApplicationFactory custom(String... args) {
-        if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
-        }
-        return DebbieApplicationFactory.custom(args);
-    }
+    ApplicationFactory init(ClassLoader classLoader);
 
-    static DebbieApplication create(Class<?> applicationClass, String... args) {
+    ApplicationFactory init(Class<?> applicationClass, ClassLoader classLoader);
+
+    ApplicationFactory config();
+
+    ApplicationFactory config(BeanScanConfiguration configuration);
+
+    ApplicationFactory create();
+
+    ApplicationFactory postCreate();
+
+    ApplicationFactory build();
+
+    ApplicationContext getApplicationContext();
+
+    DebbieApplication factory();
+
+    void release();
+
+    // ============================================================================================================
+
+    static ApplicationFactory newEmpty() {
         if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
-                    .preInit(args)
-                    .createApplication(applicationClass);
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         }
-        return DebbieApplicationFactory.create(applicationClass, args);
+        return DebbieApplicationFactory.newEmpty();
     }
 
     static ApplicationFactory configure(Class<?> applicationClass, String... args) {
-        if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
-                    .preInit(args)
-                    .config(applicationClass);
-        }
-        return DebbieApplicationFactory.configure(applicationClass, args);
+        return newEmpty().preInit(args).init(applicationClass).config();
     }
 
-    static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
-        if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
-                    .preInit(args);
-        }
-        return DebbieApplicationFactory.configure(classLoader, consumer, args);
+    static ApplicationFactory create(Class<?> applicationClass, String... args) {
+        return newEmpty().preInit(args).init(applicationClass).config().create().build();
     }
 
-    static DebbieApplication create(String... args) {
-        if (DebbieApplication.isDisable()) {
-            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
-                    .preInit(args)
-                    .createApplication();
-        }
-        return DebbieApplicationFactory.create(args);
-    }
-
-    static ApplicationFactory configure(String... args) {
-        if (!DebbieApplication.isDisable()) {
-            return DebbieApplicationFactory.configure(args);
-        }
-        return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
-                .preInit(args);
+    static DebbieApplication factory(Class<?> applicationClass, String... args) {
+        return newEmpty().preInit(args).init(applicationClass).config().create().postCreate().build().factory();
     }
 }

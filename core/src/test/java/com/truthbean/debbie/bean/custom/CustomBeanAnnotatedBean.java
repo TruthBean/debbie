@@ -18,7 +18,7 @@ import com.truthbean.debbie.bean.BeanType;
  * Created on 2020-07-03 17:10.
  */
 // @BeanComponent(type = BeanType.SINGLETON, conditions = TestCondition.class)
-@CustomBeanAnnotation(value = "custom-bean", conditions = TestCondition.class)
+@CustomBeanAnnotation(value = "customize-bean", conditions = TestCondition.class)
 public class CustomBeanAnnotatedBean {
 
     private final int a;

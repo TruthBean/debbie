@@ -93,7 +93,7 @@ public class DefaultEventPublisher implements DebbieEventPublisher, EventMultica
             }
         });
         long end = System.currentTimeMillis();
-        LOGGER.debug(() -> "publishEvent spend time: " + (end - start) + "ms");
+        LOGGER.debug(() -> "publish Event(" + event.getClass() + ") spend time: " + (end - start) + "ms");
     }
 
     private <E extends AbstractDebbieEvent> void onEvent(DebbieEventListener<E> eventListener, E event) {

@@ -209,9 +209,9 @@ public class DebbieBeanInfo<Bean> implements MutableBeanInfo<Bean> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebbieBeanInfo)) return false;
+        if (!(o instanceof BeanInfo)) return false;
         // if (!super.equals(o)) return false;
-        DebbieBeanInfo<?> beanInfo = (DebbieBeanInfo<?>) o;
+        BeanInfo<?> beanInfo = (BeanInfo<?>) o;
         Set<String> beanNames = getBeanNames();
         Set<String> oBeanNames = beanInfo.getBeanNames();
         boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();

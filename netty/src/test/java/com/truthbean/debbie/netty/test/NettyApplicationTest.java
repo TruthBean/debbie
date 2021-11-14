@@ -1,7 +1,6 @@
 package com.truthbean.debbie.netty.test;
 
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.BodyParameter;
 import com.truthbean.debbie.mvc.router.GetRouter;
@@ -28,7 +27,7 @@ public class NettyApplicationTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = ApplicationFactory.create(NettyApplicationTest.class, args);
+        DebbieApplication application = DebbieApplication.create(NettyApplicationTest.class, args);
         application.start();
         application.exit();
     }

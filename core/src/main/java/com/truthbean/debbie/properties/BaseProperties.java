@@ -80,7 +80,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
             properties = readYmlFile();
         }
         if (properties != null) {
-            // custom properties will cover system properties
+            // customize properties will cover system properties
             result.putAll(properties);
         }
         // jvm properties
@@ -283,7 +283,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
         } catch (IOException e) {
             getLogger().error("load properties error", e);
         }
-        // custom properties will cover system properties
+        // customize properties will cover system properties
         result.putAll(properties);
         // jvm properties
         var systemProperties = System.getProperties();
@@ -300,7 +300,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
         Properties properties = new Properties();
         Map map = JacksonYamlUtils.yml2Properties(inputStream);
         properties.putAll(map);
-        // custom properties will cover system properties
+        // customize properties will cover system properties
         result.putAll(properties);
         // jvm properties
         var systemProperties = System.getProperties();

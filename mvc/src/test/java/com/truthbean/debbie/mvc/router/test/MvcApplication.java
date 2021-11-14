@@ -27,14 +27,6 @@ import java.security.Permission;
 @DebbieBootApplication
 public class MvcApplication {
 
-    static class NoReflectionSecurityManager extends SecurityManager {
-        public void checkPermission(Permission perm) {
-            if (perm.getName().equals("suppressAccessChecks")) {
-                throw new SecurityException("Can not change the permission dude.!");
-            }
-        }
-    }
-
     /*static {
         try {
             System.setProperty(LoggerFactory.STD_OUT, "true");
