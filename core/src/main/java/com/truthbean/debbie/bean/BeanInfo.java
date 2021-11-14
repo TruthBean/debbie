@@ -30,7 +30,11 @@ import java.util.function.Supplier;
 public interface BeanInfo<Bean> {
 
     default BeanProxyType getBeanProxyType() {
-        return BeanProxyType.ASM;
+        return BeanProxyType.JDK;
+    }
+
+    default boolean needProxy() {
+        return getBeanProxyType() != BeanProxyType.NO;
     }
 
     default Set<BeanCondition> getConditions() {

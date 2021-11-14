@@ -67,10 +67,14 @@ class DebbieApplicationContext implements ApplicationContext {
         this.configurationCenter.setApplicationContext(this);
         this.injectedBeanFactory.setApplicationContext(this);
 
+        final DebbieBeanProxyHandler beanProxyHandler = new DebbieBeanProxyHandler(this);
+
         this.globalBeanFactory.setDebbieApplicationContext(this);
         this.globalBeanFactory.setInjectedBeanFactory(injectedBeanFactory);
+        this.globalBeanFactory.setBeanProxyHandler(beanProxyHandler);
 
         this.injectedBeanFactory.setGlobalBeanFactory(this.globalBeanFactory);
+        this.injectedBeanFactory.setBeanProxyHandler(beanProxyHandler);
 
         this.configurationCenter.setApplicationContext(this);
     }

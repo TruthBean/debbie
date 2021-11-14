@@ -40,7 +40,7 @@ public @interface BeanComponent {
 
     BeanType type() default BeanType.NO_LIMIT;
 
-    BeanProxyType proxy() default BeanProxyType.ASM;
+    BeanProxyType proxy() default BeanProxyType.JDK;
 
     /**
      * lazy create bean, default true

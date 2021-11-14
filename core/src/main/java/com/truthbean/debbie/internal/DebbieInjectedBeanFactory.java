@@ -14,6 +14,7 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.env.EnvContentAware;
 import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.proxy.BeanProxyHandler;
 import com.truthbean.transformer.DataTransformer;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
@@ -41,6 +42,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
     private DebbieApplicationContext applicationContext;
     private DebbieBeanInfoFactory beanInfoFactory;
     private DebbieGlobalBeanFactory globalBeanFactory;
+    private BeanProxyHandler beanProxyHandler;
 
     final Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap = new ConcurrentHashMap<>();
     private final Map<BeanInfo<?>, BeanCreator<?>> preparations = new LinkedHashMap<>();
@@ -104,6 +106,10 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         this.globalBeanFactory = globalBeanFactory;
     }
 
+    public void setBeanProxyHandler(BeanProxyHandler beanProxyHandler) {
+        this.beanProxyHandler = beanProxyHandler;
+    }
+
     @Override
     public <T> T factory(BeanInfo<T> beanInfo) {
         BeanCreator<T> creator = createIfNotExist(beanInfo, false);
@@ -159,7 +165,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
         if (preparations.containsKey(beanInfo)) {
             return (BeanCreator<T>) preparations.get(beanInfo);
         } else {
-            BeanCreatorImpl<T> creator = new BeanCreatorImpl<>(beanInfo, this.beanInfoFactory);
+            BeanCreatorImpl<T> creator = new BeanCreatorImpl<>(beanInfo, this.beanInfoFactory, beanProxyHandler);
             if (beanInfo.isSingleton() && beanInfo.isPresent()) {
                 creator.create(beanInfo.getBean());
                 return creator;
@@ -466,7 +472,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                     } else {
                         mutableBeanInfo.setBean(factory(creator));
                     }
-                    value = globalBeanFactory.factoryAfterCreatedByProxy(mutableBeanInfo, BeanProxyType.ASM);
+                    value = beanProxyHandler.proxyCreatedBean(mutableBeanInfo, BeanProxyType.ASM);
                 }
                 ReflectionHelper.invokeFieldBySetMethod(beanInfo.getBean(), field, value);
             } else {

@@ -63,8 +63,12 @@ public class AnnotationInfo {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T invokeAttribute(String attribute) {
+        return invokeAttribute(attribute, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T invokeAttribute(String attribute, T defaultValue) {
         for (Map.Entry<String, AnnotationMethodInfo> entry : properties.entrySet()) {
             var name = entry.getKey();
             if (name.equals(attribute)) {
@@ -72,7 +76,7 @@ public class AnnotationInfo {
                 return (T) info.getValue();
             }
         }
-        return null;
+        return defaultValue;
     }
 
     public void setPropertyValue(String name, Object value) {

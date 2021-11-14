@@ -21,7 +21,7 @@ public class BeanComponentInfo {
 
     private BeanType type;
 
-    private BeanProxyType proxy;
+    private BeanProxyType proxy = BeanProxyType.JDK;
 
     private boolean lazy;
 
@@ -54,7 +54,9 @@ public class BeanComponentInfo {
     }
 
     public void setProxy(BeanProxyType proxy) {
-        this.proxy = proxy;
+        if (proxy != null) {
+            this.proxy = proxy;
+        }
     }
 
     public boolean isLazy() {

@@ -14,6 +14,8 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.PropertiesConfiguration;
+import com.truthbean.debbie.proxy.BeanProxyHandler;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -36,6 +38,7 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     // private final Map<String, Method> beanMethods = new HashMap<>();
 
     private final DebbieBeanInfoFactory debbieBeanInfoFactory;
+    private final BeanProxyHandler beanProxyHandler;
 
     private DebbieInjectedBeanFactory injectedBeanFactory;
 
@@ -44,9 +47,11 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
     private Bean bean;
     private boolean created;
 
-    public BeanCreatorImpl(Class<Bean> beanClass, DebbieBeanInfoFactory debbieBeanInfoFactory,
+    public BeanCreatorImpl(Class<Bean> beanClass,
+                           DebbieBeanInfoFactory debbieBeanInfoFactory, BeanProxyHandler beanProxyHandler,
                            BeanInitialization initialization) {
         this.debbieBeanInfoFactory = debbieBeanInfoFactory;
+        this.beanProxyHandler = beanProxyHandler;
         this.beanClass = beanClass;
         var methods = initialization.getBeanMethods(beanClass);
         DebbieClassBeanInfo<Bean> classBeanInfo;
@@ -61,8 +66,10 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
         setMethods(methods);
     }
 
-    public BeanCreatorImpl(BeanInfo<Bean> beanInfo, DebbieBeanInfoFactory debbieBeanInfoFactory) {
+    public BeanCreatorImpl(BeanInfo<Bean> beanInfo,
+                           DebbieBeanInfoFactory debbieBeanInfoFactory, BeanProxyHandler beanProxyHandler) {
         this.debbieBeanInfoFactory = debbieBeanInfoFactory;
+        this.beanProxyHandler = beanProxyHandler;
         this.beanClass = beanInfo.getBeanClass();
         DebbieClassBeanInfo<Bean> classBeanInfo;
         if (beanInfo instanceof DebbieClassBeanInfo) {
@@ -142,6 +149,10 @@ class BeanCreatorImpl<Bean> implements BeanCreator<Bean> {
 
     @Override
     public void postCreated() {
+        BeanProxyType type = beanInfo.getBeanProxyType();
+        if (type != null) {
+            this.bean = beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
+        }
         beanInfo.setBean(bean);
         this.created = true;
     }

@@ -44,7 +44,7 @@ public class DebbieStartedEventProcessor {
         final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this);
         startedEvent.setApplicationContext(applicationContext);
         var globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        final List<GenericStartedEventListener<DebbieStartedEvent>> beanInfoList = globalBeanFactory.getBeanList(GenericStartedEventListener.class, true);
+        final List<GenericStartedEventListener<DebbieStartedEvent>> beanInfoList = globalBeanFactory.getBeanList(GenericStartedEventListener.class, false);
         this.multicastEventThreadPool.execute(() -> {
             if (beanInfoList != null) {
                 for (GenericStartedEventListener<DebbieStartedEvent> startedEventListener : beanInfoList) {

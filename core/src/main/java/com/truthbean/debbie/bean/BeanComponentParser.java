@@ -33,9 +33,9 @@ public interface BeanComponentParser {
     static BeanComponentInfo parse(AnnotationInfo componentInfo) {
         var info = new BeanComponentInfo();
         info.setName(componentInfo.invokeAttribute("name"));
-        info.setType(componentInfo.invokeAttribute("type"));
-        info.setProxy(componentInfo.invokeAttribute("proxy"));
-        info.setLazy(componentInfo.invokeAttribute("lazy"));
+        info.setType(componentInfo.invokeAttribute("type", BeanType.NO_LIMIT));
+        info.setProxy(componentInfo.invokeAttribute("proxy", BeanProxyType.JDK));
+        info.setLazy(componentInfo.invokeAttribute("lazy", true));
         info.setFactory(componentInfo.invokeAttribute("factory"));
         info.setCondition(componentInfo.invokeAttribute("conditions"));
         return info;

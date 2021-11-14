@@ -287,6 +287,10 @@ public class DebbieClassBeanInfo<Bean> extends ClassInfo<Bean> implements ClassD
             lazyCreate = true;
         }
 
+        if (beanProxyType == null) {
+            beanProxyType = info.getProxy();
+        }
+
         if (beanFactory == null && info.getFactory() != null) {
             Class<? extends BeanFactory> factory = info.getFactory();
             if (factory != null && factory != BeanFactory.class) {
