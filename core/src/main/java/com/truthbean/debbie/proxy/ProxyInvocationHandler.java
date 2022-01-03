@@ -1,8 +1,7 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.DebbieClassBeanInfo;
+import com.truthbean.debbie.bean.DebbieReflectionBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.LoggerFactory;
@@ -23,14 +22,17 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     private Target target;
 
-    private final DebbieClassBeanInfo<Target> classInfo;
+    private final DebbieReflectionBeanFactory<Target> classInfo;
 
     private final MethodProxyHandlerHandler handler;
     private final MethodProxyResolver methodProxyResolver;
 
+    private final ApplicationContext applicationContext;
+
     public ProxyInvocationHandler(Class<Target> targetClass, ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
         var target = ReflectionHelper.newInstance(targetClass);
-        classInfo = new DebbieClassBeanInfo<>(targetClass);
+        classInfo = new DebbieReflectionBeanFactory<>(targetClass);
         if (target == null) {
             LOGGER.error("new instance by default constructor error");
         } else {
@@ -43,10 +45,11 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     @SuppressWarnings("unchecked")
     public ProxyInvocationHandler(Target target, ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
         LOGGER.debug(() -> "init ProxyInvocationHandler with " + target);
         this.target = target;
         Class<Target> targetClass = (Class<Target>) target.getClass();
-        this.classInfo = new DebbieClassBeanInfo<>(targetClass);
+        this.classInfo = new DebbieReflectionBeanFactory<>(targetClass);
 
         this.handler = new MethodProxyHandlerHandler(LOGGER);
         this.methodProxyResolver = new MethodProxyResolver(applicationContext, classInfo);
@@ -56,12 +59,15 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         return target;
     }
 
-    protected DebbieClassBeanInfo<Target> getBeanInfo() {
+    protected DebbieReflectionBeanFactory<Target> getBeanInfo() {
         return classInfo;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (applicationContext.isExiting()) {
+            return ReflectionHelper.getDefaultValue(method.getReturnType());
+        }
         var proxyClassName = proxy.getClass().getName();
         Class<?> targetClass = target.getClass();
         LOGGER.trace(() -> proxyClassName + " proxy " + targetClass.getName());
@@ -84,7 +90,17 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         }
         this.handler.setInterceptors(methodInterceptors);
         var methodName = method.getName();
-        return this.handler.proxy(methodName, () -> method.invoke(target, args), () -> method.invoke(target, args));
+        return this.handler.proxy(methodName, () -> {
+            if (!applicationContext.isExiting()) {
+                return method.invoke(target, args);
+            }
+            return ReflectionHelper.getDefaultValue(method.getReturnType());
+        }, () -> {
+            if (!applicationContext.isExiting()) {
+                return method.invoke(target, args);
+            }
+            return ReflectionHelper.getDefaultValue(method.getReturnType());
+        });
     }
 
 }

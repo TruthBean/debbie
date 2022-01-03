@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 
 import javax.sql.DataSource;
 
@@ -21,10 +22,12 @@ import javax.sql.DataSource;
 public class DefaultDataSourceFactory implements DataSourceFactory {
     private DataSource dataSource;
     private DataSourceDriverName driverName;
+    private String name;
 
     @Override
     public DataSourceFactory factory(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.name = "defaultDataSourceFactory";
         return this;
     }
 
@@ -32,7 +35,13 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     public DataSourceFactory factory(DataSourceConfiguration configuration) {
         this.dataSource = new DefaultDataSource(configuration);
         this.driverName = configuration.getDriverName();
+        this.name = configuration.getName() + "DataSourceFactory";
         return this;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -51,7 +60,12 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     }
 
     @Override
-    public void destroy() {
+    public void close() {
+        logger.info("clean nothing!");
+    }
+
+    @Override
+    public void destruct(ApplicationContext applicationContext) {
         logger.info("clean nothing!");
     }
 

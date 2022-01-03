@@ -9,8 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
-import com.truthbean.debbie.bean.BeanInfoFactory;
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.mvc.router.Router;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
@@ -27,10 +26,9 @@ public class RouterInvokerTest {
     public void testRouterInvoke() {
         ApplicationFactory factory = ApplicationFactory.configure(RouterInvokerTest.class);
         var context = factory.getApplicationContext();
-        BeanInitialization initialization = context.getBeanInitialization();
-        BeanInfoFactory beanInfoFactory = context.getBeanInfoFactory();
-        initialization.init(RouterInvokerTest.class);
-        context.refreshBeans();
+        BeanInfoManager infoManager = context.getBeanInfoManager();
+        BeanInfoManager beanInfoFactory = context.getBeanInfoManager();
+        infoManager.register(RouterInvokerTest.class);
         // var router = factory.factoryBeanInvoker(RouterInvokerTest.class);
         var params = new Object[]{"哈哈"};
         // var result = router.invokeMethod(Router.class, "router", params);

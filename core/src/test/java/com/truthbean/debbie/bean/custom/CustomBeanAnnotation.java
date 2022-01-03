@@ -13,6 +13,7 @@ import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanCondition;
 import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.DebbieReflectionBeanFactory;
 
 import java.lang.annotation.*;
 
@@ -30,7 +31,7 @@ public @interface CustomBeanAnnotation {
     @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
-    @AliasFor(attribute = "value", annotation = BeanComponent.class)
+    @AliasFor(attribute = "VALUE", annotation = BeanComponent.class)
     String value() default "";
 
     @AliasFor(attribute = "conditions", annotation = BeanComponent.class)

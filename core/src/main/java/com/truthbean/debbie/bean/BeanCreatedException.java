@@ -18,7 +18,6 @@ import java.util.Objects;
  * @since 0.0.1
  */
 public class BeanCreatedException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
 
     public BeanCreatedException() {
     }

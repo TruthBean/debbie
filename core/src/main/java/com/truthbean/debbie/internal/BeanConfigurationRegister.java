@@ -1,22 +1,22 @@
-/**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
- * Debbie is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
+/*
+  Copyright (c) 2021 TruthBean(Rogar·Q)
+  Debbie is licensed under Mulan PSL v2.
+  You can use this software according to the terms and conditions of the Mulan PSL v2.
+  You may obtain a copy of Mulan PSL v2 at:
+          http://license.coscl.org.cn/MulanPSL2
+  THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+  See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.internal;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -26,11 +26,11 @@ import java.util.Set;
 class BeanConfigurationRegister {
 
     public final ResourceResolver resourceResolver;
-    public final BeanRegisterCenter beanRegisterCenter;
+    public final BeanInfoManager beanInfoManager;
 
-    BeanConfigurationRegister(BeanRegisterCenter beanRegisterCenter, ResourceResolver resourceResolver) {
+    BeanConfigurationRegister(BeanInfoManager beanInfoManager, ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
-        this.beanRegisterCenter = beanRegisterCenter;
+        this.beanInfoManager = beanInfoManager;
     }
 
     public void register(Class<?>... classes) {
@@ -65,7 +65,7 @@ class BeanConfigurationRegister {
     }
 
     public <C> void registerConfiguration(Class<C> beanConfigurationClass) {
-        if (beanRegisterCenter.support(beanConfigurationClass)
+        if (beanInfoManager.support(beanConfigurationClass)
                 && beanConfigurationClass.getAnnotation(BeanConfiguration.class) != null) {
             ClassInfo<C> classInfo = new ClassInfo<>(beanConfigurationClass);
             C configuration = ReflectionHelper.newInstance(beanConfigurationClass);
@@ -84,19 +84,26 @@ class BeanConfigurationRegister {
         Set<Method> annotationMethod = classInfo.getAnnotationMethod(DebbieBean.class);
         if (!annotationMethod.isEmpty()) {
             for (var method : annotationMethod) {
-                MutableBeanInfo<?> beanInfo = new DebbieBeanInfo<>(method.getReturnType());
                 DebbieBean debbieBean = method.getAnnotation(DebbieBean.class);
                 var name = debbieBean.name();
                 if (name.isBlank()) {
                     name = method.getName();
                 }
-                beanInfo.addBeanName(name);
-                beanInfo.setBeanType(BeanType.SINGLETON);
-                beanInfo.setBeanProxyType(BeanProxyType.JDK);
-                // todo params
-                beanInfo.setBean(() -> ReflectionHelper.invokeMethod(configuration, method));
-                beanInfo.setBeanFactory(new ConfigurationMethodBeanFactory<>(configuration, method));
-                beanRegisterCenter.register(beanInfo);
+                BeanType type = debbieBean.type();
+                Class<? extends BeanCondition>[] conditions = debbieBean.conditions();
+                Set<BeanCondition> conditionSet = new HashSet<>();
+                for (Class<? extends BeanCondition> condition : conditions) {
+                    if (DefaultBeanCondition.class.isAssignableFrom(condition)) {
+                        conditionSet.add(DefaultBeanCondition.INSTANCE);
+                    }
+                    conditionSet.add(ReflectionHelper.newInstance(condition));
+                }
+                if (conditionSet.isEmpty()) {
+                    conditionSet.add(DefaultBeanCondition.INSTANCE);
+                }
+
+                var beanInfo = new ConfigurationMethodBeanFactory<>(() -> configuration, method, type, name, conditionSet);
+                beanInfoManager.register(beanInfo);
             }
         }
     }

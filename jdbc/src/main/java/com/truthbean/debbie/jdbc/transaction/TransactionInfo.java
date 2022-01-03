@@ -27,10 +27,10 @@ public class TransactionInfo implements Closeable {
     private String id;
     private volatile boolean using;
 
-    private final String method = "method";
+    private final String method = "(no method)";
 
     private DataSourceDriverName driverName;
-    private Connection connection;
+    private volatile Connection connection;
 
     private boolean forceCommit;
     private Class<? extends Throwable> rollbackFor;
@@ -38,9 +38,12 @@ public class TransactionInfo implements Closeable {
     private final Map<Object, Object> resources = new LinkedHashMap<>();
     private final List<ResourceHolder> resourceHolders = new LinkedList<>();
 
+    private volatile boolean closed;
+
     public TransactionInfo() {
         this.id = UUID.randomUUID().toString();
         this.using = false;
+        this.closed = false;
     }
 
     public String getId() {
@@ -142,7 +145,7 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setAutoCommit(boolean autoCommit) {
-        if (connection == null) {
+        if (connection == null || closed) {
             return null;
         }
         try {
@@ -154,7 +157,7 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setTransactionIsolation(TransactionIsolationLevel transactionIsolationLevel) {
-        if (connection == null) {
+        if (connection == null || closed) {
             return null;
         }
         try {
@@ -166,7 +169,7 @@ public class TransactionInfo implements Closeable {
     }
 
     public Connection setTransactionIsolation(int transactionIsolationLevel) {
-        if (connection == null) {
+        if (connection == null || closed) {
             return null;
         }
         try {
@@ -195,7 +198,7 @@ public class TransactionInfo implements Closeable {
 
         // commit
         if (connection == null) {
-            LOGGER.error("method (" + method + ") not bind connection is null. ");
+            LOGGER.error("method (" + method + ") not bind connection. ");
             return;
         }
 
@@ -250,6 +253,14 @@ public class TransactionInfo implements Closeable {
         afterRollback();
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setClosed(boolean closed) {
+        this.closed = closed;
+    }
+
     private void afterRollback() {
         for (ResourceHolder resourceHolder : resourceHolders) {
             resourceHolder.afterRollback();
@@ -257,6 +268,7 @@ public class TransactionInfo implements Closeable {
     }
 
     private void beforeClose() {
+        this.closed = true;
         for (ResourceHolder resourceHolder : resourceHolders) {
             resourceHolder.beforeClose();
         }
@@ -264,34 +276,36 @@ public class TransactionInfo implements Closeable {
 
     @Override
     public void close() {
-        if (!isUsing()) {
-            beforeClose();
+        synchronized (this) {
+            if (!isUsing()) {
+                beforeClose();
 
-            if (connection == null) {
-                LOGGER.error("method (" + method + ") not bind connection is null. ");
-                return;
-            }
-
-            if (hasMethod())
-                LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ")  and remove it. ");
-            else
-                 LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
-            try {
-                if (!connection.isClosed()) {
-                    connection.close();
-                    connection = null;
+                if (connection == null) {
+                    LOGGER.error("method (" + method + ") not bind connection is null. ");
+                    return;
                 }
-            } catch (SQLException e) {
-                LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
+
+                if (hasMethod())
+                    LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ") and remove it. ");
+                else
+                    LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
+                try {
+                    if (!connection.isClosed()) {
+                        connection.close();
+                        connection = null;
+                    }
+                } catch (SQLException e) {
+                    LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
+                }
+
+                afterClose();
+
+                // clear
+                resources.clear();
+                resourceHolders.clear();
+            } else {
+                LOGGER.warn(() -> id + ": connection(" + connection + ") " + connection.hashCode() + " is using, cannot remove it! ");
             }
-
-            afterClose();
-
-            // clear
-            resources.clear();
-            resourceHolders.clear();
-        } else {
-            LOGGER.warn(() -> id + ": connection(" + connection + ") " + connection.hashCode() + " is using, cannot remove it! ");
         }
     }
 

@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc.filter;
 
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.DebbieClassBeanInfo;
+import com.truthbean.debbie.bean.BeanInfo;
+import com.truthbean.debbie.bean.ClassBeanInfo;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.csrf.CsrfFilter;
 import com.truthbean.debbie.mvc.exception.RouterFilterMappingFormatException;
@@ -32,8 +32,8 @@ public class RouterFilterManager {
 
     private static final Pattern ALL = Pattern.compile("\\w");
 
-    public static void registerFilter(MvcConfiguration webConfiguration, BeanInitialization beanInitialization) {
-        Set<DebbieClassBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInitialization.getAnnotatedClass(Filter.class));
+    public static void registerFilter(MvcConfiguration webConfiguration, BeanInfoManager beanInfoManager) {
+        Set<ClassBeanInfo<? extends RouterFilter>> classInfoSet = change(beanInfoManager.getAnnotatedClass(Filter.class));
         for (var classInfo : classInfoSet) {
             registerFilter(classInfo, webConfiguration);
         }
@@ -87,13 +87,14 @@ public class RouterFilterManager {
     }
 
     @SuppressWarnings("unchecked")
-    private static Set<DebbieClassBeanInfo<? extends RouterFilter>> change(Set<DebbieClassBeanInfo<?>> raw) {
-        Set<DebbieClassBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
+    private static Set<ClassBeanInfo<? extends RouterFilter>> change(Set<BeanInfo<?>> raw) {
+        Set<ClassBeanInfo<? extends RouterFilter>> result = new LinkedHashSet<>();
         if (raw != null && !raw.isEmpty()) {
             for (var beanInfo : raw) {
                 Class<?> beanClass = beanInfo.getBeanClass();
-                if (RouterFilter.class.isAssignableFrom(beanClass))
-                    result.add((DebbieClassBeanInfo<? extends RouterFilter>) beanInfo);
+                if (RouterFilter.class.isAssignableFrom(beanClass) && beanInfo instanceof ClassBeanInfo) {
+                    result.add((ClassBeanInfo<? extends RouterFilter>) beanInfo);
+                }
             }
         }
         return result;

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.data;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.debbie.properties.PropertiesException;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -27,7 +28,13 @@ public interface TextData {
         try {
             return rawData.charAt(0);
         } catch (Exception e) {
-            getLogger().error(rawData + " to char error", e);
+            var logger = getLogger();
+            if (logger != null) {
+                logger.error(rawData + " to char error", e);
+            } else {
+                Console.error(rawData + " to char error");
+                e.printStackTrace();
+            }
             return defaultData;
         }
     }
@@ -40,7 +47,13 @@ public interface TextData {
             try {
                 result = Boolean.parseBoolean(rawData);
             } catch (Exception e) {
-                getLogger().error(rawData + " to bool error", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error(rawData + " to bool error", e);
+                } else {
+                    Console.error(rawData + " to bool error");
+                    e.printStackTrace();
+                }
                 result = defaultValue;
             }
         }
@@ -55,7 +68,13 @@ public interface TextData {
             try {
                 result = Integer.parseInt(rawData);
             } catch (Exception e) {
-                getLogger().error(rawData + " to int error", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error(rawData + " to int error", e);
+                } else {
+                    Console.error(rawData + " to int error");
+                    e.printStackTrace();
+                }
                 result = defaultValue;
             }
         }
@@ -70,7 +89,13 @@ public interface TextData {
             try {
                 result = Double.parseDouble(rawData);
             } catch (Exception e) {
-                getLogger().error(rawData + " to double error", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error(rawData + " to double error", e);
+                } else {
+                    Console.error(rawData + " to double error");
+                    e.printStackTrace();
+                }
                 result = defaultValue;
             }
         }
@@ -85,7 +110,13 @@ public interface TextData {
             try {
                 result = Long.parseLong(rawData);
             } catch (Exception e) {
-                getLogger().error(rawData + " to long error", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error(rawData + " to long error", e);
+                } else {
+                    Console.error(rawData + " to long error");
+                    e.printStackTrace();
+                }
                 result = defaultValue;
             }
         }
@@ -110,7 +141,13 @@ public interface TextData {
             try {
                 result = Charset.forName(rawData);
             } catch (Exception e) {
-                getLogger().error(rawData + " to Charset error", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error(rawData + " to Charset error", e);
+                } else {
+                    Console.error(rawData + " to Charset error");
+                    e.printStackTrace();
+                }
                 result = defaultCharset;
             }
         }
@@ -130,7 +167,7 @@ public interface TextData {
                     if (keyValue.length == 2) {
                         result.put(keyValue[0], keyValue[1]);
                     } else {
-                        throw new IllegalArgumentException("key and value must split by " + keyValueSplit);
+                        throw new IllegalArgumentException("key and VALUE must split by " + keyValueSplit);
                     }
                 }
             }
@@ -159,7 +196,13 @@ public interface TextData {
                     try {
                         result.add(classLoader.loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        getLogger().error("class (" + className + ") not found", e);
+                        var logger = getLogger();
+                        if (logger != null) {
+                            logger.error("class (" + className + ") not found", e);
+                        } else {
+                            Console.error("class (" + className + ") not found");
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -175,7 +218,13 @@ public interface TextData {
             try {
                 result = classLoader.loadClass(className);
             } catch (ClassNotFoundException e) {
-                getLogger().error("class (" + className + ") not found", e);
+                var logger = getLogger();
+                if (logger != null) {
+                    logger.error("class (" + className + ") not found", e);
+                } else {
+                    Console.error("class (" + className + ") not found");
+                    e.printStackTrace();
+                }
             }
         }
         return result;
@@ -192,7 +241,13 @@ public interface TextData {
                     try {
                         result.add(classLoader.loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        getLogger().error("class (" + className + ") not found", e);
+                        var logger = getLogger();
+                        if (logger != null) {
+                            logger.error("class (" + className + ") not found", e);
+                        } else {
+                            Console.error("class (" + className + ") not found");
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

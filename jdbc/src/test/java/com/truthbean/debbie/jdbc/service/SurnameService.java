@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.service;
 
 
 import com.truthbean.debbie.check.jdbc.entity.Surname;
+import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public interface SurnameService extends EmptyService<Surname, Long> {
 
     Optional<Surname> selectById(Long id);
 
+    @JdbcTransactional
     List<Surname> list();
 
     Optional<List<Surname>> getOptional();

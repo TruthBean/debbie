@@ -21,4 +21,8 @@ import java.lang.annotation.*;
 public @interface DebbieBean {
 
     String name() default "";
+
+    BeanType type() default BeanType.SINGLETON;
+
+    Class<? extends BeanCondition>[] conditions() default {};
 }

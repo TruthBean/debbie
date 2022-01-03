@@ -115,7 +115,7 @@ public class RouterAnnotationInfo {
     public RouterAnnotationInfo(AnnotationInfo info) {
         if (info.getOrigin().annotationType() == Router.class) {
             this.name = info.invokeAttribute("name");
-            this.value = info.invokeAttribute("value");
+            this.value = info.invokeAttribute("VALUE");
             this.urlPatterns = info.invokeAttribute("urlPatterns");
             this.method = info.invokeAttribute("method");
             this.requestType = info.invokeAttribute("requestType");
@@ -419,7 +419,7 @@ public class RouterAnnotationInfo {
                 "\"desc\":\"" + desc + "\"" + "," +
                 "\"version\":\"" + version + "\"" + "," +
                 "\"hidden\":" + hidden + "," +
-                "\"value\":" + Arrays.toString(value) + "," +
+                "\"VALUE\":" + Arrays.toString(value) + "," +
                 "\"urlPatterns\":" + Arrays.toString(urlPatterns) + "," +
                 "\"method\":" + Arrays.toString(method) + "," +
                 "\"requestType\":" + requestType + "," +

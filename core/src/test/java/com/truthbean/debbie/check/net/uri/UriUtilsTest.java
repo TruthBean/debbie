@@ -12,7 +12,7 @@ class UriUtilsTest {
 
     @Test
     public void test() throws MalformedURLException {
-        String url = "https://user:password@debbie.truthbean.com/hello/hahahah.action.do;matrix1=value&matrix2=中文;matrix1=value3;=hahah/hahaha?key1=name&key1=?name&key1=name&key2=2&key3=3.45&4=#/home/user#;matrix1=value?value=1";
+        String url = "https://user:password@debbie.truthbean.com/hello/hahahah.action.do;matrix1=value&matrix2=中文;matrix1=value3;=hahah/hahaha?key1=name&key1=?name&key1=name&key2=2&key3=3.45&4=#/home/user#;matrix1=VALUE?VALUE=1";
         var queriesInUri = UriUtils.queriesInUri(url);
         System.out.println(queriesInUri.toString());
 

@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.datasource.pool;
 
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 
 /**
  * @author TruthBean
@@ -127,7 +128,12 @@ public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration 
     }
 
     @Override
-    public DefaultDataSourcePoolConfiguration clone() {
-        return (DefaultDataSourcePoolConfiguration) super.clone();
+    public Class<? extends DataSourceFactory> getDataSourceFactoryClass() {
+        return DefaultDataSourcePoolFactory.class;
+    }
+
+    @Override
+    public DefaultDataSourcePoolConfiguration copy() {
+        return (DefaultDataSourcePoolConfiguration) super.copy();
     }
 }

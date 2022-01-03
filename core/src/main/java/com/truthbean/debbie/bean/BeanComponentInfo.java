@@ -11,6 +11,10 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.debbie.proxy.BeanProxyType;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -27,7 +31,7 @@ public class BeanComponentInfo {
 
     private Class<? extends BeanFactory<?>> factory;
 
-    private Class<? extends BeanCondition>[] condition;
+    private Set<Class<? extends BeanCondition>> conditions = new HashSet<>();
 
     public String getName() {
         return name;
@@ -65,7 +69,7 @@ public class BeanComponentInfo {
 
     public void setLazy(Boolean lazy) {
         if (lazy == null) {
-            // default value is true
+            // default VALUE is true
             this.lazy = true;
             return;
         }
@@ -79,17 +83,18 @@ public class BeanComponentInfo {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void setFactory(Class<? extends BeanFactory> factory) {
-        if (factory != null)
+        if (factory != null) {
             this.factory = (Class<? extends BeanFactory<?>>) factory;
+        }
     }
 
-    public Class<? extends BeanCondition>[] getCondition() {
-        return condition;
+    public Set<Class<? extends BeanCondition>> getCondition() {
+        return conditions;
     }
 
     public void setCondition(Class<? extends BeanCondition>[] condition) {
         if (condition != null && condition.length > 0) {
-            this.condition = condition;
+            Collections.addAll(this.conditions, condition);
         }
     }
 }

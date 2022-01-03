@@ -65,7 +65,9 @@ public class EnvironmentContentHolder implements EnvironmentContent {
 
     @Override
     public Properties getProperties() {
-        return PROFILE.getAllProperties();
+        var properties = PROFILE.getAllProperties();
+        CACHE.putAll(properties);
+        return CACHE;
     }
 
     public static void clear() {

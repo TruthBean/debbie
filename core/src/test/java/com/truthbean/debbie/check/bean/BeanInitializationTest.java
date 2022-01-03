@@ -10,10 +10,8 @@
 package com.truthbean.debbie.check.bean;
 
 import com.truthbean.debbie.asm.AsmClassCreator;
-import com.truthbean.debbie.bean.BeanInitialization;
 import com.truthbean.debbie.bean.BeanType;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.bean.DebbieReflectionBeanFactory;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import org.junit.jupiter.api.Test;
@@ -32,21 +30,21 @@ public class BeanInitializationTest {
     void init() {
         var applicationFactory = ApplicationFactory.configure(BeanInitializationTest.class);
         var context = applicationFactory.getApplicationContext();
-        var initialization = context.getBeanInitialization();
+        var initialization = context.getBeanInfoManager();
 
         AsmClassCreator classCreator = new AsmClassCreator();
 
-        DebbieBeanInfo beanInfo;
+        DebbieReflectionBeanFactory beanInfo;
         for (int i = 0; i < 100_000; i++) {
             String className = classCreator.randomClassName();
             Class<?> cls = classCreator.createClass(className, "com.truthbean.debbie.check.bean",
                     AsmClassCreator.class.getClassLoader(), "com.truthbean.debbie.check.bean.EmptyBean", false);
             Object o = ReflectionHelper.newInstance(cls);
-            beanInfo = new DebbieBeanInfo<>(o.getClass());
+            beanInfo = new DebbieReflectionBeanFactory<>(o.getClass());
             beanInfo.setBean(o);
             beanInfo.addBeanName(UUID.randomUUID().toString().replaceAll("-", ""));
             beanInfo.setBeanType(BeanType.SINGLETON);
-            initialization.initBean(beanInfo);
+            initialization.register(beanInfo);
         }
         applicationFactory.release();
     }

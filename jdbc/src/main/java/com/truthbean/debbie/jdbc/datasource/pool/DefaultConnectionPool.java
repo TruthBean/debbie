@@ -364,32 +364,30 @@ public class DefaultConnectionPool {
 
     @Override
     public synchronized String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("\n===CONFINGURATION==============================================");
-        builder.append("\n jdbcDriver                     ").append(configuration.getDriverName());
-        builder.append("\n jdbcUrl                        ").append(configuration.getUrl());
-        builder.append("\n jdbcUsername                   ").append(configuration.getUrl());
-        builder.append("\n jdbcPassword                   ").append(configuration.getPassword() == null ? "NULL" : "************");
-        builder.append("\n poolMaxActiveConnections       ").append(configuration.getMaxActiveConnection());
-        builder.append("\n poolMaxIdleConnections         ").append(configuration.getMaxIdleConnection());
-        builder.append("\n poolMaxCheckoutTime            ").append(configuration.getMaxCheckoutTime());
-        builder.append("\n poolTimeToWait                 ").append(configuration.getTimeToWait());
-        builder.append("\n poolPingEnabled                ").append(configuration.isPingEnabled());
-        builder.append("\n poolPingQuery                  ").append(configuration.getPingQuery());
-        builder.append("\n poolPingConnectionsNotUsedFor  ").append(configuration.getPingConnectionNotUsedFor());
-        builder.append("\n ---STATUS-----------------------------------------------------");
-        builder.append("\n activeConnections              ").append(getActiveConnectionCount());
-        builder.append("\n idleConnections                ").append(getIdleConnectionCount());
-        builder.append("\n requestCount                   ").append(getRequestCount());
-        builder.append("\n averageRequestTime             ").append(getAverageRequestTime());
-        builder.append("\n averageCheckoutTime            ").append(getAverageCheckoutTime());
-        builder.append("\n claimedOverdue                 ").append(getClaimedOverdueConnectionCount());
-        builder.append("\n averageOverdueCheckoutTime     ").append(getAverageOverdueCheckoutTime());
-        builder.append("\n hadToWait                      ").append(getHadToWaitCount());
-        builder.append("\n averageWaitTime                ").append(getAverageWaitTime());
-        builder.append("\n badConnectionCount             ").append(getBadConnectionCount());
-        builder.append("\n===============================================================");
-        return builder.toString();
+        return "\n===CONFINGURATION==============================================" +
+                "\n jdbcDriver                     " + configuration.getDriverName() +
+                "\n jdbcUrl                        " + configuration.getUrl() +
+                "\n jdbcUsername                   " + configuration.getUrl() +
+                "\n jdbcPassword                   " + (configuration.getPassword() == null ? "NULL" : "************") +
+                "\n poolMaxActiveConnections       " + configuration.getMaxActiveConnection() +
+                "\n poolMaxIdleConnections         " + configuration.getMaxIdleConnection() +
+                "\n poolMaxCheckoutTime            " + configuration.getMaxCheckoutTime() +
+                "\n poolTimeToWait                 " + configuration.getTimeToWait() +
+                "\n poolPingEnabled                " + configuration.isPingEnabled() +
+                "\n poolPingQuery                  " + configuration.getPingQuery() +
+                "\n poolPingConnectionsNotUsedFor  " + configuration.getPingConnectionNotUsedFor() +
+                "\n ---STATUS-----------------------------------------------------" +
+                "\n activeConnections              " + getActiveConnectionCount() +
+                "\n idleConnections                " + getIdleConnectionCount() +
+                "\n requestCount                   " + getRequestCount() +
+                "\n averageRequestTime             " + getAverageRequestTime() +
+                "\n averageCheckoutTime            " + getAverageCheckoutTime() +
+                "\n claimedOverdue                 " + getClaimedOverdueConnectionCount() +
+                "\n averageOverdueCheckoutTime     " + getAverageOverdueCheckoutTime() +
+                "\n hadToWait                      " + getHadToWaitCount() +
+                "\n averageWaitTime                " + getAverageWaitTime() +
+                "\n badConnectionCount             " + getBadConnectionCount() +
+                "\n===============================================================";
     }
 
     private static final Logger log = LoggerFactory.getLogger(DefaultConnectionPool.class);

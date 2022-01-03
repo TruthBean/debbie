@@ -31,10 +31,10 @@ public class SimpleEnvironmentContentProfile implements EnvironmentContentProfil
         EnvironmentContent highestPriorityEnv = jvmEnvironmentContent;
         environmentContents.put(SYSTEM, new SystemEnvironmentContent());
         environmentContents.put(JVM, jvmEnvironmentContent);
-        Set<EnvironmentContent> environmentContents;
+        Set<MutableEnvironmentContent> environmentContents;
         try {
             System.setProperty(LoggerConfig.STD_OUT, "true");
-            environmentContents = SpiLoader.loadProviderSet(EnvironmentContent.class);
+            environmentContents = SpiLoader.loadProviderSet(MutableEnvironmentContent.class);
         } catch (Throwable e) {
             System.getLogger(EnvironmentContentHolder.class.getName())
                     .log(System.Logger.Level.ERROR, "load com.truthbean.debbie.env.EnvironmentContent error.", e);
@@ -44,8 +44,7 @@ public class SimpleEnvironmentContentProfile implements EnvironmentContentProfil
         environmentContents = environmentContents.stream()
                 .sorted(Comparator.comparingInt(EnvironmentContent::getPriority))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        for (
-                EnvironmentContent environmentContent : environmentContents) {
+        for (EnvironmentContent environmentContent : environmentContents) {
             SimpleEnvironmentContentProfile.environmentContents.put(environmentContent.getProfile(), environmentContent);
             highestPriorityEnv = environmentContent;
         }

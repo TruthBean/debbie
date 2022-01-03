@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -11,9 +11,12 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.logger.LogLevel;
 
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
@@ -25,33 +28,21 @@ import java.util.concurrent.ThreadFactory;
  */
 class AutoCreatedBeanFactory {
 
-    private final GlobalBeanFactory globalBeanFactory;
-    private final DebbieBeanInfoFactory beanInfoFactory;
-    private final BeanInitialization beanInitialization;
-    AutoCreatedBeanFactory(DebbieApplicationContext applicationContext) {
-        this.beanInfoFactory = applicationContext.getBeanInfoFactory();
-        this.beanInitialization = applicationContext.getBeanInitialization();
-        this.globalBeanFactory = applicationContext.getGlobalBeanFactory();
+    private final ThreadPooledExecutor autoCreatedBeanExecutor;
+
+    AutoCreatedBeanFactory(DebbieApplication application) {
+        final ThreadFactory namedThreadFactory = new NamedThreadFactory("AutoCreatedBeanFactory", true)
+                .setUncaughtExceptionHandler((t, e) -> {
+                    LOGGER.error("Bean created error(" + e.getMessage() + ") in thread(" + t.getId() + ", " + t.getName() + "), application will shutdown. ", e);
+                    application.exit();
+                });
+        autoCreatedBeanExecutor = new ThreadPooledExecutor(1, 1, namedThreadFactory);
     }
 
-    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("AutoCreatedBeanFactory", true);
-    private final ThreadPooledExecutor autoCreatedBeanExecutor = new ThreadPooledExecutor(1, 1, namedThreadFactory);
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void autoCreateBeans() {
-        final Set<BeanInfo<?>> autoCreatedBean = beanInfoFactory.getAutoCreatedBean();
+    void autoCreateBeans(DebbieApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
         autoCreatedBeanExecutor.execute(() -> {
-            for (BeanInfo localBeanInfo : autoCreatedBean) {
-                boolean lazyCreate = localBeanInfo.isLazyCreate();
-                if (!lazyCreate && localBeanInfo instanceof MutableBeanInfo) {
-                    try {
-                        MutableBeanInfo mutableBeanInfo = (MutableBeanInfo) localBeanInfo;
-                        mutableBeanInfo.setBean(globalBeanFactory.factory(localBeanInfo));
-                        beanInitialization.refreshBean(mutableBeanInfo);
-                    } catch (Exception e) {
-                        LOGGER.error("", e);
-                    }
-                }
+            if (!applicationContext.isExiting()) {
+                beanInfoManager.autoCreateSingletonBeans(applicationContext);
             }
         });
     }

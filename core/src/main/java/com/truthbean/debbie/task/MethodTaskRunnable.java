@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.task;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 import java.lang.reflect.Method;
 import java.util.Objects;
 
@@ -46,7 +48,7 @@ public class MethodTaskRunnable implements TaskRunnable {
     }
 
     @Override
-    public void run() {
+    public void run(ApplicationContext applicationContext) {
 
     }
 

@@ -9,7 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.repository;
 
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionService;
 
@@ -22,52 +23,53 @@ import java.util.List;
  */
 public class DdlRepository implements TransactionService {
 
-    // private final DataSourceConfiguration configuration;
     private final DdlRepositoryHandler handler;
 
-    public DdlRepository(DataSourceConfiguration configuration) {
-        // this.configuration = configuration;
+    public DdlRepository() {
         this.handler = new DdlRepositoryHandler();
-        this.handler.setDriverName(configuration.getDriverName());
     }
 
     public int createDatabase(String database) {
         var transaction = getTransaction();
-        return handler.createDatabase(transaction, database);
+        return handler.createDatabase(getLog(), transaction, database);
     }
 
     public List<String> showDatabases() {
         var transaction = getTransaction();
-        return handler.showDatabases(transaction);
+        return handler.showDatabases(getLog(), transaction);
     }
 
     public int dropDatabase(String database) {
         var transaction = getTransaction();
-        return handler.dropDatabase(transaction, database);
+        return handler.dropDatabase(getLog(), transaction, database);
     }
 
     public int useDatabase(String database) {
         var transaction = getTransaction();
-        return handler.dropDatabase(transaction, database);
+        return handler.dropDatabase(getLog(), transaction, database);
     }
 
     public List<String> showTables() {
         var transaction = getTransaction();
-        return handler.showTables(transaction);
+        return handler.showTables(getLog(), transaction);
     }
 
     public <E> void createTable(Class<E> entity) {
         var transaction = getTransaction();
-        handler.createTable(transaction, entity);
+        handler.createTable(getLog(), transaction, entity);
     }
 
     public <E> void createTable(EntityInfo<E> entityInfo) {
         var transaction = getTransaction();
-        handler.createTable(transaction, entityInfo);
+        handler.createTable(getLog(), transaction, entityInfo);
     }
 
     public void dropTable(String table) {
         var transaction = getTransaction();
-        handler.dropTable(transaction, table);
+        handler.dropTable(getLog(), transaction, table);
+    }
+
+    protected Logger getLog() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

@@ -296,7 +296,7 @@ public class HttpClientAction extends HttpHandler {
 
             final HttpHeaders responseHeaders = response.headers();
             result.setHeaders(responseHeaders.map());
-            LOGGER.debug(() -> "whether it's compressed，value is " + responseHeaders.allValues("Content-Encoding"));
+            LOGGER.debug(() -> "whether it's compressed，VALUE is " + responseHeaders.allValues("Content-Encoding"));
 
             final Object responseBody = response.body();
             if (responseBody != null) {

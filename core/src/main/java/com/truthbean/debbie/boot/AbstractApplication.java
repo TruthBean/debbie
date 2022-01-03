@@ -10,15 +10,15 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.DebbieVersion;
 import com.truthbean.debbie.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.PooledExecutor;
 import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.event.DebbieReadyEvent;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
@@ -27,10 +27,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author truthbean/Rogar·Q
@@ -77,6 +74,10 @@ public abstract class AbstractApplication implements DebbieApplication {
         return false;
     }
 
+    public boolean isEnable(EnvironmentContent envContent) {
+        return true;
+    }
+
     public void setApplicationFactory(ApplicationFactory applicationFactory) {
         this.applicationFactory = applicationFactory;
         this.applicationContext = applicationFactory.getApplicationContext();
@@ -93,14 +94,12 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     /**
      * init application
-     * @param configurationCenter configurationFactory
-     * @see DebbieConfigurationCenter
      * @param applicationContext applicationContext
      * @param classLoader main class's classLoader
      * @see ApplicationContext
      * @return DebbieApplication implement
      */
-    public abstract DebbieApplication init(DebbieConfigurationCenter configurationCenter, ApplicationContext applicationContext,
+    public abstract DebbieApplication init(ApplicationContext applicationContext,
                                            ClassLoader classLoader);
 
     public void setBeforeStartTime(Instant beforeStartTime) {
@@ -108,8 +107,8 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     protected void postBeforeStart() {
-        if (applicationFactory instanceof DebbieApplicationFactory) {
-            ((DebbieApplicationFactory) applicationFactory).postCallStarter();
+        if (applicationFactory instanceof DebbieApplicationFactory debbieApplicationFactory) {
+            debbieApplicationFactory.postCallStarter(this);
         }
     }
 
@@ -121,6 +120,7 @@ public abstract class AbstractApplication implements DebbieApplication {
                 registerShutdownHook();
                 try {
                     start(beforeStartTime, applicationArgs);
+                    applicationContext.publishEvent(new DebbieReadyEvent(applicationContext, this));
                     exited.set(false);
                 } catch (Exception e) {
                     exited.set(false);
@@ -213,6 +213,7 @@ public abstract class AbstractApplication implements DebbieApplication {
             logger.debug(() -> "application start spends " + between.toMillis() + " million seconds");
             logger.debug(() -> "application start spends " + between.toNanos() + " nano seconds");
         }
+        logger.info(() -> "application is exiting");
     }
 
     public final void doExit(ApplicationArgs args) {

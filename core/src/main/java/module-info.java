@@ -65,12 +65,14 @@ module com.truthbean.debbie.core {
     requires org.yaml.snakeyaml;
 
     exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
+    exports com.truthbean.debbie to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
 
     uses com.truthbean.debbie.boot.DebbieModuleStarter;
     uses com.truthbean.debbie.boot.AbstractApplication;
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
     uses com.truthbean.debbie.task.TaskAction;
     uses com.truthbean.debbie.env.EnvironmentContent;
+    uses com.truthbean.debbie.env.MutableEnvironmentContent;
     uses com.truthbean.debbie.env.EnvironmentContentProfile;
     uses ApplicationFactory;
 
@@ -78,6 +80,9 @@ module com.truthbean.debbie.core {
             with com.truthbean.debbie.boot.DebbieLoggerConfig;
 
     provides com.truthbean.debbie.env.EnvironmentContent
+            with com.truthbean.debbie.properties.BaseProperties;
+
+    provides com.truthbean.debbie.env.MutableEnvironmentContent
             with com.truthbean.debbie.properties.BaseProperties;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter

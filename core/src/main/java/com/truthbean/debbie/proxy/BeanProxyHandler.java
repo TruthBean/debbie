@@ -9,5 +9,9 @@ import com.truthbean.debbie.bean.BeanInfo;
  */
 public interface BeanProxyHandler {
 
-    <T, K extends T> T proxyCreatedBean(BeanInfo<K> beanInfo, BeanProxyType proxyType);
+    <T, K extends T> T proxyCreatedBean(BeanInfo<K> beanInfo, K bean, BeanProxyType proxyType);
+
+    default <T, K extends T> T proxyCreatedBean(K bean, Class<T> clazz, BeanProxyType proxyType) {
+        return bean;
+    }
 }

@@ -17,11 +17,21 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
  */
 public class RmiServerConfiguration implements DebbieConfiguration {
 
+    private boolean enable;
     private String name;
 
     private String rmiBindAddress;
 
     private int rmiBindPort;
+
+    @Override
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     public String getRmiBindAddress() {
         return rmiBindAddress;
@@ -49,7 +59,7 @@ public class RmiServerConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public void reset() {
+    public void close() {
         this.name = null;
     }
 }

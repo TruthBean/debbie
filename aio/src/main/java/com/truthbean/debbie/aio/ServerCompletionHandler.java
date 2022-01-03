@@ -54,15 +54,16 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
 
     private RouterRequest handleRequest(AsynchronousSocketChannel channel) {
         try {
-            if (LOGGER.isDebugEnabled())
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("remote address: " + channel.getRemoteAddress().toString());
+            }
         } catch (IOException e) {
             LOGGER.error("", e);
         }
 
         //获取客户端发送的请求
         var requestCompleteHandler = new RequestCompleteHandler();
-        return requestCompleteHandler.handle(channel, this.sessionManager);
+        return requestCompleteHandler.handle(configuration.getConnectionTimeout(), channel, this.sessionManager);
     }
 
     private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,
@@ -85,8 +86,9 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
             LOGGER.error("", e);
         }
 
-        if (attachment != null)
+        if (attachment != null) {
             attachment.accept(attachment, this);
+        }
     }
 
     @Override

@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.check.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -49,7 +51,7 @@ class DdlRepositoryHandlerTest {
     void testCreateDatabase() throws ExecutionException, InterruptedException {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction,
-                () -> ddlRepositoryHandler.createDatabase(transaction, "hello"));
+                () -> ddlRepositoryHandler.createDatabase(LOGGER, transaction, "hello"));
         System.out.println(r.get());
     }
 
@@ -57,7 +59,7 @@ class DdlRepositoryHandlerTest {
     void testShowDatabases() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.action(transaction,
-                () -> ddlRepositoryHandler.showDatabases(transaction));
+                () -> ddlRepositoryHandler.showDatabases(LOGGER, transaction));
         System.out.println(r);
     }
 
@@ -65,7 +67,7 @@ class DdlRepositoryHandlerTest {
     void testDropDatabase() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction,
-                () -> ddlRepositoryHandler.dropDatabase(transaction, "hello"));
+                () -> ddlRepositoryHandler.dropDatabase(LOGGER, transaction, "hello"));
         System.out.println(r);
     }
 
@@ -73,8 +75,8 @@ class DdlRepositoryHandlerTest {
     void testShowTables() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            ddlRepositoryHandler.useDatabase(transaction, "mysql");
-            return ddlRepositoryHandler.showTables(transaction);
+            ddlRepositoryHandler.useDatabase(LOGGER, transaction, "mysql");
+            return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
         System.out.println(r);
     }
@@ -86,7 +88,7 @@ class DdlRepositoryHandlerTest {
             // ddlRepositoryHandler.useDatabase(transaction, "test");
             // beanInitialization.init(Surname.class);
             // beanFactoryHandler.refreshBeans();
-            ddlRepositoryHandler.createTable(transaction, Surname.class);
+            ddlRepositoryHandler.createTable(LOGGER, transaction, Surname.class);
             return ""; // ddlRepositoryHandler.showTables(transaction);
         });
         System.out.println(r);
@@ -96,11 +98,13 @@ class DdlRepositoryHandlerTest {
     void dropTable() {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
-            ddlRepositoryHandler.useDatabase(transaction, "test");
-            ddlRepositoryHandler.dropTable(transaction, "surname");
-            return ddlRepositoryHandler.showTables(transaction);
+            ddlRepositoryHandler.useDatabase(LOGGER, transaction, "test");
+            ddlRepositoryHandler.dropTable(LOGGER, transaction, "surname");
+            return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
         System.out.println(r);
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandlerTest.class);
 
 }

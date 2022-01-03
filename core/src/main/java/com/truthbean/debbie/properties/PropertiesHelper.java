@@ -42,7 +42,7 @@ public final class PropertiesHelper {
     private static final Map<String, Properties> RAW_PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * properties with value replaced by real value
+     * properties with VALUE replaced by real VALUE
      */
     private static final Map<String, Properties> PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
@@ -58,7 +58,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property value
+     * get property VALUE
      *
      * @param filename properties file name
      * @param key key
@@ -69,7 +69,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get raw property value
+     * get raw property VALUE
      *
      * @param filename properties file name
      * @param key key
@@ -80,7 +80,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property int value
+     * get property int VALUE
      *
      * @param key key
      * @param filename filename
@@ -103,11 +103,11 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property bool value
+     * get property bool VALUE
      *
      * @param filename properties file name
      * @param key property key
-     * @return property bool value
+     * @return property bool VALUE
      */
     public static boolean getBoolProperty(String filename, String key) {
         String valueStr = getProperty(filename, key, null);
@@ -145,9 +145,9 @@ public final class PropertiesHelper {
     /**
      * replace property
      *
-     * @param expression properties value contains, like a.b.c=a-${user.dir}
+     * @param expression properties VALUE contains, like a.b.c=a-${user.dir}
      * @param params the properties
-     * @return the real property value
+     * @return the real property VALUE
      */
     public static String replaceProperty(String expression, Properties params) {
         if (expression == null || expression.length() == 0 || !expression.contains("$")) {
@@ -172,7 +172,7 @@ public final class PropertiesHelper {
                 }
             }
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("env value:" + value);
+                LOGGER.debug("env VALUE:" + value);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
         matcher.appendTail(sb);

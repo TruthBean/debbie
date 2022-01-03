@@ -10,9 +10,8 @@
 package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.annotation.AnnotationInfo;
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.DebbieClassBeanInfo;
+import com.truthbean.debbie.bean.BeanInfo;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
@@ -40,7 +39,7 @@ import java.util.*;
  * @since 0.0.1
  */
 public class MvcRouterRegister {
-    private static final Set<RouterInfo> ROUTER_INFO_SET = new HashSet<>();
+    private final Set<RouterInfo> routerInfoSet = new HashSet<>();
 
     private static volatile MvcRouterRegister instance;
     private final MvcConfiguration webConfiguration;
@@ -53,22 +52,27 @@ public class MvcRouterRegister {
         // create instalace
         getInstance(webConfiguration);
         // config
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        Set<DebbieClassBeanInfo<?>> classInfoSet = beanInitialization.getAnnotatedClass(Router.class);
-        for (DebbieClassBeanInfo<?> classInfo : classInfoSet) {
-            Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = classInfo.getClassAnnotations();
-            Watcher watcher = classInfo.getClassAnnotation(Watcher.class);
-            if (watcher == null || watcher.type() == WatcherType.HTTP) {
-                registerRouter(HttpRouterParser.parse(classAnnotations), classInfo, webConfiguration, applicationContext);
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        Set<BeanInfo<?>> beanInfoSet = beanInfoManager.getAnnotatedClass(Router.class);
+        for (BeanInfo<?> beanInfo : beanInfoSet) {
+            if (beanInfo instanceof ClassInfo) {
+                ClassInfo<?> classInfo = (ClassInfo<?>) beanInfo;
+                Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = classInfo.getClassAnnotations();
+                Watcher watcher = classInfo.getClassAnnotation(Watcher.class);
+                if (watcher == null || watcher.type() == WatcherType.HTTP) {
+                    registerRouter(HttpRouterParser.parse(classAnnotations), classInfo, webConfiguration, applicationContext);
+                }
             }
         }
     }
 
     public static MvcRouterRegister getInstance(MvcConfiguration webConfiguration) {
-        if (instance == null)
-        synchronized (MvcRouterRegister.class) {
-            if (instance == null)
-                instance = new MvcRouterRegister(webConfiguration);
+        if (instance == null) {
+            synchronized (MvcRouterRegister.class) {
+                if (instance == null) {
+                    instance = new MvcRouterRegister(webConfiguration);
+                }
+            }
         }
         return instance;
     }
@@ -108,7 +112,7 @@ public class MvcRouterRegister {
         info.setExecutor(new SimpleRouterExecutor(router));
 
         LOGGER.debug(() -> "register router: " + info);
-        ROUTER_INFO_SET.add(info);
+        routerInfoSet.add(info);
         return this;
     }
 
@@ -185,7 +189,7 @@ public class MvcRouterRegister {
     }
 
     public static void registerRouter(RouterInfo routerInfo) {
-        ROUTER_INFO_SET.add(routerInfo);
+        instance.routerInfoSet.add(routerInfo);
     }
 
     private static void registerRouter(HttpRouterInfo httpRouterInfo,
@@ -295,7 +299,7 @@ public class MvcRouterRegister {
                 routerInfo.setResponse(response);
                 routerExecutor.setMethodParams(methodParams);
                 LOGGER.debug(() -> "register router: " + routerInfo);
-                ROUTER_INFO_SET.add(routerInfo);
+                instance.routerInfoSet.add(routerInfo);
             }
         }
     }
@@ -315,7 +319,7 @@ public class MvcRouterRegister {
     }
 
     public static Set<RouterInfo> getRouterInfoSet() {
-        return Collections.unmodifiableSet(ROUTER_INFO_SET);
+        return Collections.unmodifiableSet(instance.routerInfoSet);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterRegister.class);

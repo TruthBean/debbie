@@ -300,7 +300,7 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
      * Tries to parse the given {@link String} into an integer and applies the given boundaries. Will return 0 if the
      * {@link String} cannot be parsed.
      *
-     * @param parameter  the parameter value.
+     * @param parameter  the parameter VALUE.
      * @param upper      the upper bound to be applied.
      * @param shiftIndex whether to shift the index if {@link #oneIndexedParameters} is set to true.
      * @return
@@ -313,7 +313,7 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
 
         try {
             int parsed = Integer.parseInt(parameter) - (oneIndexedParameters && shiftIndex ? 1 : 0);
-            return Optional.of(parsed < 0 ? 0 : parsed > upper ? upper : parsed);
+            return Optional.of(parsed < 0 ? 0 : Math.min(parsed, upper));
         } catch (NumberFormatException e) {
             return Optional.of(0);
         }

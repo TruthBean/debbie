@@ -96,7 +96,7 @@ public class AnnotationInfo {
             Class<? extends Annotation> alias = info.getAliasForAnnotation();
             if (info.hasAliasFor() && alias == Annotation.class || alias == origin.annotationType()) {
                 var aliasInfo = properties.get(info.getAliasForAttribute());
-                if (aliasInfo.isDefaultValue()) {
+                if (aliasInfo != null && aliasInfo.isDefaultValue()) {
                     aliasInfo.setValue(info.getValue());
                 }
             }

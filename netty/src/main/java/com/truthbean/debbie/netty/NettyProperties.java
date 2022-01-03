@@ -9,12 +9,18 @@
  */
 package com.truthbean.debbie.netty;
 
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.MvcProperties;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.server.BaseServerProperties;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -23,19 +29,42 @@ import com.truthbean.debbie.server.BaseServerProperties;
  */
 public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
 
-    private NettyConfiguration configuration;
+    private final Map<String, NettyConfiguration> configurationMap = new HashMap<>();
 
     public static final String ENABLE_KEY = "debbie.netty.enable";
 
     @Override
-    public NettyConfiguration toConfiguration(ApplicationContext applicationContext) {
-        if (configuration != null) {
-            return configuration;
-        }
+    public Set<String> getProfiles() {
+        return configurationMap.keySet();
+    }
 
+    @Override
+    public NettyConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
+        if (StringUtils.hasText(name)) {
+            if (configurationMap.isEmpty()) {
+                buildConfiguration(applicationContext);
+            }
+            return configurationMap.get(name);
+        } else {
+            return getConfiguration(applicationContext);
+        }
+    }
+
+    @Override
+    public NettyConfiguration getConfiguration(ApplicationContext applicationContext) {
+        if (configurationMap.isEmpty()) {
+            buildConfiguration(applicationContext);
+        }
+        if (configurationMap.isEmpty()) {
+            configurationMap.put(DEFAULT_PROFILE, new NettyConfiguration(applicationContext.getClassLoader()));
+        }
+        return configurationMap.get(DEFAULT_PROFILE);
+    }
+
+    private void buildConfiguration(ApplicationContext applicationContext) {
         var classLoader = applicationContext.getClassLoader();
 
-        configuration = new NettyConfiguration(classLoader);
+        NettyConfiguration configuration = new NettyConfiguration(classLoader);
 
         BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
         MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration(classLoader);
@@ -45,6 +74,13 @@ public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
         NettyProperties properties = new NettyProperties();
         properties.loadAndSet(properties, configuration);
 
-        return configuration;
+        configuration.setEnable(getBooleanValue(ENABLE_KEY, true));
+
+        configurationMap.put(DEFAULT_PROFILE, configuration);
+    }
+
+    @Override
+    public void close() throws IOException {
+        configurationMap.clear();
     }
 }

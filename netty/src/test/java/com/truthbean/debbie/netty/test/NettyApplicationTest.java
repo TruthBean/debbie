@@ -12,10 +12,6 @@ import org.junit.jupiter.api.Test;
 @RestRouter
 public class NettyApplicationTest {
 
-    static {
-        System.setProperty("logging.level.com.truthbean.debbie", "TRACE");
-    }
-
     @Test
     void content() {
         System.out.println("nothing");

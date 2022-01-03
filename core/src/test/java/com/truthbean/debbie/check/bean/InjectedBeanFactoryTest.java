@@ -30,17 +30,16 @@ class InjectedBeanFactoryTest {
             System.out.println(i);
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-            BeanInfoFactory beanInfoFactory = applicationContext.getBeanInfoFactory();
-            InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
+            BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
             GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
-            BeanInfo<Abc> beanInfo = beanInfoFactory.getBeanInfo("abc", Abc.class, true);
+            BeanFactory<Abc> beanInfo = beanInfoManager.getBeanFactory("abc", Abc.class, true);
             System.out.println("------------------------------------------------------------------------------");
             Abc factory = globalBeanFactory.factory(Abc.class);
             System.out.println(factory.toString());
             System.out.println("------------------------------------------------------------------------------");
 
-            factory = injectedBeanFactory.factory(beanInfo);
+            factory = beanInfo.factoryBean(applicationContext);
             System.out.println(factory.toString());
 
             Abc abc = globalBeanFactory.factory(Abc.class);

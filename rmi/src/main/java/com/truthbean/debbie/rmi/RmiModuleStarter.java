@@ -13,7 +13,7 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -30,37 +30,37 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+        var beanFactory = new PropertiesConfigurationBeanFactory<>(new RmiServerProperties(), RmiServerConfiguration.class);
+        beanInfoManager.register(beanFactory);
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new RmiServerProperties(), RmiServerConfiguration.class);
-
-        RmiServerConfiguration configuration = configurationFactory.factory(RmiServerConfiguration.class, applicationContext);
+    public void configure(ApplicationContext applicationContext) {
+        RmiServerConfiguration configuration = applicationContext.factory(RmiServerConfiguration.class);
 
         // 注册管理器
         var register = new RemoteServiceRegister(applicationContext, configuration.getRmiBindAddress(), configuration.getRmiBindPort());
         // bind
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        Set<Class<?>> rmiServiceMappers = getRmiServiceMappers(beanInitialization);
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        Set<Class<?>> rmiServiceMappers = getRmiServiceMappers(beanInfoManager);
         for (Class<?> rmiServiceMapper : rmiServiceMappers) {
             register.bind(rmiServiceMapper);
         }
     }
 
-    private Set<Class<?>> getRmiServiceMappers(BeanInitialization beanInitialization) {
+    private Set<Class<?>> getRmiServiceMappers(BeanInfoManager beanInfoManager) {
         Set<Class<?>> rmiServiceMappers = new LinkedHashSet<>();
-        Set<MutableBeanInfo<?>> beanInfoSet = beanInitialization.getRegisteredRawBeans();
-        for (MutableBeanInfo<?> beanInfo : beanInfoSet) {
-            if (beanInfo instanceof DebbieClassBeanInfo) {
-                DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) beanInfo;
+        /*Set<BeanInfo<?>> beanInfoSet = beanInfoManager.getRegisteredRawBeans();
+        for (BeanInfo<?> beanInfo : beanInfoSet) {
+            if (beanInfo instanceof ClassBeanInfo) {
+                ClassBeanInfo<?> classBeanInfo = (ClassBeanInfo<?>) beanInfo;
                 DebbieRmiMapper classAnnotation = classBeanInfo.getClassAnnotation(DebbieRmiMapper.class);
                 if (classAnnotation != null && classBeanInfo.getBeanClass().isInterface()) {
                     rmiServiceMappers.add(classBeanInfo.getBeanClass());
                 }
             }
-        }
+        }*/
         return rmiServiceMappers;
     }
 
@@ -70,7 +70,7 @@ public class RmiModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    public void release(ApplicationContext applicationContext) {
         // todo
     }
 }

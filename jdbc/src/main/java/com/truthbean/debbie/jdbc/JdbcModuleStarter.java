@@ -9,24 +9,29 @@
  */
 package com.truthbean.debbie.jdbc;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
+import com.truthbean.debbie.jdbc.annotation.SqlRepositoryBeanRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
-import com.truthbean.debbie.jdbc.datasource.DataSourceFactoryBeanRegister;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
-import com.truthbean.debbie.jdbc.repository.JdbcRepositoryFactory;
-import com.truthbean.debbie.jdbc.repository.DdlRepository;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
+import com.truthbean.debbie.jdbc.entity.EntityResolverAware;
+import com.truthbean.debbie.jdbc.entity.ResultMapRegister;
 import com.truthbean.debbie.jdbc.repository.DdlRepositoryFactory;
-import com.truthbean.debbie.jdbc.repository.JdbcRepository;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevelTransformer;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
+import com.truthbean.debbie.proxy.BeanProxyType;
+import com.truthbean.transformer.DataTransformerCenter;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,53 +41,77 @@ import java.util.Set;
 public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        beanInitialization.registerDataTransformer(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+        beanInfoManager.addIgnoreInterface(EntityResolverAware.class);
+        beanInfoManager.addIgnoreInterface(ResultMapRegister.class);
 
-        // MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
-        // methodProxyHandlerRegister.register(JdbcTransactional.class, TransactionalMethodProxyHandler.class);
+        DataTransformerCenter.register(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
 
-        registerDdlRepository(applicationContext, beanInitialization);
-        registerCustomRepository(beanInitialization, applicationContext.getGlobalBeanFactory());
+        DdlRepositoryFactory factory = new DdlRepositoryFactory("ddlRepository");
+        beanInfoManager.register(factory);
+        beanInfoManager.registerBeanAnnotation(SqlRepository.class, new DefaultBeanComponentParser());
+        beanInfoManager.registerBeanRegister(new SqlRepositoryBeanRegister());
+
+        DataSourceProperties instance = DataSourceProperties.getInstance();
+        var dataSourceConfigurationBeanFactory = new PropertiesConfigurationBeanFactory<>(instance, DataSourceConfiguration.class);
+        beanInfoManager.register(dataSourceConfigurationBeanFactory);
+
+        var dataSourcePoolConfigurationBeanFactory = new PropertiesConfigurationBeanFactory<>(new DefaultDataSourcePoolProperties(), DefaultDataSourcePoolConfiguration.class);
+        beanInfoManager.register(dataSourcePoolConfigurationBeanFactory);
+
+        registerDataSourceFactory(applicationContext);
+
+        EntityResolver entityResolver = EntityResolver.getInstance();
+        BeanLifecycle beanLifecycle = new EntityResolverBeanLifecycle(entityResolver);
+        beanInfoManager.registerBeanLifecycle(beanLifecycle);
     }
 
-    private void registerDdlRepository(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        DebbieBeanInfo<DdlRepository> beanInfo = new DebbieBeanInfo<>(DdlRepository.class);
-        beanInfo.addBeanName("ddlRepository");
-        DdlRepositoryFactory factory = new DdlRepositoryFactory();
-        factory.setGlobalBeanFactory(applicationContext.getGlobalBeanFactory());
-        beanInfo.setBeanFactory(factory);
-        beanInitialization.initBean(beanInfo);
-    }
+    // @SuppressWarnings("unchecked")
+    private void registerDataSourceFactory(ApplicationContext applicationContext) {
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        BeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = beanInfoManager.getBeanInfo(null, DataSourceFactory.class, false);
+        // Class<? extends DataSourceConfiguration> configurationClass = DataSourceConfiguration.class;
+        /*try {
+            configurationClass = (Class<? extends DataSourceConfiguration>) Class.forName("com.truthbean.debbie.hikari.HikariConfiguration");
+        } catch (ClassNotFoundException e) {
+            LOGGER.info("com.truthbean.debbie:debbie-hikari jar not be depended. ");
+        }*/
+        if (dataSourceFactoryBeanInfo == null) {
+            Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
+            for (DataSourceFactory dataSourceFactory : factories) {
+                String name = dataSourceFactory.getName();
+                SimpleBeanFactory<DataSourceFactory, DataSourceFactory> simpleBeanFactory;
+                if ("defaultDataSourceFactory".equals(name)) {
+                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, "dataSourceFactory");
+                } else {
+                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name);
+                }
+                beanInfoManager.register(simpleBeanFactory);
+            }
+        } else {
+            if (dataSourceFactoryBeanInfo instanceof MutableBeanFactory<DataSourceFactory> mutableBeanFactory) {
+                if (!mutableBeanFactory.isCreated()) {
+                    Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
+                    for (DataSourceFactory dataSourceFactory : factories) {
+                        mutableBeanFactory.setBean(dataSourceFactory);
+                        // dataSourceFactoryBeanInfo.addBeanName("dataSourceFactory");
+                        mutableBeanFactory.addBeanName(dataSourceFactory.getName());
+                        mutableBeanFactory.setBeanType(BeanType.SINGLETON);
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void registerCustomRepository(BeanInitialization beanInitialization, GlobalBeanFactory beanFactory) {
-        Set<DebbieClassBeanInfo<?>> repository = beanInitialization.getAnnotatedClass(SqlRepository.class);
-        for (DebbieClassBeanInfo<?> debbieBeanInfo : repository) {
-            if (debbieBeanInfo.isAssignable(JdbcRepository.class)) {
-                BeanFactory repositoryFactory = new JdbcRepositoryFactory(debbieBeanInfo);
-                repositoryFactory.setGlobalBeanFactory(beanFactory);
-                debbieBeanInfo.setBeanFactory(repositoryFactory);
+                        beanInfoManager.register(mutableBeanFactory);
+                        beanInfoManager.refresh(mutableBeanFactory);
+                    }
+                }
             }
         }
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        DataSourceProperties instance = DataSourceProperties.getInstance();
-        configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class, instance.getDefaultConfiguration());
-        Map<String, DataSourceConfiguration> configurationMap = instance.getConfigurationMap();
-        configurationMap.forEach((name, value) -> configurationFactory.register(DataSourceProperties.class, DataSourceConfiguration.class, value));
-        configurationFactory.register(new DefaultDataSourcePoolProperties(), DataSourceConfiguration.class);
-
-        var register = new DataSourceFactoryBeanRegister(configurationFactory, applicationContext);
-        register.registerDataSourceFactory();
-
-        applicationContext.refreshBeans();
+    public void configure(ApplicationContext applicationContext) {
     }
 
     @Override
-    public void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    public void starter(ApplicationContext applicationContext) {
     }
 
     @Override
@@ -91,7 +120,9 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    public void release(ApplicationContext applicationContext) {
         TransactionManager.clear();
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcModuleStarter.class);
 }

@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
@@ -18,7 +18,6 @@ import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,12 +32,10 @@ class MvcRouterHandlerTest {
     public void before() {
         ApplicationFactory factory = ApplicationFactory.configure(MvcRouterHandlerTest.class);
         ApplicationContext applicationContext = factory.getApplicationContext();
-        BeanInitialization initialization = applicationContext.getBeanInitialization();
-        initialization.init(RouterInvokerTest.class);
-        applicationContext.refreshBeans();
+        BeanInfoManager initialization = applicationContext.getBeanInfoManager();
+        initialization.register(RouterInvokerTest.class);
 
-        DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
-        mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, applicationContext);
+        mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
 
         MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
     }

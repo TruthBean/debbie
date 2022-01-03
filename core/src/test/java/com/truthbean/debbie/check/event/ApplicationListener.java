@@ -10,5 +10,6 @@ public interface ApplicationListener<E extends TestStartedEvent> extends Generic
      *
      * @param event the event to respond to
      */
+    @Override
     void onApplicationEvent(E event);
 }

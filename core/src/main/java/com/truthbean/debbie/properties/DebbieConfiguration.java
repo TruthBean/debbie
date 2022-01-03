@@ -14,9 +14,12 @@ package com.truthbean.debbie.properties;
  * @since 0.0.1
  * Created on 2019/4/20 22:23.
  */
-public interface DebbieConfiguration {
+public interface DebbieConfiguration extends AutoCloseable {
+
+    boolean isEnable();
 
     String getName();
 
-    void reset();
+    @Override
+    void close();
 }

@@ -23,6 +23,9 @@ dependencies {
     // test =========================================================================================================
 
     testImplementation(project(":debbie-test"))
+    testImplementation(project(":debbie-aio"))
+    testImplementation(project(":debbie-jdbc"))
+    testImplementation("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }

@@ -9,7 +9,6 @@
  */
 package com.truthbean.debbie.concurrent;
 
-import com.truthbean.debbie.bean.SingletonBeanRegister;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
 
@@ -18,15 +17,19 @@ import com.truthbean.debbie.env.EnvironmentContent;
  * @since 0.5.0
  */
 public class DebbieThreadPoolConfigurer {
-    public void configure(ApplicationContext applicationContext) {
-        var register = new SingletonBeanRegister(applicationContext);
+
+    private final String threadPoolExecutorAwaitTerminationTimeKey = "debbie.thread-pool-executor.await-termination-time";
+
+    public ThreadPooledExecutor configure(ApplicationContext applicationContext) {
 
         EnvironmentContent envContent = applicationContext.getEnvContent();
-        var time = envContent.getLongValue("debbie.thread-pool-executor.await-termination-time", 5000L);
-        var factory = new ThreadPooledExecutor(10, 200,
+        var time = envContent.getLongValue(threadPoolExecutorAwaitTerminationTimeKey, 5000L);
+        var core = Runtime.getRuntime().availableProcessors();
+        var max = core * 100;
+        var queueLength = max * 100;
+        var factory = new ThreadPooledExecutor(core, max, queueLength,
                 new NamedThreadFactory().setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler()), time);
-        register.registerSingletonBean(factory, ThreadPooledExecutor.class, "threadPooledExecutor");
-
-        applicationContext.refreshBeans();
+        applicationContext.registerSingleBean(ThreadPooledExecutor.class, factory, "threadPooledExecutor");
+        return factory;
     }
 }

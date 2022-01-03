@@ -101,7 +101,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.properties", Constants.APPLICATION_PROPERTIES);
         if (applicationUrl == null) {
-            getLogger().warn(() -> "debbie.application.properties value is null.");
+            getLogger().warn(() -> "debbie.application.properties VALUE is null.");
         } else {
             getLogger().debug(() -> Constants.APPLICATION_PROPERTIES + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
@@ -158,7 +158,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.yaml", Constants.APPLICATION_YAML);
         if (applicationUrl == null) {
-            getLogger().warn(() -> "debbie.application.yaml value is null.");
+            getLogger().warn(() -> "debbie.application.yaml VALUE is null.");
         } else {
             getLogger().debug(() -> Constants.APPLICATION_YAML + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);
@@ -214,7 +214,7 @@ public class BaseProperties implements ResourceEnvironmentContent {
         var classLoader = ClassLoaderUtils.getClassLoader(BaseProperties.class);
         var applicationUrl = System.getProperty("debbie.application.yml", Constants.APPLICATION_YML);
         if (applicationUrl == null) {
-            getLogger().warn(() -> "debbie.application.yml value is null.");
+            getLogger().warn(() -> "debbie.application.yml VALUE is null.");
         } else {
             getLogger().debug(() -> Constants.APPLICATION_YML + ": " + applicationUrl);
             var url = classLoader.getResource(applicationUrl);

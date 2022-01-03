@@ -9,9 +9,7 @@
  */
 package com.truthbean.debbie.rmi;
 
-import com.truthbean.debbie.bean.BeanInfo;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.proxy.ProxyInvocationHandler;
 import com.truthbean.Logger;
@@ -117,9 +115,12 @@ public class RemoteServiceRegister {
     @SuppressWarnings("unchecked")
     public <S, SI extends S> void bind(Class<S> serviceClass) {
         try {
-            GlobalBeanFactory globalBeanFactory = handler.getGlobalBeanFactory();
-            BeanInfo<S> beanInfo = globalBeanFactory.getBeanInfoWithBean(serviceClass);
-            S bean = beanInfo.getBean();
+            // GlobalBeanFactory globalBeanFactory = handler.getGlobalBeanFactory();
+            BeanInfoManager beanInfoManager = handler.getBeanInfoManager();
+            // SimpleMutableBeanFactory<S, S> beanInfo = beanInfoManager.getBeanInfoWithBean(serviceClass, globalBeanFactory);
+            // S bean = beanInfo.factoryBean(handler);
+            BeanFactory<S> beanFactory = beanInfoManager.getBeanFactory(null, serviceClass, true);
+            S bean = beanFactory.factoryBean(handler);
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(bean);
 
             if (invocationHandler instanceof ProxyInvocationHandler) {
@@ -129,7 +130,7 @@ public class RemoteServiceRegister {
                 RemoteServiceProxy<S> remoteServiceProxy = new RemoteServiceProxy<>();
                 remoteServiceProxy.setService(realService);
 
-                bind(beanInfo.getServiceName(), remoteServiceProxy);
+                bind(beanFactory.getServiceName(), remoteServiceProxy);
             }
         } catch (Exception e) {
             LOGGER.error("", e);

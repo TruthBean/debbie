@@ -3,7 +3,7 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -14,10 +14,7 @@ import com.truthbean.debbie.concurrent.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.debbie.reflection.*;
 import com.truthbean.Logger;
 import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.common.mini.util.StringUtils;
@@ -39,7 +36,7 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     private GlobalBeanFactory globalBeanFactory;
 
     private final Set<TaskAction> taskActions;
-    private final Set<BeanInfo<?>> taskBeans = new LinkedHashSet<>();
+    private final Set<BeanInfo> taskBeans = new LinkedHashSet<>();
     private final Set<TaskInfo> taskList = new LinkedHashSet<>();
 
     TaskFactory() {
@@ -56,9 +53,9 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
         }
     }
 
-    void registerTask() {
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        Set<DebbieClassBeanInfo<?>> tasks = beanInitialization.getAnnotatedMethodBean(DebbieTask.class);
+    public void registerTask() {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        Set<BeanInfo<?>> tasks = beanInfoManager.getAnnotatedMethodsBean(DebbieTask.class);
         if (tasks != null && !tasks.isEmpty()) {
             taskBeans.addAll(tasks);
         }
@@ -67,10 +64,9 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     @Override
     public TaskRegister registerTask(TaskInfo taskInfo) {
         TaskRunnable taskRunnable = taskInfo.getTaskExecutor();
-        BeanInfo<?> taskBeanInfo = new SimpleBeanInfo<>(taskRunnable, BeanType.SINGLETON, BeanProxyType.ASM, taskRunnable.getName());
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
-        beanInitialization.initBean(taskBeanInfo);
-        applicationContext.refreshBeans();
+        BeanFactory<?> taskBeanInfo = new SimpleBeanFactory<>(taskRunnable, BeanType.SINGLETON, BeanProxyType.NO, taskRunnable.getName());
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.register(taskBeanInfo);
         taskBeans.add(taskBeanInfo);
         taskInfo.setConsumer(this::doTask);
         taskList.add(taskInfo);
@@ -82,13 +78,12 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     private final ScheduledPooledExecutor scheduledPooledExecutor = new ScheduledThreadPooledExecutor(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public void prepare() {
-        final Set<BeanInfo<?>> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
-        for (BeanInfo<?> taskBean : taskBeanSet) {
+        final Set<BeanInfo> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
+        for (BeanInfo taskBean : taskBeanSet) {
             Object task = globalBeanFactory.factory(taskBean.getServiceName());
             LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
-            if (taskBean instanceof DebbieClassBeanInfo) {
-                DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) taskBean;
-                Set<Method> methods = classBeanInfo.getAnnotationMethod(DebbieTask.class);
+            if (taskBean instanceof ClassInfo classInfo) {
+                Set<Method> methods = classInfo.getAnnotationMethod(DebbieTask.class);
                 for (Method method : methods) {
                     DebbieTask annotation = method.getAnnotation(DebbieTask.class);
                     var taskInfo = new MethodTaskInfo(taskBean.getBeanClass(), task, method, annotation, this::doTask);
@@ -139,16 +134,25 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
         var cron = annotation.getCron();
         long delay = annotation.getInitialDelay();
         if (fixedRate > -1) {
-            if (delay <= 0)
+            if (delay <= 0) {
                 delay = 0;
+            }
             final long finalDelay = delay;
             taskInfo.getTaskRunnableIfPresent(LOGGER, timerTask -> {
-                scheduledPooledExecutor.scheduleAtFixedRate(timerTask, finalDelay, fixedRate);
+                scheduledPooledExecutor.scheduleAtFixedRate(() -> {
+                    if (!applicationContext.isExiting()) {
+                        timerTask.run(applicationContext);
+                    }
+                }, finalDelay, fixedRate);
             });
         } else if (fixedRate == -1 && delay > -1) {
             final long finalDelay = delay;
             taskInfo.getTaskRunnableIfPresent(LOGGER, timerTask -> {
-                scheduledPooledExecutor.schedule(timerTask, finalDelay);
+                scheduledPooledExecutor.schedule(() -> {
+                    if (!applicationContext.isExiting()) {
+                        timerTask.run(applicationContext);
+                    }
+                }, finalDelay);
             });
         } else if (StringUtils.hasText(cron)) {
             // todo cron
@@ -158,8 +162,11 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     }
 
     private void doTask(TaskInfo taskInfo) {
-        if (taskInfo instanceof MethodTaskInfo) {
-            MethodTaskInfo methodTaskInfo = (MethodTaskInfo) taskInfo;
+        if (applicationContext.isExiting()) {
+            taskInfo.setRunning(false);
+            return;
+        }
+        if (taskInfo instanceof MethodTaskInfo methodTaskInfo) {
             List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(methodTaskInfo.getTaskMethod(), globalBeanFactory, applicationContext.getClassLoader());
             Object[] params = new Object[methodParams.size()];
             for (int i = 0; i < methodParams.size(); i++) {
@@ -169,25 +176,27 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
             try {
                 ReflectionHelper.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
             } catch (Exception e) {
-                LOGGER.error("task(" + taskInfo.toString());
+                LOGGER.error("task(" + taskInfo);
             }
         } else {
             taskInfo.setRunning(true);
-            taskInfo.getTaskExecutor().run();
+            taskInfo.getTaskExecutor().run(applicationContext);
         }
         taskInfo.setRunning(false);
     }
 
     @Override
-    public synchronized void destroy() {
-        LOGGER.info("destroy tasks bean");
-        for (TaskAction taskAction : taskActions) {
-            taskAction.stop();
+    public void destruct(ApplicationContext applicationContext) {
+        synchronized (TaskFactory.class) {
+            LOGGER.info("destroy tasks bean");
+            for (TaskAction taskAction : taskActions) {
+                taskAction.stop();
+            }
+            scheduledPooledExecutor.destroy();
+            scheduledPooledExecutor.destroy();
+            taskThreadPool.destroy();
+            taskBeans.clear();
         }
-        scheduledPooledExecutor.destroy();
-        scheduledPooledExecutor.destroy();
-        taskThreadPool.destroy();
-        taskBeans.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskFactory.class);

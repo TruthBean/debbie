@@ -12,7 +12,9 @@ import java.util.Map;
 public interface MultiDataSourceFactory extends DataSourceFactory {
 
     String dataSourceKeyPrefix = "dataSource";
+    String dataSourceFactoryKeyPrefix = "dataSourceFactory";
     String defaultDataSourceKey = "defaultDataSource";
+    String defaultDataSourceFactoryKey = "defaultDataSourceFactory";
 
     Map<String, DataSourceFactory> getAllDataSourceFactory();
 
@@ -20,5 +22,9 @@ public interface MultiDataSourceFactory extends DataSourceFactory {
 
     DataSourceFactory factoryDefault(DataSource dataSource);
 
+    DataSourceFactory factory(String name);
+
     DataSource getDefaultDataSource();
+
+    DataSource getDataSource(String name);
 }

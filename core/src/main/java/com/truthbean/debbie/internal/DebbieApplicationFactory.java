@@ -15,10 +15,11 @@ import com.truthbean.debbie.boot.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.event.EventListenerBeanManager;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.ClassesScanProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.reflection.ReflectionConfigurer;
 import com.truthbean.debbie.spi.SpiLoader;
@@ -63,7 +64,16 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     private synchronized AbstractApplication loadApplication() {
         var classLoader = applicationContext.getClassLoader();
         try {
-            var result = SpiLoader.loadProvider(AbstractApplication.class, classLoader, new SimpleApplication());
+            AbstractApplication result = null;
+            Set<AbstractApplication> set = SpiLoader.loadProviderSet(AbstractApplication.class, classLoader);
+            if (set != null && !set.isEmpty()) {
+                for (AbstractApplication application : set) {
+                    if (application.isEnable(envContent)) {
+                        result = application;
+                        break;
+                    }
+                }
+            }
             if (result == null) {
                 result = new SimpleApplication();
             }
@@ -83,39 +93,68 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     }
 
     @Override
+    public ApplicationFactory preInit(Class<?> applicationClass, String... args) {
+        this.applicationClass = applicationClass;
+        this.applicationArgs = new ApplicationArgs(args);
+        return this;
+    }
+
+    @Override
     public ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter) {
         DebbieModuleStarterRegister.getInstance().registerModuleStarter(moduleStarter);
         return this;
     }
 
     @Override
-    public ApplicationFactory init(Class<?> applicationClass) {
-        this.applicationClass = applicationClass;
-        return init();
-    }
-
-    @Override
-    public ApplicationFactory init() {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs, envContent);
+    public ApplicationFactory init(Class<?>... beanClasses) {
+        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs, envContent, beanClasses);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
     }
 
     @Override
-    public ApplicationFactory init(ClassLoader classLoader) {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, envContent);
+    public ApplicationFactory init(ClassLoader classLoader, Class<?>... beanClasses) {
+        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, envContent, beanClasses);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
     }
 
     @Override
-    public ApplicationFactory init(Class<?> applicationClass, ClassLoader classLoader) {
-        this.applicationClass = applicationClass;
-        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, envContent);
-        applicationContext.postConstructor();
-        bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
+    public ApplicationFactory register(BeanInfo<?> beanInfo) {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.register(beanInfo);
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory register(BeanFactory<?> beanFactory) {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.register(beanFactory);
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory register(Collection<BeanInfo<?>> collection) {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        for (BeanInfo<?> beanInfo : collection) {
+            beanInfoManager.register(beanInfo);
+        }
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory register(BeanLifecycle beanLifecycle) {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.registerBeanLifecycle(beanLifecycle);
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory register(BeanRegister beanRegister) {
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.registerBeanRegister(beanRegister);
         return this;
     }
 
@@ -125,7 +164,18 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         var classLoader = applicationContext.getClassLoader();
         var configuration = ClassesScanProperties.toConfiguration(classLoader);
         bootApplicationResolver.resolverApplicationClass(applicationClass, configuration, applicationContext.getResourceResolver());
-        applicationContext.getInjectedBeanFactory().registerInjectType(configuration.getCustomInjectType());
+        applicationContext.getBeanInfoManager().registerInjectType(configuration.getCustomInjectType());
+        config(configuration);
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory config(Object application) {
+        LOGGER.debug(() -> "init configuration");
+        var classLoader = applicationContext.getClassLoader();
+        var configuration = ClassesScanProperties.toConfiguration(classLoader);
+        bootApplicationResolver.resolverApplicationClass(application, configuration, applicationContext.getResourceResolver());
+        applicationContext.getBeanInfoManager().registerInjectType(configuration.getCustomInjectType());
         config(configuration);
         return this;
     }
@@ -134,8 +184,8 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     public ApplicationFactory config(BeanScanConfiguration configuration) {
         ResourceResolver resourceResolver = applicationContext.getResourceResolver();
         final var targetClasses = configuration.getTargetClasses(resourceResolver);
-        // beanInitialization
-        var beanInitialization = applicationContext.getBeanInitialization();
+        // beanInfoManager
+        var beanInfoManager = applicationContext.getBeanInfoManager();
         // register annotation
         if (this.debbieModuleStarters == null) {
             Set<DebbieModuleStarter> debbieModuleStarterSet = DebbieModuleStarterRegister.getInstance().getDebbieModuleStarters();
@@ -149,48 +199,52 @@ public class DebbieApplicationFactory implements ApplicationFactory {
                 if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") getComponentAnnotation");
                     Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
-                    if (componentAnnotations != null && !componentAnnotations.isEmpty())
-                        componentAnnotations.forEach(beanInitialization::registerBeanAnnotation);
+                    if (componentAnnotations != null && !componentAnnotations.isEmpty()) {
+                        componentAnnotations.forEach(beanInfoManager::registerBeanAnnotation);
+                    }
                 }
             }
         }
 
-        if (reflectionConfigurer.isReflectEnable()) {
-            beanInitialization.init(targetClasses);
-        }
-        registerResourceResolver(resourceResolver, beanInitialization);
-        applicationContext.getBeanInfoFactory().refreshBeans();
+        registerResourceResolver(resourceResolver, beanInfoManager);
+        // beanInfoManager.refreshBeans();
 
         if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") registerBean");
-                    debbieModuleStarter.registerBean(applicationContext, beanInitialization);
+                    debbieModuleStarter.registerBean(applicationContext, beanInfoManager);
                 }
             }
 
-            DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") configure");
-                    debbieModuleStarter.configure(configurationFactory, applicationContext);
+                    debbieModuleStarter.configure(applicationContext);
                 }
             }
         }
 
+        if (reflectionConfigurer.isReflectEnable()) {
+            LOGGER.debug(() -> "register scanned bean ...");
+            beanInfoManager.register(targetClasses);
+        }
+
         // beanConfiguration
-        beanInitialization.registerBeanConfiguration(targetClasses);
-        applicationContext.getBeanInfoFactory().refreshBeans();
+        // applicationContext.registerBeanConfiguration(targetClasses);
+        // beanInfoManager.refreshBeans();
         // transformer
-        DataTransformerFactory.register(targetClasses);
+        // DataTransformerFactory.register(targetClasses);
         // event
         EventListenerBeanRegister eventListenerBeanRegister = new EventListenerBeanRegister(applicationContext);
-        eventListenerBeanRegister.register();
+        EventListenerBeanManager register = eventListenerBeanRegister.register();
+        applicationContext.setEventListenerBeanManager(register);
         return this;
     }
 
     @Override
     public ApplicationFactory create() {
+        // applicationContext.refreshBeans();
         callStarter();
         return this;
     }
@@ -202,6 +256,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory build() {
+        // applicationContext.refreshBeans();
         return this;
     }
 
@@ -214,8 +269,9 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public DebbieApplication factory() {
-        if (debbieApplication != null)
+        if (debbieApplication != null) {
             return debbieApplication;
+        }
         debbieApplication = this.factoryApplication();
         this.configDebbieApplication(debbieApplication);
         return debbieApplication;
@@ -224,7 +280,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     @Override
     public void release() {
         synchronized (DebbieApplicationFactory.class) {
-            LOGGER.debug("release all");
+            LOGGER.debug("destruct all");
             if (debbieModuleStarters == null) {
                 debbieModuleStarters = DebbieModuleStarterRegister.getInstance().getDebbieModuleStarters();
             }
@@ -232,11 +288,10 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             if (!debbieModuleStarters.isEmpty()) {
                 List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
                 list.sort(Comparator.reverseOrder());
-                DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
                 for (DebbieModuleStarter debbieModuleStarter : list) {
                     if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
-                        LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") release");
-                        debbieModuleStarter.release(configurationFactory, applicationContext);
+                        LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") destruct");
+                        debbieModuleStarter.release(applicationContext);
                     }
                 }
                 list.clear();
@@ -255,7 +310,17 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         var classLoader = applicationContext.getClassLoader();
         var configuration = ClassesScanProperties.toConfiguration(classLoader);
         bootApplicationResolver.resolverApplicationClass(applicationClass, configuration, applicationContext.getResourceResolver());
-        applicationContext.getInjectedBeanFactory().registerInjectType(configuration.getCustomInjectType());
+        applicationContext.getBeanInfoManager().registerInjectType(configuration.getCustomInjectType());
+        config(configuration);
+        return this;
+    }
+
+    public synchronized ApplicationFactory configApplication(Object application) {
+        LOGGER.debug(() -> "init configuration");
+        var classLoader = applicationContext.getClassLoader();
+        var configuration = ClassesScanProperties.toConfiguration(classLoader);
+        bootApplicationResolver.resolverApplicationClass(application, configuration, applicationContext.getResourceResolver());
+        applicationContext.getBeanInfoManager().registerInjectType(configuration.getCustomInjectType());
         config(configuration);
         return this;
     }
@@ -269,31 +334,28 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         config(configuration);
     }
 
-    private void registerResourceResolver(ResourceResolver resourceResolver, BeanInitialization initialization) {
-        DebbieBeanInfo<ResourceResolver> beanInfo = new DebbieBeanInfo<>(ResourceResolver.class);
-        beanInfo.setBean(resourceResolver);
-        beanInfo.addBeanName("resourceResolver");
-        initialization.initSingletonBean(beanInfo);
+    private void registerResourceResolver(ResourceResolver resourceResolver, BeanInfoManager beanInfoManager) {
+        SimpleBeanFactory<ResourceResolver, ResourceResolver> beanInfo = new SimpleBeanFactory<>(resourceResolver, ResourceResolver.class, BeanProxyType.NO, "resourceResolver");
+        beanInfoManager.register(beanInfo);
     }
 
     protected synchronized void callStarter() {
         if (debbieModuleStarters == null) {
             debbieModuleStarters = DebbieModuleStarterRegister.getInstance().getDebbieModuleStarters();
         }
-        DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
         if (!debbieModuleStarters.isEmpty()) {
             debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
                 if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") start");
-                    debbieModuleStarter.starter(configurationFactory, applicationContext);
+                    debbieModuleStarter.starter(applicationContext);
                 }
             }
         }
     }
 
-    public void postCallStarter() {
-        applicationContext.postCallStarter();
+    public void postCallStarter(DebbieApplication application) {
+        applicationContext.postCallStarter(application);
         Set<DebbieModuleStarter> debbieModuleStarterSet = this.debbieModuleStarters;
         if (debbieModuleStarterSet == null) {
             debbieModuleStarterSet = DebbieModuleStarterRegister.getInstance().getDebbieModuleStarters();
@@ -314,15 +376,13 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     public DebbieApplication factoryApplication() {
         LOGGER.debug("create debbieApplication ...");
-        DebbieConfigurationCenter configurationFactory = applicationContext.getConfigurationCenter();
         DebbieApplication application = loadApplication()
-                .init(configurationFactory, applicationContext, applicationContext.getClassLoader());
+                .init(applicationContext, applicationContext.getClassLoader());
         if (application == null) {
             LOGGER.info("DebbieApplication fall fast to " + SimpleApplication.class + ". ");
             SimpleApplication simpleApplication = new SimpleApplication();
             simpleApplication.setApplicationFactory(this);
-            return simpleApplication
-                    .init(configurationFactory, applicationContext, applicationContext.getClassLoader());
+            return simpleApplication.init(applicationContext, applicationContext.getClassLoader());
         }
         return application;
     }
@@ -346,8 +406,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     }
 
     private void configDebbieApplication(DebbieApplication debbieApplication) {
-        if (debbieApplication instanceof AbstractApplication) {
-            var application = (AbstractApplication) debbieApplication;
+        if (debbieApplication instanceof AbstractApplication application) {
             application.setBeforeStartTime(beforeStartTime);
         }
     }

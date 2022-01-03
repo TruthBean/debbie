@@ -25,7 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 
 /**
- * Creates an URL-encoded URI from a path string and key-value parameter pairs.
+ * Creates an URL-encoded URI from a path string and key-VALUE parameter pairs.
  * This encoder is for one time use only.  Create a new instance for each URI.
  *
  * <pre>
@@ -63,8 +63,8 @@ public class QueryStringEncoder {
 
     /**
      * @param name name
-     * @param value value
-     * Adds a parameter with the specified name and value to this encoder.
+     * @param value VALUE
+     * Adds a parameter with the specified name and VALUE to this encoder.
      */
     public void addParam(String name, String value) {
         if (hasParams) {

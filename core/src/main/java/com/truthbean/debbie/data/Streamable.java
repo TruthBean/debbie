@@ -127,7 +127,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
         return Streamable.of(() -> Stream.concat(this.stream(), stream.get()));
     }
 
-    /*
+    /**
      * (non-Javadoc)
      * @see java.util.function.Supplier#get()
      */

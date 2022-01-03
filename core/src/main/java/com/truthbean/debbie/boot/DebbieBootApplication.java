@@ -28,7 +28,7 @@ public @interface DebbieBootApplication {
      * event bean name
      * @return router bean name
      */
-    @AliasFor(attribute = "value", annotation = BeanComponent.class)
+    @AliasFor(attribute = "VALUE", annotation = BeanComponent.class)
     String value() default "";
 
     /**

@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * uri composition:
- * [scheme]://[username]:[password]@[host]:[port]/[path1/path2/.../path][.suffix];[matrix1=value&amp;matrix1=value]?[query1=value&amp;query2=value]#[hashPath/hashPath;hashMatrix=value?hashQuery=value]
+ * [scheme]://[username]:[password]@[host]:[port]/[path1/path2/.../path][.suffix];[matrix1=VALUE&amp;matrix1=VALUE]?[query1=VALUE&amp;query2=VALUE]#[hashPath/hashPath;hashMatrix=VALUE?hashQuery=VALUE]
  * @see <a href="https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E6%A0%87%E5%BF%97%E7%AC%A6">uri</a>
  *
  * @author 璩诗斌

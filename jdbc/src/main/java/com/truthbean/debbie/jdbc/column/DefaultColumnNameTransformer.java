@@ -21,14 +21,9 @@ public class DefaultColumnNameTransformer implements ColumnNameTransformer {
     }
 
     private String getName(String[] parts) {
-        var result = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1);
-            }
-            result.append(parts[i]);
-        }
-        return result.toString();
+        StringBuilder name = new StringBuilder();
+        getColumnName(parts, name);
+        return name.toString();
     }
 
     @Override

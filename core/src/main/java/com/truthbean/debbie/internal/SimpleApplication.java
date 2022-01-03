@@ -14,7 +14,6 @@ import com.truthbean.debbie.boot.AbstractApplication;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.LoggerFactory;
 
 import java.time.Instant;
@@ -31,7 +30,7 @@ class SimpleApplication extends AbstractApplication {
     }
 
     @Override
-    public DebbieApplication init(DebbieConfigurationCenter configurationCenter, ApplicationContext applicationContext, ClassLoader classLoader) {
+    public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
         super.setLogger(logger);
         return this;
     }

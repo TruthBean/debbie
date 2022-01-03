@@ -32,28 +32,26 @@ public class ChainBeanTest {
     public static void main(String[] args) {
         DebbieApplication application = DebbieApplication.create(ChainBeanTest.class, args);
         ApplicationContext applicationContext = application.getApplicationContext();
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        BeanInfoManager beanInitialization = applicationContext.getBeanInfoManager();
         String bean001Name = "bean001";
         Bean001 bean001 = new Bean001("bean001");
-        BeanInfo<Bean001> beanInfo = new SimpleBeanInfo<>(bean001, BeanType.SINGLETON, BeanProxyType.NO, bean001Name);
-        beanInitialization.initBean(beanInfo);
-        applicationContext.refreshBeans();
+        BeanFactory<Bean001> beanInfo = new SimpleBeanFactory<>(bean001, BeanType.SINGLETON, BeanProxyType.NO, bean001Name);
+        beanInitialization.register(beanInfo);
 
         EventMulticaster eventMulticaster = applicationContext.factory(EventMulticaster.class);
         eventMulticaster.addEventListener(new TestBeanEventListener());
 
-        BeanInfoFactory beanInfoFactory = applicationContext.getBeanInfoFactory();
-        BeanInfo<Bean001> bean001Info = beanInfoFactory.getBeanInfo(bean001Name, Bean001.class, true);
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        BeanInfo bean001Info = beanInfoManager.getBeanInfo(bean001Name, Bean001.class, true);
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         Bean001 newBean001 = globalBeanFactory.factory(bean001Name);
         System.out.println("is origin beanInfo: " + (beanInfo == bean001Info));
-        System.out.println("is origin bean value: " + (bean001 == bean001Info.getBean()));
+        // System.out.println("is origin bean VALUE: " + (bean001 == bean001Info.getBean()));
         System.out.println("is origin bean: " + (bean001 == newBean001));
-
 
         TaskRegister taskRegister = globalBeanFactory.factory(TaskRegister.class);
         TaskInfo taskInfo = new TaskInfo();
-        TaskRunnable taskRunnable = () -> {
+        TaskRunnable taskRunnable = (applicationContext1) -> {
             System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 44567890");
         };
         taskInfo.setTaskExecutor(taskRunnable);

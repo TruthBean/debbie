@@ -26,7 +26,7 @@ class SurnameServiceTest {
 
     @BeforeAll
     static void before() {
-        var factory = ApplicationFactory.configure(DataSourceConfigurationTest.class);
+        var factory = ApplicationFactory.create(DataSourceConfigurationTest.class);
 
         ApplicationContext applicationContext = factory.getApplicationContext();
         var beanFactory = applicationContext.getGlobalBeanFactory();

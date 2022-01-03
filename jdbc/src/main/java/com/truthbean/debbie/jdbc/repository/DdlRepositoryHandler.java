@@ -20,6 +20,7 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.sql.JDBCType;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,35 +31,46 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
-    public int createDatabase(TransactionInfo transaction, String database) {
+    public int createDatabase(Logger logger, TransactionInfo transaction, String database) {
         DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).create().database(database).builder();
-        return super.update(transaction, sql);
+        return super.update(logger, transaction, sql);
     }
 
-    public List<String> showDatabases(TransactionInfo transaction) {
+    public List<String> showDatabases(Logger logger, TransactionInfo transaction) {
         DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).show().databases().builder();
-        return super.query(transaction, sql, String.class);
+        return getStrings(logger, transaction, sql);
     }
 
-    public int dropDatabase(TransactionInfo transaction, String database) {
+    private List<String> getStrings(Logger logger, TransactionInfo transaction, String sql) {
+        List<ColumnInfo> list = super.querySingle(logger, transaction, sql);
+        List<String> result = new ArrayList<>();
+        for (ColumnInfo columnInfo : list) {
+            if (columnInfo.getJavaClass() == String.class) {
+                result.add((String) columnInfo.getValue());
+            }
+        }
+        return result;
+    }
+
+    public int dropDatabase(Logger logger, TransactionInfo transaction, String database) {
         DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).drop().database(database).builder();
-        return super.update(transaction, sql);
+        return super.update(logger, transaction, sql);
     }
 
-    public int useDatabase(TransactionInfo transaction, String database) {
-        return DynamicRepository.modify(transaction).use(database).execute();
+    public int useDatabase(Logger logger, TransactionInfo transaction, String database) {
+        return DynamicRepository.modify(transaction).use(database).execute(logger, this);
     }
 
-    public List<String> showTables(TransactionInfo transaction) {
+    public List<String> showTables(Logger logger, TransactionInfo transaction) {
         DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).show().tables().builder();
-        return super.query(transaction, sql, String.class);
+        return getStrings(logger, transaction, sql);
     }
 
-    public <E> void createTable(TransactionInfo transaction, Class<E> entity) {
+    public <E> void createTable(Logger logger, TransactionInfo transaction, Class<E> entity) {
         ClassInfo<E> classInfo = new ClassInfo<>(entity);
         var entityInfo = new EntityInfo<E>();
         SqlEntity sqlEntity = (SqlEntity) classInfo.getClassAnnotations().get(SqlEntity.class).getOrigin();
@@ -70,10 +82,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
         var columns = EntityResolver.resolveClassInfo(classInfo);
         entityInfo.setColumnInfoList(columns);
-        createTable(transaction, entityInfo);
+        createTable(logger, transaction, entityInfo);
     }
 
-    public <E> void createTable(TransactionInfo transaction, EntityInfo<E> entityInfo) {
+    public <E> void createTable(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo) {
         var columns = entityInfo.getColumnInfoList();
         DynamicRepository repository = DynamicRepository.modify(transaction).create()
                 .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
@@ -102,7 +114,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         if (!charset.isBlank()) {
             repository.defaultCharset(charset);
         }
-        repository.execute();
+        repository.execute(logger, this);
     }
 
     private void buildCreateTableColumns(DynamicRepository sqlBuilder, ColumnInfo iColumn) {
@@ -110,7 +122,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         if (iColumn.getJdbcType().equals(JDBCType.VARCHAR)) {
             type = SqlKeywords.VARCHAR.value() + "(" + iColumn.getCharMaxLength() + ")";
         }
-        sqlBuilder.$("`").appendWithNoSpace(iColumn.getColumnName()).appendWithNoSpace("` ").$(type);
+        sqlBuilder.$("`").appendWithNoSpace(iColumn.getColumn()).appendWithNoSpace("` ").$(type);
         if (iColumn.isNullable() != null) {
             if (iColumn.isNullable()) {
                 sqlBuilder.nullSql();
@@ -148,10 +160,10 @@ public class DdlRepositoryHandler extends RepositoryHandler {
         }
     }
 
-    public void dropTable(TransactionInfo transaction, String table) {
+    public void dropTable(Logger logger, TransactionInfo transaction, String table) {
         DataSourceDriverName driverName = transaction.getDriverName();
         String sql = DynamicRepository.sql(driverName).drop().tableIfExists(table, true).builder();
-        super.update(transaction, sql);
+        super.update(logger, transaction, sql);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandler.class);

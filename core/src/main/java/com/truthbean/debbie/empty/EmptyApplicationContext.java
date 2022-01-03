@@ -5,9 +5,11 @@ import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.env.SystemEnvironmentContent;
+import com.truthbean.debbie.event.AbstractDebbieEvent;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
+
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -19,10 +21,9 @@ class EmptyApplicationContext implements ApplicationContext {
     private final ApplicationArgs applicationArgs = new ApplicationArgs();
     private final EnvironmentContent environmentContent = new SystemEnvironmentContent();
     private final ResourceResolver resourceResolver = new ResourceResolver();
-    private final BeanInitialization beanInitialization = new EmptyBeanInitialization();
-    private final BeanInfoFactory beanInfoFactory = new EmptyBeanInfoFactory();
-    private final InjectedBeanFactory injectedBeanFactory = new EmptyInjectedBeanFactory();
+    private final BeanInfoManager beanInfoManager = new EmptyBeanInfoManager();
     private final GlobalBeanFactory globalBeanFactory = new EmptyGlobalBeanFactory();
+    private final Set<BeanLifecycle> beanLifecycles = new HashSet<>();
 
     @Override
     public ApplicationArgs getApplicationArgs() {
@@ -45,23 +46,8 @@ class EmptyApplicationContext implements ApplicationContext {
     }
 
     @Override
-    public BeanInitialization getBeanInitialization() {
-        return beanInitialization;
-    }
-
-    @Override
-    public BeanInfoFactory getBeanInfoFactory() {
-        return beanInfoFactory;
-    }
-
-    @Override
-    public DebbieConfigurationCenter getConfigurationCenter() {
-        return null;
-    }
-
-    @Override
-    public InjectedBeanFactory getInjectedBeanFactory() {
-        return injectedBeanFactory;
+    public BeanInfoManager getBeanInfoManager() {
+        return beanInfoManager;
     }
 
     @Override
@@ -70,6 +56,24 @@ class EmptyApplicationContext implements ApplicationContext {
     }
 
     @Override
+    public Set<BeanLifecycle> getBeanLifecycle() {
+        return beanLifecycles;
+    }
+
+    @Override
+    public <E extends AbstractDebbieEvent> void publishEvent(E event) {
+    }
+
+    @Override
+    public <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names) {
+    }
+
+    @Override
+    public void registerBeanLifecycle(BeanLifecycle beanLifecycle) {
+        this.beanLifecycles.add(beanLifecycle);
+    }
+
+    // @Override
     public void refreshBeans() {
 
     }
@@ -92,5 +96,10 @@ class EmptyApplicationContext implements ApplicationContext {
     @Override
     public void release(String... args) {
 
+    }
+
+    @Override
+    public boolean isExiting() {
+        return false;
     }
 }

@@ -9,17 +9,22 @@
  */
 package com.truthbean.debbie.jdbc.column;
 
+import com.truthbean.debbie.jdbc.entity.EntityPropertyGetter;
+import com.truthbean.debbie.jdbc.entity.EntityPropertySetter;
+import com.truthbean.debbie.lang.Copyable;
+
 import java.sql.JDBCType;
+import java.util.function.Consumer;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-19 11:18.
  */
-public class ColumnInfo {
-    private String propertyName;
+public class ColumnInfo implements Copyable<ColumnInfo> {
+    private String property;
 
-    private String columnName;
+    private String column;
     private String columnDefaultValue;
 
     private String dataType;
@@ -44,27 +49,28 @@ public class ColumnInfo {
     private Class<?> javaClass;
 
     private Object value;
-
+    private EntityPropertyGetter propertyGetter;
+    private EntityPropertySetter propertySetter;
 
     private boolean isPrimaryKey;
     private PrimaryKeyType primaryKeyType;
 
     private boolean unique;
 
-    public String getPropertyName() {
-        return propertyName;
+    public String getProperty() {
+        return property;
     }
 
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
+    public void setProperty(String property) {
+        this.property = property;
     }
 
-    public String getColumnName() {
-        return columnName;
+    public String getColumn() {
+        return column;
     }
 
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
+    public void setColumn(String column) {
+        this.column = column;
     }
 
     public String getDataType() {
@@ -147,6 +153,30 @@ public class ColumnInfo {
         this.value = value;
     }
 
+    public <E, P> EntityPropertyGetter<E, P> getPropertyGetter() {
+        return propertyGetter;
+    }
+
+    public <E, P> void setPropertyGetter(EntityPropertyGetter<E, P> propertyGetter) {
+        this.propertyGetter = propertyGetter;
+    }
+
+    public void getPropertyValue(Object entity) {
+        this.value = propertyGetter.get(entity);
+    }
+
+    public <E, P> EntityPropertySetter<E, P> getPropertySetter() {
+        return propertySetter;
+    }
+
+    public <E, P> void setPropertySetter(EntityPropertySetter<E, P> propertySetter) {
+        this.propertySetter = propertySetter;
+    }
+
+    public <E, P> void setPropertyValue(E entity, P value) {
+        this.propertySetter.set(entity, value);
+    }
+
     public Class<?> getJavaClass() {
         return javaClass;
     }
@@ -200,14 +230,38 @@ public class ColumnInfo {
     }
 
     @Override
+    public ColumnInfo copy() {
+        ColumnInfo info = new ColumnInfo();
+        info.property = property;
+        info.column = column;
+        info.columnDefaultValue = columnDefaultValue;
+        info.dataType = dataType;
+        info.jdbcType = jdbcType;
+        info.comment = comment;
+        info.columnType = columnType;
+        info.charMaxLength = charMaxLength;
+        info.nullable = nullable;
+        info.scale = scale;
+        info.precision = precision;
+        info.classType = classType;
+        info.optionType = optionType;
+        info.javaClass = javaClass;
+        info.value = value;
+        info.isPrimaryKey = isPrimaryKey;
+        info.primaryKeyType = primaryKeyType;
+        info.unique = unique;
+        return info;
+    }
+
+    @Override
     public String toString() {
-        return "{" + "\"propertyName\":\"" + propertyName + "\"" + "," + "\"columnName\":\"" + columnName + "\"" + ","
+        return "{" + "\"propertyName\":\"" + getProperty() + "\"" + "," + "\"columnName\":\"" + getColumn() + "\"" + ","
                 + "\"dataType\":\"" + dataType + "\"" + "," + "\"jdbcType\":" + jdbcType + ","
                 + "\"comment\":\"" + comment + "\"" + "," + "\"columnType\":\"" + columnType + "\"" + ","
                 + "\"charMaxLength\":\"" + charMaxLength + "\"" + "," + "\"nullable\":" + nullable + ","
                 + "\"scale\":" + scale + "," + "\"precision\":" + precision + ","
                 + "\"classType\":\"" + classType + "\"" + "," + "\"optionType\":\"" + optionType + "\"" + ","
-                + "\"javaClass\":" + javaClass + "," + "\"value\":" + value + ","
+                + "\"javaClass\":" + javaClass + "," + "\"VALUE\":" + value + ","
                 + "\"primaryKeyType\":" + primaryKeyType + ","  + "\"columnDefaultValue\":" + columnDefaultValue + "}";
     }
 }

@@ -10,8 +10,11 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.core.ApplicationContext;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author truthbean/Rogar·Q
@@ -20,31 +23,62 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
  */
 public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
 
-    private GlobalBeanFactory beanFactory;
-
-    @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    private volatile DdlRepository ddlRepository;
+    private final Set<String> names = new HashSet<>();
+    public DdlRepositoryFactory(String name) {
+        names.add(name);
     }
 
     @Override
-    public DdlRepository getBean() {
-        DataSourceConfiguration configuration = this.beanFactory.factory(DataSourceConfiguration.class);
-        return new DdlRepository(configuration);
+    public DdlRepository factoryNamedBean(String name, ApplicationContext applicationContext) {
+        if (ddlRepository == null) {
+            ddlRepository = new DdlRepository();
+        }
+        return ddlRepository;
     }
 
     @Override
-    public Class<DdlRepository> getBeanType() {
+    public Class<?> getBeanClass() {
         return DdlRepository.class;
     }
 
     @Override
     public boolean isSingleton() {
-        return false;
+        return true;
     }
 
     @Override
-    public void destroy() {
-        // do noting
+    public BeanType getBeanType() {
+        return BeanType.SINGLETON;
+    }
+
+    @Override
+    public Set<String> getBeanNames() {
+        return names;
+    }
+
+    @Override
+    public void destruct(ApplicationContext applicationContext) {
+        names.clear();
+    }
+
+    @Override
+    public boolean isCreated() {
+        return ddlRepository != null;
+    }
+
+    @Override
+    public DdlRepository getCreatedBean() {
+        return ddlRepository;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return isEquals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return getHashCode(super.hashCode());
     }
 }

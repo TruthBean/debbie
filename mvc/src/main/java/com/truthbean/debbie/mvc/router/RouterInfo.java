@@ -12,6 +12,7 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.io.MultipartFile;
+import com.truthbean.debbie.lang.Copyable;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
@@ -29,7 +30,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2018-01-07 23:21
  */
-public class RouterInfo implements Cloneable {
+public class RouterInfo implements Copyable {
 
     private RouterAnnotationInfo annotationInfo;
 
@@ -166,7 +167,7 @@ public class RouterInfo implements Cloneable {
      * @return RouterInfo clone
      */
     @Override
-    public RouterInfo clone() {
+    public RouterInfo copy() {
         RouterInfo clone = new RouterInfo();
         // todo clone
         clone.executor = this.executor;
@@ -176,7 +177,7 @@ public class RouterInfo implements Cloneable {
             clone.paths = new ArrayList<>(paths);
 
         if (response != null) {
-            clone.response = response.clone();
+            clone.response = response.copy();
         }
 
         clone.setRequestType(getRequestType());

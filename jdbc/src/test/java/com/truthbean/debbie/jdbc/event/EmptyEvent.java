@@ -10,9 +10,7 @@
 package com.truthbean.debbie.jdbc.event;
 
 import com.truthbean.debbie.event.AbstractDebbieEvent;
-import com.truthbean.debbie.event.EventComponent;
 
-@EventComponent
 public class EmptyEvent extends AbstractDebbieEvent {
   /**
    * Create a new AbstractDebbieEvent.

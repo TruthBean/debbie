@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanInfo;
 
 import java.util.Objects;
 
@@ -22,7 +22,7 @@ public class EventListenerInfo {
     private String eventListenerName;
     private Class<? extends AbstractDebbieEvent> eventClass;
     private DebbieEventListener<? extends AbstractDebbieEvent> eventListener;
-    private BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> beanFactory;
+    private BeanInfo<? extends DebbieEventListener<? extends AbstractDebbieEvent>> beanInfo;
 
     public String getEventListenerName() {
         return eventListenerName;
@@ -48,24 +48,28 @@ public class EventListenerInfo {
         this.eventListener = eventListener;
     }
 
-    public BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> getBeanFactory() {
-        return beanFactory;
+    public BeanInfo<? extends DebbieEventListener<? extends AbstractDebbieEvent>> getBeanInfo() {
+        return beanInfo;
     }
 
-    public void setBeanFactory(BeanFactory<? extends DebbieEventListener<? extends AbstractDebbieEvent>> beanFactory) {
-        this.beanFactory = beanFactory;
+    public void setBeanInfo(BeanInfo<? extends DebbieEventListener<? extends AbstractDebbieEvent>> beanInfo) {
+        this.beanInfo = beanInfo;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         EventListenerInfo that = (EventListenerInfo) o;
-        return Objects.equals(eventListenerName, that.eventListenerName) && Objects.equals(eventClass, that.eventClass) && Objects.equals(eventListener, that.eventListener) && Objects.equals(beanFactory, that.beanFactory);
+        return Objects.equals(eventListenerName, that.eventListenerName) && Objects.equals(eventClass, that.eventClass) && Objects.equals(eventListener, that.eventListener) && Objects.equals(beanInfo, that.beanInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventListenerName, eventClass, eventListener, beanFactory);
+        return Objects.hash(eventListenerName, eventClass, eventListener, beanInfo);
     }
 }

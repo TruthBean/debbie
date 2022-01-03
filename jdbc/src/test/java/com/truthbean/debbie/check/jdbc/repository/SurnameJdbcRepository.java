@@ -14,12 +14,13 @@ import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
+import com.truthbean.debbie.jdbc.repository.DebbieRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @SqlRepository
-public class SurnameJdbcRepository extends BaseRepository<Surname, Long> {
+public class SurnameJdbcRepository extends DebbieRepository<Surname, Long> {
 
     public SurnameJdbcRepository(@BeanInject TmpRepository tmpRepository) {
         System.out.println(tmpRepository);
@@ -55,17 +56,5 @@ public class SurnameJdbcRepository extends BaseRepository<Surname, Long> {
 
     public boolean delete(Long id) {
         return super.deleteById(id);
-    }
-
-    public List<Surname> findAll() {
-        return super.findAll();
-    }
-
-    public Long count() {
-        return super.count();
-    }
-
-    public Page<Surname> findPaged(PageRequest pageRequest) {
-        return super.findPaged(pageRequest);
     }
 }

@@ -13,6 +13,7 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.net.http.WebSocket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,10 +25,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class WebSocketListener implements WebSocket.Listener {
 
-    private final AtomicBoolean first = new AtomicBoolean();
-    private volatile StringBuffer stringBuffer = new StringBuffer();
+    private final AtomicBoolean textFirst = new AtomicBoolean();
+    private final AtomicBoolean binaryFirst = new AtomicBoolean();
+    private final ThreadLocal<StringBuilder> stringBuffer = new ThreadLocal<>() {
+        @Override
+        protected StringBuilder initialValue() {
+            return new StringBuilder();
+        }
+    };
 
     private final FirstMessageCallback firstMessageCallback;
+
+    public WebSocketListener() {
+        this.firstMessageCallback = null;
+    }
 
     public WebSocketListener(FirstMessageCallback firstMessageCallback) {
         this.firstMessageCallback = firstMessageCallback;
@@ -53,21 +64,31 @@ public class WebSocketListener implements WebSocket.Listener {
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         webSocket.request(1);
-        if (first.compareAndSet(false, true)) {
+        if (!last) {
+            stringBuffer.get().append(data);
+        } else {
+            stringBuffer.get().append(data);
+            var dataStr = stringBuffer.get().toString();
+            LOGGER.debug("message: " + dataStr);
+            stringBuffer.remove();
+            stringBuffer.set(new StringBuilder());
+        }
+        if (textFirst.compareAndSet(false, true)) {
             var dataStr = data.toString();
             LOGGER.debug("first message: " + dataStr);
-            boolean check = firstMessageCallback.callback(dataStr, webSocket, last);
-            if (check) {
-                return null;
+            if (firstMessageCallback != null) {
+                boolean check = firstMessageCallback.callback(dataStr, webSocket, last);
+                if (check) {
+                    return null;
+                }
             }
-        } else if (!last) {
-            stringBuffer.append(data);
-        } else {
-            stringBuffer.append(data);
-            var dataStr = stringBuffer.toString();
-            LOGGER.debug("message: " + dataStr);
-            stringBuffer = new StringBuffer();
         }
+        return CompletableFuture.completedFuture(webSocket);
+    }
+
+    @Override
+    public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+        webSocket.request(1);
         return CompletableFuture.completedFuture(webSocket);
     }
 

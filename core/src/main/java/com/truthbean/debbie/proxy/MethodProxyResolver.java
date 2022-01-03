@@ -10,9 +10,8 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.debbie.annotation.AnnotationInfo;
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.DebbieClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
@@ -26,14 +25,17 @@ import java.util.*;
  */
 public class MethodProxyResolver {
     private final ApplicationContext applicationContext;
-    private final DebbieClassBeanInfo<?> classInfo;
-    public MethodProxyResolver(ApplicationContext applicationContext, DebbieClassBeanInfo<?> classInfo) {
+    private final ClassInfo<?> classInfo;
+    public MethodProxyResolver(ApplicationContext applicationContext, ClassInfo<?> classInfo) {
         this.applicationContext = applicationContext;
         this.classInfo = classInfo;
     }
 
     public List<MethodProxyHandler<? extends Annotation>> getMethodProxyHandler(Method method,
                                                                                 Collection<? extends Annotation> classAnnotation) {
+        if (applicationContext.isExiting()) {
+            return new ArrayList<>();
+        }
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
         Annotation[] methodAnnotations = method.getAnnotations();
         Map<Class<? extends Annotation>, Annotation> methodAnnotationMap =
@@ -52,16 +54,16 @@ public class MethodProxyResolver {
         // if (allMethodProxyHandlers.isEmpty()) {
         //     return methodProxyHandlers;
         // }
-//        allMethodProxyHandlers.forEach((key, value) -> {
+//        allMethodProxyHandlers.forEach((key, VALUE) -> {
 //            for (Annotation methodAnnotation : methodAnnotations) {
 //                if (key.isInstance(methodAnnotation)) {
-//                    getMethodProxyHandler(method, methodAnnotation, value, methodProxyHandlers);
+//                    getMethodProxyHandler(method, methodAnnotation, VALUE, methodProxyHandlers);
 //                }
 //            }
 //            if (classAnnotation != null)
-//                getMethodProxyHandler(method, key, value, methodProxyHandlers, classAnnotation);
+//                getMethodProxyHandler(method, key, VALUE, methodProxyHandlers, classAnnotation);
 //            else {
-//                getMethodProxyHandler(method, key, value, methodProxyHandlers);
+//                getMethodProxyHandler(method, key, VALUE, methodProxyHandlers);
 //            }
 //        });
 
@@ -97,6 +99,9 @@ public class MethodProxyResolver {
     private void addMethodProxyHandler(Method method, Class<? extends Annotation> annotationType,
                                        List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
                                        Annotation annotation, List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {
+        if (applicationContext.isExiting()) {
+            return;
+        }
         MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
         if (methodProxy == null) {
             return;
@@ -125,6 +130,9 @@ public class MethodProxyResolver {
                                        List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
                                        List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers,
                                        Collection<? extends Annotation> declaredAnnotations) {
+        if (applicationContext.isExiting()) {
+            return;
+        }
         if (declaredAnnotations != null && !declaredAnnotations.isEmpty()) {
             for (Annotation annotation : declaredAnnotations) {
                 var annotationType = annotation.annotationType();
@@ -184,7 +192,9 @@ public class MethodProxyResolver {
     private void getMethodProxyHandler(Method method, Class<? extends Annotation> annotationClass,
                                        List<Class<? extends MethodProxyHandler<? extends Annotation>>> proxyHandlers,
                                        List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers) {
-        if (method == null) return;
+        if (method == null) {
+            return;
+        }
         Annotation[] declaredAnnotations = method.getDeclaredAnnotations();
         getMethodProxyHandler(method, annotationClass, proxyHandlers, methodProxyHandlers, Arrays.asList(declaredAnnotations));
     }

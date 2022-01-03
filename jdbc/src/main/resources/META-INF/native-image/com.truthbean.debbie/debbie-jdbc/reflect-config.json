@@ -1,5 +1,624 @@
 [
   {
+    "name" : "java.sql.NClob",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "java.sql.JDBCType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "java.net.NetworkInterface",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.log.Log",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.log.StandardLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.log.Slf4JLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.log.Jdk14Logger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.log.NullLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.PerVmServerConfigCacheFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.ResultSetImpl",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.JDBC42ResultSet",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["long", "long", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.JDBC4ResultSet",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["long", "long", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.JDBC42UpdatableResultSet",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String", "com.mysql.jdbc.Field[]", "com.mysql.jdbc.RowData", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.JDBC4UpdatableResultSet",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String", "com.mysql.jdbc.Field[]", "com.mysql.jdbc.RowData", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.conf.url.SingleConnectionUrl",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["com.mysql.cj.conf.ConnectionUrlParser", "java.util.Properties"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.StandardSocketFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.PerConnectionLRUFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.ConnectionPropertiesImpl",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.ConnectionPropertiesImpl$ConnectionProperty",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.WrongArgumentException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.SSLParamsException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.UnsupportedConnectionStringException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.UnableToConnectException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.StatementIsClosedException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.RSAException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.PropertyNotModifiableException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.PasswordExpiredException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.OperationCancelledException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.NumberOutOfRange",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.InvalidConnectionAttributeException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.FeatureNotAvailableException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.DataTruncationException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.DataReadException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.DataConversionException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.ConnectionIsClosedException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.ClosedOnExpiredPasswordException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.CJTimeoutException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.CJPacketTooBigException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.CJOperationNotSupportedException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.CJException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.CJCommunicationsException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.exceptions.AssertionFailedException",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.Jdk14Logger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.Jdk14Logger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.LoggingProfilerEventHandler",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.NullLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.Slf4JLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.mysql.cj.log.StandardLogger",
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["java.lang.String"] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
     "name" : "com.truthbean.debbie.jdbc.JdbcModuleStarter",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
@@ -49,6 +668,66 @@
   },
   {
     "name": "com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.truthbean.debbie.jdbc.transaction.TransactionalMethodProxyHandler",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.cj.jdbc.Driver",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "com.mysql.jdbc.Driver",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name": "org.mariadb.jdbc.Driver",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ],
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "org.mariadb.jdbc.util.Options",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],

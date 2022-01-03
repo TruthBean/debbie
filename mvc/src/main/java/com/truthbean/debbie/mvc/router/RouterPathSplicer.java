@@ -332,7 +332,7 @@ public class RouterPathSplicer {
                 }
             });
         } else {
-            throw new RouterException("router(" + traceMessage + ") value or pathRegex cannot be empty");
+            throw new RouterException("router(" + traceMessage + ") VALUE or pathRegex cannot be empty");
         }
         return newPaths;
     }

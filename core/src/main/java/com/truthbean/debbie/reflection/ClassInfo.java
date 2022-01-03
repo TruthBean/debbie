@@ -49,6 +49,17 @@ public class ClassInfo<C> implements Serializable {
         getClassInfo();
     }
 
+    public ClassInfo(ClassInfo<C> classInfo) {
+        this.clazz = classInfo.clazz;
+        this.classAnnotations = classInfo.classAnnotations;
+        this.classModifiers = classInfo.classModifiers;
+        this.constructors = classInfo.constructors;
+        this.fields = classInfo.fields;
+        this.methods = classInfo.methods;
+        this.methodAnnotationMap.putAll(classInfo.methodAnnotationMap);
+        this.actualTypes = classInfo.actualTypes;
+    }
+
     @SuppressWarnings("unchecked")
     private void getClassInfo() {
 

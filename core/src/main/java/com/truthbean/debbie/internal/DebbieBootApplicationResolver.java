@@ -14,7 +14,8 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.boot.exception.DebbieApplicationException;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.properties.ClassesScanProperties;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
@@ -44,9 +45,11 @@ class DebbieBootApplicationResolver {
             allClass.forEach(configuration::addScanClasses);
         }
 
-        DebbieConfigurationCenter configurationCenter = applicationContext.getConfigurationCenter();
-        configurationCenter.addConfiguration(BeanScanConfiguration.class, configuration);
-        applicationContext.refreshBeans();
+        var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.register(beanFactory);
+        var bean = beanFactory.factoryBean(applicationContext);
+        configuration.copyFrom(bean);
     }
 
     @SuppressWarnings("unused")
@@ -61,27 +64,54 @@ class DebbieBootApplicationResolver {
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
         LOGGER.info(() -> "application entry class: " + applicationClass);
-        if (notSupport(applicationClass)) return;
+        if (notSupport(applicationClass)) {
+            LOGGER.warn("application class(" + applicationClass + ") not support");
+            return;
+        }
 
-        var beanInitialization = this.applicationContext.getBeanInitialization();
-        DebbieClassBeanInfo<?> applicationClassBeanInfo = new DebbieClassBeanInfo<>(applicationClass);
-        applicationClassBeanInfo.setBeanType(BeanType.SINGLETON);
-        beanInitialization.initBean(applicationClassBeanInfo);
-        this.applicationContext.getBeanInfoFactory().refreshBeans();
+        var beanInfoManager = this.applicationContext.getBeanInfoManager();
+        DebbieReflectionBeanFactory<?> applicationBeanFactory = new DebbieReflectionBeanFactory<>(applicationClass);
+        resolveApplicationBean(configuration, resourceResolver, applicationClass, beanInfoManager, applicationBeanFactory);
+    }
 
-        Annotation annotation = applicationClassBeanInfo.getAnnotatedClassAnnotation(DebbieBootApplication.class);
+    @SuppressWarnings("unchecked")
+    void resolverApplicationClass(Object application, BeanScanConfiguration configuration,
+                                  ResourceResolver resourceResolver) {
+        if (application == null) {
+            return;
+        }
+        Class<?> applicationClass = application.getClass();
+        LOGGER.info(() -> "application entry class: " + applicationClass);
+        if (notSupport(applicationClass)) {
+            LOGGER.warn("application class(" + applicationClass + ") not support");
+            return;
+        }
+
+        var beanInfoManager = this.applicationContext.getBeanInfoManager();
+        DebbieReflectionBeanFactory applicationBeanFactory = new DebbieReflectionBeanFactory(applicationClass, application);
+        resolveApplicationBean(configuration, resourceResolver, applicationClass, beanInfoManager, applicationBeanFactory);
+    }
+
+    private void resolveApplicationBean(BeanScanConfiguration configuration, ResourceResolver resourceResolver,
+                                        Class<?> applicationClass, BeanInfoManager beanInfoManager,
+                                        DebbieReflectionBeanFactory<?> applicationBeanFactory) {
+        applicationBeanFactory.setBeanType(BeanType.SINGLETON);
+        beanInfoManager.register(applicationBeanFactory);
+
+        Annotation annotation = applicationBeanFactory.getAnnotatedClassAnnotation(DebbieBootApplication.class);
         if (annotation != null) {
-            DebbieBootApplication debbieBootApplication = applicationClassBeanInfo.getClassAnnotation(DebbieBootApplication.class);
+            DebbieBootApplication debbieBootApplication = applicationBeanFactory.getClassAnnotation(DebbieBootApplication.class);
             resolveDebbieBootApplicationAnnotation(annotation, debbieBootApplication, configuration);
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {
                 configuration.addScanBasePackages(applicationClass.getPackageName());
             }
 
-            DebbieConfigurationCenter configurationCenter = this.applicationContext.getConfigurationCenter();
+            var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
+            beanInfoManager.register(beanFactory);
+            var bean = beanFactory.factoryBean(applicationContext);
+            configuration.copyFrom(bean);
             configuration.setApplicationClass(applicationClass);
-            configurationCenter.addConfiguration(BeanScanConfiguration.class, configuration);
-            applicationContext.refreshBeans();
             return;
         }
 
@@ -98,10 +128,12 @@ class DebbieBootApplicationResolver {
             Class<? extends Annotation>[] injectTypes = debbieBootApplication.customInjectType();
             configuration.addCustomInjectType(injectTypes);
 
-            DebbieConfigurationCenter configurationCenter = this.applicationContext.getConfigurationCenter();
             configuration.setApplicationClass(applicationClass);
-            configurationCenter.addConfiguration(BeanScanConfiguration.class, configuration);
-            applicationContext.refreshBeans();
+            var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
+            beanInfoManager.register(beanFactory);
+            var bean = beanFactory.factoryBean(applicationContext);
+            configuration.copyFrom(bean);
+            // applicationContext.refreshBeans();
         } else {
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {
@@ -148,8 +180,9 @@ class DebbieBootApplicationResolver {
             Method customInjectType = ReflectionHelper.getMethod(annotation.annotationType(), "customInjectType", new Class[0]);
             if (customInjectType != null) {
                 var injectTypes = (Class<? extends Annotation>[]) ReflectionHelper.invokeMethod(annotation, customInjectType);
-                if (injectTypes != null && injectTypes.length > 0)
+                if (injectTypes != null && injectTypes.length > 0) {
                     configuration.addCustomInjectType(injectTypes);
+                }
             } else {
                 configuration.addCustomInjectType(debbieBootApplication.customInjectType());
             }
@@ -159,8 +192,9 @@ class DebbieBootApplicationResolver {
             Method scanMethod = ReflectionHelper.getMethod(annotation.annotationType(), "scan", new Class[0]);
             if (scanMethod != null) {
                 var scan = (DebbieScan) ReflectionHelper.invokeMethod(annotation, scanMethod);
-                if (scan != null)
+                if (scan != null) {
                     resolveDebbieScan(configuration, scan);
+                }
             } else {
                 resolveDebbieScan(configuration, debbieBootApplication.scan());
             }

@@ -1,43 +1,44 @@
-/**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
- * Debbie is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- * http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
- */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.core.ApplicationContext;
-
-import java.util.Map;
-import java.util.function.Supplier;
+import com.truthbean.debbie.core.ApplicationContextAware;
+import com.truthbean.debbie.env.EnvContentAware;
+import com.truthbean.debbie.event.DebbieEventPublisherAware;
 
 /**
- * @author TruthBean/Rogar·Q
- * @since 0.1.0
- * Created on 2020-06-24 09:59.
+ *
+ * @author TruthBean
+ * @since 0.5.3
+ * Created on 2021/12/03 21:13.
  */
-public interface BeanCreator<Bean> extends BaseBeanCreator<Bean> {
+public interface BeanCreator {
 
-    BeanInfo<Bean> getBeanInfo();
+    default void doConstructPost(Object bean) {
+        if (bean instanceof ConstructPost) {
+            ((ConstructPost) bean).postConstruct();
+        }
+    }
 
-    void createPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap, Object firstParamValue);
+    default void resolveAwareValue(ApplicationContext applicationContext, Object object) {
+        if (applicationContext.isExiting()) {
+            return;
+        }
+        if (object instanceof ClassLoaderAware) {
+            ((ClassLoaderAware) object).setClassLoader(applicationContext.getClassLoader());
+        } else if (object instanceof ApplicationContextAware) {
+            ((ApplicationContextAware) object).setApplicationContext(applicationContext);
+        } else if (object instanceof GlobalBeanFactoryAware) {
+            ((GlobalBeanFactoryAware) object).setGlobalBeanFactory(applicationContext.getGlobalBeanFactory());
+        } else if (object instanceof DebbieEventPublisherAware) {
+            ((DebbieEventPublisherAware) object).setEventPublisher(applicationContext);
+        } else if (object instanceof EnvContentAware) {
+            ((EnvContentAware) object).setEnvContent(applicationContext.getEnvContent());
+        }
+    }
 
-    void createPreparationByDependence(ApplicationContext applicationContext);
-
-    void postConstructor();
-
-    void postPreparation(Map<BeanInfo<?>, BeanCreator<?>> singletonBeanCreatorMap);
-
-    void postCreated();
-
-    boolean isCreated();
-
-    void create(Bean bean);
-
-    void create(Supplier<Bean> bean);
-
-    Bean getCreatedBean();
+    default Logger getLogger() {
+        return LoggerFactory.getLogger(BeanCreator.class);
+    }
 }

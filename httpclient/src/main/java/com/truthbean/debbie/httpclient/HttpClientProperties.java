@@ -1,17 +1,23 @@
-/**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
- * Debbie is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
+/*
+  Copyright (c) 2021 TruthBean(Rogar·Q)
+  Debbie is licensed under Mulan PSL v2.
+  You can use this software according to the terms and conditions of the Mulan PSL v2.
+  You may obtain a copy of Mulan PSL v2 at:
+          http://license.coscl.org.cn/MulanPSL2
+  THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+  See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.properties.DebbieProperties;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -19,6 +25,7 @@ import com.truthbean.debbie.properties.DebbieProperties;
  */
 public class HttpClientProperties extends EnvironmentContentHolder implements DebbieProperties<HttpClientConfiguration> {
     private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
+    private final Map<String, HttpClientConfiguration> map = new HashMap<>();
 
     //===========================================================================
     private static final String PROXY_HOST_KEY = "debbie.httpclient.proxy.host";
@@ -53,9 +60,23 @@ public class HttpClientProperties extends EnvironmentContentHolder implements De
         configuration.setAuthPassword(getValue(BASIC_AUTH_PASSWORD_KEY));
 
         configuration.setInsecure(getBooleanValue(INSECURE_KEY, false));
+        map.put(DEFAULT_PROFILE, configuration);
     }
 
     public static HttpClientConfiguration toConfiguration() {
+        return configuration;
+    }
+
+    @Override
+    public Set<String> getProfiles() {
+        return map.keySet();
+    }
+
+    @Override
+    public HttpClientConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
+        if (StringUtils.hasText(name)) {
+            return map.get(name);
+        }
         return configuration;
     }
 
@@ -64,7 +85,13 @@ public class HttpClientProperties extends EnvironmentContentHolder implements De
     }
 
     @Override
-    public HttpClientConfiguration toConfiguration(ApplicationContext applicationContext) {
+    public HttpClientConfiguration getConfiguration(ApplicationContext applicationContext) {
         return configuration;
+    }
+
+    @Override
+    public void close() throws IOException {
+        configuration.close();
+        map.clear();
     }
 }

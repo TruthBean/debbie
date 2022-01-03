@@ -13,7 +13,7 @@ public class EmptyDebbieApplication implements DebbieApplication {
 
     @Override
     public void start() {
-        applicationContext.refreshBeans();
+        // applicationContext.refreshBeans();
     }
 
     @Override

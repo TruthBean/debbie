@@ -16,7 +16,7 @@ dependencies {
 
     testImplementation("com.truthbean:log4j2-boot:$truthbeanVersion")
 
-    // testImplementation("mysql:mysql-connector-java")
+    testImplementation("mysql:mysql-connector-java")
 
     // testCompile(project(":debbie-hikari"))
     testImplementation(project(":debbie-test"))
@@ -29,4 +29,5 @@ dependencies {
 
     // todo: sqlite3 postgresql oracle h2 等
     testImplementation("org.xerial:sqlite-jdbc")
+    testImplementation("com.h2database:h2")
 }

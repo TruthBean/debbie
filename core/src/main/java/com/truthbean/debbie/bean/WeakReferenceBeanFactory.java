@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -16,7 +18,7 @@ import java.lang.ref.WeakReference;
  * @since 0.5.0
  * Created on 2021-02-24 22:57
  */
-public class WeakReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T> {
+public class WeakReferenceBeanFactory<T> implements BeanFactory<T> {
 
     private WeakReference<T> bean;
     private final Class<T> beanClass;
@@ -26,27 +28,36 @@ public class WeakReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T> {
     }
 
     @Override
-    public void destroy() {
+    public void destruct(ApplicationContext applicationContext) {
         bean.clear();
     }
 
     @Override
-    public T getBean() {
+    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
+        this.bean = new WeakReference<>(applicationContext.factory(this.beanClass));
         return bean.get();
     }
 
     @Override
-    public Class<?> getBeanType() {
+    public boolean isCreated() {
+        return false;
+    }
+
+    @Override
+    public T getCreatedBean() {
+        if (bean != null) {
+            return bean.get();
+        }
+        return null;
+    }
+
+    @Override
+    public Class<?> getBeanClass() {
         return beanClass;
     }
 
     @Override
     public boolean isSingleton() {
         return false;
-    }
-
-    @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
-        this.bean = new WeakReference<>(globalBeanFactory.factory(this.beanClass));
     }
 }

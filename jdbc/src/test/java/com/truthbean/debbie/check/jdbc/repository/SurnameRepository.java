@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
@@ -17,7 +19,8 @@ import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
-import com.truthbean.debbie.jdbc.repository.DmlRepositoryHandler;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
+import com.truthbean.debbie.jdbc.repository.DebbieRepositoryTemplate;
 import com.truthbean.debbie.jdbc.repository.RepositoryCallback;
 
 import java.util.List;
@@ -33,16 +36,11 @@ public class SurnameRepository {
 
     private final DataSourceFactory factory;
 
-    private final DmlRepositoryHandler<Surname, Long> repositoryHandler;
+    private final DebbieRepositoryTemplate<Surname, Long> repositoryHandler;
 
-    protected SurnameRepository() {
-        this.factory = null;
-        this.repositoryHandler = null;
-    }
-
-    public SurnameRepository(@BeanInject DataSourceFactory factory, @BeanInject DataSourceConfiguration configuration) {
+    public SurnameRepository(@BeanInject DataSourceFactory factory) {
         this.factory = factory;
-        repositoryHandler = DmlRepositoryHandler.of(configuration.getDriverName(), Surname.class, Long.class);
+        repositoryHandler = new DebbieRepositoryTemplate<>(Long.class, Surname.class, EntityResolver.getInstance(), LOGGER);
     }
 
     public boolean save(Surname surname) {
@@ -66,13 +64,13 @@ public class SurnameRepository {
             surname.setId(insert);
             System.out.println(1 / 0);
             repositoryHandler.deleteById(transaction, deleteId);
-            return repositoryHandler.selectAll(transaction);
+            return repositoryHandler.findAll(transaction);
         });
     }
 
     public Optional<Surname> findById(Long id) {
         var transaction = factory.getTransaction();
-        return RepositoryCallback.actionOptional(transaction, () -> repositoryHandler.selectById(transaction, id));
+        return RepositoryCallback.actionOptional(transaction, () -> repositoryHandler.findById(transaction, id));
     }
 
     public boolean update(Surname surname) {
@@ -88,7 +86,7 @@ public class SurnameRepository {
 
     public Future<List<Surname>> findAll() {
         var transaction = factory.getTransaction();
-        return RepositoryCallback.asyncAction(transaction, () -> repositoryHandler.selectAll(transaction));
+        return RepositoryCallback.asyncAction(transaction, () -> repositoryHandler.findAll(transaction));
     }
 
     @JdbcTransactional
@@ -99,12 +97,14 @@ public class SurnameRepository {
 
     public Page<Surname> findPaged(PageRequest pageRequest) {
         var transaction = factory.getTransaction();
-        return RepositoryCallback.action(transaction, () -> repositoryHandler.selectPaged(transaction, pageRequest));
+        return RepositoryCallback.action(transaction, () -> repositoryHandler.findPaged(transaction, pageRequest));
     }
 
     public Boolean exists(Long id) {
         var transaction = factory.getTransaction();
         return RepositoryCallback.action(transaction, () -> repositoryHandler.existsById(transaction, id));
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SurnameRepository.class);
 
 }

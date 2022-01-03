@@ -50,7 +50,7 @@ public class ReflectionHelperTest {
         System.out.println("------------------------------------");
         ResourceResolver resourceResolver = new ResourceResolver();
         resources = ResourcesHandler.getAllClassPathResources("", classLoader);
-        resourceResolver.addResource(resources);
+        resourceResolver.addResource(classLoader, resources);
         classList = ReflectionHelper.getAllClassByPackageName("com.truthbean", classLoader, resourceResolver);
         System.out.println(classList.size());
         for (Class<?> aClass : classList) {

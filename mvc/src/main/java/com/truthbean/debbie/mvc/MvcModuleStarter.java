@@ -9,10 +9,12 @@
  */
 package com.truthbean.debbie.mvc;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.mvc.router.RouterBeanLifecycle;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 
 /**
  * @author truthbean
@@ -20,12 +22,19 @@ import com.truthbean.debbie.properties.DebbieConfigurationCenter;
  */
 public class MvcModuleStarter implements DebbieModuleStarter {
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new MvcProperties(), MvcConfiguration.class);
+    public void configure(ApplicationContext applicationContext) {
+        MvcProperties mvcProperties = new MvcProperties();
+        MvcConfiguration mvcConfiguration = mvcProperties.getConfiguration(applicationContext);
+
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        var beanFactory = new PropertiesConfigurationBeanFactory<>(mvcProperties, MvcConfiguration.class);
+        beanInfoManager.register(beanFactory);
+
+        applicationContext.registerBeanLifecycle(new RouterBeanLifecycle(MvcRouterRegister.getInstance(mvcConfiguration)));
     }
 
     @Override

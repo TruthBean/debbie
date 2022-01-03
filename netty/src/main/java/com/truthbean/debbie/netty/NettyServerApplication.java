@@ -1,13 +1,12 @@
 package com.truthbean.debbie.netty;
 
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.boot.AbstractApplication;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.server.AbstractWebServerApplication;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
@@ -20,9 +19,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -49,16 +45,20 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    public DebbieApplication init(DebbieConfigurationCenter factory, ApplicationContext applicationContext,
-                                     ClassLoader classLoader) {
-        NettyConfiguration configuration = factory.factory(NettyConfiguration.class, applicationContext);
+    public boolean isEnable(EnvironmentContent envContent) {
+        return super.isEnable(envContent) && envContent.getBooleanValue(NettyProperties.ENABLE_KEY, false);
+    }
+
+    @Override
+    public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
+        NettyConfiguration configuration = applicationContext.factory(NettyConfiguration.class);
         if (configuration == null) {
             LOGGER.warn("debbie-netty module is disabled, debbie.netty.enable is false");
             return null;
         }
-        BeanInitialization beanInitialization = applicationContext.getBeanInitialization();
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
         MvcRouterRegister.registerRouter(configuration, applicationContext);
-        RouterFilterManager.registerFilter(configuration, beanInitialization);
+        RouterFilterManager.registerFilter(configuration, beanInfoManager);
         RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
         RouterFilterManager.registerCorsFilter(configuration, "/**");
         RouterFilterManager.registerCsrfFilter(configuration, "/**");

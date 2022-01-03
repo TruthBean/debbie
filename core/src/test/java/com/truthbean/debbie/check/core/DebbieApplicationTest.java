@@ -2,6 +2,7 @@ package com.truthbean.debbie.check.core;
 
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
+import com.truthbean.debbie.reflection.ReflectionConfigurer;
 
 /**
  * @author TruthBean
@@ -11,10 +12,11 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
 public class DebbieApplicationTest {
 
     static {
-        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "true");
+        System.setProperty(DebbieApplication.DISABLE_DEBBIE, "false");
+        System.setProperty(ReflectionConfigurer.ENABLE_KEY, "false");
     }
 
     public static void main(String[] args) {
-        DebbieApplication.run(DebbieApplicationTest.class, args);
+        DebbieApplication.run(new DebbieApplicationTest(), args);
     }
 }

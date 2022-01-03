@@ -63,81 +63,36 @@ public class ColumnTypeHandler {
     }
 
     public static <T> T getColumnValue(ResultSet resultSet, int index, Class<T> columnClass, String columnClassName) throws SQLException {
-        switch (columnClassName) {
-            case JdbcTypeConstants.ARRAY:
-                return columnClass.cast(resultSet.getArray(index));
-
-            case JdbcTypeConstants.INPUT_STREAM:
-                return columnClass.cast(resultSet.getBinaryStream(index));
-
-            case JdbcTypeConstants.BIG_DECIMAL:
-                return columnClass.cast(resultSet.getBigDecimal(index));
-
-            case JdbcTypeConstants.BLOB:
-                return columnClass.cast(resultSet.getBlob(index));
-
-            case JdbcTypeConstants.BOOLEAN:
-                return columnClass.cast(resultSet.getBoolean(index));
-
-            case JdbcTypeConstants.BYTE:
-                return columnClass.cast(resultSet.getByte(index));
-
-            case JdbcTypeConstants.BYTE_ARRAY:
-                return columnClass.cast(resultSet.getBytes(index));
-
-            case JdbcTypeConstants.READER:
-                return columnClass.cast(resultSet.getCharacterStream(index));
+        return switch (columnClassName) {
+            case JdbcTypeConstants.ARRAY -> columnClass.cast(resultSet.getArray(index));
+            case JdbcTypeConstants.INPUT_STREAM -> columnClass.cast(resultSet.getBinaryStream(index));
+            case JdbcTypeConstants.BIG_DECIMAL -> columnClass.cast(resultSet.getBigDecimal(index));
+            case JdbcTypeConstants.BLOB -> columnClass.cast(resultSet.getBlob(index));
+            case JdbcTypeConstants.BOOLEAN -> columnClass.cast(resultSet.getBoolean(index));
+            case JdbcTypeConstants.BYTE -> columnClass.cast(resultSet.getByte(index));
+            case JdbcTypeConstants.BYTE_ARRAY -> columnClass.cast(resultSet.getBytes(index));
+            case JdbcTypeConstants.READER -> columnClass.cast(resultSet.getCharacterStream(index));
             // getNCharacterStream
 
-            case JdbcTypeConstants.CLOB:
-                return columnClass.cast(resultSet.getClob(index));
-
-            case JdbcTypeConstants.DATE:
-                return columnClass.cast(resultSet.getDate(index));
-
-            case JdbcTypeConstants.DOUBLE:
-                return columnClass.cast(resultSet.getDouble(index));
-
-            case JdbcTypeConstants.FLOAT:
-                return columnClass.cast(resultSet.getFloat(index));
-
-            case JdbcTypeConstants.INTEGER:
-                return columnClass.cast(resultSet.getInt(index));
-
-            case JdbcTypeConstants.LONG:
-                return columnClass.cast(resultSet.getLong(index));
-
-            case JdbcTypeConstants.NCLOB:
-                return columnClass.cast(resultSet.getNClob(index));
-
-            case JdbcTypeConstants.STRING:
-                return columnClass.cast(resultSet.getString(index));
+            case JdbcTypeConstants.CLOB -> columnClass.cast(resultSet.getClob(index));
+            case JdbcTypeConstants.DATE -> columnClass.cast(resultSet.getDate(index));
+            case JdbcTypeConstants.DOUBLE -> columnClass.cast(resultSet.getDouble(index));
+            case JdbcTypeConstants.FLOAT -> columnClass.cast(resultSet.getFloat(index));
+            case JdbcTypeConstants.INTEGER -> columnClass.cast(resultSet.getInt(index));
+            case JdbcTypeConstants.LONG -> columnClass.cast(resultSet.getLong(index));
+            case JdbcTypeConstants.NCLOB -> columnClass.cast(resultSet.getNClob(index));
+            case JdbcTypeConstants.STRING -> columnClass.cast(resultSet.getString(index));
             // resultSet.getNString(index)
 
-            case JdbcTypeConstants.REF:
-                return columnClass.cast(resultSet.getRef(index));
-
-            case JdbcTypeConstants.ROW_ID:
-                return columnClass.cast(resultSet.getRowId(index));
-
-            case JdbcTypeConstants.SHORT:
-                return columnClass.cast(resultSet.getShort(index));
-
-            case JdbcTypeConstants.SQLXML:
-                return columnClass.cast(resultSet.getSQLXML(index));
-
-            case JdbcTypeConstants.TIME:
-                return columnClass.cast(resultSet.getTime(index));
-
-            case JdbcTypeConstants.TIMESTAMP:
-                return columnClass.cast(resultSet.getTimestamp(index));
-
-            case JdbcTypeConstants.URL:
-                return columnClass.cast(resultSet.getURL(index));
-
-            default:
-                return columnClass.cast(resultSet.getObject(index));
-        }
+            case JdbcTypeConstants.REF -> columnClass.cast(resultSet.getRef(index));
+            case JdbcTypeConstants.ROW_ID -> columnClass.cast(resultSet.getRowId(index));
+            case JdbcTypeConstants.SHORT -> columnClass.cast(resultSet.getShort(index));
+            case JdbcTypeConstants.SQLXML -> columnClass.cast(resultSet.getSQLXML(index));
+            case JdbcTypeConstants.TIME -> columnClass.cast(resultSet.getTime(index));
+            case JdbcTypeConstants.TIMESTAMP -> columnClass.cast(resultSet.getTimestamp(index));
+            case JdbcTypeConstants.URL -> columnClass.cast(resultSet.getURL(index));
+            default -> columnClass.cast(resultSet.getObject(index));
+        };
     }
 
     public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName)
@@ -149,72 +104,28 @@ public class ColumnTypeHandler {
     }
 
     public static JDBCType explain(Class<?> type) {
-        switch (type.getName()) {
-            case JdbcTypeConstants.ARRAY:
-                return JDBCType.ARRAY;
-
-            case JdbcTypeConstants.INPUT_STREAM:
-            case JdbcTypeConstants.BLOB:
-            case JdbcTypeConstants.BYTE_ARRAY:
-            case JdbcTypeConstants.READER:
-                return JDBCType.BLOB;
-
-            case JdbcTypeConstants.BIG_DECIMAL:
-                return JDBCType.DECIMAL;
-
-            case JdbcTypeConstants.BOOLEAN:
-                return JDBCType.BOOLEAN;
-
-            case JdbcTypeConstants.BYTE:
-                return JDBCType.BIT;
-
-            case JdbcTypeConstants.CLOB:
-                return JDBCType.CLOB;
-
-            case JdbcTypeConstants.DATE:
-                return JDBCType.DATE;
-
-            case JdbcTypeConstants.DOUBLE:
-                return JDBCType.DOUBLE;
-
-            case JdbcTypeConstants.FLOAT:
-                return JDBCType.FLOAT;
-
-            case JdbcTypeConstants.INTEGER:
-            case JdbcTypeConstants.LONG:
-                return JDBCType.INTEGER;
-
-            case JdbcTypeConstants.BIG_INTEGER:
-                return JDBCType.BIGINT;
-
-            case JdbcTypeConstants.NCLOB:
-                return JDBCType.NCLOB;
-
-            case JdbcTypeConstants.STRING:
-            case JdbcTypeConstants.URL:
-                return JDBCType.VARCHAR;
-
-            case JdbcTypeConstants.REF:
-                return JDBCType.REF;
-
-            case JdbcTypeConstants.ROW_ID:
-                return JDBCType.ROWID;
-
-            case JdbcTypeConstants.SHORT:
-                return JDBCType.SMALLINT;
-
-            case JdbcTypeConstants.SQLXML:
-                return JDBCType.SQLXML;
-
-            case JdbcTypeConstants.TIME:
-                return JDBCType.TIME;
-
-            case JdbcTypeConstants.TIMESTAMP:
-                return JDBCType.TIMESTAMP;
-
-            default:
-                return JDBCType.LONGVARCHAR;
-        }
+        return switch (type.getName()) {
+            case JdbcTypeConstants.ARRAY -> JDBCType.ARRAY;
+            case JdbcTypeConstants.INPUT_STREAM, JdbcTypeConstants.BLOB, JdbcTypeConstants.BYTE_ARRAY, JdbcTypeConstants.READER -> JDBCType.BLOB;
+            case JdbcTypeConstants.BIG_DECIMAL -> JDBCType.DECIMAL;
+            case JdbcTypeConstants.BOOLEAN -> JDBCType.BOOLEAN;
+            case JdbcTypeConstants.BYTE -> JDBCType.BIT;
+            case JdbcTypeConstants.CLOB -> JDBCType.CLOB;
+            case JdbcTypeConstants.DATE -> JDBCType.DATE;
+            case JdbcTypeConstants.DOUBLE -> JDBCType.DOUBLE;
+            case JdbcTypeConstants.FLOAT -> JDBCType.FLOAT;
+            case JdbcTypeConstants.INTEGER, JdbcTypeConstants.LONG -> JDBCType.INTEGER;
+            case JdbcTypeConstants.BIG_INTEGER -> JDBCType.BIGINT;
+            case JdbcTypeConstants.NCLOB -> JDBCType.NCLOB;
+            case JdbcTypeConstants.STRING, JdbcTypeConstants.URL -> JDBCType.VARCHAR;
+            case JdbcTypeConstants.REF -> JDBCType.REF;
+            case JdbcTypeConstants.ROW_ID -> JDBCType.ROWID;
+            case JdbcTypeConstants.SHORT -> JDBCType.SMALLINT;
+            case JdbcTypeConstants.SQLXML -> JDBCType.SQLXML;
+            case JdbcTypeConstants.TIME -> JDBCType.TIME;
+            case JdbcTypeConstants.TIMESTAMP -> JDBCType.TIMESTAMP;
+            default -> JDBCType.LONGVARCHAR;
+        };
     }
 
     public static void setSqlArgValue(DataSourceDriverName driverName, PreparedStatement preparedStatement, int index,
@@ -315,10 +226,11 @@ public class ColumnTypeHandler {
                 break;
 
             case JdbcTypeConstants.URL:
-                if (driverName != DataSourceDriverName.sqlite)
+                if (driverName != DataSourceDriverName.sqlite) {
                     preparedStatement.setURL(index, (URL) arg);
-                else
-                    preparedStatement.setString(index, ((URL) arg).toString());
+                } else {
+                    preparedStatement.setString(index, arg.toString());
+                }
                 break;
 
             default:

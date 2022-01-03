@@ -16,6 +16,7 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
  * @since 0.0.1
  */
 public class HttpClientConfiguration implements DebbieConfiguration {
+    private boolean enable;
     private String name;
 
     private HttpClientProxy proxy;
@@ -42,6 +43,15 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     private String authPassword;
 
     private boolean insecure;
+
+    @Override
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     @Override
     public String getName() {
@@ -138,7 +148,7 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public void reset() {
+    public void close() {
         // do nothing
     }
 }

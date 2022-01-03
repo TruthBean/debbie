@@ -29,6 +29,10 @@ import java.lang.annotation.*;
 @MethodProxy(order = 10, proxyHandler = TransactionalMethodProxyHandler.class)
 public @interface JdbcTransactional {
 
+    String profile() default "default";
+
+    String databaseId() default "default";
+
     boolean readonly() default true;
 
     boolean forceCommit() default false;

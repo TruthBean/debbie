@@ -23,14 +23,14 @@ import java.util.concurrent.*;
  * @since 0.2.0
  * Created on 2020-12-21 11:03
  */
-public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor {
+public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, AutoCloseable {
     private final long awaitTerminationTime;
 
     private final ScheduledExecutorService executorService;
 
     public ScheduledThreadPooledExecutor() {
         this(Runtime.getRuntime().availableProcessors(),
-                new NamedThreadFactory()
+                new NamedThreadFactory("ScheduledThreadPooled")
                         .setUncaughtExceptionHandler((t, e) ->
                                 LoggerFactory.getLogger(LogLevel.ERROR, t.getClass()).error("", e)), 5000L);
     }
@@ -97,4 +97,9 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor {
         }
     }
 
+    @Override
+    public void close() throws Exception {
+        destroy();
+        destroy();
+    }
 }

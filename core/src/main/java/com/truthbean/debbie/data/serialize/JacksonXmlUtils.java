@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.data.serialize;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -38,6 +39,7 @@ public class JacksonXmlUtils implements TextSerializable {
             XML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             XML_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
             XML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
+            XML_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
 
     }

@@ -90,7 +90,7 @@ public class AnnotationMethodInfo {
                 + "\"aliasFor\":" + aliasFor + ","
                 + "\"aliasForAttribute\":\"" + aliasForAttribute + "\"" + ","
                 + "\"aliasForAnnotation\":" + aliasForAnnotation + ","
-                + "\"value\":" + value + ","
+                + "\"VALUE\":" + value + ","
                 + "\"method\":" + method + "}";
     }
 }

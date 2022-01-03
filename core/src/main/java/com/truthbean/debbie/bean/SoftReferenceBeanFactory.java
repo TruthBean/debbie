@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 import java.lang.ref.SoftReference;
 
 /**
@@ -16,7 +18,7 @@ import java.lang.ref.SoftReference;
  * @since 0.5.0
  * Created on 2021-02-24 22:32
  */
-public class SoftReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T> {
+public class SoftReferenceBeanFactory<T> implements BeanFactory<T> {
 
     private SoftReference<T> bean;
     private final Class<T> beanType;
@@ -26,27 +28,36 @@ public class SoftReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T> {
     }
 
     @Override
-    public void destroy() {
+    public void destruct(ApplicationContext applicationContext) {
         bean.clear();
     }
 
     @Override
-    public T getBean() {
+    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
+        bean = new SoftReference<>(applicationContext.factory(beanType));
         return bean.get();
     }
 
     @Override
-    public Class<?> getBeanType() {
+    public boolean isCreated() {
+        return false;
+    }
+
+    @Override
+    public T getCreatedBean() {
+        if (bean != null) {
+            return bean.get();
+        }
+        return null;
+    }
+
+    @Override
+    public Class<?> getBeanClass() {
         return beanType;
     }
 
     @Override
     public boolean isSingleton() {
         return false;
-    }
-
-    @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
-        bean = new SoftReference<>(globalBeanFactory.factory(beanType));
     }
 }

@@ -49,6 +49,20 @@ public class ThreadPooledExecutor implements PooledExecutor {
                 new LinkedBlockingQueue<>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
     }
 
+    public ThreadPooledExecutor(int coreSize, int maximumPoolSize, int queueLength, ThreadFactory threadFactory, long awaitTerminationTime) {
+        this.awaitTerminationTime = awaitTerminationTime;
+
+        this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(queueLength), threadFactory, new DiscardOldestPolicy());
+    }
+
+    public ThreadPooledExecutor(ExecutorService executorService, long awaitTerminationTime) {
+        this.awaitTerminationTime = awaitTerminationTime;
+
+        this.executorService = executorService;
+    }
+
     @Override
     public void execute(Runnable task) {
         if (task == null) return;
@@ -68,7 +82,7 @@ public class ThreadPooledExecutor implements PooledExecutor {
 
     @Override
     public boolean isRunning() {
-        return !executorService.isShutdown() && !executorService.isTerminated();
+        return !executorService.isShutdown() || !executorService.isTerminated();
     }
 
     @Override
@@ -78,7 +92,7 @@ public class ThreadPooledExecutor implements PooledExecutor {
 
     @Override
     public void destroy() {
-        if (isRunning()) {
+        while (isRunning()) {
             try {
                 executorService.shutdown();
                 while (!executorService.isTerminated() && ! executorService.isShutdown()) {
@@ -87,6 +101,9 @@ public class ThreadPooledExecutor implements PooledExecutor {
                     LOGGER.info("waiting for executorService termination");
                     if (termination) {
                         break;
+                    } else {
+                        LOGGER.info("force shutdown now");
+                        executorService.shutdownNow();
                     }
                 }
             } catch (InterruptedException e) {

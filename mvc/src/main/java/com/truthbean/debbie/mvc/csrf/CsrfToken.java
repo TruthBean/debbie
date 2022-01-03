@@ -44,13 +44,12 @@ public class CsrfToken {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CsrfToken)) {
+        if (!(o instanceof CsrfToken csrfToken)) {
             return false;
         }
         if (token == null) {
             return false;
         }
-        CsrfToken csrfToken = (CsrfToken) o;
         return token.equals(csrfToken.getToken());
     }
 

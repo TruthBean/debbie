@@ -16,6 +16,8 @@ import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.repository.DdlRepository;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
@@ -25,6 +27,10 @@ import com.truthbean.debbie.proxy.BeanProxyType;
 @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
 @JdbcTransactional
 public class DataSourceConfigurationTest {
+
+    static {
+        System.setProperty("logging.level.com.truthbean.debbie", "TRACE");
+    }
 
     private final DataSourceConfiguration configuration;
     private final DataSourceConfiguration mariadbConfiguration;
@@ -46,11 +52,12 @@ public class DataSourceConfigurationTest {
         System.out.println(configuration);
         System.out.println(mariadbConfiguration);
         System.out.println(h2Configuration);
-        System.out.println(ddlRepository.getTransaction().getDriverName());
+        TransactionManager.offer(new TransactionInfo());
+        System.out.println(ddlRepository.getTransaction());
     }
 
     public static void main(String[] args) {
-        var applicationFactory = ApplicationFactory.configure(DataSourceConfigurationTest.class);
+        var applicationFactory = ApplicationFactory.factory(DataSourceConfigurationTest.class);
         var context = applicationFactory.getApplicationContext();
         var beanFactory = context.getGlobalBeanFactory();
         // application.start(args);

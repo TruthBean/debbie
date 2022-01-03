@@ -33,7 +33,7 @@ public @interface DebbieRmiService {
     /**
      * @return service name
      */
-    @AliasFor(attribute = "value", annotation = BeanComponent.class)
+    @AliasFor(attribute = "VALUE", annotation = BeanComponent.class)
     String value();
 
     @AliasFor(attribute = "type", annotation = BeanComponent.class)

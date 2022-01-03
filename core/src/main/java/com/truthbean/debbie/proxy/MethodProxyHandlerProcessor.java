@@ -1,7 +1,6 @@
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.bean.DebbieBeanInfo;
-import com.truthbean.debbie.bean.DebbieClassBeanInfo;
+import com.truthbean.debbie.bean.ClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.proxy.asm.AbstractProxy;
 
@@ -11,12 +10,12 @@ import java.util.*;
 
 public class MethodProxyHandlerProcessor<T> {
     private boolean noProxy;
-    private final DebbieClassBeanInfo<T> beanInfo;
+    private final ClassBeanInfo<T> beanInfo;
     private final MethodProxyHandlerHandler handler;
     private final ApplicationContext applicationContext;
 
     public MethodProxyHandlerProcessor(ApplicationContext applicationContext, MethodProxyHandlerHandler handler,
-                                       DebbieClassBeanInfo<T> beanInfo) {
+                                       ClassBeanInfo<T> beanInfo) {
         this.beanInfo = beanInfo;
         this.handler = handler;
         this.applicationContext = applicationContext;
@@ -41,7 +40,7 @@ public class MethodProxyHandlerProcessor<T> {
         if (!classAnnotationContainMethodProxy) {
             methodWithAnnotations.forEach((method, annotations) -> {
                 List<MethodProxyHandler<? extends Annotation>> methodProxyHandler =
-                        methodProxyResolver.getMethodProxyHandler(method, (Collection<Annotation>) null);
+                        methodProxyResolver.getMethodProxyHandler(method, null);
                 handler.addInterceptors(methodProxyHandler);
             });
         } else {
@@ -61,6 +60,6 @@ public class MethodProxyHandlerProcessor<T> {
     }
 
     public T proxy(AbstractProxy<T> proxy) {
-        return proxy.proxy(beanInfo::getBean);
+        return proxy.proxy(beanInfo.getBean());
     }
 }

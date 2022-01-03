@@ -4,6 +4,9 @@
             "pattern": "application.properties"
         },
         {
+            "pattern": ".*/*.*properties$"
+        },
+        {
             "pattern": "logback.xml"
         },
         {

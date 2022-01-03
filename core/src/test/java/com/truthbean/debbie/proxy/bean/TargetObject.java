@@ -1,6 +1,7 @@
 package com.truthbean.debbie.proxy.bean;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.MethodProxy;
 
 /**
@@ -8,7 +9,7 @@ import com.truthbean.debbie.proxy.MethodProxy;
  * @since 0.0.2
  * Created on 2020-04-22 22:45
  */
-@BeanComponent
+@BeanComponent(proxy = BeanProxyType.ASM)
 public class TargetObject {
 
     public TargetObject(String value, int a, char c, byte b, short s, long l, float f, double d) throws Exception {

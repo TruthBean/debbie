@@ -39,7 +39,7 @@ import com.truthbean.common.mini.util.StringUtils;
  * <li><code>org/&#42;&#42;/servlet/bla.jsp</code> &mdash; matches
  * {@code org/springframework/servlet/bla.jsp} but also
  * {@code org/springframework/testing/servlet/bla.jsp} and {@code org/servlet/bla.jsp}</li>
- * <li>{@code com/{filename:\\w+}.jsp} will match {@code com/test.jsp} and assign the value {@code test}
+ * <li>{@code com/{filename:\\w+}.jsp} will match {@code com/test.jsp} and assign the VALUE {@code test}
  * to the {@code filename} variable</li>
  * </ul>
  *
@@ -132,8 +132,8 @@ public class AntPathMatcher {
 
     /**
      * Specify whether to cache parsed pattern metadata for patterns passed
-     * into this matcher's {@link #match} method. A value of {@code true}
-     * activates an unlimited pattern cache; a value of {@code false} turns
+     * into this matcher's {@link #match} method. A VALUE of {@code true}
+     * activates an unlimited pattern cache; a VALUE of {@code false} turns
      * the pattern cache off completely.
      * <p>Default is for the cache to be on, but with the variant to automatically
      * turn it off when encountering too many patterns to cache at runtime

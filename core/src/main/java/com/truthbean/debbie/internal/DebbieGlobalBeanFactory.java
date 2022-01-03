@@ -6,7 +6,8 @@
  * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- */
+ *//*
+
 package com.truthbean.debbie.internal;
 
 import com.truthbean.Logger;
@@ -15,9 +16,6 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.proxy.*;
-import com.truthbean.debbie.proxy.asm.AbstractProxy;
-import com.truthbean.debbie.proxy.asm.AsmProxy;
-import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Modifier;
@@ -27,20 +25,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+*/
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
- */
-class DebbieGlobalBeanFactory implements GlobalBeanFactory {
+ *//*
 
-    private final DebbieBeanInfoFactory beanInfoFactory;
+class DebbieGlobalBeanFactory {
+
+    private final BeanInfoManager beanInfoManager;
     private DebbieApplicationContext applicationContext;
     private DebbieInjectedBeanFactory injectedBeanFactory;
     private BeanProxyHandler beanProxyHandler;
 
-    DebbieGlobalBeanFactory(final DebbieBeanInfoFactory beanInfoFactory) {
-        this.beanInfoFactory = beanInfoFactory;
-        this.beanInfoFactory.refreshBeans();
+    DebbieGlobalBeanFactory(final BeanInfoManager beanInfoManager) {
+        beanInfoManager.refreshBeans();
+        this.beanInfoManager = beanInfoManager;
     }
 
     protected void setDebbieApplicationContext(DebbieApplicationContext applicationContext) {
@@ -92,79 +92,96 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> void factoryByRawBean(T rawBean) {
-        synchronized (beanInfoFactory) {
-            DebbieClassBeanInfo<T> debbieBeanInfo;
+        synchronized (beanInfoManager) {
+            BeanInfo<T> debbieBeanInfo;
 
-            var beanInfo = this.beanInfoFactory.getBeanInfo(null, rawBean.getClass(), false, false);
-            if (beanInfo == null)
-                debbieBeanInfo = new DebbieClassBeanInfo<>((Class<T>) rawBean.getClass());
-            else {
-                debbieBeanInfo = (DebbieClassBeanInfo<T>) beanInfo;
+            BeanInfo beanInfo = null;
+            // var beanInfo = this.beanInfoManager.getBeanInfo(null, rawBean.getClass(), false, false);
+            if (beanInfo == null) {
+                debbieBeanInfo = new DebbieReflectionBeanFactory<>((Class<T>) rawBean.getClass(), rawBean);
+            } else {
+                debbieBeanInfo = (BeanInfo<T>) beanInfo;
             }
 
-            BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory, beanProxyHandler);
-            beanCreator.setCreatedPreparation(rawBean);
-            beanCreator.setInjectedBeanFactory(injectedBeanFactory);
-            T bean = injectedBeanFactory.factory(beanCreator);
-            debbieBeanInfo.setBean(bean);
-            if (beanInfo != null) {
-                beanProxyHandler.proxyCreatedBean(debbieBeanInfo, beanInfo.getBeanProxyType());
-            } else {
-                beanProxyHandler.proxyCreatedBean(debbieBeanInfo, BeanProxyType.ASM);
+            if (debbieBeanInfo instanceof DebbieClassFactoryBeanInfo classBeanInfo) {
+                BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<T>(classBeanInfo, beanInfoManager, beanProxyHandler);
+                beanCreator.setApplicationContext(applicationContext);
+                beanCreator.setCreatedPreparation(rawBean);
+                beanCreator.setInjectedBeanFactory(injectedBeanFactory);
+                T bean = injectedBeanFactory.factory(beanCreator);
+                classBeanInfo.setBean(bean);
+                if (beanInfo != null) {
+                    beanProxyHandler.proxyCreatedBean(classBeanInfo, classBeanInfo.getBean(), beanInfo.getBeanProxyType());
+                } else {
+                    beanProxyHandler.proxyCreatedBean(classBeanInfo, classBeanInfo.getBean(), BeanProxyType.ASM);
+                }
+            } else if (debbieBeanInfo instanceof BeanFactory) {
+                ((BeanFactory<?>) debbieBeanInfo).factoryBean(applicationContext);
             }
         }
     }
 
     @Override
     public <T> T factoryByNoBean(Class<T> noBeanType) {
-        synchronized (beanInfoFactory) {
-            BeanInfo<T> debbieBeanInfo;
+        synchronized (beanInfoManager) {
+            BeanInfo debbieBeanInfo;
 
-            var beanInfo = this.beanInfoFactory.getBeanInfo(null, noBeanType, false, false);
-            debbieBeanInfo = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieBeanInfo<>(noBeanType));
+            var beanInfo = this.beanInfoManager.getBeanInfo(null, noBeanType, false, false);
+            debbieBeanInfo = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieReflectionBeanFactory<>(noBeanType));
 
-            BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(debbieBeanInfo, beanInfoFactory, beanProxyHandler);
-            beanCreator.setCreatedPreparation(ReflectionHelper.newInstance(noBeanType));
-            beanCreator.setInjectedBeanFactory(injectedBeanFactory);
-            T bean = injectedBeanFactory.factory(beanCreator);
-            if (bean instanceof MutableBeanInfo) {
-                ((MutableBeanInfo<T>) debbieBeanInfo).setBean(bean);
+            if (debbieBeanInfo instanceof DebbieClassFactoryBeanInfo) {
+                DebbieClassFactoryBeanInfo<T> classBeanInfo = (DebbieClassFactoryBeanInfo<T>) debbieBeanInfo;
+                BeanCreatorImpl<T> beanCreator = new BeanCreatorImpl<>(classBeanInfo, beanInfoManager, beanProxyHandler);
+                beanCreator.setApplicationContext(applicationContext);
+                beanCreator.setCreatedPreparation(ReflectionHelper.newInstance(noBeanType));
+                beanCreator.setInjectedBeanFactory(injectedBeanFactory);
+                T bean = injectedBeanFactory.factory(beanCreator);
+                if (bean instanceof MutableFactoryBeanInfo) {
+                    ((MutableFactoryBeanInfo<T>) debbieBeanInfo).setBean(bean);
+                }
+                return beanProxyHandler.proxyCreatedBean(classBeanInfo, classBeanInfo.getBean(), beanInfo.getBeanProxyType());
+            } else if (debbieBeanInfo instanceof BeanFactory) {
+                return (T) ((BeanFactory<?>) debbieBeanInfo).factoryBean(applicationContext);
             }
-            return beanProxyHandler.proxyCreatedBean(debbieBeanInfo, beanInfo.getBeanProxyType());
+            return null;
         }
     }
 
     @Override
-    public <T, K extends T> T factory(BeanInfo<K> beanInfo) {
-        if (beanInfo.isSingleton() && beanInfo.isPresent() && beanInfo.needProxy()) {
-            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
-        }
-        var beanFactory = beanInfo.getBeanFactory();
-        if (beanFactory != null) {
-            beanFactory.setGlobalBeanFactory(this);
-            return factoryBeanByFactory(beanInfo, beanFactory);
-        }
+    public <T, K extends T> K factory(BeanInfo<T> baseBeanInfo) {
+        if (baseBeanInfo instanceof FactoryBeanInfo) {
+            FactoryBeanInfo<K> beanInfo = (FactoryBeanInfo<K>) baseBeanInfo;
+            if (beanInfo.isSingleton() && beanInfo.isPresent() && beanInfo.needProxy()) {
+                return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBean(), beanInfo.getBeanProxyType());
+            }
+            var beanFactory = beanInfo.getBeanFactory();
+            if (beanFactory != null) {
+                return factoryBeanByFactory(beanInfo, beanFactory);
+            }
 
-        return factoryBeanByDependenceProcessor(beanInfo, false);
+            return factoryBeanByDependenceProcessor(beanInfo, false);
+        } else if (baseBeanInfo instanceof BeanFactory) {
+            return ((BeanFactory<K>) baseBeanInfo).factoryBean(applicationContext);
+        }
+        return null;
     }
 
-    private <T, K extends T> T factoryWithoutProxy(BeanInfo<K> beanInfo) {
+    private <T, K extends T> T factoryWithoutProxy(FactoryBeanInfo<K> beanInfo) {
         if (beanInfo.isSingleton() && beanInfo.isPresent()) {
             return beanInfo.getBean();
         }
         var beanFactory = beanInfo.getBeanFactory();
-        if (beanFactory != null && !beanFactory.isSkipCreatedBeanFactory()) {
-            beanFactory.setGlobalBeanFactory(this);
-            K bean = beanFactory.factoryBean();
-            if (beanInfo instanceof MutableBeanInfo) {
-                ((MutableBeanInfo<K>) beanInfo).setBean(bean);
+        if (beanFactory != null && !(beanFactory instanceof SkipCreatedBeanFactory)) {
+            K bean = beanFactory.factoryBean(applicationContext);
+            if (beanInfo instanceof MutableFactoryBeanInfo) {
+                ((MutableFactoryBeanInfo<K>) beanInfo).setBean(bean);
             }
             return bean;
         }
 
         K bean = injectedBeanFactory.factory(beanInfo, true);
-        if (beanInfo instanceof MutableBeanInfo) {
-            ((MutableBeanInfo<K>) beanInfo).setBean(bean);
+        if (beanInfo instanceof MutableFactoryBeanInfo) {
+            ((MutableFactoryBeanInfo<K>) beanInfo).setBean(bean);
         }
         return bean;
     }
@@ -182,12 +199,13 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
                 return (T) configuration;
             }
         }
-        synchronized (beanInfoFactory) {
-            var beanInfo = this.beanInfoFactory.getBeanInfo(serviceName, type, require, throwException);
-            if (!require && beanInfo == null)
+        synchronized (beanInfoManager) {
+            var beanFactory = this.beanInfoManager.getBeanFactory(serviceName, type, require);
+            if (!require && beanFactory == null) {
                 return null;
-            assert beanInfo != null;
-            return factory(beanInfo);
+            }
+            assert beanFactory != null;
+            return beanFactory.factoryBean(applicationContext);
         }
     }
 
@@ -195,80 +213,70 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
         return factory(serviceName, type, require, true);
     }
 
-    private <T> T factoryBeanByFactory(BeanInfo<T> beanInfo, BeanFactory<T> beanFactory) {
-        if (beanFactory.isSkipCreatedBeanFactory() && beanInfo.needProxy()) {
-            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
+    private <T> T factoryBeanByFactory(FactoryBeanInfo<T> beanInfo, BeanFactory<T> beanFactory) {
+        if (beanFactory instanceof SkipCreatedBeanFactory && beanInfo.needProxy()) {
+            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBean(), beanInfo.getBeanProxyType());
         }
-        T bean = beanFactory.factoryBean();
-        if (beanInfo instanceof MutableBeanInfo) {
-            ((MutableBeanInfo<T>) beanInfo).setBean(bean);
+        T bean = beanFactory.factoryBean(applicationContext);
+        if (beanInfo instanceof MutableFactoryBeanInfo) {
+            ((MutableFactoryBeanInfo<T>) beanInfo).setBean(bean);
         }
         if (beanInfo.needProxy()) {
-            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
+            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBean(), beanInfo.getBeanProxyType());
         } else {
             return beanInfo.getBean();
         }
     }
 
     @Override
-    public <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory) {
+    public <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory) {
         T bean = injectedBeanFactory.factory(beanInfo, skipFactory);
-        if (beanInfo instanceof MutableBeanInfo) {
-            ((MutableBeanInfo<T>) beanInfo).setBean(bean);
+        if (beanInfo instanceof MutableFactoryBeanInfo) {
+            ((MutableFactoryBeanInfo<T>) beanInfo).setBean(bean);
         }
         if (beanInfo.needProxy()) {
-            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
+            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBean(), beanInfo.getBeanProxyType());
         } else {
             return beanInfo.getBean();
         }
     }
 
     @Override
-    public <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
+    public <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
         T bean = injectedBeanFactory.factory(beanInfo, skipFactory, firstParamValue);
-        if (beanInfo instanceof MutableBeanInfo) {
-            ((MutableBeanInfo<T>) beanInfo).setBean(bean);
+        if (beanInfo instanceof MutableFactoryBeanInfo) {
+            ((MutableFactoryBeanInfo<T>) beanInfo).setBean(bean);
         }
         if (beanInfo.needProxy()) {
-            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBeanProxyType());
+            return beanProxyHandler.proxyCreatedBean(beanInfo, beanInfo.getBean(), beanInfo.getBeanProxyType());
         } else {
             return beanInfo.getBean();
         }
     }
 
     @Override
-    public <T> DebbieBeanInfo<T> getBeanInfoWithBean(Class<T> type) {
-        synchronized (beanInfoFactory) {
-            LOGGER.trace(() -> "factory bean with type " + type.getName());
-            var beanInfo = this.beanInfoFactory.getBeanInfo(null, type, true, true);
-            if (beanInfo != null) {
-                T bean = this.factory(beanInfo);
-                DebbieBeanInfo<T> result = new DebbieBeanInfo<>(beanInfo.getBeanClass());
-                result.setBean(bean);
-                return result;
-            }
-            return null;
-        }
-    }
-
-    @Override
-    public <T, K extends T> List<K> getBeanList(Class<T> superType) {
+    public <Bean> List<Bean> getBeanList(Class<Bean> superType) {
         return getBeanList(superType, false);
     }
 
     @Override
-    public <T, K extends T> List<K> getBeanList(Class<T> superType, boolean withoutProxy) {
-        synchronized (beanInfoFactory) {
-            List<K> result = new ArrayList<>();
+    public <Bean> List<Bean> getBeanList(Class<Bean> superType, boolean withoutProxy) {
+        synchronized (beanInfoManager) {
+            List<Bean> result = new ArrayList<>();
             LOGGER.trace(() -> "factory bean with type " + superType.getName());
-            List<BeanInfo<K>> beanInfoList = this.beanInfoFactory.getBeanInfoList(superType, false);
+            List<BeanInfo> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
             if (beanInfoList != null && !beanInfoList.isEmpty()) {
-                for (BeanInfo<K> beanInfo : beanInfoList) {
-                    K bean;
-                    if (withoutProxy) {
-                        bean = this.factoryWithoutProxy(beanInfo);
-                    } else {
-                        bean = this.factory(beanInfo);
+                for (BeanInfo beanInfo : beanInfoList) {
+                    Bean bean = null;
+                    if (beanInfo instanceof FactoryBeanInfo) {
+                        FactoryBeanInfo<Bean> kBeanInfo = (FactoryBeanInfo<Bean>) beanInfo;
+                        if (withoutProxy) {
+                            bean = this.factoryWithoutProxy(kBeanInfo);
+                        } else {
+                            bean = (Bean) this.factory(kBeanInfo);
+                        }
+                    } else if (beanInfo instanceof BeanFactory) {
+                        bean = (Bean) ((BeanFactory<?>) beanInfo).factoryBean(applicationContext);
                     }
                     if (bean == null) {
                         throw new BeanCreatedException("create bean (" + beanInfo.toString() + ") error");
@@ -282,20 +290,20 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
 
     @Override
     public <T> boolean containsBean(Class<T> beanType) {
-        synchronized (beanInfoFactory) {
-            return this.beanInfoFactory.getBeanInfoList(beanType, false) != null;
+        synchronized (beanInfoManager) {
+            return this.beanInfoManager.getBeanInfoList(beanType, false) != null;
         }
     }
 
     @Override
     public boolean containsBean(String beanName) {
-        synchronized (beanInfoFactory) {
-            return this.beanInfoFactory.getBeanInfo(beanName, null, false, false) != null;
+        synchronized (beanInfoManager) {
+            return this.beanInfoManager.getBeanInfo(beanName, null, false, false) != null;
         }
     }
 
     @Override
-    public <T> T getBeanByFactory(BeanInfo<T> beanInfo) {
+    public <T> T getBeanByFactory(FactoryBeanInfo<T> beanInfo) {
         Class<T> beanClass = beanInfo.getBeanClass();
         BeanFactory<T> beanFactory = beanInfo.getBeanFactory();
         return getBeanByFactory(beanClass, beanFactory);
@@ -305,7 +313,7 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
     public <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory) {
         if (beanClass.isInterface() || Modifier.isAbstract(beanClass.getModifiers())) {
             if (beanFactory != null) {
-                return beanFactory.getBean();
+                return beanFactory.factoryBean(applicationContext);
             } else {
                 return factory(beanClass);
             }
@@ -315,3 +323,4 @@ class DebbieGlobalBeanFactory implements GlobalBeanFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalBeanFactory.class);
 }
+*/

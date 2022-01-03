@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.net.uri;
 
-import com.truthbean.debbie.lang.DeepCloneable;
+import com.truthbean.debbie.lang.Copyable;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * @since 0.0.1
  * Created on 2019/3/16 09:27.
  */
-public class UriPathFragment implements DeepCloneable {
+public class UriPathFragment implements Copyable<UriPathFragment> {
     /**
      * path fragment
      */
@@ -113,7 +113,7 @@ public class UriPathFragment implements DeepCloneable {
     }
 
     @Override
-    public UriPathFragment deepClone() {
+    public UriPathFragment copy() {
         UriPathFragment fragment = new UriPathFragment();
         fragment.fragment = this.fragment;
         fragment.pathVariable.putAll(this.pathVariable);

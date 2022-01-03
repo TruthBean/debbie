@@ -76,11 +76,11 @@ public class JdbcColumnResolver {
 
                     columnInfo = new ColumnInfo();
                     if (columnLabel != null && !"".equals(columnLabel.trim())) {
-                        columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnLabel));
-                        columnInfo.setColumnName(columnLabel);
+                        columnInfo.setProperty(columnNameTransformer.columnNameToPropertyName(columnLabel));
+                        columnInfo.setColumn(columnLabel);
                     } else {
-                        columnInfo.setPropertyName(columnNameTransformer.columnNameToPropertyName(columnName));
-                        columnInfo.setColumnName(columnName);
+                        columnInfo.setProperty(columnNameTransformer.columnNameToPropertyName(columnName));
+                        columnInfo.setColumn(columnName);
                     }
 
                     columnInfo.setDataType(type);
@@ -152,7 +152,7 @@ public class JdbcColumnResolver {
         if (sqlColumn != null) {
             if (sqlColumn.id()) {
                 var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
-                columnInfo.setColumnName(columnName);
+                columnInfo.setColumn(columnName);
 
                 columnInfo.setNullable(false);
                 if (field.getType() == UUID.class) {
@@ -165,7 +165,7 @@ public class JdbcColumnResolver {
                 columnInfo.setPrimaryKeyType(sqlColumn.primaryKey());
             } else {
                 var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
-                columnInfo.setColumnName(columnName);
+                columnInfo.setColumn(columnName);
 
                 columnInfo.setNullable(sqlColumn.nullable());
                 columnInfo.setUnique(sqlColumn.unique());
@@ -180,7 +180,7 @@ public class JdbcColumnResolver {
             }
 
         } else {
-            columnInfo.setColumnName(field.getName());
+            columnInfo.setColumn(field.getName());
         }
         columnInfo.setJdbcType(ColumnTypeHandler.explain(field.getType()));
         var isCharMaxLengthZero = (columnInfo.getJdbcType() == JDBCType.VARCHAR ||
@@ -188,7 +188,7 @@ public class JdbcColumnResolver {
         if (isCharMaxLengthZero) {
             columnInfo.setCharMaxLength(64);
         }
-        columnInfo.setPropertyName(field.getName());
+        columnInfo.setProperty(field.getName());
         columnInfo.setJavaClass(field.getType());
         return columnInfo;
     }

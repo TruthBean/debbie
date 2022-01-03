@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.transformer.ClassTransformer;
 import com.truthbean.transformer.DataTransformerCenter;
 import com.truthbean.transformer.collection.ListStringTransformer;
@@ -65,16 +65,13 @@ import java.util.Date;
  */
 class DataTransformerRegister {
 
-    private final BeanInitialization beanInitialization;
-
-    DataTransformerRegister(BeanInitialization beanInitialization) {
-        this.beanInitialization = beanInitialization;
+    DataTransformerRegister(BeanInfoManager beanInfoManage) {
     }
 
     public void registerTransformer() {
         DataTransformerCenter.register(DefaultTimeTransformer.getInstance(), Date.class, String.class);
-        beanInitialization.registerDataTransformer(new TimestampLongTransformer(), Timestamp.class, Long.class);
-        beanInitialization.registerDataTransformer(new TimestampCalendarTransformer(), Timestamp.class, Calendar.class);
+        DataTransformerCenter.register(new TimestampLongTransformer(), Timestamp.class, Long.class);
+        DataTransformerCenter.register(new TimestampCalendarTransformer(), Timestamp.class, Calendar.class);
         DataTransformerCenter.register(new TimestampInstantTransformer(), Timestamp.class, Instant.class);
         DataTransformerCenter.register(new TimestampLocalDateTimeTransformer(), Timestamp.class, LocalDateTime.class);
         DataTransformerCenter.register(new TimestampLocalDateTransformer(), Timestamp.class, LocalDate.class);
@@ -112,6 +109,6 @@ class DataTransformerRegister {
         DataTransformerCenter.register(ClassTransformer.INSTANCE, Class.class, String.class);
 
         DataTransformerCenter.register(new BlobToStringTransformer(), Blob.class, String.class);
-        beanInitialization.registerDataTransformer(new BlobToByteArrayTransformer(), Blob.class, byte[].class);
+        DataTransformerCenter.register(new BlobToByteArrayTransformer(), Blob.class, byte[].class);
     }
 }

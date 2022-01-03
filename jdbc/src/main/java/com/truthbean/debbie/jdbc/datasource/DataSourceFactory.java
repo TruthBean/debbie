@@ -10,15 +10,19 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanClosure;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory;
+import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -31,17 +35,37 @@ public interface DataSourceFactory extends BeanClosure {
      * @param <Configuration> DataSourceConfiguration subclass
      * @param applicationContext applicationContext
      * @param configurationClass configurationClass
-     * @param configurationFactory configurationFactory
      * @return DataSourceFactory
      */
-    static <Configuration extends DataSourceConfiguration> DataSourceFactory factory(
-            DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext, Class<Configuration> configurationClass) {
-        var config = DataSourceConfigurationFactory.factory(configurationFactory, applicationContext, configurationClass);
+    static <Configuration extends DataSourceConfiguration> Set<DataSourceFactory> factory(
+            ApplicationContext applicationContext, Class<Configuration> configurationClass) {
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        var collection = globalBeanFactory.getBeanList(configurationClass);
+        Set<DataSourceFactory> factories = new HashSet<>();
+        for (Configuration config : collection) {
+            factories.add(loadFactory(config));
+        }
+        return factories;
+    }
+
+    static <Configuration extends DataSourceConfiguration> DataSourceFactory factoryOne(
+            ApplicationContext applicationContext, Class<Configuration> configurationClass) {
+        var config = DataSourceConfigurationFactory.factoryOne(applicationContext, configurationClass);
         return loadFactory(config);
     }
 
     static <Configuration extends DataSourceConfiguration> DataSourceFactory loadFactory(Configuration configuration) {
-        DataSourceFactory factory = ReflectionHelper.newInstance(configuration.getDataSourceFactoryClass());
+        Class<? extends DataSourceFactory> factoryClass = configuration.getDataSourceFactoryClass();
+        DataSourceFactory factory;
+        if (factoryClass == null || DefaultDataSourceFactory.class.equals(factoryClass)) {
+            factory = new DefaultDataSourceFactory();
+        } else if (DefaultDataSourcePoolFactory.class.equals(factoryClass)) {
+            factory = new DefaultDataSourcePoolFactory();
+        } else if (DefaultMultiDataSourceFactory.class.equals(factoryClass)) {
+            factory = new DefaultMultiDataSourceFactory();
+        } else {
+            factory = ReflectionHelper.newInstance(factoryClass);
+        }
         return factory.factory(configuration);
     }
 
@@ -60,6 +84,8 @@ public interface DataSourceFactory extends BeanClosure {
      * @return DataSourceFactory
      */
     DataSourceFactory factory(DataSourceConfiguration configuration);
+
+    String getName();
 
     /**
      * get DataSource
@@ -92,15 +118,6 @@ public interface DataSourceFactory extends BeanClosure {
             getLogger().error("", e);
         }
         return null;
-    }
-
-    /**
-     * close dataSource
-     * @since 0.0.2
-     */
-    @Override
-    default void destroy() {
-        // do nothing
     }
 
 }

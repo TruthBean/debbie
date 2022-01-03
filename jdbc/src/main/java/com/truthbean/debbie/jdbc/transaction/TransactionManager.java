@@ -68,11 +68,13 @@ public class TransactionManager {
         if (deque != null) {
             transactionInfo = deque.peekFirst();
         }
-        if (transactionInfo != null)
-            if (LOGGER.isDebugEnabled())
+        if (transactionInfo != null) {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("peek transactionInfo " + transactionInfo.getId());
-        else
+            }
+        } else {
             LOGGER.warn("peek transactionInfo null.");
+        }
         return transactionInfo;
     }
 

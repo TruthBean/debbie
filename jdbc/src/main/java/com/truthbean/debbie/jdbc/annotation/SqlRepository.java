@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @BeanComponent(type = BeanType.SINGLETON)
 public @interface SqlRepository {
 
-    @AliasFor(attribute = "value", annotation = BeanComponent.class)
+    @AliasFor(attribute = "VALUE", annotation = BeanComponent.class)
     String value() default "";
 
     /**

@@ -13,6 +13,9 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.properties.DebbieProperties;
 
+import java.io.IOException;
+import java.util.Set;
+
 /**
  * @author truthbean
  * @since 0.0.2
@@ -35,7 +38,25 @@ public class RmiServerProperties extends EnvironmentContentHolder implements Deb
     }
 
     @Override
-    public RmiServerConfiguration toConfiguration(ApplicationContext applicationContext) {
+    public Set<String> getProfiles() {
+        return null;
+    }
+
+    @Override
+    public RmiServerConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
+        if (DEFAULT_PROFILE.equals(name)) {
+            return configuration;
+        }
+        return null;
+    }
+
+    @Override
+    public RmiServerConfiguration getConfiguration(ApplicationContext applicationContext) {
         return configuration;
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 }

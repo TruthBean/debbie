@@ -9,17 +9,12 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
-import com.truthbean.debbie.mvc.request.HttpMethod;
-import com.truthbean.debbie.mvc.request.RouterRequest;
-import com.truthbean.debbie.mvc.response.RouterResponse;
-import com.truthbean.debbie.mvc.router.MvcRouter;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,8 +26,7 @@ public class MvcRouterRegisterTest {
     public void before() {
         ApplicationFactory factory = ApplicationFactory.configure(MvcRouterRegisterTest.class);
         var context = factory.getApplicationContext();
-        DebbieConfigurationCenter configurationFactory = context.getConfigurationCenter();
-        MvcConfiguration mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, context);
+        MvcConfiguration mvcConfiguration = context.factory(MvcConfiguration.class);
         MvcRouterRegister.getInstance(mvcConfiguration).get(new String[]{"/register/get/router"}, (request, response) -> {
             response.setResponseType(MediaType.TEXT_ANY_UTF8);
             response.setContent("hello router!");
@@ -43,12 +37,10 @@ public class MvcRouterRegisterTest {
     public void testRegisterRouter() {
         ApplicationFactory factory = ApplicationFactory.configure(MvcRouterRegisterTest.class);
         var context = factory.getApplicationContext();
-        BeanInitialization initialization = context.getBeanInitialization();
-        initialization.init(RouterInvokerTest.class);
-        context.refreshBeans();
+        BeanInfoManager beanInfoManager = context.getBeanInfoManager();
+        beanInfoManager.register(RouterInvokerTest.class);
 
-        DebbieConfigurationCenter configurationFactory = context.getConfigurationCenter();
-        MvcConfiguration mvcConfiguration = configurationFactory.factory(MvcConfiguration.class, context);
+        MvcConfiguration mvcConfiguration = context.factory(MvcConfiguration.class);
 
         MvcRouterRegister.registerRouter(mvcConfiguration, context);
 

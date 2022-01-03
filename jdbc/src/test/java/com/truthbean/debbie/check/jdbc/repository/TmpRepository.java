@@ -10,6 +10,7 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
 import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
 
 import java.util.UUID;
 

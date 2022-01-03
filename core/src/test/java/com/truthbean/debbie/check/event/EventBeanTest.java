@@ -25,21 +25,20 @@ class EventBeanTest {
 
     @Test
     void testEventListener(@BeanInject DebbieEventPublisher debbieEventPublisher,
-                                  @BeanInject("test") TestEvent testEvent) {
+                                  @BeanInject(value = "test", require = false) TestEvent testEvent) {
         debbieEventPublisher.publishEvent(testEvent);
         debbieEventPublisher.publishEvent(new TestStartedEvent(this, null));
     }
 
     public static void main(String[] args) {
         EventBeanTest test = new EventBeanTest();
-        DebbieBeanInfo<TestStartedEvent> beanInfo = new DebbieBeanInfo<>(TestStartedEvent.class);
+        var beanInfo = new SimpleMutableBeanFactory<>(TestStartedEvent.class);
         beanInfo.setBean(new TestStartedEvent(test, null));
         beanInfo.setBeanType(BeanType.SINGLETON);
         beanInfo.addBeanName("testStartedEvent");
         ApplicationFactory factory = ApplicationFactory.configure(EventBeanTest.class, args);
         ApplicationContext context = factory.getApplicationContext();
-        context.getBeanInitialization().initSingletonBean(beanInfo);
-        context.refreshBeans();
+        context.getBeanInfoManager().register(beanInfo);
 
         // todo
         GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();

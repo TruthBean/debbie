@@ -101,8 +101,9 @@ public class NamedThreadFactory implements ThreadFactory {
         Thread thread;
         if (fixedName) {
             thread = new Thread(group, r, namePrefix, 0);
-        } else
+        } else {
             thread = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+        }
         if (daemon != null) {
             thread.setDaemon(daemon);
         } else if (thread.isDaemon()) {
@@ -111,8 +112,9 @@ public class NamedThreadFactory implements ThreadFactory {
 
         if (priority != null) {
             thread.setPriority(priority);
-        } else if (thread.getPriority() != Thread.NORM_PRIORITY)
+        } else if (thread.getPriority() != Thread.NORM_PRIORITY) {
             thread.setPriority(Thread.NORM_PRIORITY);
+        }
 
         if (this.uncaughtExceptionHandler != null) {
             thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);

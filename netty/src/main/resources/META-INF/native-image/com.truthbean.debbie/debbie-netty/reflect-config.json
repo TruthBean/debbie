@@ -34,11 +34,5 @@
     "allPublicMethods" : true,
     "allDeclaredFields" : true,
     "allPublicFields" : true
-  },
-  {
-    "name": "io.netty.channel.socket.nio.NioServerSocketChannel",
-    "methods": [
-      { "name": "<init>", "parameterTypes": [] }
-    ]
   }
 ]

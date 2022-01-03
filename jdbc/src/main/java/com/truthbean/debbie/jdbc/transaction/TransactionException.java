@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.transaction;
 
+import java.io.Serial;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -17,6 +19,7 @@ public class TransactionException extends RuntimeException {
     /**
      * auto generate uid
      */
+    @Serial
     private static final long serialVersionUID = -5529320793687176184L;
 
     public TransactionException() {

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
+import java.time.Clock;
 import java.util.EventObject;
 
 public abstract class AbstractDebbieEvent extends EventObject {
@@ -31,10 +32,31 @@ public abstract class AbstractDebbieEvent extends EventObject {
 
 
     /**
+     * Create a new {@code ApplicationEvent} with its {@link #getTimestamp() timestamp}
+     * set to the value returned by {@link Clock#millis()} in the provided {@link Clock}.
+     * <p>This constructor is typically used in testing scenarios.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     * @param clock  a clock which will provide the timestamp
+     * @see #AbstractDebbieEvent(Object)
+     */
+    public AbstractDebbieEvent(Object source, Clock clock) {
+        super(source);
+        this.timestamp = clock.millis();
+    }
+
+
+    /**
      * @return the system time in milliseconds when the event happened.
      */
-    public final long getTimestamp() {
+    public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <E extends AbstractDebbieEvent> Class<E> getType() {
+        return (Class<E>) getClass();
     }
 
 }

@@ -36,6 +36,7 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
         super(classLoader);
     }
 
+    @Override
     public String getName() {
         return name;
     }

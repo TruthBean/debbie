@@ -18,9 +18,9 @@ import com.truthbean.debbie.concurrent.PooledExecutor;
 import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.debbie.server.AbstractWebServerApplication;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.debbie.server.session.SimpleSessionManager;
@@ -28,7 +28,6 @@ import com.truthbean.debbie.server.session.SimpleSessionManager;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -44,7 +43,7 @@ import java.util.concurrent.*;
  */
 public class AioServerApplication extends AbstractWebServerApplication implements Runnable {
 
-    private AsynchronousServerSocketChannel server;
+    private volatile AsynchronousServerSocketChannel server;
 
     private ApplicationContext applicationContext;
     private AioServerConfiguration configuration;
@@ -52,16 +51,20 @@ public class AioServerApplication extends AbstractWebServerApplication implement
     private SessionManager sessionManager;
 
     @Override
-    public DebbieApplication init(DebbieConfigurationCenter factory, ApplicationContext applicationContext,
-                                  ClassLoader classLoader) {
-        final AioServerConfiguration configuration = factory.factory(AioServerConfiguration.class, applicationContext);
+    public boolean isEnable(EnvironmentContent envContent) {
+        return super.isEnable(envContent) && envContent.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
+    }
+
+    @Override
+    public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
+        final AioServerConfiguration configuration = applicationContext.factory(AioServerConfiguration.class);
         if (configuration == null) {
             LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
             return null;
         }
-        var beanInitialization = applicationContext.getBeanInitialization();
+        var beanInfoManager = applicationContext.getBeanInfoManager();
         MvcRouterRegister.registerRouter(configuration, applicationContext);
-        RouterFilterManager.registerFilter(configuration, beanInitialization);
+        RouterFilterManager.registerFilter(configuration, beanInfoManager);
         RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
         RouterFilterManager.registerCorsFilter(configuration, "/**");
         RouterFilterManager.registerCsrfFilter(configuration, "/**");
@@ -86,7 +89,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         this.sessionManager = sessionManager;
 
         // 创建线程池
-        var threadFactory = NamedThreadFactory.defaultThreadFactory();
+        var threadFactory = new NamedThreadFactory("AioServerThreadPool").setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
         int core = Runtime.getRuntime().availableProcessors();
         var executor = new ThreadPoolExecutor(core, core * 10,
                 0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(1024), threadFactory,

@@ -23,26 +23,16 @@ public class FStartColumnNameTransformer implements ColumnNameTransformer {
             columnName = columnName.substring(2);
         }
         var parts = columnName.split("_");
-        var result = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1);
-            }
-            result.append(parts[i]);
-        }
-        return result.toString();
+        var sb = new StringBuilder();
+        getColumnName(parts, sb);
+        return sb.toString();
     }
 
     @Override
     public String propertyNameToColumnName(String propertyName) {
         var parts = propertyName.split("[A-Z]");
         var result = new StringBuilder("f_");
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1);
-            }
-            result.append(parts[i]);
-        }
+        getColumnName(parts, result);
         return result.toString();
     }
 }

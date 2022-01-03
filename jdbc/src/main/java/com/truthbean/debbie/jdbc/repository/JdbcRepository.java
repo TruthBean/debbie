@@ -9,10 +9,12 @@
  */
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.transaction.TransactionService;
-import com.truthbean.common.mini.util.StringUtils;
 
 import java.util.*;
 
@@ -22,188 +24,199 @@ import java.util.*;
  */
 public class JdbcRepository<Entity, Id> implements TransactionService {
 
-    private DmlRepositoryHandler<Entity, Id> repositoryHandler;
+    private JdbcTransactionRepository<Entity, Id> jdbcTransactionRepository;
 
-    void setRepositoryHandler(DmlRepositoryHandler<Entity, Id> repositoryHandler) {
-        this.repositoryHandler = repositoryHandler;
+    public JdbcRepository() {
+    }
+
+    public JdbcRepository(JdbcTransactionRepository<Entity, Id> jdbcTransactionRepository) {
+        this.jdbcTransactionRepository = jdbcTransactionRepository;
+        this.jdbcTransactionRepository.setLogger(getLog());
+    }
+
+    void setJdbcTransactionRepository(JdbcTransactionRepository<Entity, Id> jdbcTransactionRepository) {
+        this.jdbcTransactionRepository = jdbcTransactionRepository;
+        this.jdbcTransactionRepository.setLogger(getLog());
+    }
+
+    void setIdClass(Class<Id> idClass) {
+        jdbcTransactionRepository.setIdClass(idClass);
+    }
+
+    void setEntityClass(Class<Entity> entityClass) {
+        jdbcTransactionRepository.setEntityClass(entityClass);
+    }
+
+    void setEntityResolver(EntityResolver entityResolver) {
+        jdbcTransactionRepository.setEntityResolver(entityResolver);
+    }
+
+    protected Class<Entity> getEntityClass() {
+        return jdbcTransactionRepository.getEntityClass();
+    }
+
+    protected Class<Id> getIdClass() {
+        return jdbcTransactionRepository.getIdClass();
     }
 
     public boolean deleteById(Id id) {
         var transaction = getTransaction();
-        return repositoryHandler.deleteById(transaction, id);
+        return jdbcTransactionRepository.deleteById(transaction, id);
     }
 
     public boolean deleteByColumn(String columnName, Object value) {
         var transaction = getTransaction();
-        return repositoryHandler.deleteByColumn(transaction, columnName, value);
+        return jdbcTransactionRepository.deleteByColumn(transaction, columnName, value);
     }
 
     public int deleteByIdIn(List<Id> ids) {
         var transaction = getTransaction();
-        return repositoryHandler.deleteByIdIn(transaction, ids);
+        return jdbcTransactionRepository.deleteByIdIn(transaction, ids);
     }
 
     public <C> int deleteByColumnIn(String columnName, List<C> values) {
         var transaction = getTransaction();
-        return repositoryHandler.deleteByColumnIn(transaction, columnName, values);
+        return jdbcTransactionRepository.deleteByColumnIn(transaction, columnName, values);
     }
 
     public int delete(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
-        return repositoryHandler.delete(transaction, condition, withConditionNull);
+        return jdbcTransactionRepository.delete(transaction, condition, withConditionNull);
     }
 
     public int deleteAll() {
         var transaction = getTransaction();
-        return repositoryHandler.delete(transaction);
+        return jdbcTransactionRepository.deleteAll(transaction);
     }
 
     public Id insert(Entity entity, boolean withEntityPropertyNull) {
         var transaction = getTransaction();
-        return repositoryHandler.insert(transaction, entity, withEntityPropertyNull);
+        return jdbcTransactionRepository.insert(transaction, entity, withEntityPropertyNull);
     }
 
     public int insert(Collection<Entity> entities, boolean withEntityPropertyNull) {
         var transaction = getTransaction();
-        return repositoryHandler.insert(transaction, entities, withEntityPropertyNull);
+        return jdbcTransactionRepository.insert(transaction, entities, withEntityPropertyNull);
     }
 
     public boolean update(Entity entity, boolean withEntityPropertyNull) {
         var transaction = getTransaction();
-        return repositoryHandler.update(transaction, entity, withEntityPropertyNull);
+        return jdbcTransactionRepository.update(transaction, entity, withEntityPropertyNull);
     }
 
     public int update(Entity entity, boolean withEntityPropertyNull, String whereSql, Object... args) {
         var transaction = getTransaction();
-        return repositoryHandler.update(transaction, entity, withEntityPropertyNull, whereSql, args);
+        return jdbcTransactionRepository.update(transaction, entity, withEntityPropertyNull, whereSql, args);
     }
 
     public <S extends Entity> S save(S entity) {
         var transaction = getTransaction();
-        return repositoryHandler.save(transaction, entity);
+        return jdbcTransactionRepository.save(transaction, entity);
     }
 
     public Entity findByColumn(String columnName, Object value) {
         var transaction = getTransaction();
-        String whereSql = columnName + " = ?";
-        return repositoryHandler.selectOne(transaction, whereSql, value);
+        return jdbcTransactionRepository.findByColumn(transaction, columnName, value);
     }
 
     public List<Entity> findListByColumn(String columnName, Object value) {
         var transaction = getTransaction();
-        String whereSql = columnName + " = ?";
-        return repositoryHandler.selectList(transaction, whereSql, value);
+        return jdbcTransactionRepository.findListByColumn(transaction, columnName, value);
     }
 
     public List<Entity> findListByColumnIn(String columnName, Collection<?> values) {
-        if (values.isEmpty()) return new ArrayList<>();
-        var transaction = getTransaction();
-        List<String> c = new ArrayList<>();
-        Object[] objects = new Object[values.size()];
-        int i = 0;
-        for (Object value : values) {
-            c.add("?");
-            objects[i++] = value;
+        if (values.isEmpty()) {
+            return new ArrayList<>();
         }
-        String s = StringUtils.joining(c, ",");
-        String whereSql = columnName + " in (" + s + ")";
-        return repositoryHandler.selectList(transaction, whereSql, objects);
+        var transaction = getTransaction();
+        return jdbcTransactionRepository.findListByColumnIn(transaction, columnName, values);
     }
 
     public Entity findOne(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
-        return repositoryHandler.selectOne(transaction, condition, withConditionNull);
+        return jdbcTransactionRepository.findOne(transaction, condition, withConditionNull);
     }
 
     public Entity findOne(String whereSql, Object... args) {
         var transaction = getTransaction();
-        return repositoryHandler.selectOne(transaction, whereSql, args);
+        return jdbcTransactionRepository.findOne(transaction, whereSql, args);
     }
 
     public Optional<Entity> findOptional(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
-        var entity = repositoryHandler.selectOne(transaction, condition, withConditionNull);
-        if (entity == null)
-            return Optional.empty();
-        else
-            return Optional.of(entity);
+        return jdbcTransactionRepository.findOptional(transaction, condition, withConditionNull);
     }
 
     public Optional<Entity> findOptional(String whereSql, Object... args) {
         var transaction = getTransaction();
-        var entity = repositoryHandler.selectOne(transaction, whereSql, args);
-        if (entity == null)
-            return Optional.empty();
-        else
-            return Optional.of(entity);
+        return jdbcTransactionRepository.findOptional(transaction, whereSql, args);
     }
 
     public List<Entity> findList(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
-        return repositoryHandler.selectList(transaction, condition, withConditionNull);
+        return jdbcTransactionRepository.findList(transaction, condition, withConditionNull);
     }
 
     public List<Entity> findList(String whereSql, Object... args) {
         var transaction = getTransaction();
-        return repositoryHandler.selectList(transaction, whereSql, args);
+        return jdbcTransactionRepository.findList(transaction, whereSql, args);
     }
 
     public Page<Entity> findPaged(Entity condition, boolean withConditionNull, PageRequest pageable) {
         var transaction = getTransaction();
-        return repositoryHandler.selectPaged(transaction, condition, withConditionNull, pageable);
+        return jdbcTransactionRepository.findPaged(transaction, condition, withConditionNull, pageable);
     }
 
     public Page<Entity> findPaged(PageRequest pageable, String whereSql, Object... args) {
         var transaction = getTransaction();
-        return repositoryHandler.selectPaged(transaction, pageable, whereSql, args);
+        return jdbcTransactionRepository.findPaged(transaction, pageable, whereSql, args);
     }
 
     public Page<Entity> findPaged(PageRequest pageable) {
         var transaction = getTransaction();
-        return repositoryHandler.selectPaged(transaction, pageable, null);
+        return jdbcTransactionRepository.findPaged(transaction, pageable);
     }
 
     public List<Entity> findAll() {
         var transaction = getTransaction();
-        return repositoryHandler.selectAll(transaction);
+        return jdbcTransactionRepository.findAll(transaction);
     }
 
-    public List<Entity> findAllById(Iterable<Id> ids) {
+    public List<Entity> findAllById(Collection<Id> ids) {
         if (!ids.iterator().hasNext()) {
             return Collections.emptyList();
         }
-
-        List<Entity> result = new ArrayList<>();
         var transaction = getTransaction();
-        for (Id id : ids) {
-            result.add(repositoryHandler.selectById(transaction, id));
-        }
-        return result;
+        return jdbcTransactionRepository.findAllByIdIn(transaction, ids);
     }
 
     public Long count(Entity condition, boolean withConditionNull) {
         var transaction = getTransaction();
-        return repositoryHandler.count(transaction, condition, withConditionNull);
+        return jdbcTransactionRepository.count(transaction, condition, withConditionNull);
     }
 
     public Long count() {
         var transaction = getTransaction();
-        return repositoryHandler.count(transaction);
+        return jdbcTransactionRepository.count(transaction);
     }
 
     public Entity findById(Id id) {
         var transaction = getTransaction();
-        return repositoryHandler.selectById(transaction, id);
+        return jdbcTransactionRepository.findById(transaction, id);
     }
 
     public boolean existsById(Id id) {
         var transaction = getTransaction();
-        return repositoryHandler.existsById(transaction, id);
+        return jdbcTransactionRepository.existsById(transaction, id);
     }
 
     public Optional<Entity> queryOptionalById(Id id) {
         var transaction = getTransaction();
-        return repositoryHandler.selectOptionalById(transaction, id);
+        return jdbcTransactionRepository.queryOptionalById(transaction, id);
+    }
+
+    protected Logger getLog() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 
 }

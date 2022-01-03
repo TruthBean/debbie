@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.common.mini.util.OsUtils;
 import com.truthbean.debbie.env.EnvironmentContent;
 
 /**
@@ -18,7 +19,7 @@ import com.truthbean.debbie.env.EnvironmentContent;
 public class ReflectionConfigurer {
     private static EnvironmentContent envContent;
 
-    private static final String ENABLE_KEY = "debbie.reflect.enable";
+    public static final String ENABLE_KEY = "debbie.reflect.enable";
 
     public ReflectionConfigurer(EnvironmentContent envContent) {
         ReflectionConfigurer.envContent = envContent;
@@ -33,6 +34,6 @@ public class ReflectionConfigurer {
     }
 
     public boolean isReflectEnable() {
-        return envContent.getBooleanValue(ENABLE_KEY, true);
+        return !OsUtils.nonJvm() && envContent.getBooleanValue(ENABLE_KEY, true);
     }
 }

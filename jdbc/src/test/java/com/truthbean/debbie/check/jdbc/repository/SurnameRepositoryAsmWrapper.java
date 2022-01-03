@@ -16,7 +16,7 @@ public class SurnameRepositoryAsmWrapper extends SurnameRepository {
     private MethodProxyHandlerHandler handler;
 
     public SurnameRepositoryAsmWrapper() {
-        super();
+        super(null);
     }
 
     public void setTarget(SurnameRepository target) {

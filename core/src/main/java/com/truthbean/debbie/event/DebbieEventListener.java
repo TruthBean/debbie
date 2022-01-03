@@ -51,10 +51,10 @@ public interface DebbieEventListener<E extends AbstractDebbieEvent> extends Even
     }
 
     @SuppressWarnings({"unchecked"})
-    default Class<E> getEventType() {
+    default Class<? extends AbstractDebbieEvent> getEventType() {
         var types = ReflectionHelper.getActualTypes(getClass());
         if (types != null && types.length > 0) {
-            return (Class<E>) types[0];
+            return (Class<? extends AbstractDebbieEvent>) types[0];
         }
         return null;
     }

@@ -98,8 +98,8 @@ public enum HttpMethod {
     }
 
     /**
-     * Resolve the given method value to an {@code HttpMethod}.
-     * @param method the method value as a String
+     * Resolve the given method VALUE to an {@code HttpMethod}.
+     * @param method the method VALUE as a String
      * @return the corresponding {@code HttpMethod}, or {@code null} if not found
      * @since 0.0.2
      */
@@ -110,8 +110,8 @@ public enum HttpMethod {
 
     /**
      * Determine whether this {@code HttpMethod} matches the given
-     * method value.
-     * @param method the method value as a String
+     * method VALUE.
+     * @param method the method VALUE as a String
      * @return {@code true} if it matches, {@code false} otherwise
      * @since 0.0.2
      */

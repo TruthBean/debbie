@@ -9,9 +9,7 @@
  */
 package com.truthbean.debbie.test;
 
-import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.bean.InjectedBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -54,12 +52,13 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         logger.trace("supportsParameter....");
         ApplicationContext applicationContext = getApplicationContext(extensionContext);
         if (applicationContext != null) {
-            InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
-            Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
+            BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+            Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
             for (Class<? extends Annotation> injectType : injectTypes) {
                 if (parameterContext.isAnnotated(injectType)) {
-                    if (logger.isTraceEnabled())
+                    if (logger.isTraceEnabled()) {
                         logger.trace("parameter inject type is: " + injectType);
+                    }
                     return true;
                 }
             }
@@ -73,12 +72,16 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         logger.trace("resolveParameter....");
         ApplicationContext applicationContext = getApplicationContext(extensionContext);
         if (applicationContext != null) {
-            if (parameterContext.isAnnotated(BeanInject.class)) {
-                return getDebbieBean(parameterContext.getParameter(), applicationContext);
-            } else if (parameterContext.isAnnotated(PropertyInject.class)) {
-                return getPropertyValue(parameterContext.getParameter(), applicationContext);
-            } else {
-                return getOtherInjectedBean(parameterContext.getParameter(), applicationContext);
+            BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+            Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+            for (Class<? extends Annotation> injectType : injectTypes) {
+                if (parameterContext.isAnnotated(injectType)) {
+                    if (injectType == PropertyInject.class) {
+                        return getPropertyValue(parameterContext.getParameter(), applicationContext);
+                    } else {
+                        return getDebbieBean(parameterContext.getParameter(), applicationContext);
+                    }
+                }
             }
         }
         return null;
@@ -86,50 +89,26 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     private Object getDebbieBean(Parameter parameter, ApplicationContext applicationContext) {
         BeanInject beanInject = parameter.getAnnotation(BeanInject.class);
-        String name = beanInject.name();
-        if (name.isBlank()) {
-            name = beanInject.value();
+        String name = null;
+        final boolean require = applicationContext.getBeanInfoManager().isRequired(parameter, false);
+        if (beanInject != null) {
+            name = beanInject.name();
+            if (name.isBlank()) {
+                name = beanInject.value();
+            }
+        } else if (parameter.isNamePresent()) {
+            name = parameter.getName();
         }
 
         Class<?> type = parameter.getType();
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
         Object result;
-        if (name.isBlank()) {
-            result = globalBeanFactory.factory(type);
+        if (name == null || name.isBlank()) {
+            result = globalBeanFactory.factory(null, type, require);
         } else {
-            result = globalBeanFactory.factory(name);
+            result = globalBeanFactory.factory(name, type, require);
         }
-
-        if (type.isInstance(result)) {
-            return result;
-        } else {
-            return JdkDynamicProxy.getRealValue(result);
-        }
-    }
-
-    private Object getOtherInjectedBean(Parameter parameter, ApplicationContext applicationContext) {
-        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
-        Set<Class<? extends Annotation>> injectTypes = injectedBeanFactory.getInjectTypes();
-
-        Class<? extends Annotation> injectClass = null;
-        Annotation inject;
-
-        for (Class<? extends Annotation> injectType : injectTypes) {
-            inject = parameter.getAnnotation(injectType);
-            if (inject != null) {
-                injectClass = injectType;
-                break;
-            }
-        }
-
-        if (logger.isTraceEnabled())
-            logger.trace("parameter inject type is: " + injectClass);
-
-        Class<?> type = parameter.getType();
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-
-        Object result = globalBeanFactory.factory(type);
 
         if (type.isInstance(result)) {
             return result;
@@ -140,9 +119,8 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
 
     private Object getPropertyValue(Parameter parameter, ApplicationContext applicationContext) {
         PropertyInject propertyInject = parameter.getAnnotation(PropertyInject.class);
-        InjectedBeanFactory injectedBeanFactory = applicationContext.getInjectedBeanFactory();
         Class<?> type = parameter.getType();
-        return injectedBeanFactory.factoryProperty(type, null, propertyInject);
+        return ReflectionBeanLifecycle.factoryProperty(applicationContext, type, null, propertyInject);
     }
 
     private ApplicationContext getApplicationContext(ExtensionContext context) {
@@ -219,7 +197,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
             if (applicationContext != null) {
                 GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
                 globalBeanFactory.factoryByRawBean(o);
-                logger.trace(() -> "test instance: " + o);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("test instance: " + o);
+                }
             }
         });
     }

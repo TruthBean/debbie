@@ -9,28 +9,118 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.proxy.BeanProxyType;
+
+import java.lang.reflect.Proxy;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  * Created on 2019/06/02 16:50.
  */
-public interface BeanFactory<Bean> extends GlobalBeanFactoryAware, BeanClosure {
+public interface BeanFactory<Bean> extends RegistrableBeanInfo<Bean>, BeanClosure {
 
-    Bean getBean();
+    default Bean factoryBean(ApplicationContext applicationContext) {
+        return factoryNamedBean(null, applicationContext);
+    }
 
-    default Bean factoryBean() {
-        return getBean();
+    Bean factoryNamedBean(String name, ApplicationContext applicationContext);
+
+    /**
+     * if isCreated() and isProxiedBean()
+     *   return getCreatedBean();
+     * else
+     *   factory and proxy
+     * @param name bean's name
+     * @param beanInterface BEAN's interface
+     * @param applicationContext debbie's applicationContext
+     * @return BEAN's proxy
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    default Bean factoryProxiedBean(String name, Class beanInterface, ApplicationContext applicationContext) {
+        Bean bean;
+        if (!isCreated()) {
+            bean = factoryNamedBean(name, applicationContext);
+        } else {
+            bean = getCreatedBean();
+        }
+        if (isCreated() && beanInterface != null && beanInterface.isInterface() && beanInterface.isInstance(bean)) {
+            bean = getCreatedBean();
+            if (!(bean instanceof Proxy)) {
+                Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();
+                for (BeanLifecycle beanLifecycle : beanLifecycles) {
+                    if (beanLifecycle.support(getBeanClass()) && beanLifecycle.support(this)) {
+                        Bean proxy = (Bean) beanLifecycle.doPreCreated(bean, beanInterface, BeanProxyType.JDK);
+                        if (proxy instanceof Proxy) {
+                            return proxy;
+                        }
+                    }
+                }
+            }
+            return bean;
+        }
+        return bean;
     }
 
     /**
-     * 不用Class&lt;Bean&gt;或者Class&lt;? extends Bean&gt;的原因是，考虑到泛型问题
-     * @return Class&lt;? extends Bean&gt;
+     * is bean proxied
+     *
+     * @return boolean or null. if not created return null
      */
-    Class<?> getBeanType();
+    default Boolean isProxiedBean() {
+        if (isCreated()) {
+            return getCreatedBean() instanceof Proxy;
+        }
+        return null;
+    }
 
-    boolean isSingleton();
+    @Override
+    boolean isCreated();
 
-    default boolean isSkipCreatedBeanFactory() {
-        return SkipCreatedBeanFactory.class.isAssignableFrom(this.getClass());
+    /**
+     * @return if BeanFactory.isCreated() return bean
+     * else return null
+     */
+    Bean getCreatedBean();
+
+    default Optional<Bean> optional() {
+        if (isCreated()) {
+            return Optional.of(getCreatedBean());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * @param consumer acquire created bean
+     */
+    default void acquireBean(Consumer<Bean> consumer) {
+        if (isCreated()) {
+            consumer.accept(getCreatedBean());
+        }
+    }
+
+    default Supplier<Bean> getBeanSupplier(final ApplicationContext applicationContext) {
+        if (isCreated()) {
+            return this::getCreatedBean;
+        } else {
+            return () -> factoryBean(applicationContext);
+        }
+    }
+
+    @Override
+    default BeanFactory<Bean> copy() {
+        return this;
+    }
+
+    default Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 }

@@ -50,6 +50,7 @@ public interface BeanComponentParser {
             Method typeMethod = null;
             Method proxyMethod = null;
             Method lazyMethod = null;
+            Method conditionsMethod = null;
             for (Method method : methods) {
                 AliasFor aliasFor = method.getAnnotation(AliasFor.class);
                 if (aliasFor != null) {
@@ -62,7 +63,7 @@ public interface BeanComponentParser {
                         attribute = method.getName();
                     }
                     if (type == BeanComponent.class) {
-                        if (("value".equals(attribute) || "value".equals(method.getName()))
+                        if (("VALUE".equals(attribute) || "VALUE".equals(method.getName()))
                                 && method.getReturnType() == String.class) {
                             valueMethod = method;
                             continue;
@@ -85,6 +86,11 @@ public interface BeanComponentParser {
                         if ("lazy".equals(attribute) || "lazy".equals(method.getName())
                                 && method.getReturnType() == boolean.class) {
                             lazyMethod = method;
+                            continue;
+                        }
+                        if ("conditions".equals(attribute) || "conditions".equals(method.getName())
+                                && method.getReturnType() == Class[].class) {
+                            conditionsMethod = method;
                         }
                     }
                 }
@@ -98,15 +104,22 @@ public interface BeanComponentParser {
                 if (!StringUtils.hasText(beanName) && nameMethod != null) {
                     beanName = ReflectionHelper.invokeMethod(value, nameMethod);
                 }
+                if (!StringUtils.hasText(beanName)) {
+                    beanName = annotation.name();
+                }
                 var info = new BeanComponentInfo();
                 info.setName(beanName);
 
                 if (typeMethod != null) {
                     info.setType(ReflectionHelper.invokeMethod(value, typeMethod));
+                } else {
+                    info.setType(annotation.type());
                 }
 
                 if (proxyMethod != null) {
                     info.setProxy(ReflectionHelper.invokeMethod(value, proxyMethod));
+                } else {
+                    info.setProxy(annotation.proxy());
                 }
 
                 if (lazyMethod != null) {
@@ -114,6 +127,20 @@ public interface BeanComponentParser {
                     if (lazy != null) {
                         info.setLazy(lazy);
                     }
+                } else {
+                    info.setLazy(annotation.lazy());
+                }
+
+                if (proxyMethod != null) {
+                    info.setProxy(ReflectionHelper.invokeMethod(value, proxyMethod));
+                } else {
+                    info.setProxy(annotation.proxy());
+                }
+
+                if (conditionsMethod != null) {
+                    info.setCondition(ReflectionHelper.invokeMethod(value, conditionsMethod));
+                } else {
+                    info.setCondition(annotation.conditions());
                 }
 
                 info.setFactory(annotation.factory());
@@ -143,7 +170,7 @@ public interface BeanComponentParser {
                         beanName = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
-                    if (info.aliasFor("value", String.class)) {
+                    if (info.aliasFor("VALUE", String.class)) {
                         nameValue = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }

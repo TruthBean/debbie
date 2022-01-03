@@ -1,4 +1,14 @@
 [
+  [],
   ["com.truthbean.debbie.event.GenericStartedEventListener"],
-  ["com.truthbean.debbie.event.DebbieEventListener"]
+  ["com.truthbean.debbie.event.DebbieEventListener"],
+  ["com.truthbean.debbie.event.EventMulticaster"],
+  ["com.truthbean.debbie.concurrent.PooledExecutor"],
+  ["com.truthbean.debbie.concurrent.ScheduledPooledExecutor"],
+  ["com.truthbean.debbie.event.DebbieEventPublisher"],
+  ["com.truthbean.debbie.event.EventListenerBeanManager"],
+  ["com.truthbean.debbie.event.GenericStartedEventListener"],
+  ["com.truthbean.debbie.properties.DebbieConfiguration"],
+  ["com.truthbean.debbie.properties.DebbieProperties"],
+  ["com.truthbean.debbie.proxy.MethodProxyHandler"]
 ]

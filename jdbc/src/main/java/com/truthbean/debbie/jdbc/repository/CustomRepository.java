@@ -22,40 +22,45 @@ import java.util.Set;
  */
 public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
 
-    private DmlRepositoryHandler<Entity, Id> repositoryHandler;
+    private JdbcTransactionRepository<Entity, Id> repositoryHandler;
 
     public CustomRepository() {
     }
 
+    public CustomRepository(JdbcTransactionRepository<Entity, Id> repositoryHandler) {
+        super(repositoryHandler);
+        this.repositoryHandler = repositoryHandler;
+    }
+
     @Override
-    void setRepositoryHandler(DmlRepositoryHandler<Entity, Id> repositoryHandler) {
-        super.setRepositoryHandler(repositoryHandler);
+    void setJdbcTransactionRepository(JdbcTransactionRepository<Entity, Id> repositoryHandler) {
+        super.setJdbcTransactionRepository(repositoryHandler);
         this.repositoryHandler = repositoryHandler;
     }
 
     public int[] batch(String sql, Object[][] args) {
         TransactionInfo transaction = getTransaction();
-        return repositoryHandler.batch(transaction, sql, args);
+        return repositoryHandler.batch(getLog(), transaction, sql, args);
     }
 
     public int update(String sql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        return repositoryHandler.update(transaction, sql, args);
+        return repositoryHandler.update(getLog(), transaction, sql, args);
     }
 
     public int insert(String sql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        return repositoryHandler.update(transaction, sql, args);
+        return repositoryHandler.update(getLog(), transaction, sql, args);
     }
 
     public int delete(String sql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        return repositoryHandler.update(transaction, sql, args);
+        return repositoryHandler.update(getLog(), transaction, sql, args);
     }
 
     public List<Entity> selectEntityList(String selectSql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        var entityClass = repositoryHandler.getEntityClass();
+        var entityClass = getEntityClass();
         return repositoryHandler.query(transaction, selectSql, entityClass, args);
     }
 
@@ -71,12 +76,12 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
 
     public List<Map<String, Object>> selectListMap(String selectSql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        return repositoryHandler.queryMap(transaction, selectSql, args);
+        return repositoryHandler.queryMap(getLog(), transaction, selectSql, args);
     }
 
     public Map<String, Object> selectMap(String selectSql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        List<Map<String, Object>> maps = repositoryHandler.queryMap(transaction, selectSql, args);
+        List<Map<String, Object>> maps = repositoryHandler.queryMap(getLog(), transaction, selectSql, args);
         if (maps.size() == 1) {
             return maps.get(0);
         } else {
@@ -91,7 +96,7 @@ public class CustomRepository<Entity, Id> extends JdbcRepository<Entity, Id> {
 
     public Entity selectEntity(String selectSql, Object... args) {
         TransactionInfo transaction = getTransaction();
-        var entityClass = repositoryHandler.getEntityClass();
+        var entityClass = getEntityClass();
         return repositoryHandler.queryOne(transaction, selectSql, entityClass, args);
     }
 }

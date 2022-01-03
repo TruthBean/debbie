@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * uri fragment
- * [path1/path2/.../path];[matrix1=value&amp;matrix1=value]?[query1=value&amp;query2=value]
+ * [path1/path2/.../path];[matrix1=VALUE&amp;matrix1=VALUE]?[query1=VALUE&amp;query2=VALUE]
  *
  * @author 璩诗斌
  * @since 0.0.1

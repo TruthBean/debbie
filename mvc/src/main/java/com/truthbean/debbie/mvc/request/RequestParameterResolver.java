@@ -158,7 +158,7 @@ public class RequestParameterResolver implements ExecutableArgumentResolver {
         }
 
         if (requestParameter.require() && parameter.getValue() == null) {
-            throw new IllegalArgumentException(parameter.stack() + " has no value! ");
+            throw new IllegalArgumentException(parameter.stack() + " has no VALUE! ");
         }
 
         if (!requestParameter.require() && parameter.getValue() == null) {

@@ -298,11 +298,11 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
         }
 
         /**
-         * Returns the {@link Direction} enum for the given {@link String} value.
+         * Returns the {@link Direction} enum for the given {@link String} VALUE.
          *
-         * @param value string value
+         * @param value string VALUE
          * @return Direction
-         * @throws IllegalArgumentException in case the given value cannot be parsed into an enum value.
+         * @throws IllegalArgumentException in case the given VALUE cannot be parsed into an enum VALUE.
          */
         public static Direction fromString(String value) {
 
@@ -310,15 +310,15 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
                 return Direction.valueOf(value.toUpperCase(Locale.US));
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format(
-                        "Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
+                        "Invalid VALUE '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
             }
         }
 
         /**
          * Returns the {@link Direction} enum for the given {@link String} or null if it cannot be parsed into an enum
-         * value.
+         * VALUE.
          *
-         * @param value string value
+         * @param value string VALUE
          * @return Optional&lt;Direction&gt;
          */
         public static Optional<Direction> fromOptionalString(String value) {

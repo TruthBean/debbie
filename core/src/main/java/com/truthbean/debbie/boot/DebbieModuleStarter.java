@@ -10,10 +10,9 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.BeanComponentParser;
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -40,15 +39,15 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
         return new HashMap<>();
     }
 
-    default void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
+    default void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
         // do nothing
     }
 
-    default void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    default void configure(ApplicationContext applicationContext) {
         // do nothing
     }
 
-    default void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    default void starter(ApplicationContext applicationContext) {
         // do nothing
     }
 
@@ -56,7 +55,7 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
         // do nothing
     }
 
-    default void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    default void release(ApplicationContext applicationContext) {
         // do nothing
     }
 

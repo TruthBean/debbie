@@ -1,9 +1,13 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.repository.DmlRepositoryHandler;
 import com.truthbean.debbie.jdbc.repository.DynamicRepository;
+import com.truthbean.debbie.jdbc.repository.JdbcTransactionRepository;
 import com.truthbean.debbie.jdbc.repository.RepositoryHandler;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
@@ -22,8 +26,8 @@ class DynamicRepositoryTest {
                 .select("id", "name").from("railway.seat").orderBy("id").desc()
                 .builder();
         RepositoryHandler repositoryHandler = new RepositoryHandler();
-        repositoryHandler.setDriverName(driver);
-        List<List<ColumnInfo>> query = repositoryHandler.query(transaction, sql);
+        // repositoryHandler.setDriverName(driver);
+        List<List<ColumnInfo>> query = repositoryHandler.query(LOGGER, transaction, sql);
         System.out.println(query);
     }
 
@@ -37,7 +41,7 @@ class DynamicRepositoryTest {
                 .where().eq("s.id", 142)
                 .and().eq("s.name", "10F")
                 .orderBy("s.id").desc()
-                .toMap();
+                .toMap(LOGGER, DmlRepositoryHandler.getInstance());
         System.out.println("-------------------------------");
         System.out.println(result);
     }
@@ -46,5 +50,7 @@ class DynamicRepositoryTest {
     void testDynamicSql() {
 
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamicRepositoryTest.class);
 
 }

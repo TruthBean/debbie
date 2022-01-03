@@ -14,11 +14,10 @@ import com.truthbean.logger.LogLevel;
 import com.truthbean.logger.LoggerConfig;
 import com.truthbean.logger.SystemOutLogger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -28,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DebbieLoggerConfig implements LoggerConfig {
 
     private final Properties properties;
-    private final Map<String, LogLevel> levelMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LogLevel> levelMap = new ConcurrentSkipListMap<>(Comparator.reverseOrder());
 
     public DebbieLoggerConfig() {
         var logger = new SystemOutLogger()
@@ -87,5 +86,11 @@ public class DebbieLoggerConfig implements LoggerConfig {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean useName() {
+        String useName = properties.getProperty(USE_NAME, "false");
+        return Boolean.parseBoolean(useName);
     }
 }

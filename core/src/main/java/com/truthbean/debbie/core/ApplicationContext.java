@@ -9,20 +9,19 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.bean.BeanInfoFactory;
-import com.truthbean.debbie.bean.BeanInitialization;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
-import com.truthbean.debbie.bean.InjectedBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.io.ResourceResolver;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+
+import java.util.Set;
 
 /**
  * @author TruthBean
  * @since 0.1.0
  */
-public interface ApplicationContext {
+public interface ApplicationContext extends DebbieEventPublisher {
     /**
      * after DebbieApplication#start call
      * @return application args
@@ -35,17 +34,19 @@ public interface ApplicationContext {
 
     ResourceResolver getResourceResolver();
 
-    BeanInitialization getBeanInitialization();
-
-    BeanInfoFactory getBeanInfoFactory();
-
-    DebbieConfigurationCenter getConfigurationCenter();
-
-    InjectedBeanFactory getInjectedBeanFactory();
+    BeanInfoManager getBeanInfoManager();
 
     GlobalBeanFactory getGlobalBeanFactory();
 
-    void refreshBeans();
+    Set<BeanLifecycle> getBeanLifecycle();
+
+    <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names);
+
+    // <E extends AbstractDebbieEvent, EL extends DebbieEventListener<E>> void registerEventListener(Class<E> eventClass, EL listener);
+
+    void registerBeanLifecycle(BeanLifecycle beanLifecycle);
+
+    // void refreshBeans();
 
     <O, T> T transform(final O origin, final Class<T> target);
 
@@ -54,4 +55,6 @@ public interface ApplicationContext {
     <T> T factory(Class<T> beanType);
 
     void release(String... args);
+
+    boolean isExiting();
 }

@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
+import com.truthbean.debbie.lang.Copyable;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 
 import java.util.HashMap;
@@ -20,9 +21,10 @@ import java.util.Objects;
  * @author TruthBean
  * @since 0.0.1
  */
-public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
+public class DataSourceConfiguration implements Copyable<DataSourceConfiguration>, DebbieConfiguration {
     private String name;
 
+    private boolean enable;
     private DataSourceDriverName driverName;
     private String url;
     private String user;
@@ -39,6 +41,7 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     }
 
     public DataSourceConfiguration(DataSourceConfiguration configuration) {
+        this.enable = configuration.enable;
         this.name = configuration.name;
         this.driverName = configuration.driverName;
         this.url = configuration.url;
@@ -55,8 +58,22 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     }
 
     @Override
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void close() {
+        // todo
     }
 
     public void setName(String name) {
@@ -141,7 +158,7 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
     }
 
     @Override
-    protected DataSourceConfiguration clone() {
+    public DataSourceConfiguration copy() {
         DataSourceConfiguration clone;
         try {
             return (DataSourceConfiguration) super.clone();
@@ -149,10 +166,6 @@ public class DataSourceConfiguration implements Cloneable, DebbieConfiguration {
             clone = new DataSourceConfiguration(this);
         }
         return clone;
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override

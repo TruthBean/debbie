@@ -9,13 +9,15 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -25,16 +27,32 @@ import java.util.Set;
 public class DataSourceConfigurationFactory {
 
     @SuppressWarnings({"unchecked"})
-    public static <Configuration extends DataSourceConfiguration> Configuration factory(
-            DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext, Class<Configuration> configurationClass) {
-        Set<Configuration> configurations = configurationFactory.getConfigurations(configurationClass, applicationContext);
-        for (DataSourceConfiguration configuration : configurations) {
+    public static <Configuration extends DataSourceConfiguration> Collection<Configuration> factory(
+            ApplicationContext applicationContext, Class<Configuration> configurationClass) {
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        Set<Configuration> configurations = globalBeanFactory.getBeanList(configurationClass);
+        if (!configurations.isEmpty()) {
+            return configurations;
+        } else {
+            var configuration = (Configuration) new DefaultDataSourcePoolProperties().getConfiguration(applicationContext);
+            Collection<Configuration> collection = new HashSet<>();
+            collection.add(configuration);
+            return collection;
+        }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <Configuration extends DataSourceConfiguration> Configuration factoryOne(
+            ApplicationContext applicationContext, Class<Configuration> configurationClass) {
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        Set<Configuration> configurations = globalBeanFactory.getBeanList(configurationClass);
+        for (Configuration configuration : configurations) {
             LOGGER.debug("DataSourcePoolProperties : " + configurationClass);
             if (configurationClass != DefaultDataSourcePoolConfiguration.class && configurationClass != DataSourceConfiguration.class) {
-                return (Configuration) configuration;
+                return configuration;
             }
         }
-        return (Configuration) new DefaultDataSourcePoolProperties().toConfiguration(applicationContext);
+        return  (Configuration) new DefaultDataSourcePoolProperties().getConfiguration(applicationContext);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceConfigurationFactory.class);

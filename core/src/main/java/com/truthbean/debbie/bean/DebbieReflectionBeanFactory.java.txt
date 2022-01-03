@@ -1,0 +1,957 @@
+/*
+package com.truthbean.debbie.bean;
+
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.annotation.AnnotationInfo;
+import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.io.ResourceResolver;
+import com.truthbean.debbie.properties.NestedPropertiesConfiguration;
+import com.truthbean.debbie.properties.PropertiesConfiguration;
+import com.truthbean.debbie.properties.PropertyInject;
+import com.truthbean.debbie.proxy.BeanProxyHandler;
+import com.truthbean.debbie.proxy.BeanProxyType;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
+import com.truthbean.debbie.reflection.ClassInfo;
+import com.truthbean.debbie.reflection.FieldInfo;
+import com.truthbean.debbie.reflection.ReflectionHelper;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.*;
+
+*/
+/** TODO 没有实现
+ * @author TruthBean
+ * @since 0.5.3
+ * Created on 2021/11/28 18:33.
+ *//*
+
+public class DebbieReflectionBeanFactory<Bean> extends ClassInfo<Bean> implements ReflectionBeanFactory<Bean> {
+
+    private final Set<String> beanNames = new HashSet<>();
+
+    private BeanType beanType;
+    private BeanProxyType beanProxyType;
+    private Boolean lazyCreate;
+
+    private BeanFactory<Bean> beanFactory;
+    private Bean bean;
+
+    private final Map<String, Object> properties = new HashMap<>();
+
+    private boolean noInterface = false;
+    private Class<?> beanInterface;
+
+    private Method initMethod;
+    private Method destroyMethod;
+
+    private List<BeanExecutableDependence> constructorBeanDependent;
+    private List<BeanExecutableDependence> initMethodBeanDependent;
+    private Map<FieldInfo, BaseBeanInfo> fieldBeanDependent;
+    private boolean hasVirtualValue;
+
+    private final Set<BeanCondition> conditions = new HashSet<>();
+
+    private boolean created;
+
+    public DebbieReflectionBeanFactory(Class<Bean> beanClass) {
+        super(beanClass);
+        Map<Class<? extends Annotation>, AnnotationInfo> classAnnotations = getClassAnnotations();
+        if (classAnnotations == null || classAnnotations.isEmpty())
+            return;
+
+        var value = classAnnotations.get(BeanComponent.class);
+        if (value != null) {
+            var componentInfo = BeanComponentParser.parse(value);
+            setBeanComponent(componentInfo);
+        } else {
+            LOGGER.debug("class(" + beanClass + ") no @BeanComponent");
+        }
+    }
+
+    public DebbieReflectionBeanFactory(Class<Bean> beanClass,
+                                       BeanProxyHandler beanProxyHandler, BeanInfoManager beanInfoManager) {
+        this.beanInfoManager = beanInfoManager;
+        this.beanProxyHandler = beanProxyHandler;
+        this.beanClass = beanClass;
+        var methods = beanInfoManager.getBeanMethods(beanClass);
+        DebbieClassBeanInfo<Bean> classBeanInfo;
+        var factoryBeanInfo = beanInfoManager.getRegisterRawBean(beanClass);
+        if (factoryBeanInfo instanceof DebbieClassBeanInfo) {
+            classBeanInfo = (DebbieClassBeanInfo<Bean>) factoryBeanInfo;
+        } else {
+            classBeanInfo = new DebbieClassBeanInfo<>(beanClass);
+        }
+        this.factoryBeanInfo = classBeanInfo;
+
+        setMethods(methods);
+    }
+
+    public DebbieReflectionBeanFactory(BeanInfo<Bean> factoryBeanInfo,
+                                       BeanInfoManager beanInfoManager, BeanProxyHandler beanProxyHandler) {
+        this.beanInfoManager = beanInfoManager;
+        this.beanProxyHandler = beanProxyHandler;
+        this.beanClass = factoryBeanInfo.getBeanClass();
+        DebbieClassBeanInfo<Bean> classBeanInfo;
+        if (factoryBeanInfo instanceof DebbieClassBeanInfo) {
+            classBeanInfo = (DebbieClassBeanInfo<Bean>) factoryBeanInfo;
+        } else {
+            classBeanInfo = new DebbieClassBeanInfo<>(beanClass);
+        }
+        var methods = classBeanInfo.getMethods();
+        this.factoryBeanInfo = classBeanInfo;
+        setMethods(methods);
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
+        this.globalBeanFactory = globalBeanFactory;
+    }
+
+    public void setBeanInfoManager(BeanInfoManager beanInfoManager) {
+        this.beanInfoManager = beanInfoManager;
+    }
+
+    public DebbieClassBeanInfo<Bean> getBeanInfo() {
+        return factoryBeanInfo;
+    }
+
+    @Override
+    public synchronized void createPreparation(Set<BeanInfo<?>> singletonBeans, Object firstParamValue) {
+        if (!preparationCreated) {
+            if (initMethod != null) {
+                LOGGER.trace(() -> "create " + beanClass + " preparation by init method");
+                createPreparationByInitMethod(singletonBeans, firstParamValue);
+            } else {
+                LOGGER.trace(() -> "create " + beanClass + " preparation by constructor");
+                createPreparationByConstructor(singletonBeans, firstParamValue);
+            }
+            preparationCreated = true;
+        }
+    }
+
+    public void setCreatedPreparation(Bean bean) {
+        this.bean = bean;
+        this.preparationCreated = true;
+    }
+
+    @Override
+    public void createPreparationByDependence(ApplicationContext applicationContext) {
+        if (this.bean != null) {
+            return;
+        }
+
+        LOGGER.trace(() -> "creator " + beanClass + " has no raw VALUE");
+
+        if (initMethod != null) {
+            LOGGER.trace(() -> "create " + beanClass + " preparation by init method dependence");
+            createPreparationByInitMethodDependent(applicationContext);
+        } else {
+            LOGGER.trace(() -> "create " + beanClass + " preparation by constructor dependence");
+            createPreparationByConstructorDependent(applicationContext);
+        }
+    }
+
+    @Override
+    public void postConstructor() {
+        this.factoryBeanInfo.setBean(bean);
+        if (bean instanceof ConstructPost) {
+            ((ConstructPost) bean).postConstruct();
+        }
+    }
+
+    @Override
+    public void postPreparation(Set<BeanInfo<?>> singletonBeans) {
+        collectFieldsDependent(singletonBeans);
+        resolveFieldValue();
+
+        Class<?> clazz = factoryBeanInfo.getClazz();
+        if (Aware.class.isAssignableFrom(clazz)) {
+            PostConstructorHandler.resolveAwareValue(applicationContext, bean, clazz);
+        }
+
+        Set<Method> methods = factoryBeanInfo.getMethods();
+        if (methods != null && !methods.isEmpty()) {
+            methods.forEach(method -> this.resolveMethodValue(bean, method));
+        }
+    }
+
+    @Override
+    public void postCreated() {
+        BeanProxyType type = factoryBeanInfo.getBeanProxyType();
+        if (type != null) {
+            this.bean = beanProxyHandler.proxyCreatedBean(factoryBeanInfo, factoryBeanInfo.getBean(), factoryBeanInfo.getBeanProxyType());
+        }
+        factoryBeanInfo.setBean(bean);
+        this.created = true;
+    }
+
+    @Override
+    public Bean factoryBean(ApplicationContext applicationContext) {
+        if (!created) {
+            if (this.bean != null) {
+                return bean;
+            } else if (this.factoryBeanInfo.isPresent()) {
+                return this.factoryBeanInfo.getBean();
+            } else {
+                // this.createPreparation(singletonBeanFactoryMap, firstParamValue);
+
+                this.createPreparationByDependence(applicationContext);
+
+                this.postConstructor();
+                // this.postPreparation(singletonBeanFactoryMap);
+                this.postCreated();
+
+                var factoryBeanInfo = this.getBeanInfo();
+
+                // preparations.remove(factoryBeanInfo);
+                return bean;
+            }
+        }
+        return bean;
+    }
+
+    @Override
+    public Class<?> getBeanClass() {
+        return factoryBeanInfo.getBeanClass();
+    }
+
+    @Override
+    public BeanType getBeanType() {
+        return factoryBeanInfo.getBeanType();
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return factoryBeanInfo.isSingleton();
+    }
+
+    @Override
+    public boolean isCreated() {
+        return created;
+    }
+
+    public void resolveFieldValue(BeanInfo<?> factoryBeanInfo, FieldInfo field, String keyPrefix) {
+        var propertyInject = field.getAnnotation(PropertyInject.class);
+        if (propertyInject != null) {
+            resolvePropertiesInject(factoryBeanInfo.getBean(), field.getField(), keyPrefix, propertyInject);
+            return;
+        }
+        var nestedPropertiesConfiguration = field.getAnnotation(NestedPropertiesConfiguration.class);
+        if (nestedPropertiesConfiguration != null) {
+            // 1. 拼接 prefix
+            var name = field.getField().getName();
+            String newKeyPrefix;
+            if (keyPrefix.endsWith(".")) {
+                newKeyPrefix = keyPrefix + name;
+            } else {
+                newKeyPrefix = keyPrefix + "." + name;
+            }
+            var b = ReflectionHelper.getField(factoryBeanInfo.getBean(), field.getField());
+            Field[] fields = field.getType().getDeclaredFields();
+            for (Field f : fields) {
+                // 2. 递归获取@NestedPropertiesConfiguration的field的bean
+                resolveFieldValue(b, f, newKeyPrefix);
+            }
+            return;
+        }
+        Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+        for (Class<? extends Annotation> type : injectTypes) {
+            Annotation annotation = field.getAnnotation(type);
+            if (annotation != null) {
+                resolveFieldDependentBean(factoryBeanInfo, field, annotation);
+                break;
+            }
+        }
+    }
+
+    public void resolveMethodValue(Object object, Method method) {
+        boolean containInject = false;
+        Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+        for (Class<? extends Annotation> type : injectTypes) {
+            Annotation inject = method.getAnnotation(type);
+            if (inject != null) {
+                containInject = true;
+                break;
+            }
+        }
+        if (!containInject) {
+            return;
+        }
+        if (method.getParameterCount() != 1) {
+            LOGGER.error("BeanInject method(" + method + ") must have only one parameter");
+            return;
+        }
+        String name = null;
+        Parameter[] parameters = method.getParameters();
+        Parameter parameter = parameters[0];
+        Class<?> beanClass = parameter.getType();
+        if (parameter.isNamePresent()) {
+            name = parameter.getName();
+        }
+        Optional<Object> o = globalBeanFactory.factoryIfPresent(name);
+        if (o.isPresent()) {
+            ReflectionHelper.invokeMethod(object, method, o.get());
+            */
+/*try {
+                method.invoke(object, o.get());
+            } catch (IllegalAccessException e) {
+                LOGGER.error("method (" + method + ") have no access. ", e);
+            } catch (InvocationTargetException e) {
+                LOGGER.error("method (" + method + ") invoke error. ", e);
+            }*//*
+
+        } else {
+            var value = globalBeanFactory.factory(beanClass);
+            if (value != null) {
+                ReflectionHelper.invokeMethod(object, method, value);
+                */
+/*try {
+                    method.invoke(object, VALUE);
+                } catch (IllegalAccessException e) {
+                    LOGGER.error("method (" + method + ") have no access. ", e);
+                } catch (InvocationTargetException e) {
+                    LOGGER.error("method (" + method + ") invoke error. ", e);
+                }*//*
+
+            }
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void setBeanComponent(BeanComponentInfo info) {
+        if (beanNames.isEmpty()) {
+            if (info.hasName()) {
+                beanNames.add(info.getName());
+            }
+        }
+        if (beanType == null)
+            beanType = info.getType();
+
+        if (lazyCreate == null)
+            lazyCreate = info.isLazy();
+        else {
+            // note: default VALUE is true
+            lazyCreate = true;
+        }
+
+        if (beanProxyType == null) {
+            beanProxyType = info.getProxy();
+        }
+
+        Class<? extends BeanCondition>[] condition = info.getCondition();
+        if (condition != null && condition.length > 0) {
+            for (Class<? extends BeanCondition> conditionClass : condition) {
+                if (conditionClass == DefaultBeanCondition.class) {
+                    this.conditions.add(DefaultBeanCondition.INSTANCE);
+                } else {
+                    BeanCondition beanCondition = ReflectionHelper.newInstance(conditionClass);
+                    this.conditions.add(beanCondition);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createPreparationByInitMethod(Set<BeanInfo<?>> singletonBeans, Object firstParamValue) {
+        if (Modifier.isStatic(initMethod.getModifiers())) {
+            Parameter[] parameters = initMethod.getParameters();
+            if (parameters == null || parameters.length == 0) {
+                this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod);
+            } else {
+                int parameterCount = initMethod.getParameterCount();
+                Object[] values = new Object[parameters.length];
+                if (firstParamValue != null) {
+                    values[0] = firstParamValue;
+                    if (values.length == 1) {
+                        this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+                        return;
+                    }
+                }
+                List<BeanExecutableDependence> initMethodBeanDependence = new ArrayList<>();
+                if (firstParamValue != null) {
+                    DebbieBeanInfo<Object> info = new DebbieBeanInfo<>(Object.class);
+                    info.setBean(firstParamValue);
+                    initMethodBeanDependence.add(new BeanExecutableDependence(0, info, Object.class));
+                }
+
+                boolean initMethodInjectRequired = isInitExecutableInjectRequired(initMethod);
+
+                boolean allParamsHasValue = createPreparationByExecutable(singletonBeans, parameters,
+                        parameterCount, values, initMethodBeanDependence, initMethodInjectRequired, firstParamValue);
+                if (allParamsHasValue) {
+                    this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+                } else {
+                    this.factoryBeanInfo.setInitMethodBeanDependent(initMethodBeanDependence);
+                }
+            }
+        }
+    }
+
+    private boolean createPreparationByExecutable(Set<BeanInfo<?>> singletonBeans,
+                                                  Parameter[] parameters, int parameterCount, Object[] values,
+                                                  List<BeanExecutableDependence> dependence,
+                                                  boolean injectRequired, Object firstParameterValue) {
+        String[] names = new String[parameterCount];
+        int i = firstParameterValue == null ? 0 : 1;
+        for (; i < parameterCount; i++) {
+            var parameter = parameters[i];
+
+            var type = parameter.getType();
+            boolean required = injectRequired;
+            String name = null;
+            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+            if (annotation != null) {
+                name = annotation.name();
+                if (name.isBlank()) {
+                    name = annotation.value();
+                }
+                if (name.isBlank()) {
+                    names[i] = type.getName();
+                } else {
+                    names[i] = name;
+                }
+                required = annotation.require();
+            }
+
+            if ((name == null || name.isBlank()) && parameter.isNamePresent()) {
+                name = parameter.getName();
+            }
+
+            BaseBeanInfo factoryBeanInfo = beanInfoManager.getBeanInfo(name, type, required);
+            if (factoryBeanInfo == null && required) {
+                throw new NoBeanException("no bean " + names[i] + " found .");
+            } else if (factoryBeanInfo instanceof BeanInfo) {
+                BeanInfo factoryBeanInfo1 = (BeanInfo) factoryBeanInfo;
+                if (factoryBeanInfo1.isPresent()) {
+                    values[i] = factoryBeanInfo1.getBean();
+                }
+                if (factoryBeanInfo1.hasBeanFactory()) {
+                    BeanFactory<?> beanFactory = factoryBeanInfo1.getBeanFactory();
+                    values[i] = beanFactory.factoryBean(applicationContext);
+                }
+                boolean flag = singletonBeans.contains(factoryBeanInfo);
+                if (flag && factoryBeanInfo.isSingleton()) {
+                    dependence.add(new BeanExecutableDependence(i, factoryBeanInfo1, type));
+                    if (factoryBeanInfo1.isPresent()) {
+                        values[i] = factoryBeanInfo1.getBean();
+                    }
+                } else {
+                    dependence.add(new BeanExecutableDependence(i, factoryBeanInfo1, type));
+                }
+            } else if (factoryBeanInfo instanceof BeanFactory) {
+                dependence.add(new BeanExecutableDependence(i, factoryBeanInfo, type));
+            } else {
+                dependence.add(new BeanExecutableDependence(i, null, type));
+            }
+        }
+        boolean allParamsHasValue = false;
+        for (Object value : values) {
+            if (value == null) {
+                allParamsHasValue = false;
+                break;
+            } else {
+                allParamsHasValue = true;
+            }
+        }
+        return allParamsHasValue;
+    }
+
+    private boolean isInitExecutableInjectRequired(Executable executable) {
+        boolean initExecutableInjectRequired = false;
+        BeanInject beanInject = executable.getAnnotation(BeanInject.class);
+        if (beanInject != null) {
+            initExecutableInjectRequired = beanInject.require();
+        } else {
+            Set<Class<? extends Annotation>> injectClasses = beanInfoManager.getInjectTypes();
+            for (Class<? extends Annotation> injectClass : injectClasses) {
+                if (injectClass != null) {
+                    Annotation inject = executable.getAnnotation(injectClass);
+                    if (inject != null) {
+                        initExecutableInjectRequired = true;
+                    }
+                }
+            }
+        }
+        return initExecutableInjectRequired;
+    }
+
+    // TODO cache
+    private void createPreparationByConstructor(Set<BeanInfo<?>> singletonBeans, Object firstParamValue) {
+        try {
+            // get all constructor
+            Constructor<Bean>[] constructors = factoryBeanInfo.getConstructors();
+            createPreparationByDefaultConstructor(constructors);
+            // find on params constructor
+
+            // if has no Non params constructor
+            // find a constructor its all param has BeanInject or Inject annotation
+            if (this.bean == null && constructors.length > 0) {
+                Constructor<Bean> constructor = constructors[0];
+                int parameterCount = constructor.getParameterCount();
+                if (parameterCount > 0) {
+                    Object[] values = new Object[parameterCount];
+                    values[0] = firstParamValue;
+                    if (values.length == 1 && firstParamValue != null) {
+                        this.bean = constructor.newInstance(values);
+                        return;
+                    }
+                    List<BeanExecutableDependence> constructorBeanDependent = new ArrayList<>();
+                    if (firstParamValue != null) {
+                        DebbieClassBeanInfo<Object> info = new DebbieClassBeanInfo<>(Object.class);
+                        info.setBean(firstParamValue);
+                        constructorBeanDependent.add(new BeanExecutableDependence(0, info, Object.class));
+                    }
+
+                    boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
+
+                    Parameter[] parameters = constructor.getParameters();
+                    boolean allParamsHasValue = createPreparationByExecutable(singletonBeans, parameters,
+                            parameterCount, values, constructorBeanDependent, constructorInjectRequired, firstParamValue);
+                    if (allParamsHasValue) {
+                        this.bean = constructor.newInstance(values);
+                    } else {
+                        this.factoryBeanInfo.setConstructorBeanDependent(constructorBeanDependent);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by constructor error \n");
+            BeanCreatedException.throwException(LOGGER, e);
+        }
+    }
+
+    private void createPreparationByDefaultConstructor(Constructor<Bean>[] constructors) {
+        try {
+            // find on params constructor
+            for (Constructor<Bean> constructor : constructors) {
+                int parameterCount = constructor.getParameterCount();
+                if (parameterCount == 0) {
+                    constructor.setAccessible(true);
+                    this.bean = constructor.newInstance();
+                    break;
+                }
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            LOGGER.error("new instance by constructor error \n");
+            BeanCreatedException.throwException(LOGGER, e);
+        }
+    }
+
+    private void createPreparationByInitMethodDependent(ApplicationContext applicationContext) {
+        Collection<BeanExecutableDependence> initMethodBeanDependent = factoryBeanInfo.getInitMethodBeanDependent();
+        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
+            BaseBeanInfo debbieBeanInfo = dependence.getBeanInfo();
+            if (debbieBeanInfo == null) {
+                var type = dependence.getType();
+                if (type == ApplicationContext.class) {
+                    dependence.setValue(applicationContext);
+                } else if (type == ResourceResolver.class) {
+                    dependence.setValue(applicationContext.getResourceResolver());
+                }
+                continue;
+            }
+            if (debbieBeanInfo instanceof MutableBeanInfo) {
+                DebbieClassBeanInfo<?> mutableBeanInfo = (DebbieClassBeanInfo<?>) debbieBeanInfo;
+                if (mutableBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
+                    mutableBeanInfo.setHasVirtualValue(true);
+                    mutableBeanInfo.create(applicationContext);
+                }
+            } else if (debbieBeanInfo instanceof BeanInfo) {
+                BeanInfo factoryBeanInfo1 = (BeanInfo) debbieBeanInfo;
+                if (factoryBeanInfo1.optional().isEmpty()) {
+                    factoryBeanInfo1.create(applicationContext);
+                }
+            } else if (debbieBeanInfo instanceof BeanFactory) {
+                ((BeanFactory<?>) debbieBeanInfo).factoryBean(applicationContext);
+            }
+        }
+        if (factoryBeanInfo.getBean() == null &&
+                (factoryBeanInfo.getInitMethodBeanDependent().isEmpty() || factoryBeanInfo.isInitMethodBeanDependentHasValue())) {
+            createRawBeanByInitMethodDependent();
+            if (bean != null) {
+                factoryBeanInfo.setBean(bean);
+                factoryBeanInfo.setHasVirtualValue(false);
+            }
+        }
+    }
+
+    private void createPreparationByConstructorDependent(ApplicationContext applicationContext) {
+        factoryBeanInfo.getCircleDependencyInConstructor();
+        Collection<BeanExecutableDependence> constructorBeanDependent = factoryBeanInfo.getConstructorBeanDependent();
+        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+            var type = dependence.getType();
+            BaseBeanInfo debbieBeanInfo = dependence.getBeanInfo();
+            if (debbieBeanInfo == null) {
+                if (type == ApplicationContext.class) {
+                    dependence.setValue(applicationContext);
+                } else if (type == ResourceResolver.class) {
+                    dependence.setValue(applicationContext.getResourceResolver());
+                }
+                continue;
+            }
+            if (debbieBeanInfo instanceof DebbieClassBeanInfo) {
+                DebbieClassBeanInfo<?> mutableBeanInfo = (DebbieClassBeanInfo<?>) debbieBeanInfo;
+                if (mutableBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
+                    mutableBeanInfo.setHasVirtualValue(true);
+                    mutableBeanInfo.create(applicationContext);
+                }
+            } else if (debbieBeanInfo instanceof BeanInfo) {
+                BeanInfo factoryBeanInfo1 = (BeanInfo) debbieBeanInfo;
+                if (factoryBeanInfo1.optional().isEmpty()) {
+                    factoryBeanInfo1.create(applicationContext);
+                }
+            } else if (debbieBeanInfo instanceof BeanFactory) {
+                ((BeanFactory<?>) debbieBeanInfo).factoryBean(applicationContext);
+            }
+        }
+        */
+/*if (!fromFactory && factoryBeanInfo.getBean() == null && factoryBeanInfo.hasBeanFactory()) {
+            bean = factoryBeanInfo.getBeanFactory().factoryBean();
+            factoryBeanInfo.setBean(bean);
+        }*//*
+
+        if (factoryBeanInfo.getBean() == null &&
+                (factoryBeanInfo.getConstructorBeanDependent().isEmpty() || factoryBeanInfo.isConstructorBeanDependentHasValue())) {
+            createRawBeanByConstructorDependent();
+            if (bean != null) {
+                factoryBeanInfo.setBean(bean);
+                factoryBeanInfo.setHasVirtualValue(false);
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private void createRawBeanByInitMethodDependent() {
+        List<BeanExecutableDependence> beanDependent = this.factoryBeanInfo.getInitMethodBeanDependent();
+        int parameterCount = initMethod.getParameterCount();
+        Parameter[] parameters = initMethod.getParameters();
+
+        Object[] values = new Object[parameterCount];
+
+        boolean initMethodInjectRequired = isInitExecutableInjectRequired(initMethod);
+
+        for (int i = 0; i < parameterCount; i++) {
+            Parameter parameter = parameters[i];
+            BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+            boolean required = initMethodInjectRequired;
+            if (annotation != null) {
+                required = annotation.require();
+            }
+            var dependence = beanDependent.get(i);
+            var bean = dependence.getBeanInfo();
+            if (bean != null) {
+                String serviceName = bean.getServiceName();
+                LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
+                        "dependent " + serviceName);
+                if (bean instanceof DebbieClassBeanInfo) {
+                    DebbieClassBeanInfo<?> localFactoryBeanInfo = (DebbieClassBeanInfo<?>) bean;
+                    if (required && localFactoryBeanInfo.hasNoVirtualValue() && localFactoryBeanInfo.isEmpty()) {
+                        throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                    }
+                } else if (bean instanceof BeanInfo){
+                    BeanInfo factoryBeanInfo1 = (BeanInfo) bean;
+                    if (required && factoryBeanInfo1.isEmpty()) {
+                        throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                    }
+                }
+                if (bean instanceof BeanInfo) {
+                    BeanInfo factoryBeanInfo1 = (BeanInfo) bean;
+                    if (factoryBeanInfo1.isPresent()) {
+                        Object beanValue = factoryBeanInfo1.getBean();
+                        LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
+                        values[i] = beanValue;
+                    }
+                } if (bean instanceof BeanFactory) {
+                    values[i] = ((BeanFactory<?>) bean).factoryBean(applicationContext);
+                }
+            }  else {
+                values[i] = ReflectionHelper.getDefaultValue(dependence.getType());
+            }
+        }
+        try {
+            this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+        } catch (Exception e) {
+            LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") error \n");
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
+            }
+        }
+    }
+
+    private void createRawBeanByConstructorDependent() {
+        List<BeanExecutableDependence> beanDependent = this.factoryBeanInfo.getConstructorBeanDependent();
+        Constructor<Bean>[] constructors = factoryBeanInfo.getConstructors();
+        if (constructors != null && constructors.length > 0) {
+            Constructor<Bean> constructor = constructors[0];
+            int parameterCount = constructor.getParameterCount();
+            Parameter[] parameters = constructor.getParameters();
+
+            Object[] values = new Object[parameterCount];
+
+            boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
+
+            for (int i = 0; i < parameterCount; i++) {
+                Parameter parameter = parameters[i];
+
+                boolean required = constructorInjectRequired;
+
+                BeanInject annotation = parameter.getAnnotation(BeanInject.class);
+                if (annotation != null) {
+                    required = annotation.require();
+                }
+
+                var dependence = beanDependent.get(i);
+                var bean = dependence.getBeanInfo();
+                if (bean != null && bean instanceof BeanInfo) {
+                    BeanInfo factoryBeanInfo1 = (BeanInfo) bean;
+                    String serviceName = bean.getServiceName();
+                    LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
+                    Object beanValue = factoryBeanInfo1.getBean();
+                    if (required && beanValue == null) {
+                        throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                    }
+                    if (beanValue != null) {
+                        LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
+                        values[i] = beanValue;
+                    }
+                } else if (bean instanceof BeanFactory) {
+                    values[i] = ((BeanFactory<?>) bean).factoryBean(applicationContext);
+                } else if (required) {
+                    throw new NoBeanException("bean " + parameter.getType() + " VALUE is null .");
+                } else {
+                    values[i] = ReflectionHelper.getDefaultValue(dependence.getType());
+                }
+            }
+            try {
+                this.bean = constructor.newInstance(values);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+                LOGGER.error(() -> "new instance (" + beanClass.getName() + ") by constructor error \n");
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("", Objects.requireNonNullElse(e.getCause(), e));
+                }
+            }
+        } else {
+            throw new BeanCreatedException("No Constructor can be visited in class(" + beanClass.getName() + ")");
+        }
+    }
+
+    private void resolveFieldValue(Object configuration, Field field, String keyPrefix) {
+        var propertyInject = field.getAnnotation(PropertyInject.class);
+        if (propertyInject != null) {
+            resolvePropertiesInject(configuration, field, keyPrefix, propertyInject);
+            return;
+        }
+        var nestedPropertiesConfiguration = field.getAnnotation(NestedPropertiesConfiguration.class);
+        if (nestedPropertiesConfiguration != null) {
+            // 1. 拼接 prefix
+            var name = field.getName();
+            String newKeyPrefix;
+            if (keyPrefix.endsWith(".")) {
+                newKeyPrefix = keyPrefix + name;
+            } else {
+                newKeyPrefix = keyPrefix + "." + name;
+            }
+            Field[] fields = field.getType().getDeclaredFields();
+            for (Field f : fields) {
+                // 2. 递归获取@NestedPropertiesConfiguration的field的bean
+                resolveFieldValue(ReflectionHelper.getField(configuration, f), f, newKeyPrefix);
+            }
+        } else {
+            resolvePropertiesInject(configuration, field, keyPrefix, null);
+        }
+    }
+
+    private void setMethods(Set<Method> methods) {
+        methods.forEach(method -> {
+            // beanMethods.put(method.getName(), method);
+            if (method.getAnnotation(BeanInit.class) != null) {
+                initMethod = method;
+                factoryBeanInfo.setInitMethod(initMethod);
+            }
+            if (method.getAnnotation(BeanDestroy.class) != null) {
+                factoryBeanInfo.setDestroyMethod(method);
+            }
+        });
+    }
+
+    private void collectFieldsDependent(Set<BeanInfo<?>> singletonBeans) {
+        try {
+            // find all field its has BeanInject or Inject annotation
+            List<FieldInfo> fields = factoryBeanInfo.getFields();
+            Map<FieldInfo, BaseBeanInfo> map = new HashMap<>();
+            for (FieldInfo fieldInfo : fields) {
+                if (fieldInfo.hasValue()) {
+                    continue;
+                }
+
+                Field field = fieldInfo.getField();
+                Class<?> fieldType = field.getType();
+                String name = null;
+
+                boolean required = false;
+
+                BeanInject annotation = field.getAnnotation(BeanInject.class);
+                if (annotation != null) {
+                    name = annotation.name();
+                    if (name.isBlank()) {
+                        name = annotation.value();
+                    }
+                    if (name.isBlank()) {
+                        name = fieldType.getName();
+                    }
+                    required = annotation.require();
+                } else {
+                    Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+                    boolean injected = false;
+                    for (Class<? extends Annotation> injectType : injectTypes) {
+                        Annotation inject = field.getAnnotation(injectType);
+                        if (inject != null) {
+                            injected = true;
+                            break;
+                        }
+                    }
+                    if (!injected) {
+                        continue;
+                    }
+                }
+
+                if (name == null || name.isBlank()) {
+                    name = field.getName();
+                }
+                var fieldValue = ReflectionHelper.getField(this.bean, field);
+                if (fieldValue == null) {
+                    var factoryBeanInfo = beanInfoManager.getBeanInfo(name, fieldType, required);
+                    if (required && factoryBeanInfo == null) {
+                        throw new NoBeanException("no bean " + name + " found .");
+                    } else if (factoryBeanInfo != null) {
+                        boolean flag = singletonBeans.contains(factoryBeanInfo);
+                        if (flag && factoryBeanInfo.isSingleton()) {
+                            map.put(fieldInfo, factoryBeanInfo);
+                        } else if (factoryBeanInfo instanceof BeanInfo) {
+                            BeanInfo factoryBeanInfo1 = (BeanInfo) factoryBeanInfo;
+                            var bean = factoryBeanInfo1.getBean();
+                            if (bean != null) {
+                                if (!fieldType.isInstance(bean)) {
+                                    bean = JdkDynamicProxy.getRealValue(bean);
+                                }
+                                ReflectionHelper.invokeFieldBySetMethod(this.bean, field, bean);
+                                fieldInfo.setValue();
+                            } else {
+                                map.put(fieldInfo, factoryBeanInfo);
+                            }
+                        } else if (factoryBeanInfo instanceof BeanFactory) {
+                            map.put(fieldInfo, factoryBeanInfo);
+                        }
+                    }
+                }
+            }
+
+            if (!map.isEmpty()) {
+                this.factoryBeanInfo.setFieldBeanDependent(map);
+            }
+        } catch (Exception e) {
+            BeanCreatedException.throwException(LOGGER, e);
+        }
+    }
+
+    private void resolveFieldValue() {
+        String keyPrefix = null;
+
+        if (factoryBeanInfo.containClassAnnotation(PropertiesConfiguration.class)) {
+            var beanConfiguration = factoryBeanInfo.getClassAnnotation(PropertiesConfiguration.class);
+            keyPrefix = beanConfiguration.keyPrefix();
+            if (!keyPrefix.isBlank() && !keyPrefix.endsWith(".")) {
+                keyPrefix += ".";
+            }
+        }
+
+        List<FieldInfo> fields = factoryBeanInfo.getFields();
+        if (fields != null && !fields.isEmpty()) {
+            for (FieldInfo field : fields) {
+                if (!field.hasValue()) {
+                    this.resolveFieldValue(factoryBeanInfo, field, keyPrefix);
+                }
+            }
+        }
+    }
+
+    private void resolvePropertiesInject(Object object, Field field, String keyPrefix, PropertyInject propertyInject) {
+        Object value = PostConstructorHandler.factoryProperty(applicationContext, field.getType(), keyPrefix, propertyInject);
+        if (value != null) {
+            // use setter method to inject filed
+            // if setter method not found, inject directly
+            ReflectionHelper.invokeFieldBySetMethod(object, field, value);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void resolveFieldDependentBean(BeanInfo<?> factoryBeanInfo, FieldInfo fieldInfo, Annotation inject) {
+        String name = null;
+        Field field = fieldInfo.getField();
+        if (inject instanceof BeanInject) {
+            name = ((BeanInject) inject).name();
+            if (name.isBlank()) {
+                name = ((BeanInject) inject).value();
+            }
+        }
+
+        if (name == null || name.isBlank()) {
+            name = field.getName();
+        }
+
+        final String finalName = name;
+        LOGGER.trace(() -> "resolve field dependent bean(" + field.getType() + ") by name : " + finalName);
+        var required = true;
+        if (inject instanceof BeanInject) {
+            required = ((BeanInject) inject).require();
+        }
+        if (factoryBeanInfo instanceof DebbieClassBeanInfo) {
+            DebbieClassBeanInfo<?> classBeanInfo = (DebbieClassBeanInfo<?>) factoryBeanInfo;
+            var fieldBeanInfoMap = classBeanInfo.getFieldBeanDependent();
+            if (fieldBeanInfoMap == null || fieldBeanInfoMap.isEmpty()) {
+                if (required) {
+                    throw new NoBeanException("no bean " + name + " found .");
+                } else {
+                    return;
+                }
+            }
+            BaseBeanInfo fieldBeanInfo = fieldBeanInfoMap.get(fieldInfo);
+            if (fieldBeanInfo instanceof BeanInfo) {
+                BeanInfo factoryBeanInfo1 = (BeanInfo) fieldBeanInfo;
+                Object value = null;
+                if (factoryBeanInfo1.isPresent()) {
+                    value = factoryBeanInfo1.getBean();
+                } else if (fieldBeanInfo instanceof MutableBeanInfo) {
+                    MutableBeanInfo mutableBeanInfo = (MutableBeanInfo) fieldBeanInfo;
+                    mutableBeanInfo.create(applicationContext);
+                    value = beanProxyHandler.proxyCreatedBean(mutableBeanInfo, mutableBeanInfo.getBean(), mutableBeanInfo.getBeanProxyType());
+                }
+                ReflectionHelper.invokeFieldBySetMethod(factoryBeanInfo.getBean(), field, value);
+            } else if (fieldBeanInfo instanceof BeanFactory) {
+                ReflectionHelper.invokeFieldBySetMethod(factoryBeanInfo.getBean(), field, ((BeanFactory<?>) fieldBeanInfo).factoryBean(applicationContext));
+            } else {
+                if (required) {
+                    throw new NoBeanException("no bean " + name + " found .");
+                }
+            }
+        } else if (required) {
+            throw new NoBeanException("no bean " + name + " found .");
+        } else {
+            ReflectionHelper.invokeFieldBySetMethod(factoryBeanInfo.getBean(), field, null);
+        }
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebbieReflectionBeanFactory.class);
+}
+*/

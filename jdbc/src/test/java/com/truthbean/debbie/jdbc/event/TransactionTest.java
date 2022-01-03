@@ -23,6 +23,7 @@ public class TransactionTest {
     public static void main(String[] args) {
         var application = DebbieApplication.create(TransactionTest.class, args);
         application.start();
+        application.exit();
     }
 
     @Test

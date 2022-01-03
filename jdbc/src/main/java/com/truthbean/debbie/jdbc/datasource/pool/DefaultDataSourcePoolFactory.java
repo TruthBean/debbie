@@ -47,6 +47,11 @@ public class DefaultDataSourcePoolFactory implements DataSourceFactory {
     }
 
     @Override
+    public String getName() {
+        return "defaultDataSourcePoolFactory";
+    }
+
+    @Override
     public DataSource getDataSource() {
         return pooledDataSource;
     }
@@ -62,7 +67,7 @@ public class DefaultDataSourcePoolFactory implements DataSourceFactory {
     }
 
     @Override
-    public void destroy() {
+    public void close() {
         pooledDataSource.close();
     }
 

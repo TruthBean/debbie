@@ -16,6 +16,7 @@ import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -40,15 +41,16 @@ public class DebbieStartedEventProcessor {
         this.startedEventThreadPool = new ThreadPooledExecutor(10, 128, namedThreadFactory);
     }
 
-    public synchronized void multicastEvent() {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public synchronized void multicastDebbieStartedEvent() {
         final DebbieStartedEvent startedEvent = new DebbieStartedEvent(this);
         startedEvent.setApplicationContext(applicationContext);
         var globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        final List<GenericStartedEventListener<DebbieStartedEvent>> beanInfoList = globalBeanFactory.getBeanList(GenericStartedEventListener.class, false);
+        final Set<GenericStartedEventListener> beanInfoList = globalBeanFactory.getBeanList(GenericStartedEventListener.class);
         this.multicastEventThreadPool.execute(() -> {
             if (beanInfoList != null) {
-                for (GenericStartedEventListener<DebbieStartedEvent> startedEventListener : beanInfoList) {
-                    Class<DebbieStartedEvent> eventType = startedEventListener.getEventType();
+                for (GenericStartedEventListener startedEventListener : beanInfoList) {
+                    Class<?> eventType = startedEventListener.getEventType();
                     if (eventType == DebbieStartedEvent.class) {
                         if (startedEventListener.async()) {
                             startedEventThreadPool.execute(() -> {
@@ -86,7 +88,7 @@ public class DebbieStartedEventProcessor {
                             }
                         }
                     } else {
-                        DebbieStartedEvent event = globalBeanFactory.factory(eventType);
+                        DebbieStartedEvent event = (DebbieStartedEvent) globalBeanFactory.factory(eventType);
                         if (startedEventListener.async()) {
                             try {
                                 startedEventThreadPool.execute(() -> startedEventListener.onEvent(event));
@@ -109,7 +111,7 @@ public class DebbieStartedEventProcessor {
                                     LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
                                 }
                             }
-                        } else
+                        } else {
                             try {
                                 startedEventListener.onEvent(event);
                             } catch (Throwable e) {
@@ -119,6 +121,7 @@ public class DebbieStartedEventProcessor {
                                 }
                                 LOGGER.error("DebbieStartedEvent(" + startedEvent + ") on listener error. ", cause);
                             }
+                        }
                     }
                 }
             }

@@ -17,10 +17,14 @@ import java.lang.annotation.Annotation;
  * Created on 2020-09-18 00:16
  */
 public class DefaultBeanComponentParser implements BeanComponentParser {
+
+    public static final DefaultBeanComponentParser INSTANCE = new DefaultBeanComponentParser();
+
     @Override
     public BeanComponentInfo parse(Annotation annotation, Class<?> beanType) {
-        if (annotation == null)
+        if (annotation == null) {
             return null;
+        }
         if (annotation.annotationType() == BeanComponent.class) {
             return parse((BeanComponent) annotation);
         }

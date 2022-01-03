@@ -1,11 +1,18 @@
 package com.truthbean.debbie.bean.custom;
 
 import com.truthbean.Logger;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.lang.Callable;
+import com.truthbean.debbie.lang.Callback;
+import com.truthbean.debbie.reflection.ReflectionConfigurer;
+import com.truthbean.debbie.task.DebbieTask;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -21,12 +28,28 @@ import java.util.concurrent.TimeUnit;
  * @author TruthBean/Rogar·Q
  * @since Created on 2020-07-03 17:14.
  */
+@DebbieApplicationTest
 class CustomBeanAnnotatedBeanTest {
 
     static {
         System.setProperty(DebbieApplication.DISABLE_DEBBIE, "false");
         System.setProperty("logging.level.root", "debug");
         System.setProperty("logging.level.com.truthbean", "trace");
+        System.setProperty(ReflectionConfigurer.ENABLE_KEY, "true");
+        System.setProperty("com.truthbean.debbie.core.test.enable", "true");
+    }
+
+    @Inject
+    private CustomBeanAnnotatedBean customBeanAnnotatedBean;
+
+    @DebbieTask
+    public void task() {
+        System.out.println(customBeanAnnotatedBean.getA());
+    }
+
+    public static void main(String[] args) {
+        CustomBeanAnnotatedBeanTest test = new CustomBeanAnnotatedBeanTest();
+        DebbieApplication.run(test, args);
     }
 
     @Test
@@ -41,7 +64,7 @@ class CustomBeanAnnotatedBeanTest {
             service.execute(() -> {
                 try {
                     LOGGER.debug("???????????????????????????????????????????????????????????????????????????????????????????????");
-                    ApplicationFactory applicationFactory = ApplicationFactory.configure(CustomBeanAnnotatedBeanTest.class);
+                    ApplicationFactory applicationFactory = ApplicationFactory.create(CustomBeanAnnotatedBeanTest.class);
                     ApplicationContext context = applicationFactory.getApplicationContext();
                     GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
                     CustomBeanAnnotatedBean bean = globalBeanFactory.factory(CustomBeanAnnotatedBean.class);

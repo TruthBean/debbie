@@ -21,11 +21,11 @@ public class CImpl implements C {
 
     private final String c;
 
-    @BeanInject(name = "a")
+    /*@BeanInject(name = "a")
     private A aBean;
 
     @BeanInject(name = "b")
-    private B bBean;
+    private B bBean;*/
 
     /*@BeanInit
     public static void init(@BeanInject(name = "a") A aBean, @BeanInject(name = "b") B bBean) {
@@ -46,7 +46,7 @@ public class CImpl implements C {
 
     @Override
     public String toString() {
-        String a = null, b = null;
+        /*String a = null, b = null;
         if (aBean != null) {
             a = aBean.getA();
         }
@@ -57,6 +57,7 @@ public class CImpl implements C {
                 "\"c\":\"" + c + '\"' +
                 ",\"aBean\":" + a +
                 ",\"bBean\":" + b +
-                '}';
+                '}';*/
+        return "{\"c\":\"" + c + "\"}";
     }
 }

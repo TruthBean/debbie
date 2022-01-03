@@ -9,8 +9,10 @@
  */
 package com.truthbean.debbie.httpclient;
 
+import com.truthbean.debbie.bean.ClassBeanInfo;
 import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -20,35 +22,43 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
  */
 public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpClientBean> {
 
+    private HttpClientBean httpClientBean;
     private final Class<HttpClientBean> httpClientBeanClass;
     private final HttpClientFactory httpClientFactory;
+    private final ClassBeanInfo<HttpClientBean> beanInfo;
 
-    public HttpClientBeanFactory(Class<HttpClientBean> httpClientBeanClass, HttpClientFactory httpClientFactory) {
-        this.httpClientBeanClass = httpClientBeanClass;
+    @SuppressWarnings("unchecked")
+    public HttpClientBeanFactory(HttpClientFactory httpClientFactory,
+                                 ClassBeanInfo<HttpClientBean> beanInfo) {
+        this.httpClientBeanClass = (Class<HttpClientBean>) beanInfo.getBeanClass();
         this.httpClientFactory = httpClientFactory;
-    }
-
-    @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
+        this.beanInfo = beanInfo;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public HttpClientBean getBean() {
-        HttpClientRouter annotation = httpClientBeanClass.getAnnotation(HttpClientRouter.class);
+    public HttpClientBean factoryNamedBean(String name, ApplicationContext applicationContext) {
+        HttpClientRouter annotation = beanInfo.getClassAnnotation(HttpClientRouter.class);
         if (annotation != null) {
             Class<?> action = annotation.failureAction();
             if (httpClientBeanClass.isAssignableFrom(action)) {
                 HttpClientBean o = (HttpClientBean) ReflectionHelper.newInstance(action);
-                return httpClientFactory.factory(httpClientBeanClass, o);
+                httpClientBean = httpClientFactory.factory(httpClientBeanClass, o);
             }
+        } else {
+            httpClientBean = httpClientFactory.factory(httpClientBeanClass);
         }
-        return httpClientFactory.factory(httpClientBeanClass);
+        return httpClientBean;
     }
 
     @Override
-    public Class<HttpClientBean> getBeanType() {
+    public Class<?> getBeanClass() {
         return httpClientBeanClass;
+    }
+
+    @Override
+    public BeanType getBeanType() {
+        return BeanType.SINGLETON;
     }
 
     @Override
@@ -57,8 +67,27 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     }
 
     @Override
-    public void destroy() {
+    public void destruct(ApplicationContext applicationContext) {
         httpClientFactory.destroy();
     }
 
+    @Override
+    public boolean isCreated() {
+        return httpClientBean != null;
+    }
+
+    @Override
+    public HttpClientBean getCreatedBean() {
+        return httpClientBean;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return isEquals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return getHashCode(super.hashCode());
+    }
 }

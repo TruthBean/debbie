@@ -17,9 +17,9 @@ import com.truthbean.common.mini.util.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.invoke.VarHandle;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author TruthBean
@@ -27,7 +27,6 @@ import java.util.Map;
  * Created on 2018-03-19 12:49.
  */
 public class DataSourceProperties extends EnvironmentContentHolder implements DebbieProperties<DataSourceConfiguration>, Closeable {
-    private final DataSourceConfiguration defaultConfiguration;
     private final Map<String, DataSourceConfiguration> configurationMap = new HashMap<>();
 
     protected static final String DATASOURCE_KEY_PREFIX = "debbie.datasource.";
@@ -57,7 +56,6 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     private static final DataSourceProperties INSTANCE = new DataSourceProperties();
 
     public DataSourceProperties() {
-        defaultConfiguration = new DataSourceConfiguration();
         setDefaultConfiguration();
         setCustomConfiguration();
     }
@@ -155,6 +153,7 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     private void setDefaultConfiguration() {
+        DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration();
         defaultConfiguration.setName("default");
         String url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
         defaultConfiguration.setUrl(url);
@@ -189,6 +188,7 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
         Class<? extends DataSourceFactory> dataSourceFactoryClass =
                 (Class<? extends DataSourceFactory>) getClassValue(DATA_SOURCE_FACTORY, defaultClassName);
         defaultConfiguration.setDataSourceFactoryClass(dataSourceFactoryClass);
+        configurationMap.put(DEFAULT_PROFILE, defaultConfiguration);
     }
 
     private DataSourceDriverName getDriverName(String driverName, String url) {
@@ -258,6 +258,11 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
         return null;
     }
 
+    @Override
+    public Set<String> getProfiles() {
+        return configurationMap.keySet();
+    }
+
     public TransactionIsolationLevel getTransactionIsolationLevelValue(String key, TransactionIsolationLevel defaultValue) {
         String stringValue = getStringValue(key, defaultValue.name().toUpperCase());
         return TransactionIsolationLevel.valueOf(stringValue);
@@ -268,11 +273,11 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     public DataSourceConfiguration getDefaultConfiguration() {
-        return defaultConfiguration;
+        return configurationMap.get(DEFAULT_PROFILE);
     }
 
     public DataSourceConfiguration getConfiguration() {
-        return defaultConfiguration;
+        return configurationMap.get(DEFAULT_PROFILE);
     }
 
     public Map<String, DataSourceConfiguration> getConfigurationMap() {
@@ -280,12 +285,21 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     public static DataSourceConfiguration toConfiguration() {
-        return INSTANCE.defaultConfiguration;
+        return INSTANCE.configurationMap.get(DEFAULT_PROFILE);
     }
 
     @Override
-    public DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
-        return defaultConfiguration;
+    public DataSourceConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
+        if (StringUtils.hasText(name)) {
+            return configurationMap.get(name);
+        } else {
+            return configurationMap.get(DEFAULT_PROFILE);
+        }
+    }
+
+    @Override
+    public DataSourceConfiguration getConfiguration(ApplicationContext applicationContext) {
+        return configurationMap.get(DEFAULT_PROFILE);
     }
 
     @Override

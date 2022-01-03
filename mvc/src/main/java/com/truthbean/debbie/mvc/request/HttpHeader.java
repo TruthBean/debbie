@@ -121,7 +121,7 @@ public class HttpHeader {
 
         @Override
         public String toString() {
-            return "{\"name\":\"customize\",\"value\":\"" + name + "\"}";
+            return "{\"name\":\"customize\",\"VALUE\":\"" + name + "\"}";
         }
 
         @Override
@@ -442,7 +442,7 @@ public class HttpHeader {
 
         @Override
         public String toString() {
-            return "{\"name\":\"" + super.toString() + "\",\"value\":\"" + name + "\"}";
+            return "{\"name\":\"" + super.toString() + "\",\"VALUE\":\"" + name + "\"}";
         }
     }
 }

@@ -11,11 +11,21 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.debbie.core.ApplicationContext;
 
+import java.util.Set;
+
 /**
  * @author TruthBean
  * @since 0.0.2
  */
-public interface DebbieProperties<C extends DebbieConfiguration> {
+public interface DebbieProperties<C extends DebbieConfiguration> extends AutoCloseable {
 
-    C toConfiguration(ApplicationContext applicationContext);
+    String DEFAULT_PROFILE = "default";
+
+    Set<String> getProfiles();
+
+    C getConfiguration(String name, ApplicationContext applicationContext);
+
+    default C getConfiguration(ApplicationContext applicationContext) {
+        return getConfiguration(DEFAULT_PROFILE, applicationContext);
+    }
 }

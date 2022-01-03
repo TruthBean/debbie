@@ -52,8 +52,7 @@ public final class TypeHelper extends ClassHelper {
 
     @SuppressWarnings("unchecked")
     public static Object valueOf(java.lang.reflect.Type type, Object value) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+        if (type instanceof ParameterizedType parameterizedType) {
             java.lang.reflect.Type rawType = parameterizedType.getRawType();
             java.lang.reflect.Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             if (rawType == List.class) {
@@ -63,8 +62,7 @@ public final class TypeHelper extends ClassHelper {
                     return result;
                 if (value instanceof List) {
                     for (Object object : (List) value) {
-                        if (object instanceof String) {
-                            String str = (String) object;
+                        if (object instanceof String str) {
                             // todo 需要改良这里的硬编码
                             if (str.contains(",")) {
                                 String[] split = str.split(",");
@@ -99,8 +97,7 @@ public final class TypeHelper extends ClassHelper {
                     }
                 } else if (typeArgument instanceof Class) {
                     // todo transform
-                    if (value instanceof String) {
-                        String str = (String) value;
+                    if (value instanceof String str) {
                         // todo 需要改良这里的硬编码
                         if (str.contains(",")) {
                             String[] split = str.split(",");
@@ -260,10 +257,9 @@ public final class TypeHelper extends ClassHelper {
         if (value == null || value.isEmpty()) return true;
 
         boolean result = true;
-        // java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
+        // java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(VALUE.getClass());
         for (Object object : value) {
-            if (object instanceof String) {
-                String str = (String) object;
+            if (object instanceof String str) {
                 // todo 需要改良这里的硬编码
                 if (str.contains(",")) {
                     String[] split = str.split(",");
@@ -320,8 +316,7 @@ public final class TypeHelper extends ClassHelper {
 
     public static boolean isOrValueOf(java.lang.reflect.Type type, Object value) {
         boolean result = false;
-        if (type instanceof Class) {
-            Class<?> clazz = (Class<?>) type;
+        if (type instanceof Class<?> clazz) {
             if (value instanceof List) {
                 return isOrValueOf(clazz, (List) value);
             } else if (value instanceof String) {
@@ -334,8 +329,7 @@ public final class TypeHelper extends ClassHelper {
             } else {
                 return clazz.isInstance(value);
             }
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+        } else if (type instanceof ParameterizedType parameterizedType) {
             java.lang.reflect.Type rawType = parameterizedType.getRawType();
             java.lang.reflect.Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             if (rawType == List.class) {
@@ -360,8 +354,7 @@ public final class TypeHelper extends ClassHelper {
     public static Class<?> getClass(java.lang.reflect.Type type) {
         if (type instanceof Class) {
             return (Class<?>) type;
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+        } else if (type instanceof ParameterizedType parameterizedType) {
             java.lang.reflect.Type rawType = parameterizedType.getRawType();
             return (Class<?>) rawType;
         }
@@ -369,8 +362,7 @@ public final class TypeHelper extends ClassHelper {
     }
 
     public static java.lang.reflect.Type[] getActualType(java.lang.reflect.Type type) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+        if (type instanceof ParameterizedType parameterizedType) {
             return parameterizedType.getActualTypeArguments();
         }
         return new java.lang.reflect.Type[0];
@@ -379,8 +371,7 @@ public final class TypeHelper extends ClassHelper {
     public static boolean isOrValueOf(Class<?> clazz, Object target) {
         if (target.getClass().equals(clazz)) {
             return true;
-        } else if (target instanceof String) {
-            String str = (String) target;
+        } else if (target instanceof String str) {
             if (NumericUtils.isInteger(str)) {
                 return clazz == Integer.class || clazz == int.class || clazz == Short.class || clazz == short.class || clazz == Long.class || clazz == long.class;
             }

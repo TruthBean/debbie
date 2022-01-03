@@ -200,7 +200,7 @@ class RawRequestWrapper implements RouterRequest {
                 }
 
                 //when httpRequest headers is Content-Type: application/x-www-form-urlencoded
-                //params will be key=key&value=%E5%91%B5%E5%91%B5%E5%91%B5%E5%91%B5%E5%91%B5
+                //params will be key=key&VALUE=%E5%91%B5%E5%91%B5%E5%91%B5%E5%91%B5%E5%91%B5
                 if (MediaType.APPLICATION_FORM_URLENCODED.isSame(contentType)) {
                     var decoder = new QueryStringDecoder("/?" + line);
                     if (decoder.hasParams()) {

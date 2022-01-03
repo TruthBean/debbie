@@ -18,4 +18,13 @@ public interface ColumnNameTransformer {
     String columnNameToPropertyName(String columnName);
 
     String propertyNameToColumnName(String propertyName);
+
+    default void getColumnName(String[] parts, StringBuilder result) {
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1);
+            }
+            result.append(parts[i]);
+        }
+    }
 }

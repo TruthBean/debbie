@@ -9,9 +9,15 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -20,23 +26,55 @@ import java.lang.reflect.Method;
  */
 public class ConfigurationMethodBeanFactory<Configuration, Bean> implements BeanFactory<Bean> {
 
-    private final Configuration configuration;
+    private final Supplier<Configuration> supplier;
+    private final BeanType beanType;
     private final Method method;
-    public ConfigurationMethodBeanFactory(Configuration configuration, Method method) {
-        this.configuration = configuration;
+    private final Set<String> names = new HashSet<>();
+    private final Set<BeanCondition> conditions;
+    public ConfigurationMethodBeanFactory(Supplier<Configuration> supplier, Method method, BeanType beanType, String name,
+                                          Set<BeanCondition> conditions) {
+        this.supplier = supplier;
         this.method = method;
+        this.beanType = beanType;
+        this.names.add(name);
+        this.conditions = conditions;
     }
 
     @Override
-    public Bean getBean() {
+    public Bean factoryBean(ApplicationContext applicationContext) {
         // todo params
-        return ReflectionHelper.invokeMethod(configuration, method);
+        return ReflectionHelper.invokeMethod(supplier.get(), method);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Class<Bean> getBeanType() {
-        return (Class<Bean>) method.getReturnType();
+    public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
+        // todo params
+        return ReflectionHelper.invokeMethod(supplier.get(), method);
+    }
+
+    @Override
+    public boolean isCreated() {
+        return false;
+    }
+
+    @Override
+    public Bean getCreatedBean() {
+        return null;
+    }
+
+    @Override
+    public Set<BeanCondition> getConditions() {
+        return conditions;
+    }
+
+    @Override
+    public Class<?> getBeanClass() {
+        return method.getReturnType();
+    }
+
+    @Override
+    public BeanType getBeanType() {
+        return beanType;
     }
 
     @Override
@@ -44,11 +82,31 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
         return true;
     }
 
-    @Override
-    public void destroy() {
+    public void addName(String name) {
+        this.names.add(name);
     }
 
     @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
+    public Set<String> getBeanNames() {
+        return names;
+    }
+
+    @Override
+    public void destruct(ApplicationContext applicationContext) {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return isEquals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return getHashCode(super.hashCode());
+    }
+
+    @Override
+    public Logger getLogger() {
+        return LoggerFactory.getLogger(ConfigurationMethodBeanFactory.class);
     }
 }

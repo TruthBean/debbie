@@ -9,14 +9,14 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.empty.EmptyApplicationFactory;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.spi.SpiLoader;
 
-import java.util.function.Consumer;
+import java.util.Collection;
 
 /**
  * @author TruthBean
@@ -25,6 +25,13 @@ import java.util.function.Consumer;
 public interface ApplicationFactory {
 
     ApplicationFactory preInit(String... args);
+
+    /**
+     * @param applicationClass application class
+     * @param args main method args
+     * @return customize life ApplicationFactory
+     */
+    ApplicationFactory preInit(Class<?> applicationClass, String... args);
 
     /**
      * register module starter before configure or create
@@ -37,23 +44,26 @@ public interface ApplicationFactory {
     /**
      * configure properties and register beans
      *
+     * @param beanClasses beans class
      * @return customize life ApplicationFactory
      */
-    ApplicationFactory init();
+    ApplicationFactory init(Class<?>... beanClasses);
 
-    /**
-     * configure properties and register beans
-     *
-     * @param applicationClass main class which annotated by DebbieBootApplication
-     * @return customize life ApplicationFactory
-     */
-    ApplicationFactory init(Class<?> applicationClass);
+    ApplicationFactory init(ClassLoader classLoader, Class<?>... beanClasses);
 
-    ApplicationFactory init(ClassLoader classLoader);
+    ApplicationFactory register(BeanInfo<?> beanInfo);
 
-    ApplicationFactory init(Class<?> applicationClass, ClassLoader classLoader);
+    ApplicationFactory register(BeanFactory<?> beanFactory);
+
+    ApplicationFactory register(Collection<BeanInfo<?>> beanInfos);
+
+    ApplicationFactory register(BeanLifecycle beanLifecycle);
+
+    ApplicationFactory register(BeanRegister beanRegister);
 
     ApplicationFactory config();
+
+    ApplicationFactory config(Object application);
 
     ApplicationFactory config(BeanScanConfiguration configuration);
 
@@ -79,14 +89,33 @@ public interface ApplicationFactory {
     }
 
     static ApplicationFactory configure(Class<?> applicationClass, String... args) {
-        return newEmpty().preInit(args).init(applicationClass).config();
+        return newEmpty().preInit(applicationClass, args).init().config();
+    }
+
+    static ApplicationFactory configure(Object application, String... args) {
+        return newEmpty().preInit(application.getClass(), args).init().config(application);
     }
 
     static ApplicationFactory create(Class<?> applicationClass, String... args) {
-        return newEmpty().preInit(args).init(applicationClass).config().create().build();
+        return newEmpty().preInit(applicationClass, args).init().config().create().build();
+    }
+
+    static ApplicationFactory create(Object application, String... args) {
+        return newEmpty().preInit(application.getClass(), args).init().config(application).create().build();
     }
 
     static DebbieApplication factory(Class<?> applicationClass, String... args) {
-        return newEmpty().preInit(args).init(applicationClass).config().create().postCreate().build().factory();
+        return newEmpty().preInit(applicationClass, args).init().config().create().postCreate().build().factory();
+    }
+
+    static DebbieApplication factory(Object application, String... args) {
+        return newEmpty()
+                .preInit(application.getClass(), args)
+                .init()
+                .config(application)
+                .create()
+                .postCreate()
+                .build()
+                .factory();
     }
 }

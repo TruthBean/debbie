@@ -27,8 +27,10 @@ import java.util.*;
  */
 public class BeanScanConfiguration implements DebbieConfiguration {
     private String name;
+    private boolean enable;
     private final Set<Class<?>> scanClasses;
 
+    private boolean enableScanResources = true;
     private final Set<String> scanBasePackages;
     private final Set<String> scanExcludePackages;
     private final Set<Class<?>> scanExcludeClasses;
@@ -61,6 +63,15 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.customInjectType = new HashSet<>();
 
         this.classLoader = classLoader;
+    }
+
+    @Override
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 
     @Override
@@ -128,6 +139,14 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.scanExcludeClasses.addAll(configuration.scanExcludeClasses);
     }
 
+    public boolean isEnableScanResources() {
+        return enableScanResources;
+    }
+
+    public void setEnableScanResources(boolean enableScanResources) {
+        this.enableScanResources = enableScanResources;
+    }
+
     public Set<String> getScanBasePackages() {
         return scanBasePackages;
     }
@@ -192,7 +211,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = scanClasses(resourceResolver, packageName);
+                List<Class<?>> classList = scanClasses(classLoader, resourceResolver, packageName);
                 classes.addAll(classList);
             });
         }
@@ -202,7 +221,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         if (!scanExcludePackages.isEmpty()) {
             // TODO: 后期优化
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = scanClasses(resourceResolver, packageName);
+                List<Class<?>> classList = scanClasses(classLoader, resourceResolver, packageName);
                 classList.forEach(classes::remove);
             });
         }
@@ -210,19 +229,23 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         return Collections.unmodifiableSet(scannedClasses);
     }
 
-    private synchronized List<Class<?>> scanClasses(final ResourceResolver resourceResolver, final String packageName) {
+    private synchronized List<Class<?>> scanClasses(final ClassLoader classLoader,
+                                                    final ResourceResolver resourceResolver, final String packageName) {
         if (classLoader == null) {
             LOGGER.error("classLoader is null!");
             return new ArrayList<>();
         }
-        if (resourceResolver != null) {
-            List<String> resources =
-                    ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
-            resourceResolver.addResource(resources);
-            return ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
-        } else {
-            return ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+        if (enableScanResources) {
+            if (resourceResolver != null) {
+                List<String> resources =
+                        ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
+                resourceResolver.addResource(classLoader, resources);
+                return ReflectionHelper.getAllClassByPackageName(packageName, classLoader, resourceResolver);
+            } else {
+                return ReflectionHelper.getAllClassByPackageName(packageName, classLoader);
+            }
         }
+        return new ArrayList<>();
     }
 
     public Set<Class<?>> getScannedClasses() {
@@ -230,15 +253,17 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public void reset() {
-        this.name = null;
-        this.scanClasses.clear();
-        this.scanBasePackages.clear();
-        this.scanExcludePackages.clear();
-        this.scanExcludeClasses.clear();
-        this.scannedClasses.clear();
-        this.customInjectType.clear();
-        this.classLoader = null;
+    public void close() {
+        synchronized (BeanScanConfiguration.class) {
+            this.name = null;
+            this.scanClasses.clear();
+            this.scanBasePackages.clear();
+            this.scanExcludePackages.clear();
+            this.scanExcludeClasses.clear();
+            this.scannedClasses.clear();
+            this.customInjectType.clear();
+            this.classLoader = null;
+        }
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BeanScanConfiguration.class);

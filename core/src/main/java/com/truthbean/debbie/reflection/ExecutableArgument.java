@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.debbie.lang.Copyable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ import java.util.Objects;
  * @since 0.0.2
  * Created on 2018-03-09 13:51
  */
-public class ExecutableArgument implements Comparable<ExecutableArgument>, Cloneable {
+public class ExecutableArgument implements Comparable<ExecutableArgument>, Copyable<ExecutableArgument> {
     private Type type;
     private Object value;
     private int index;
@@ -139,19 +141,13 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
     }
 
     @Override
-    public ExecutableArgument clone() {
-        ExecutableArgument parameter;
-        try {
-            parameter = (ExecutableArgument) super.clone();
-        } catch (CloneNotSupportedException e) {
-            parameter = new ExecutableArgument(this.classLoader);
-        }
+    public ExecutableArgument copy() {
+        ExecutableArgument parameter = new ExecutableArgument(this.classLoader);
         parameter.type = type;
         parameter.value = value;
         parameter.index = index;
         parameter.name = name;
         parameter.annotations = new HashMap<>(annotations);
-
         parameter.stack = stack;
         return parameter;
     }
@@ -164,7 +160,7 @@ public class ExecutableArgument implements Comparable<ExecutableArgument>, Clone
     public String toString() {
         return "{" +
                 "\"type\":" + type +
-                ",\"value\":" + value +
+                ",\"VALUE\":" + value +
                 ",\"index\":" + index +
                 ",\"name\":\"" + name + '\"' +
                 ",\"annotations\":" + annotations +

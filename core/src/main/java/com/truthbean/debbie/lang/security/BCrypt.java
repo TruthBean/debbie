@@ -294,8 +294,8 @@ public class BCrypt {
 	/**
 	 * Look up the 3 bits base64-encoded by the specified character, range-checking
 	 * against conversion table
-	 * @param x the base64-encoded value
-	 * @return the decoded value of x
+	 * @param x the base64-encoded VALUE
+	 * @return the decoded VALUE of x
 	 */
 	private static byte char64(char x) {
 		if (x > index_64.length) {
@@ -598,7 +598,7 @@ public class BCrypt {
 	 * @param log_rounds the log2 of the number of rounds of hashing to apply - the work
 	 * factor therefore increases as 2**log_rounds. Minimum 4, maximum 31.
 	 * @param random an instance of SecureRandom to use
-	 * @return an encoded salt value
+	 * @return an encoded salt VALUE
 	 */
 	public static String gensalt(int log_rounds, SecureRandom random) {
 		if (log_rounds < MIN_LOG_ROUNDS || log_rounds > MAX_LOG_ROUNDS) {
@@ -623,7 +623,7 @@ public class BCrypt {
 	 * Generate a salt for use with the BCrypt.hashpw() method
 	 * @param log_rounds the log2 of the number of rounds of hashing to apply - the work
 	 * factor therefore increases as 2**log_rounds. Minimum 4, maximum 31.
-	 * @return an encoded salt value
+	 * @return an encoded salt VALUE
 	 */
 	public static String gensalt(int log_rounds) {
 		return gensalt(log_rounds, new SecureRandom());
@@ -632,7 +632,7 @@ public class BCrypt {
 	/**
 	 * Generate a salt for use with the BCrypt.hashpw() method, selecting a reasonable
 	 * default for the number of hashing rounds to apply
-	 * @return an encoded salt value
+	 * @return an encoded salt VALUE
 	 */
 	public static String gensalt() {
 		return gensalt(GENSALT_DEFAULT_LOG2_ROUNDS);

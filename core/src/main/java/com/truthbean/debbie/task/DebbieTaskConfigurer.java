@@ -11,9 +11,11 @@ package com.truthbean.debbie.task;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.debbie.bean.SingletonBeanRegister;
+import com.truthbean.debbie.bean.BeanInfoManager;
+import com.truthbean.debbie.bean.SimpleBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
  * @author TruthBean
@@ -35,15 +37,16 @@ public class DebbieTaskConfigurer {
         }
 
         var debbieTaskFactory = new TaskFactory();
-        var register = new SingletonBeanRegister(applicationContext);
+        // var register = new SingletonBeanRegister(applicationContext);
 
         debbieTaskFactory.setApplicationContext(applicationContext);
+        BeanInfoManager infoManager = applicationContext.getBeanInfoManager();
 
+        // debbieTaskFactory.registerTask();
+        // register.registerSingletonBean(debbieTaskFactory, TaskFactory.class, "taskRegister", "taskFactory");
 
-        debbieTaskFactory.registerTask();
-        register.registerSingletonBean(debbieTaskFactory, TaskFactory.class, "taskFactory");
-        register.registerSingletonBean(debbieTaskFactory, TaskRegister.class, "taskRegister");
-        applicationContext.refreshBeans();
+        var beanFactory = new SimpleBeanFactory<>(debbieTaskFactory, TaskFactory.class, BeanProxyType.JDK, "taskRegister", "taskFactory");
+        infoManager.register(beanFactory);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieTaskConfigurer.class);

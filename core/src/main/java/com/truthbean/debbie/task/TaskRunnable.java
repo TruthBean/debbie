@@ -9,16 +9,19 @@
  */
 package com.truthbean.debbie.task;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.2.0
  * Created on 2020-12-21 11:34
  */
 @FunctionalInterface
-public interface TaskRunnable extends Runnable {
+public interface TaskRunnable {
 
     default String getName() {
         return this.getClass().getName();
     }
 
+    void run(ApplicationContext applicationContext);
 }

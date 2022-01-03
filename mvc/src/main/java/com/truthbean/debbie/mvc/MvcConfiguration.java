@@ -41,7 +41,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * allow client change response type by request header "Response-Type"
      */
-    private boolean allowClientResponseType;
+    private boolean allowClientResponseType = true;
 
     /**
      * default response type
@@ -51,7 +51,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     /**
      * accept client content type by request header "Content-Type"
      */
-    private boolean acceptClientContentType;
+    private boolean acceptClientContentType = true;
 
     /**
      * default request type
@@ -186,9 +186,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public Charset getCharset() {
-        if (charset != null)
-            return charset;
-        return StandardCharsets.UTF_8;
+        return charset != null ? charset : StandardCharsets.UTF_8;
     }
 
     public void setCharset(Charset charset) {
@@ -214,10 +212,12 @@ public class MvcConfiguration extends BeanScanConfiguration {
             if (corsOrigins != null && !corsOrigins.isEmpty()) {
                 map.put("Access-Control-Allow-Origin", StringUtils.joining(corsOrigins));
             }
-            if (corsHeaders != null && !corsHeaders.isEmpty())
+            if (corsHeaders != null && !corsHeaders.isEmpty()) {
                 map.put("Access-Control-Allow-Methods", StringUtils.joining(corsHeaders));
-            if (corsMethods != null && !corsMethods.isEmpty())
+            }
+            if (corsMethods != null && !corsMethods.isEmpty()) {
                 map.put("Access-Control-Allow-Headers", StringUtils.joining(corsMethods));
+            }
             return map;
         } else {
             return null;
@@ -237,10 +237,11 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public MediaTypeInfo getDefaultContentType() {
-        if (!this.defaultContentTypes.isEmpty())
+        if (!this.defaultContentTypes.isEmpty()) {
             return defaultContentTypes.iterator().next();
-        else
+        } else {
             return MediaType.ANY.info();
+        }
     }
 
     public boolean isAllowClientResponseType() {
@@ -367,5 +368,12 @@ public class MvcConfiguration extends BeanScanConfiguration {
         public MvcConfiguration build() {
             return configuration;
         }
+    }
+
+    @Override
+    public void close() {
+        staticResourcesMappingLocation.clear();
+        defaultResponseTypes.clear();
+        defaultContentTypes.clear();
     }
 }

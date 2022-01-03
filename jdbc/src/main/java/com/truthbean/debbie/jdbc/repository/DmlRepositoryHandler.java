@@ -10,15 +10,9 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
-import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
-import com.truthbean.debbie.jdbc.domain.Page;
-import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.entity.EntityInfo;
-import com.truthbean.debbie.jdbc.entity.EntityResolver;
-import com.truthbean.debbie.jdbc.entity.SqlEntityNullException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
@@ -29,69 +23,22 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/4/3 23:23.
  */
-public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
+public class DmlRepositoryHandler extends RepositoryHandler {
 
-    private Class<E> entityClass;
-    private Class<ID> idClass;
-    private EntityInfo<E> entityInfo;
-    private Class<?> repository;
+    private static volatile DmlRepositoryHandler repositoryHandler;
 
-    private final EntityResolver entityResolver;
-
-    public DmlRepositoryHandler() {
-        entityResolver = new EntityResolver();
+    protected DmlRepositoryHandler() {
     }
 
-    public DmlRepositoryHandler(DataSourceConfiguration configuration, Class<E> entityClass, Class<ID> idClass) {
-        entityResolver = new EntityResolver();
-        super.setDriverName(configuration.getDriverName());
-        this.entityClass = entityClass;
-        this.idClass = idClass;
-    }
-
-    public DmlRepositoryHandler(DataSourceConfiguration configuration, Class<?> repository) {
-        entityResolver = new EntityResolver();
-        super.setDriverName(configuration.getDriverName());
-        this.repository = repository;
-    }
-
-    public static <E, ID> DmlRepositoryHandler<E, ID> of(DataSourceDriverName driverName,
-                                                         Class<E> entityClass, Class<ID> idClass) {
-        var handler = new DmlRepositoryHandler<E, ID>();
-        handler.entityClass = entityClass;
-        handler.idClass = idClass;
-        handler.setDriverName(driverName);
-
-        return handler;
-    }
-
-    private EntityInfo<E> getEntityInfo() {
-        if (entityInfo == null) {
-            entityInfo = entityResolver.resolveEntityClass(getEntityClass());
-        }
-        return entityInfo;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Class<E> getEntityClass() {
-        if (entityClass == null) {
-            try {
-                Class<?> clazz = repository;
-                if (clazz == null) {
-                    clazz = getClass();
+    public static DmlRepositoryHandler getInstance() {
+        if (repositoryHandler != null) {
+            synchronized (DmlRepositoryHandler.class) {
+                if (repositoryHandler != null) {
+                    repositoryHandler = new DmlRepositoryHandler();
                 }
-                var types = ReflectionHelper.getActualTypes(clazz);
-                if (types != null && types.length > 0) {
-                    entityClass = (Class<E>) types[0];
-                }
-            } catch (Exception e) {
-                LOGGER.error("getActualTypeArguments error. ", e);
-            }
-            if (entityClass == null) {
-                throw new SqlEntityNullException("get entity class error");
             }
         }
-        return entityClass;
+        return repositoryHandler;
     }
 
     protected static class ConditionAndValue {
@@ -111,52 +58,65 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
     }
 
-    public int deleteByIdIn(TransactionInfo transaction, List<ID> ids) {
-        var primaryKey = entityInfo.getPrimaryKey();
-        return deleteByColumnIn(transaction, primaryKey.getColumnName(), ids);
+    public <Id> int deleteByIdIn(Logger logger, TransactionInfo transaction, String table, String idColumn, List<Id> ids) {
+        return deleteByColumnIn(logger, transaction, table, idColumn, ids);
     }
 
-    public <C> int deleteByColumnIn(TransactionInfo transaction, String columnName, List<C> values) {
+    public <Entity, Id> int deleteByIdIn(Logger logger, TransactionInfo transaction, EntityInfo<Entity> entityInfo, List<Id> ids) {
+        var primaryKey = entityInfo.getPrimaryKey();
+        return deleteByColumnIn(logger, transaction, entityInfo, primaryKey.getColumn(), ids);
+    }
+
+    public <Entity, C> int deleteByColumnIn(Logger logger, TransactionInfo transaction, EntityInfo<Entity> entityInfo,
+                                            String columnName, List<C> values) {
         if (values == null || values.isEmpty()) return 0;
 
         DataSourceDriverName driverName = transaction.getDriverName();
         int length = values.size();
-        if (length == 1) return deleteByColumn(transaction, columnName, values.get(0)) ? 1 : 0;
+        if (length == 1) return deleteByColumn(logger, transaction, entityInfo, columnName, values.get(0)) ? 1 : 0;
 
-        var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         String sql = DynamicRepository.sql(driverName).delete().from(table).where().in(columnName, length).builder();
-        return super.update(transaction, sql, values.toArray());
+        return super.update(logger, transaction, sql, values.toArray());
     }
 
-    public boolean deleteById(TransactionInfo transaction, ID id) {
+    public <C> int deleteByColumnIn(Logger logger, TransactionInfo transaction, String table, String columnName, List<C> values) {
+        if (values == null || values.isEmpty()) return 0;
+
+        DataSourceDriverName driverName = transaction.getDriverName();
+        int length = values.size();
+        if (length == 1) return deleteByColumn(logger, transaction, table, columnName, values.get(0)) ? 1 : 0;
+
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().in(columnName, length).builder();
+        return super.update(logger, transaction, sql, values.toArray());
+    }
+
+    public <Entity, Id> boolean deleteById(Logger logger, TransactionInfo transaction, EntityInfo<Entity> entityInfo, Id id) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
-        String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.update(transaction, sql, id) > 0L;
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(primaryKey.getColumn(), "?").builder();
+        return super.update(logger, transaction, sql, id) > 0L;
     }
 
-    public boolean deleteByColumn(TransactionInfo transaction, String columnName, Object value) {
+    public <Entity> boolean deleteByColumn(Logger logger, TransactionInfo transaction, EntityInfo<Entity> entityInfo
+            , String columnName, Object value) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(columnName, "?").builder();
-        return super.update(transaction, sql, value) > 0L;
+        return super.update(logger, transaction, sql, value) > 0L;
     }
 
-    protected <T> ConditionAndValue resolveCondition(DataSourceDriverName driverName, T condition, boolean withNull) {
-        if (condition != null) {
-            var conditionInfo = entityResolver.resolveEntity(driverName, condition);
-            return resolveCondition(conditionInfo, withNull);
-        }
-        return new ConditionAndValue();
+    public <T> boolean deleteByColumn(Logger logger, TransactionInfo transaction, String table, String columnName, T value) {
+        DataSourceDriverName driverName = transaction.getDriverName();
+
+        String sql = DynamicRepository.sql(driverName).delete().from(table).where().eq(columnName, "?").builder();
+        return super.update(logger, transaction, sql, value) > 0L;
     }
 
-    private <T> ConditionAndValue resolveCondition(EntityInfo<T> entityInfo, boolean withNull) {
+    public <T> ConditionAndValue resolveCondition(EntityInfo<T> entityInfo, boolean withNull) {
         List<ColumnInfo> columns = entityInfo.getColumnInfoList();
 
         var sqlBuilder = DynamicRepository.sql(entityInfo.getDriverName());
@@ -167,7 +127,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             var bool = withNull || value != null;
             if (bool) {
                 columnValues.add(value);
-                sqlBuilder.and(column.getColumnName() + " = ?");
+                sqlBuilder.and(column.getColumn() + " = ?");
             }
         });
 
@@ -185,10 +145,9 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return conditionAndValue;
     }
 
-    public int delete(TransactionInfo transaction, E condition, boolean withNull) {
+    public <E> int delete(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = entityResolver.resolveEntity(driverName, condition);
         var table = entityInfo.getTable();
         var conditionAndValue = resolveCondition(entityInfo, withNull);
 
@@ -198,30 +157,26 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
             List<Object> columnValues = conditionAndValue.conditionValues;
             var sql = sqlBuilder.builder();
-            return super.update(transaction, sql, columnValues.toArray());
+            return super.update(logger, transaction, sql, columnValues.toArray());
         } else {
             var sql = sqlBuilder.builder();
-            return super.update(transaction, sql);
+            return super.update(logger, transaction, sql);
         }
     }
 
-    public int delete(TransactionInfo transaction) {
+    public int deleteAll(Logger logger, TransactionInfo transaction, String table) {
         DataSourceDriverName driverName = transaction.getDriverName();
-
-        var entityInfo = getEntityInfo();
-        var table = entityInfo.getTable();
 
         var sqlBuilder = DynamicRepository.sql(driverName).delete().from(table);
 
         var sql = sqlBuilder.builder();
-        return super.update(transaction, sql);
+        return super.update(logger, transaction, sql);
     }
 
     @SuppressWarnings("unchecked")
-    public ID insert(TransactionInfo transaction, E entity, boolean withNull) {
+    public <E, ID> ID insert(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
@@ -233,7 +188,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             var bool = withNull || value != null;
             if (bool) {
                 columnValues.add(value);
-                columnNames.add(column.getColumnName());
+                columnNames.add(column.getColumn());
                 signs.add("?");
             }
         });
@@ -243,29 +198,30 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         var primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey != null) {
             var generatedKeys = primaryKey.getPrimaryKeyType() != null;
-            return (ID) super.insert(transaction, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
+            return (ID) super.insert(logger, transaction, sql, generatedKeys, primaryKey.getJavaClass(), columnValues.toArray());
         }
-        return (ID) super.insert(transaction, sql, false, null, columnValues.toArray());
+        return super.insert(logger, transaction, sql, false, null, columnValues.toArray());
     }
 
-    public int insert(TransactionInfo transaction, Collection<E> entities, boolean withNull) {
-        if (entities.isEmpty()) return 0;
+    public <E> int insertMany(Logger logger, TransactionInfo transaction, Collection<EntityInfo<E>> entityInfos, boolean withNull) {
+        if (entityInfos.isEmpty()) {
+            return 0;
+        }
 
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        Iterator<E> iterator = entities.iterator();
-        E entity = iterator.next();
-        var entityInfo = entityResolver.resolveEntity(driverName, entity);
+        Iterator<EntityInfo<E>> iterator = entityInfos.iterator();
+        EntityInfo<E> entityInfo = iterator.next();
 
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
         Set<List<ColumnInfo>> columnSet = new LinkedHashSet<>();
+        columnSet.add(entityInfo.getColumnInfoList());
         columnSet.add(columns);
         while (iterator.hasNext()) {
-            E e = iterator.next();
-            EntityInfo<E> eEntityInfo = entityResolver.resolveEntity(driverName, e);
-            columnSet.add(eEntityInfo.getColumnInfoList());
+            entityInfo = iterator.next();
+            columnSet.add(entityInfo.getColumnInfoList());
         }
 
         List<String> columnNames = new LinkedList<>();
@@ -275,7 +231,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             var value = column.getValue();
             var bool = withNull || value != null;
             if (bool) {
-                columnNames.add(column.getColumnName());
+                columnNames.add(column.getColumn());
                 signs.add("?");
             }
         });
@@ -294,19 +250,18 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             .leftParenthesis().joinWith(",", columnNames).rightParenthesis()
             .$(" VALUES ");
 
-        int size = entities.size();
+        int size = entityInfos.size();
         String[] values = new String[size];
         for (int i = 0; i < size; i++) {
             values[i] = DynamicRepository.sql(driverName).leftParenthesis().joinWith(",", signs).rightParenthesis().builder();
         }
         sqlBuilder.joinWith(",", values);
-        return super.update(transaction, sqlBuilder.builder(), columnValues.toArray());
+        return super.update(logger, transaction, sqlBuilder.builder(), columnValues.toArray());
     }
 
-    public boolean update(TransactionInfo transaction, E entity, boolean withNull) {
+    public <E> boolean update(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
         var primaryKey = entityInfo.getPrimaryKey();
@@ -318,21 +273,20 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             var bool = withNull || value != null;
             if (!column.isPrimaryKey() && bool) {
                 columnValues.add(value);
-                columnNames.add(column.getColumnName());
+                columnNames.add(column.getColumn());
             }
         }
 
         columnValues.add(primaryKey.getValue());
 
         var sql = DynamicRepository.sql(driverName).update(table).set(columnNames)
-            .where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.update(transaction, sql, columnValues.toArray()) == 1;
+            .where().eq(primaryKey.getColumn(), "?").builder();
+        return super.update(logger, transaction, sql, columnValues.toArray()) == 1;
     }
 
-    public int update(TransactionInfo transaction, E entity, boolean withNull, String whereSql, Object... args) {
+    public <E> int update(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, boolean withNull, String whereSql, Object... args) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = entityResolver.resolveEntity(driverName, entity);
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
@@ -341,7 +295,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             var value = column.getValue();
             var bool = withNull || value != null;
             if (!column.isPrimaryKey() && bool) {
-                columnNames.add(column.getColumnName());
+                columnNames.add(column.getColumn());
             }
         }
 
@@ -355,65 +309,57 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }
 
-        return super.update(transaction, sql.builder(), args);
+        return super.update(logger, transaction, sql.builder(), args);
     }
 
-    @SuppressWarnings("unchecked")
-    public <S extends E> S save(TransactionInfo transaction, S entity) {
-        DataSourceDriverName driverName = transaction.getDriverName();
-
-        var entityInfo = entityResolver.resolveEntity(driverName, entity);
+    /*@SuppressWarnings("unchecked")
+    public <S extends E, E, ID> S save(TransactionInfo transaction, EntityInfo<E> entityInfo) {
         ColumnInfo primaryKey = entityInfo.getPrimaryKey();
         if (primaryKey.getValue() != null) {
-            var bool = update(transaction, entity, true);
+            var bool = update(transaction, entityInfo, true);
             if (bool) {
-                return (S) selectOne(transaction, entity, false);
+                return (S) selectOne(transaction, entityInfo, false);
             } else {
-                return entity;
+                return null;
             }
         } else {
-            ID insert = insert(transaction, entity, true);
-            return (S) selectById(transaction, insert);
+            ID insert = insert(transaction, entityInfo, true);
+            entityInfo.getPrimaryKey().setValue(insert);
+            return (S) selectById(transaction, entityInfo, insert);
         }
-    }
+    }*/
 
-    public E selectOne(TransactionInfo transaction, E condition, boolean withNull) {
+    public <E> List<ColumnInfo> selectOne(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
-
-        var entityInfo = getEntityInfo();
-        var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
         List<String> columnNames = new LinkedList<>();
         for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumnName());
+            columnNames.add(column.getColumn());
         }
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
 
-        var conditionAndValues = resolveCondition(driverName, condition, withNull);
+        var conditionAndValues = resolveCondition(entityInfo, withNull);
         if (!conditionAndValues.isEmpty()) {
             sql.where().$(conditionAndValues.conditionSql);
-            return super.queryOne(transaction, sql.builder(), entityClass, conditionAndValues.conditionValues.toArray());
+            return super.queryOne(logger, transaction, sql.builder(), conditionAndValues.conditionValues.toArray());
         } else {
-            return super.queryOne(transaction, sql.builder(), entityClass);
+            return super.queryOne(logger, transaction, sql.builder());
         }
     }
 
-    public E selectOne(TransactionInfo transaction, String whereSql, Object... args) {
+    public <E> List<ColumnInfo> selectOne(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, String whereSql, Object... args) {
         DataSourceDriverName driverName = transaction.getDriverName();
-
-        var entityInfo = getEntityInfo();
-        var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
 
         List<String> columnNames = new LinkedList<>();
         for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumnName());
+            columnNames.add(column.getColumn());
         }
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
@@ -426,28 +372,27 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
             }
         }
 
-        return super.queryOne(transaction, sql.builder(), entityClass, args);
+        return super.queryOne(logger, transaction, sql.builder(), args);
     }
 
-    protected <T> DynamicRepository select(DataSourceDriverName driverName, T entity) {
-        if (entity != null) {
-            var entityInfo = entityResolver.resolveEntity(driverName, entity);
+    protected <E> DynamicRepository select(EntityInfo<E> entityInfo) {
+        if (entityInfo != null) {
 
             var table = entityInfo.getTable();
             var columns = entityInfo.getColumnInfoList();
 
             List<String> columnNames = new LinkedList<>();
             for (ColumnInfo column : columns) {
-                columnNames.add(column.getColumnName());
+                columnNames.add(column.getColumn());
             }
 
-            return DynamicRepository.sql(driverName).select(columnNames).from(table);
+            return DynamicRepository.sql(entityInfo.getDriverName()).select(columnNames).from(table);
         }
         return null;
     }
 
-    private SqlAndArgs<E> preSelect(DataSourceDriverName driverName, E condition, boolean withNull) {
-        var entityInfo = getEntityInfo();
+    protected <E> SqlAndArgs<E> preSelect(DataSourceDriverName driverName, EntityInfo<E> entityInfo,
+                                        E condition, boolean withNull) {
         var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
@@ -455,14 +400,14 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         List<String> columnNames = new LinkedList<>();
         for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumnName());
+            columnNames.add(column.getColumn());
         }
 
         var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
         Object[] args = null;
 
         if (condition != null) {
-            var conditionAndValues = resolveCondition(driverName, condition, withNull);
+            var conditionAndValues = resolveCondition(entityInfo, withNull);
             if (!conditionAndValues.isEmpty()) {
                 sqlBuilder.where().$(conditionAndValues.conditionSql);
                 args = conditionAndValues.conditionValues.toArray();
@@ -477,8 +422,8 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
-    private SqlAndArgs<E> preSelect(DataSourceDriverName driverName, String whereSql, Object... args) {
-        var entityInfo = getEntityInfo();
+    protected <E> SqlAndArgs<E> preSelect(DataSourceDriverName driverName, EntityInfo<E> entityInfo,
+                                        String whereSql, Object... args) {
         var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
@@ -486,7 +431,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         List<String> columnNames = new LinkedList<>();
         for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumnName());
+            columnNames.add(column.getColumn());
         }
 
         var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
@@ -507,63 +452,34 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         return sqlAndArgs;
     }
 
-    public List<E> selectList(TransactionInfo transaction, E condition, boolean withNull) {
+    public <E> List<List<ColumnInfo>> selectList(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, E condition, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, condition, withNull);
+        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, condition, withNull);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(logger, transaction, sql, sqlAndArgs.args);
     }
 
-    public List<E> selectList(TransactionInfo transaction, String whereSql, Object... args) {
+    public <E> List<List<ColumnInfo>> selectList(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, String whereSql, Object... args) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, whereSql, args);
+        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, whereSql, args);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(logger, transaction, sql, sqlAndArgs.args);
     }
 
-    public Page<E> selectPaged(TransactionInfo transaction, E condition, boolean withNull, PageRequest pageable) {
+    public <E> List<List<ColumnInfo>> selectAll(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, condition, withNull);
-
-        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
-
-        var count = count(transaction, condition, withNull);
-        List<E> content = super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
-        return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
-    }
-
-    public Page<E> selectPaged(TransactionInfo transaction, PageRequest pageable, String whereSql, Object... args) {
-        DataSourceDriverName driverName = transaction.getDriverName();
-
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, whereSql, args);
-
-        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
-
-        var count = count(transaction);
-        List<E> content = super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
-        return Page.createPage(pageable.getCurrentPage(), pageable.getPageSize(), count, content);
-    }
-
-    public Page<E> selectPaged(TransactionInfo transaction, PageRequest pageable) {
-        return selectPaged(transaction, pageable, null);
-    }
-
-    public List<E> selectAll(TransactionInfo transaction) {
-        DataSourceDriverName driverName = transaction.getDriverName();
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, null, false);
+        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, null, false);
 
         var sql = sqlAndArgs.sqlBuilder.builder();
-        return super.query(transaction, sql, sqlAndArgs.entityClass, sqlAndArgs.args);
+        return super.query(logger, transaction, sql, sqlAndArgs.args);
     }
 
-    public Long count(TransactionInfo transaction, E condition, boolean withNull) {
+    public <E> Long count(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, E condition, boolean withNull) {
         DataSourceDriverName driverName = transaction.getDriverName();
-
-        var entityInfo = getEntityInfo();
 
         var table = entityInfo.getTable();
 
@@ -571,7 +487,7 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         Object[] args = null;
 
         if (condition != null) {
-            var conditionAndValues = resolveCondition(driverName, condition, withNull);
+            var conditionAndValues = resolveCondition(entityInfo, withNull);
             if (!conditionAndValues.isEmpty()) {
                 sqlBuilder.where().$(conditionAndValues.conditionSql);
                 args = conditionAndValues.conditionValues.toArray();
@@ -579,23 +495,49 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
         }
 
         var sql = sqlBuilder.builder();
-        return super.queryOne(transaction, sql, Long.class, args);
+        ColumnInfo list = super.querySingleOne(logger, transaction, sql, args);
+        Object value = list.getValue();
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof String) {
+            return Long.valueOf((String) value);
+        }
+        return 0L;
     }
 
-    public Long count(TransactionInfo transaction) {
+    public <E> Long count(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = getEntityInfo();
         var table = entityInfo.getTable();
         var sql = DynamicRepository.sql(driverName).select().count().from(table).builder();
-        return super.queryOne(transaction, sql, Long.class);
+        ColumnInfo list = super.querySingleOne(logger, transaction, sql);
+        Object value = list.getValue();
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof String) {
+            return Long.valueOf((String) value);
+        }
+        return 0L;
     }
 
-    public E selectById(TransactionInfo transaction, ID id) {
+    public Long countAll(Logger logger, TransactionInfo transaction, String table) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityClass = getEntityClass();
-        var entityInfo = entityResolver.resolveEntityClass(entityClass);
+        var sql = DynamicRepository.sql(driverName).select().count().from(table).builder();
+        ColumnInfo list = super.querySingleOne(logger, transaction, sql);
+        Object value = list.getValue();
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof String) {
+            return Long.valueOf((String) value);
+        } else if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        return 0L;
+    }
+
+    public <E, ID> List<ColumnInfo> selectById(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, ID id) {
+        DataSourceDriverName driverName = transaction.getDriverName();
 
         var table = entityInfo.getTable();
         var columns = entityInfo.getColumnInfoList();
@@ -603,35 +545,57 @@ public class DmlRepositoryHandler<E, ID> extends RepositoryHandler {
 
         List<String> columnNames = new LinkedList<>();
         for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumnName());
+            columnNames.add(column.getColumn());
         }
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
-            .where().eq(primaryKey.getColumnName(), "?").builder();
-        return super.queryOne(transaction, sql, entityClass, id);
+            .where().eq(primaryKey.getColumn(), "?").builder();
+        return super.queryOne(logger, transaction, sql, id);
     }
 
-    public Boolean existsById(TransactionInfo transaction, ID id) {
+    public <E, ID> List<List<ColumnInfo>> selectByIdIn(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, Collection<ID> id) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        var entityInfo = getEntityInfo();
+        var table = entityInfo.getTable();
+        var columns = entityInfo.getColumnInfoList();
+        var primaryKey = entityInfo.getPrimaryKey();
+
+        List<String> columnNames = new LinkedList<>();
+        for (ColumnInfo column : columns) {
+            columnNames.add(column.getColumn());
+        }
+
+        var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
+                .where().in(primaryKey.getColumn(), id.size()).builder();
+        return super.query(logger, transaction, sql, id.toArray());
+    }
+
+    public <Entity, Id> Boolean existsById(Logger logger, TransactionInfo transaction, EntityInfo<Entity> entityInfo, Id id) {
         var table = entityInfo.getTable();
         var primaryKey = entityInfo.getPrimaryKey();
-        var subSql = DynamicRepository.sql(driverName).select(primaryKey.getColumnName()).from(table)
-            .where().eq(primaryKey.getColumnName(), "?").builder();
+
+        return existsById(logger, transaction, table, primaryKey.getColumn(), id);
+    }
+
+    public <Id> Boolean existsById(Logger logger, TransactionInfo transaction, String table, String idColumn, Id id) {
+        DataSourceDriverName driverName = transaction.getDriverName();
+
+        var subSql = DynamicRepository.sql(driverName).select(idColumn).from(table)
+                .where().eq(idColumn, "?").builder();
         var sql = DynamicRepository.sql(driverName).select().exist(subSql).builder();
-        return super.queryOne(transaction, sql, Long.class, id) > 0L;
-    }
-
-    public Optional<E> selectOptionalById(TransactionInfo transaction, ID id) {
-        E result = selectById(transaction, id);
-        if (result == null) {
-            return Optional.empty();
+        ColumnInfo info = super.querySingleOne(logger, transaction, sql, id);
+        Object value = info.getValue();
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        } else if (value instanceof Long) {
+            return (Long) value > 0L;
+        } else if (value instanceof Integer) {
+            return (Integer) value > 0;
         }
-        return Optional.of(result);
+        return null;
     }
 
-    private static class SqlAndArgs<T> {
+    protected static class SqlAndArgs<T> {
         DynamicRepository sqlBuilder;
         Object[] args;
         Class<T> entityClass;

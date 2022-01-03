@@ -9,14 +9,14 @@
  */
 package com.truthbean.debbie.boot.exception;
 
+import java.io.Serial;
+
 /**
  * @author TruthBean
  * @since 0.0.1
  */
 public class NoApplicationProviderException extends RuntimeException {
 
-    /**
-     * 
-     */
+    @Serial
     private static final long serialVersionUID = -2748200739541440046L;
 }

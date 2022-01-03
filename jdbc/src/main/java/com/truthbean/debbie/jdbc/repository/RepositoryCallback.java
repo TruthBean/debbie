@@ -52,34 +52,8 @@ public class RepositoryCallback {
 
     public static <R> Future<R> asyncActionTransactional(TransactionCallable<R> action) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<R> callable = () -> {
-            var transaction = getTransaction(action);
-            R result = null;
-            try {
-                transaction.setAutoCommit(false);
-                result = action.call(transaction);
-                transaction.commit();
-            } catch (Exception e) {
-                LOGGER.error("action error ", e);
-                transaction.rollback();
-            } finally {
-                transaction.close();
-                TransactionManager.remove(transaction);
-            }
-            return result;
-        };
-        Future<R> result = executor.submit(callable);
-        try {
-            executor.shutdown();
-            executor.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException ignored) {
-        } finally {
-            if (!executor.isTerminated()) {
-                LOGGER.debug("task is stil running...");
-            }
-            executor.shutdownNow();
-        }
-        return result;
+        Callable<R> callable = () -> actionTransactional(action);
+        return action(executor, callable);
     }
 
     public static <R> R action(TransactionCallable<R> action) {
@@ -123,27 +97,10 @@ public class RepositoryCallback {
     }
 
     public static <R> CompletableFuture<R> asyncAction(TransactionCallable<R> action) {
-        return CompletableFuture.supplyAsync(() -> {
-            R result = null;
-            TransactionInfo transaction = null;
-            try {
-                transaction = getTransaction(action);
-                transaction.setAutoCommit(true);
-                result = action.call(transaction);
-            } catch (Exception e) {
-                LOGGER.error("action error ", e);
-            } finally {
-                if (transaction != null) {
-                    transaction.close();
-                    TransactionManager.remove(transaction);
-                }
-            }
-            return result;
-        });
+        return CompletableFuture.supplyAsync(() -> action(action));
     }
 
     public static <R> R actionTransactional(TransactionInfo transaction, Callable<R> action) {
-
         R result = null;
         try {
             transaction.setAutoCommit(false);
@@ -160,24 +117,18 @@ public class RepositoryCallback {
 
     public static <R> Future<R> asyncActionTransactional(TransactionInfo transaction, Callable<R> action) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<R> callable = () -> {
-            R result = null;
-            try {
-                transaction.setAutoCommit(false);
-                result = action.call();
-                transaction.commit();
-            } catch (Exception e) {
-                LOGGER.error("action error ", e);
-                transaction.rollback();
-            } finally {
-                transaction.close();
-            }
-            return result;
-        };
+        Callable<R> callable = () -> actionTransactional(transaction, action);
+        return action(executor, callable);
+    }
+
+    private static <R> Future<R> action(ExecutorService executor, Callable<R> callable) {
         Future<R> result = executor.submit(callable);
         try {
             executor.shutdown();
-            executor.awaitTermination(5, TimeUnit.SECONDS);
+            boolean awaitTermination = executor.awaitTermination(5, TimeUnit.SECONDS);
+            if (!awaitTermination) {
+                executor.shutdownNow();
+            }
         } catch (InterruptedException ignored) {
         } finally {
             if (!executor.isTerminated()) {

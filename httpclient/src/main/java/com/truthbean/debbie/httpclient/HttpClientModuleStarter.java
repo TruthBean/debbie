@@ -9,11 +9,14 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
+import com.truthbean.debbie.httpclient.annotation.HttpClientRouterBeanRegister;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
  * @author TruthBean
@@ -29,17 +32,19 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        // do nothing
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+        var httpClientFactory = new HttpClientFactory(applicationContext.getClassLoader());
+        var beanFactory = new SimpleBeanFactory<>(httpClientFactory, HttpClientFactory.class, BeanType.SINGLETON, BeanProxyType.NO, "httpClientFactory");
+        beanInfoManager.register(beanFactory);
+        beanInfoManager.registerBeanAnnotation(HttpClientRouter.class, DefaultBeanComponentParser.INSTANCE);
+        beanInfoManager.registerBeanRegister(new HttpClientRouterBeanRegister(httpClientFactory));
+
+        var configurationBeanFactory = new PropertiesConfigurationBeanFactory<>(new HttpClientProperties(), HttpClientConfiguration.class);
+        beanInfoManager.register(configurationBeanFactory);
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new HttpClientProperties(), HttpClientConfiguration.class);
-
-        HttpClientBeanRegister register = new HttpClientBeanRegister(applicationContext);
-        register.registerHttpClient();
-        register.registerHttpClientFactory();
+    public void configure(ApplicationContext applicationContext) {
     }
 
     @Override

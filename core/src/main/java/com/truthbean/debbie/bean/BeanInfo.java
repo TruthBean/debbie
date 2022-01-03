@@ -1,33 +1,26 @@
-/**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
- * Debbie is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- * http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
- */
 package com.truthbean.debbie.bean;
 
-import com.truthbean.Logger;
-import com.truthbean.LoggerFactory;
 import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
- * @author TruthBean/Rogar·Q
- * @since 0.1.0
- * Created on 2020-09-28 16:09
+ * @author TruthBean
+ * @since 0.5.3
+ * Created on 2021/12/04 12:19.
  */
 public interface BeanInfo<Bean> {
+
+    /**
+     * 不用Class&lt;Bean&gt;或者Class&lt;? extends Bean&gt;的原因是，考虑到泛型问题
+     *
+     * @return Class&lt;? extends Bean&gt;
+     */
+    Class<?> getBeanClass();
 
     default BeanProxyType getBeanProxyType() {
         return BeanProxyType.JDK;
@@ -47,26 +40,14 @@ public interface BeanInfo<Bean> {
         return true;
     }
 
-    default BeanFactory<Bean> getBeanFactory() {
-        return null;
-    }
-
-    default boolean hasBeanFactory() {
-        return getBeanFactory() != null;
-    }
-
-    default boolean hasSkipCreatedBeanFactory() {
-        return hasBeanFactory() && SkipCreatedBeanFactory.class.isAssignableFrom(getBeanFactory().getClass());
+    default BeanType getBeanType() {
+        return BeanType.SINGLETON;
     }
 
     default boolean isSingleton() {
         var beanType = getBeanType();
         return beanType == BeanType.SINGLETON;
     }
-
-    Class<Bean> getBeanClass();
-
-    BeanType getBeanType();
 
     default String getServiceName() {
         Set<String> beanNames = getBeanNames();
@@ -75,77 +56,119 @@ public interface BeanInfo<Bean> {
             name = getBeanClass().getSimpleName();
             name = StringUtils.toFirstCharLowerCase(name);
             beanNames.add(name);
+            beanNames.add(getBeanClass().getName());
         }
         return name;
     }
 
     default boolean containName(String name) {
         Set<String> beanNames = getBeanNames();
+        if (beanNames.isEmpty()) {
+            setDefaultName();
+        }
         return beanNames.contains(name);
+    }
+
+    default String containOneName(Collection<String> names) {
+        Set<String> beanNames = getBeanNames();
+        if (beanNames.isEmpty()) {
+            setDefaultName();
+        }
+        for (String beanName : beanNames) {
+            for (String name : names) {
+                if (beanName.equals(name)) {
+                    return name;
+                }
+            }
+        }
+        return null;
+    }
+
+    default boolean containAllName(Collection<String> names) {
+        Set<String> beanNames = getBeanNames();
+        if (beanNames.isEmpty()) {
+            setDefaultName();
+        }
+        boolean result = false;
+        for (String name : names) {
+            result = false;
+            for (String beanName : beanNames) {
+                if (name.equals(beanName)) {
+                    result = true;
+                    break;
+                }
+            }
+            if (!result) {
+                return false;
+            }
+        }
+        return result;
+    }
+
+    default void setDefaultName() {
+        Set<String> beanNames = getBeanNames();
+        if (beanNames.isEmpty()) {
+            String name = getBeanClass().getSimpleName();
+            name = StringUtils.toFirstCharLowerCase(name);
+            beanNames.add(name);
+            beanNames.add(getBeanClass().getName());
+        }
     }
 
     default Set<String> getBeanNames() {
         return new HashSet<>();
     }
 
-    Bean getBean();
+    BeanInfo<Bean> copy();
 
-    default Optional<Bean> optional() {
-        return Optional.ofNullable(getBean());
-    }
-
-    default boolean isEmpty() {
-        return getBean() == null;
-    }
-
-    default boolean isPresent() {
-        return getBean() != null;
-    }
-
-    default Supplier<Bean> getBeanSupplier() {
-        return this::getBean;
-    }
-
-    default void consumer(Consumer<Bean> consumer) {
-        consumer.accept(getBean());
-    }
-
-    default BeanInfo<Bean> copy() {
-        return this;
-    }
-
-    default void close() {
-        Class<Bean> beanClass = getBeanClass();
-        if (!DebbieBeanFactory.class.isAssignableFrom(beanClass) && getBean() != null) {
-            var bean = getBean();
-            if (BeanClosure.class.isAssignableFrom(beanClass)) {
-                ((BeanClosure) bean).destroy();
+    default boolean isEquals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanInfo<?> beanInfo)) {
+            return false;
+        }
+        // if (!super.equals(o)) return false;
+        Set<String> beanNames = getBeanNames();
+        Set<String> oBeanNames = beanInfo.getBeanNames();
+        boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
+        if (beanNameEmpty) {
+            return true;
+        }
+        if (beanNames.size() == oBeanNames.size()) {
+            boolean[] equals = new boolean[beanNames.size()];
+            int i = 0;
+            for (String s1 : beanNames) {
+                for (String s2 : oBeanNames) {
+                    if (s1.equals(s2)) {
+                        equals[i] = true;
+                        break;
+                    }
+                }
+                i++;
             }
-            if (Closeable.class.isAssignableFrom(beanClass)) {
-                try {
-                    ((Closeable) bean).close();
-                } catch (IOException e) {
-                    LOGGER.error("", e);
+            for (boolean equal : equals) {
+                if (!equal) {
+                    return false;
                 }
             }
-            if (AutoCloseable.class.isAssignableFrom(beanClass)) {
-                try {
-                    ((AutoCloseable) bean).close();
-                } catch (Exception e) {
-                    LOGGER.error("", e);
-                }
+            return true;
+        }
+        return false;
+    }
+
+    default int getHashCode(int superHashCode) {
+        Set<String> beanNames = getBeanNames();
+        if (beanNames.isEmpty()) {
+            return Objects.hash(superHashCode, beanNames);
+        }
+        // 重新计算hashcode
+        int h = 0;
+        for (String obj : beanNames) {
+            if (obj != null) {
+                h += obj.hashCode();
             }
         }
+        return h;
     }
-
-    default void release() {
-        BeanFactory<Bean> beanFactory = getBeanFactory();
-        if (beanFactory != null) {
-            beanFactory.destroy();
-        } else {
-            close();
-        }
-    }
-
-    Logger LOGGER = LoggerFactory.getLogger(BeanInfo.class);
 }

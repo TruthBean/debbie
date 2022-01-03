@@ -21,9 +21,23 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         super(classLoader);
     }
 
+    private boolean enable;
+
     private String httpVersion;
 
     private String serverMessage;
+
+    private long connectionTimeout;
+
+    @Override
+    public boolean isEnable() {
+        return enable;
+    }
+
+    @Override
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     public String getHttpVersion() {
         return httpVersion;
@@ -39,5 +53,13 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
 
     public void setServerMessage(String serverMessage) {
         this.serverMessage = serverMessage;
+    }
+
+    public long getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(long connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }

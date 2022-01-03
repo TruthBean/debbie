@@ -29,6 +29,7 @@ public class JvmEnvironmentContent implements EnvironmentContent, EnvironmentCon
         return properties;
     }
 
+    @Override
     public EnvironmentContent setLogger(Logger logger) {
         this.logger = logger;
         return this;

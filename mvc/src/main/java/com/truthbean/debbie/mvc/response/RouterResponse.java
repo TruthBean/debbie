@@ -11,6 +11,7 @@ package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.lang.Copyable;
 import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import com.truthbean.common.mini.util.StringUtils;
 
@@ -22,7 +23,7 @@ import java.util.*;
  * @author TruthBean
  * @since 0.0.1
  */
-public class RouterResponse extends BaseRouterResponse implements Cloneable {
+public class RouterResponse extends BaseRouterResponse implements Copyable<RouterResponse> {
     private boolean redirect;
 
     private boolean hasTemplate;
@@ -206,7 +207,7 @@ public class RouterResponse extends BaseRouterResponse implements Cloneable {
     }
 
     @Override
-    public RouterResponse clone() {
+    public RouterResponse copy() {
         RouterResponse response;
         try {
             response = (RouterResponse) super.clone();

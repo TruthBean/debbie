@@ -29,6 +29,7 @@ public class SystemEnvironmentContent implements EnvironmentContent, Environment
         return properties;
     }
 
+    @Override
     public EnvironmentContent setLogger(Logger logger) {
         this.logger = logger;
         return this;

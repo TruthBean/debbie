@@ -9,11 +9,20 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.core.ApplicationContext;
+
 /**
  * @author truthbean
  * @since 0.0.2
  */
-public interface BeanClosure {
+public interface BeanClosure extends AutoCloseable {
 
-    void destroy();
+    default void destruct(ApplicationContext applicationContext) {
+        // do nothing by default
+    }
+
+    @Override
+    default void close() {
+        // do nothing by default
+    }
 }

@@ -9,14 +9,15 @@
  */
 package com.truthbean.debbie.core;
 
-import com.truthbean.debbie.bean.BeanInitialization;
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.concurrent.DebbieThreadPoolConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
+import com.truthbean.debbie.env.EnvironmentContent;
 import com.truthbean.debbie.properties.ClassesScanProperties;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
 import com.truthbean.debbie.task.TaskFactory;
 
@@ -37,43 +38,57 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInitialization beanInitialization) {
-        var register = new DataTransformerRegister(beanInitialization);
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+        var register = new DataTransformerRegister(beanInfoManager);
         register.registerTransformer();
+
+        boolean containsBean = beanInfoManager.containsBean(BeanScanConfiguration.class);
+        if (!containsBean) {
+            var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
+            beanInfoManager.register(beanFactory);
+        }
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new ClassesScanProperties(), BeanScanConfiguration.class);
-        new DebbieThreadPoolConfigurer().configure(applicationContext);
+    public void configure(ApplicationContext applicationContext) {
+        DebbieThreadPoolConfigurer configurer = new DebbieThreadPoolConfigurer();
+        configurer.configure(applicationContext);
 
         DebbieTaskConfigurer debbieTaskConfigurer = new DebbieTaskConfigurer();
         debbieTaskConfigurer.configure(applicationContext);
     }
 
     @Override
-    public void starter(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        applicationContext.refreshBeans();
+    public void starter(ApplicationContext applicationContext) {
+        TaskFactory taskFactory = applicationContext.getGlobalBeanFactory().factory("taskFactory", TaskFactory.class, false);
+        if (taskFactory != null) {
+            taskFactory.registerTask();
+        }
     }
 
     @Override
     public void postStarter(ApplicationContext applicationContext) {
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        // do task
-        Optional<TaskFactory> taskFactory = globalBeanFactory.factoryIfPresent("taskFactory");
-        taskFactory.ifPresent((it) -> {
-            it.prepare();
-            it.doTask();
-        });
+        EnvironmentContent envContent = applicationContext.getEnvContent();
+        boolean value = envContent.getBooleanValue("debbie.task.enable", true);
+        if (value) {
+            GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+            // do task
+            Optional<TaskFactory> taskFactory = globalBeanFactory.factoryIfPresent("taskFactory");
+            taskFactory.ifPresent((it) -> {
+                it.prepare();
+                it.doTask();
+            });
+        }
     }
 
     @Override
-    public void release(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
+    public void release(ApplicationContext applicationContext) {
         synchronized (DebbieCoreModuleStarter.class) {
-            configurationFactory.reset();
             var globalBeanFactory = applicationContext.getGlobalBeanFactory();
             Optional<ThreadPooledExecutor> executor = globalBeanFactory.factoryIfPresent("threadPooledExecutor");
             executor.ifPresent(ThreadPooledExecutor::destroy);
+            Optional<TaskFactory> taskFactory = globalBeanFactory.factoryIfPresent("taskFactory");
+            taskFactory.ifPresent(factory -> factory.destruct(applicationContext));
         }
     }
 }

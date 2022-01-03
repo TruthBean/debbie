@@ -20,9 +20,13 @@ open module com.truthbean.debbie.core.test {
 
     requires java.base;
     requires com.truthbean.debbie.test;
+    requires com.truthbean.debbie.aio;
+    requires com.truthbean.debbie.jdbc;
     requires jakarta.inject;
     requires com.fasterxml.jackson.annotation;
 
     requires transitive com.truthbean.debbie.core;
     requires org.slf4j;
+    requires com.truthbean.logger.jcl;
+    requires org.apache.logging.log4j;
 }

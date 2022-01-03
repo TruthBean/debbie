@@ -1,0 +1,5 @@
+[
+  [],
+  ["com.truthbean.debbie.jdbc.datasource.DataSourceFactory"],
+  ["com.truthbean.debbie.jdbc.datasource.multi.MultiDataSourceFactory"]
+]

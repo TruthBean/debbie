@@ -80,12 +80,14 @@ public class SecurityFilter implements RouterFilter, AutoCloseable {
     @Override
     public Boolean postRouter(RouterRequest request, RouterResponse response) {
         Boolean bool = this.attacked.get();
+        this.attacked.remove();
         if (bool != null && bool) {
             response.setStatus(HttpStatus.FORBIDDEN);
             response.setContent("You are banned from this site.  Please contact via a \n" + "different client configuration if you believe that this is a mistake.");
             return true;
-        } else
+        } else {
             return bool;
+        }
     }
 
     @Override

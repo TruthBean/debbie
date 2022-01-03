@@ -9,10 +9,11 @@
  */
 package com.truthbean.debbie.netty;
 
+import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.properties.DebbieConfigurationCenter;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 
 /**
  * @author truthbean
@@ -26,8 +27,13 @@ public class NettyModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(DebbieConfigurationCenter configurationFactory, ApplicationContext applicationContext) {
-        configurationFactory.register(new NettyProperties(), NettyConfiguration.class);
+    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+        var beanFactory = new PropertiesConfigurationBeanFactory<>(new NettyProperties(), NettyConfiguration.class);
+        beanInfoManager.register(beanFactory);
+    }
+
+    @Override
+    public void configure(ApplicationContext applicationContext) {
     }
 
     @Override

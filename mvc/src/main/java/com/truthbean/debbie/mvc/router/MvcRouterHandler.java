@@ -94,7 +94,7 @@ public class MvcRouterHandler {
             if (response.getHandler() == null || response.getHandler().getClass() == NothingResponseHandler.class) {
                 if (responseType == null || (responseType.isAny() && responseTypeInRequestHeader.isAny())) {
                     if (defaultResponseTypes.isEmpty()) {
-                        LOGGER.error("responseTypes has not default value, set application/json as default!");
+                        LOGGER.error("responseTypes has not default VALUE, set application/json as default!");
                         defaultResponseTypes.add(MediaType.APPLICATION_JSON_UTF8.info());
                     }
                     response.setResponseType(defaultResponseTypes.iterator().next());
@@ -177,7 +177,7 @@ public class MvcRouterHandler {
                 var copy = routerRequest.copy();
                 if (copy == null) continue;
                 routerInfo.setRequest(copy);
-                result.add(routerInfo.clone());
+                result.add(routerInfo.copy());
             }
         }
 
@@ -189,7 +189,7 @@ public class MvcRouterHandler {
             RouterRequest copy = routerRequest.copy();
             if (copy == null) continue;
             if (matchedSameLengthVariablePath(routerInfo, url, false, copy)) {
-                result.add(routerInfo.clone());
+                result.add(routerInfo.copy());
             }
         }
 
@@ -200,7 +200,7 @@ public class MvcRouterHandler {
             RouterRequest copy = routerRequest.copy();
             if (copy == null) continue;
             if (matchedNotSameLengthVariablePath(routerInfo, url, false, copy)) {
-                result.add(routerInfo.clone());
+                result.add(routerInfo.copy());
             }
         }
 
@@ -212,7 +212,7 @@ public class MvcRouterHandler {
         for (RouterInfo routerInfo : routerInfos) {
             var matched = matchRouterPath(url, routerInfo, routerRequest, true);
             if (matched) {
-                result.add(routerInfo.clone());
+                result.add(routerInfo.copy());
             }
         }
         return result;

@@ -266,7 +266,7 @@ public class NettyRouterRequest implements RouterRequest {
         } catch (IOException e) {
             e.printStackTrace();
             LOGGER.error(() -> "BODY Attribute: " + attribute.getHttpDataType().name() + ":" + attribute.getName() +
-                    " Error while reading value: " + e.getMessage());
+                    " Error while reading VALUE: " + e.getMessage());
             return;
         }
         if (value.length() > 100) {

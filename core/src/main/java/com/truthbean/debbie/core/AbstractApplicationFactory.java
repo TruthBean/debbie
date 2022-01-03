@@ -19,7 +19,7 @@ public abstract class AbstractApplicationFactory extends DebbieApplicationFactor
 
     protected AbstractApplicationFactory(Class<?> applicationClass, String... args) {
         super();
-        super.preInit(args).init(applicationClass);
+        super.preInit(applicationClass, args).init();
     }
 
     protected AbstractApplicationFactory(ClassLoader classLoader, String... args) {
@@ -27,6 +27,6 @@ public abstract class AbstractApplicationFactory extends DebbieApplicationFactor
     }
 
     public AbstractApplicationFactory(Class<?> applicationClass, ClassLoader classLoader, String... args) {
-        super.preInit(args).init(applicationClass, classLoader);
+        super.preInit(applicationClass, args).init(classLoader);
     }
 }

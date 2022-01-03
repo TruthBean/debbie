@@ -55,8 +55,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
         if (configuration instanceof HttpClientConfiguration) {
             this.configuration = (HttpClientConfiguration) configuration;
-        } else if (configuration instanceof HttpClientProperties) {
-            var properties = (HttpClientProperties) configuration;
+        } else if (configuration instanceof HttpClientProperties properties) {
             this.configuration = properties.loadConfiguration();
             if (routerBaseUrl.length > 0) {
                 for (int i = 0; i < routerBaseUrl.length; i++) {
@@ -279,8 +278,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                 }
             }
             final Object o = response.getBody();
-            if (o instanceof String) {
-                final String str = (String) o;
+            if (o instanceof final String str) {
                 if (newResponseType.isSameMediaType(MediaType.APPLICATION_JSON_UTF8)) {
                     return JacksonUtils.jsonToBean(str, returnType);
                 }

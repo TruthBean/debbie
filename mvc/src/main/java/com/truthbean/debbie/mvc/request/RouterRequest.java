@@ -11,6 +11,8 @@ package com.truthbean.debbie.mvc.request;
 
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
+import com.truthbean.transformer.DataTransformerCenter;
+import com.truthbean.transformer.TransformerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -48,7 +50,7 @@ public interface RouterRequest {
     /**
      * add request attribute
      * @param name name
-     * @param value value
+     * @param value VALUE
      */
     void addAttribute(String name, Object value);
 
@@ -59,9 +61,9 @@ public interface RouterRequest {
     void removeAttribute(String name);
 
     /**
-     * get request attribute value by name
+     * get request attribute VALUE by name
      * @param name name
-     * @return request attribute value
+     * @return request attribute VALUE
      */
     Object getAttribute(String name);
 
@@ -81,9 +83,61 @@ public interface RouterRequest {
      */
     Map<String, List<String>> getPathAttributes();
 
+    default List<String> getPathAttributes(String name) {
+        var map = getPathAttributes();
+        return map.get(name);
+    }
+
+    default String getPathAttribute(String name) {
+        var map = getPathAttributes();
+        List<String> list = map.get(name);
+        if (list != null && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    default <T> T getPathAttributeValue(String name, Class<T> clazz) {
+        var map = getPathAttributes();
+        List<String> list = map.get(name);
+        if (list != null && !list.isEmpty()) {
+            String value = list.get(0);
+            if (value != null) {
+                return DataTransformerCenter.transform(value, clazz);
+            }
+        }
+        return null;
+    }
+
     void setPathAttributes(Map<String, List<String>> map);
 
     Map<String, List<String>> getMatrix();
+
+    default List<String> getMatrixValues(String name) {
+        var map = getMatrix();
+        return map.get(name);
+    }
+
+    default String getMatrixValue(String name) {
+        var map = getMatrix();
+        List<String> list = map.get(name);
+        if (list != null && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    default <T> T getMatrixValue(String name, Class<T> clazz) {
+        var map = getMatrix();
+        List<String> list = map.get(name);
+        if (list != null && !list.isEmpty()) {
+            String value = list.get(0);
+            if (value != null) {
+                return DataTransformerCenter.transform(value, clazz);
+            }
+        }
+        return null;
+    }
 
     HttpHeader getHeader();
 

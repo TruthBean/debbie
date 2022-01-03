@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -20,11 +20,17 @@ import java.util.function.Supplier;
  */
 public interface GlobalBeanFactory {
 
-    <T> T factory(String serviceName);
+    <T> T factory(String beanName);
 
     <T> T factory(Class<T> type);
 
+    <T> T factoryWithoutProxy(Class<T> type);
+
+    <T> T factory(String serviceName, Class<T> type, boolean required);
+
     <T> T factoryIfPresent(Class<T> type);
+
+    <T> T factoryIfPresentOrElse(Class<T> type, Supplier<T> otherFactory);
 
     <T> Optional<T> factoryIfPresent(String beanName);
 
@@ -36,23 +42,21 @@ public interface GlobalBeanFactory {
 
     <T> T factoryByNoBean(Class<T> noBeanType);
 
-    <T, K extends T> T factory(BeanInfo<K> beanInfo);
+    // <T, K extends T> K factory(BeanInfo<T> beanInfo);
 
-    <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory);
+    // <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory);
 
-    <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
+    // <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
 
-    <T> BeanInfo<T> getBeanInfoWithBean(Class<T> type);
+    <Bean> Set<Bean> getBeanList(Class<Bean> superType);
 
-    <T, K extends T> List<K> getBeanList(Class<T> superType);
-
-    <T, K extends T> List<K> getBeanList(Class<T> superType, boolean withoutProxy);
+    // <Bean> List<Bean> getBeanList(Class<Bean> superType, boolean withoutProxy);
 
     <T> boolean containsBean(Class<T> beanType);
 
     boolean containsBean(String beanName);
 
-    <T> T getBeanByFactory(BeanInfo<T> beanInfo);
+    // <T> T getBeanByFactory(FactoryBeanInfo<T> beanInfo);
 
-    <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory);
+    // <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory);
 }

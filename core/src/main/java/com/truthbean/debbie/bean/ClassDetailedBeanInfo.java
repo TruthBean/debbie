@@ -14,6 +14,7 @@ import com.truthbean.debbie.reflection.FieldInfo;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,9 @@ import java.util.Set;
  * @since 0.1.0
  * Created on 2020-09-28 16:57
  */
-public interface ClassDetailedBeanInfo<Bean> extends BeanInfo<Bean> {
+public interface ClassDetailedBeanInfo {
+
+    <T> Class<T> getInterface(Collection<Class<?>> ignoreInterfaces);
 
     <T> Class<T> getBeanInterface();
 

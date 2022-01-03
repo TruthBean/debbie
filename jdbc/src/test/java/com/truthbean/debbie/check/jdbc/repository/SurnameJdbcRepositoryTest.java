@@ -9,10 +9,14 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.repository.DynamicRepository;
+import com.truthbean.debbie.jdbc.repository.JdbcRepositoryHandler;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,11 +70,13 @@ class SurnameJdbcRepositoryTest {
     void count() {
         Optional<Integer> count = DynamicRepository.queryTransactional()
                 .select().count().from("surname")
-                .single(int.class);
+                .single(LOGGER, new JdbcRepositoryHandler(), EntityResolver.getInstance(), int.class);
         System.out.println(count);
     }
 
     @Test
     void findPaged() {
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SurnameJdbcRepositoryTest.class);
 }

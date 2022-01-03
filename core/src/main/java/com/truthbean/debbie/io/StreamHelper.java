@@ -251,7 +251,7 @@ public final class StreamHelper {
      * This method buffers the input internally, so there is no need to use a
      * <code>BufferedInputStream</code>.
      * <p>
-     * Large streams (over 2GB) will return a bytes copied value of
+     * Large streams (over 2GB) will return a bytes copied VALUE of
      * <code>-1</code> after the copy has completed since the correct
      * number of bytes cannot be returned as an int. For large streams
      * use the <code>copyLarge(InputStream, OutputStream)</code> method.

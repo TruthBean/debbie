@@ -36,6 +36,12 @@ public class DefaultMultiDataSourceFactory implements MultiDataSourceFactory {
     }
 
     @Override
+    public DataSourceFactory factory(String name) {
+        DataSource dataSource = dataSourceMap.get(name);
+        return new DefaultDataSourceFactory().factory(dataSource);
+    }
+
+    @Override
     public DataSourceFactory factory(DataSourceConfiguration configuration) {
         int size = dataSourceMap.size();
         DataSource dataSource = new DefaultDataSource(configuration);
@@ -47,8 +53,18 @@ public class DefaultMultiDataSourceFactory implements MultiDataSourceFactory {
     }
 
     @Override
+    public String getName() {
+        return "defaultMultiDataSourceFactory";
+    }
+
+    @Override
     public DataSource getDataSource() {
         return dataSourceMap.get(defaultDataSourceKey);
+    }
+
+    @Override
+    public DataSource getDataSource(String name) {
+        return dataSourceMap.get(name);
     }
 
     @Override

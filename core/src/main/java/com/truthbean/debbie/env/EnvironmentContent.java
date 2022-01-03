@@ -24,7 +24,7 @@ import java.util.*;
 public interface EnvironmentContent extends TextData {
 
     /**
-     * 获取优先级，数值越大越优先获取，加载顺序反之
+     * 获取优先级，数值越大越优先获取，加载顺序同之
      */
     int getPriority();
 
@@ -32,6 +32,7 @@ public interface EnvironmentContent extends TextData {
 
     Properties getProperties();
 
+    @Override
     Logger getLogger();
 
     default boolean containKey(String key) {

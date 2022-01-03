@@ -14,6 +14,7 @@ import com.truthbean.Logger;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author TruthBean
@@ -26,7 +27,7 @@ public class MethodProxyHandlerHandler {
     public final Object reference = new Object();
 
     public MethodProxyHandlerHandler(Logger logger) {
-        this.interceptors = new HashSet<>();
+        this.interceptors = new CopyOnWriteArraySet<>();
         this.logger = logger;
     }
 

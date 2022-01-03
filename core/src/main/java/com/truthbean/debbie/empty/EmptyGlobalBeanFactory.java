@@ -1,11 +1,9 @@
 package com.truthbean.debbie.empty;
 
-import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -14,7 +12,7 @@ import java.util.function.Supplier;
  */
 class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     @Override
-    public <T> T factory(String serviceName) {
+    public <T> T factory(String beanName) {
         return null;
     }
 
@@ -24,7 +22,22 @@ class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     }
 
     @Override
+    public <T> T factoryWithoutProxy(Class<T> type) {
+        return null;
+    }
+
+    @Override
+    public <T> T factory(String serviceName, Class<T> type, boolean required) {
+        return null;
+    }
+
+    @Override
     public <T> T factoryIfPresent(Class<T> type) {
+        return null;
+    }
+
+    @Override
+    public <T> T factoryIfPresentOrElse(Class<T> type, Supplier<T> otherFactory) {
         return null;
     }
 
@@ -54,32 +67,7 @@ class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     }
 
     @Override
-    public <T, K extends T> T factory(BeanInfo<K> beanInfo) {
-        return null;
-    }
-
-    @Override
-    public <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory) {
-        return null;
-    }
-
-    @Override
-    public <T> T factoryBeanByDependenceProcessor(BeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue) {
-        return null;
-    }
-
-    @Override
-    public <T> BeanInfo<T> getBeanInfoWithBean(Class<T> type) {
-        return null;
-    }
-
-    @Override
-    public <T, K extends T> List<K> getBeanList(Class<T> superType) {
-        return null;
-    }
-
-    @Override
-    public <T, K extends T> List<K> getBeanList(Class<T> superType, boolean withoutProxy) {
+    public <Bean> Set<Bean> getBeanList(Class<Bean> superType) {
         return null;
     }
 
@@ -91,15 +79,5 @@ class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     @Override
     public boolean containsBean(String beanName) {
         return false;
-    }
-
-    @Override
-    public <T> T getBeanByFactory(BeanInfo<T> beanInfo) {
-        return null;
-    }
-
-    @Override
-    public <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory) {
-        return null;
     }
 }

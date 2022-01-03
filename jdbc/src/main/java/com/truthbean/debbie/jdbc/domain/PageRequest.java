@@ -183,10 +183,9 @@ public class PageRequest implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PageRequest)) {
+        if (!(o instanceof PageRequest that)) {
             return false;
         }
-        PageRequest that = (PageRequest) o;
         return currentPage == that.currentPage && pageSize == that.pageSize;
     }
 

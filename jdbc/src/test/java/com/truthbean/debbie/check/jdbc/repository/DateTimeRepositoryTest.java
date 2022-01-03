@@ -25,11 +25,15 @@ import java.util.Date;
  * @since Created on 2020/7/11 14:34.
  */
 @DebbieApplicationTest(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
-class DateTimeRepositoryTest {
+public class DateTimeRepositoryTest {
 
-    @BeanInject
+    static {
+        System.setProperty("logging.level.com.truthbean.debbie", "trace");
+    }
+
     private DateTimeRepository dateTimeRepository;
 
+    @BeanInject
     public void setDateTimeRepository(DateTimeRepository dateTimeRepository) {
         this.dateTimeRepository = dateTimeRepository;
     }
@@ -43,7 +47,7 @@ class DateTimeRepositoryTest {
     }
 
     @Test
-    synchronized void now(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
+    public synchronized void now(@BeanInject("mariadbDataSourceFactory") DataSourceFactory factory) {
         for (int i = 0; i < 100; i++) {
             TransactionManager.offer(factory.getTransaction());
             LocalDateTime localDateTime = dateTimeRepository.localDateTime();

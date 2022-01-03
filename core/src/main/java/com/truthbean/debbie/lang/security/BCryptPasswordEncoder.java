@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * Implementation of PasswordEncoder that uses the BCrypt strong hashing function. Clients
  * can optionally supply a "strength" (a.k.a. log rounds in BCrypt) and a SecureRandom
  * instance. The larger the strength parameter the more work will have to be done
- * (exponentially) to hash the passwords. The default value is 10.
+ * (exponentially) to hash the passwords. The default VALUE is 10.
  *
  * @author Dave Syer
  *

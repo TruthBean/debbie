@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc;
 
+import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.env.EnvironmentContentHolder;
 import com.truthbean.debbie.io.MediaTypeInfo;
@@ -16,9 +17,12 @@ import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.properties.DebbieProperties;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +67,19 @@ public class MvcProperties extends EnvironmentContentHolder implements DebbiePro
 
     private static MvcConfiguration configurationCache;
 
+    @Override
+    public Set<String> getProfiles() {
+        return new HashSet<>();
+    }
+
+    @Override
+    public MvcConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
+        if (StringUtils.hasText(name)) {
+            return configurationCache;
+        }
+        return configurationCache;
+    }
+
     public static MvcConfiguration toConfiguration(ClassLoader classLoader) {
         if (configurationCache != null) {
             return configurationCache;
@@ -77,8 +94,8 @@ public class MvcProperties extends EnvironmentContentHolder implements DebbiePro
         MvcConfiguration.Builder builder = MvcConfiguration.builder(classLoader)
                 .staticResourcesMapping(properties.getMapValue(STATIC_RESOURCES_MAPPING_LOCATION, "=", ";"))
                 .dispatcherMapping(properties.getStringValue(DISPATCHER_MAPPING, "/**"))
-                .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, false))
-                .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, false));
+                .allowClientResponseType(properties.getBooleanValue(SERVER_RESPONSE_ALLOW_CLIENT, true))
+                .acceptClientContentType(properties.getBooleanValue(SERVER_CONTENT_ACCEPT_CLIENT, true));
 
         List<MediaTypeInfo> defaultResponseTypes = properties.getMediaTypeListValue(SERVER_RESPONSE_DEFAULT_TYPES, ",");
         if (defaultResponseTypes != null && !defaultResponseTypes.isEmpty()) {
@@ -133,8 +150,13 @@ public class MvcProperties extends EnvironmentContentHolder implements DebbiePro
     }
 
     @Override
-    public MvcConfiguration toConfiguration(ApplicationContext applicationContext) {
+    public MvcConfiguration getConfiguration(ApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         return toConfiguration(classLoader);
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 }

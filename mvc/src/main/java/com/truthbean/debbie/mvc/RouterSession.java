@@ -43,7 +43,7 @@ public interface RouterSession {
      * request.
      *
      * <p>Actions that your application takes, such as getting or setting
-     * a value associated with the session, do not affect the access
+     * a VALUE associated with the session, do not affect the access
      * time.
      *
      * @return last accessed time
@@ -75,13 +75,13 @@ public interface RouterSession {
      * If an object of the same name is already bound to the session,
      * the object is replaced.
      *
-     * If the value passed in is null, this has the same effect as calling
+     * If the VALUE passed in is null, this has the same effect as calling
      * `removeAttribute()`.
      *
      * @param name  the name to which the object is bound;
      * cannot be null
      * @param value the object to be bound
-     * An IOFuture containing the previous value
+     * An IOFuture containing the previous VALUE
      * @throws IllegalStateException if this method is called on an invalidated session
      */
     void setAttribute(String name, Object value);

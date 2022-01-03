@@ -4,9 +4,9 @@ import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.event.DefaultEventListenerBeanManager;
 import com.truthbean.debbie.event.EventMulticaster;
 import com.truthbean.debbie.event.DebbieEventPublisher;
-import com.truthbean.debbie.event.DefaultEventPublisher;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ class EventTest {
     void testEvent() {
         long start = System.currentTimeMillis();
         ThreadPooledExecutor factory = new ThreadPooledExecutor();
-        EventMulticaster eventMulticaster = new DefaultEventPublisher(factory);
+        EventMulticaster eventMulticaster = new DefaultEventListenerBeanManager(null, factory, null);
         // eventMulticaster.addEventListener(new TestEventListener());
         eventMulticaster.addEventListener(new Test2EventListener());
 

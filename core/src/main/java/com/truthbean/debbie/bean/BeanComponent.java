@@ -24,11 +24,11 @@ import java.lang.annotation.*;
 public @interface BeanComponent {
 
     /**
-     * same as value
+     * same as VALUE
      * @since 0.0.2
      * @return bean name
      */
-    @AliasFor(attribute = "value")
+    @AliasFor(attribute = "VALUE")
     String name() default "";
 
     /**

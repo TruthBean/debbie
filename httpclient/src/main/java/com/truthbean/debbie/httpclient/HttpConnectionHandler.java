@@ -136,7 +136,7 @@ public class HttpConnectionHandler extends HttpHandler {
             return null;
         }
 
-        // Just generate some unique random value.
+        // Just generate some unique random VALUE.
         String boundary = Long.toHexString(System.currentTimeMillis());
         String contentType = "multipart/form-data; boundary=" + boundary;
         // Line separator required by multipart/form-data.

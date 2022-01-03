@@ -11,6 +11,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
@@ -20,7 +21,7 @@ import java.lang.ref.ReferenceQueue;
  * @since 0.5.0
  * Created on 2021-02-24 23:05
  */
-public class PhantomReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T> {
+public class PhantomReferenceBeanFactory<T> implements BeanFactory<T> {
 
     private final PhantomReference<T> reference;
     private final Class<?> beanType;
@@ -31,36 +32,7 @@ public class PhantomReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T>
         this.beanType = bean.getClass();
         this.queue = new ReferenceQueue<>();
         this.reference = new PhantomReference<>(bean, queue);
-    }
 
-    @Override
-    public void destroy() {
-        reference.clear();
-        try {
-            queue.remove(5000);
-        } catch (InterruptedException e) {
-            LOGGER.error("", e);
-        }
-    }
-
-    @Override
-    public T getBean() {
-        return null;
-    }
-
-    @Override
-    public Class<?> getBeanType() {
-        return beanType;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return false;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
         new Thread(() -> {
             while (true) {
                 if (queue != null) {
@@ -76,6 +48,49 @@ public class PhantomReferenceBeanFactory<T> implements SkipCreatedBeanFactory<T>
                 }
             }
         }).start();
+    }
+
+    @Override
+    public void destruct(ApplicationContext applicationContext) {
+        reference.clear();
+        try {
+            queue.remove(5000);
+        } catch (InterruptedException e) {
+            LOGGER.error("", e);
+        }
+    }
+
+    @Override
+    public T factoryBean(ApplicationContext applicationContext) {
+        return reference.get();
+    }
+
+    @Override
+    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
+        return reference.get();
+    }
+
+    @Override
+    public boolean isCreated() {
+        return false;
+    }
+
+    @Override
+    public T getCreatedBean() {
+        if (reference != null) {
+            return reference.get();
+        }
+        return null;
+    }
+
+    @Override
+    public Class<?> getBeanClass() {
+        return beanType;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return false;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhantomReferenceBeanFactory.class);

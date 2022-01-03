@@ -38,7 +38,8 @@ import java.util.stream.Collectors;
 class RequestCompleteHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestCompleteHandler.class);
 
-    RouterRequest handle(AsynchronousSocketChannel channel, final SessionManager sessionManager) {
+    RouterRequest handle(final long connectionTimeout,
+                         final AsynchronousSocketChannel channel, final SessionManager sessionManager) {
         try {
             // 请求内容
             StringBuilder stringBuilder = new StringBuilder();
@@ -49,10 +50,14 @@ class RequestCompleteHandler {
                 var read = channel.read(byteBuffer);
                 Integer size;
                 try {
-                    size = read.get(200, TimeUnit.MILLISECONDS);
+                    size = read.get(connectionTimeout, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
                     size = 0;
-                    LOG.warn("remote client message is null, it could be a options request.", e);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("remote client message is null, it could be a options request.", e);
+                    } else {
+                        LOG.debug("remote client message is null, it could be a options request.");
+                    }
                 }
                 if (size <= 0) {
                     break;
@@ -74,8 +79,9 @@ class RequestCompleteHandler {
             var request = stringBuilder.toString();
             LOG.debug("client message: " + request);
             List<String> lines = request.lines().collect(Collectors.toList());
-            if (lines.isEmpty() || lines.size() == 1)
+            if (lines.isEmpty() || lines.size() == 1) {
                 return null;
+            }
 
             return new RawRequestWrapper(lines, remoteAddress, sessionManager);
         } catch (InterruptedException | ExecutionException | IOException e) {
@@ -102,8 +108,9 @@ class RequestCompleteHandler {
             LOG.trace("raw request: " + originRequest);
 
             List<String> lines = originRequest.lines().collect(Collectors.toList());
-            if (lines.isEmpty() || lines.size() == 1)
+            if (lines.isEmpty() || lines.size() == 1) {
                 return null;
+            }
 
             return new RawRequestWrapper(lines, remoteAddress, sessionManager);
         }

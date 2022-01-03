@@ -40,9 +40,8 @@ class DmlRepositoryHandlerTest {
         var context = applicationFactory.getApplicationContext();
 
         ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-        var beanInitialization = applicationContext.getBeanInitialization();
-        beanInitialization.init(Surname.class);
-        applicationContext.refreshBeans();
+        var beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.register(Surname.class);
 
         var config = DataSourceProperties.toConfiguration();
         DataSourceFactory factory = new DefaultDataSourceFactory();

@@ -30,7 +30,17 @@ public class WebSocketTest {
         var httpClient = HttpClient.newBuilder().build();
         CompletableFuture<WebSocket> webSocket = httpClient
                 .newWebSocketBuilder()
-                .buildAsync(new URI("ws://192.168.1.19:8098/websocket"), new WebSocketListener(new FirstMessageCallbackTest()));
+                .buildAsync(new URI("ws://192.168.1.13:4087/mix/-1?Auth-Ak=oceanai&Auth-Hash=oceanai&Hash-Time=1623314428474"), new WebSocketListener());
+        webSocket.join();
+        while (true);
+    }
+
+    @Test
+    void testBinary() throws URISyntaxException {
+        var httpClient = HttpClient.newBuilder().build();
+        CompletableFuture<WebSocket> webSocket = httpClient
+                .newWebSocketBuilder()
+                .buildAsync(new URI("ws://192.168.1.13:7777/351?addr=rtsp://admin:iec123456@192.168.1.71:554/h264/ch5/main/av_stream&method=single&faceSize=40&Authorization=8aa7c179-f549-4623-a170-1240ee8de91b"), new WebSocketListener());
         webSocket.join();
         while (true);
     }

@@ -36,7 +36,7 @@ public class DebbieStartedEvent extends AbstractDebbieEvent implements Applicati
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
+    public void setApplicationContext(final ApplicationContext applicationContext) {
         this.debbieApplicationContext = applicationContext;
     }
 }
