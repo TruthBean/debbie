@@ -1,11 +1,12 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.debbie.asm.proxy.AsmGenerated;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
-import com.truthbean.debbie.proxy.asm.AsmGenerated;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;

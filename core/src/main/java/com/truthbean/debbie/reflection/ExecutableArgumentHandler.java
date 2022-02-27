@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,9 +12,10 @@ package com.truthbean.debbie.reflection;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.data.JsonHelper;
+import com.truthbean.debbie.data.XmlHelper;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
-import com.truthbean.debbie.util.JacksonUtils;
 import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
@@ -35,9 +36,13 @@ import java.util.*;
 public class ExecutableArgumentHandler {
 
     private final ClassLoader classLoader;
+    private final JsonHelper jsonHelper;
+    private final XmlHelper xmlHelper;
 
-    public ExecutableArgumentHandler(ClassLoader classLoader) {
+    public ExecutableArgumentHandler(ClassLoader classLoader, JsonHelper jsonHelper, XmlHelper xmlHelper) {
         this.classLoader = classLoader;
+        this.jsonHelper = jsonHelper;
+        this.xmlHelper = xmlHelper;
     }
 
     public ClassLoader getClassLoader() {
@@ -269,7 +274,7 @@ public class ExecutableArgumentHandler {
                 if (clazz == List.class) {
                     try {
                         Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                        value = JacksonUtils.xmlStreamToListBean(stream, (Class<?>)actualType[0]);
+                        value = xmlHelper.xmlStreamToListBean(stream, (Class<?>)actualType[0]);
                         if (value == null) {
                             value = new ArrayList<>();
                         }
@@ -280,7 +285,7 @@ public class ExecutableArgumentHandler {
                 } else if (clazz == Set.class) {
                     try {
                         Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                        value = JacksonUtils.xmlStreamToSetBean(stream, (Class<?>)actualType[0]);
+                        value = xmlHelper.xmlStreamToSetBean(stream, (Class<?>)actualType[0]);
                         if (value == null) {
                             value = new HashSet<>();
                         }
@@ -288,9 +293,9 @@ public class ExecutableArgumentHandler {
                         LOGGER.error("", e);
                         value = new HashSet<>();
                     }
-                } else if (clazz != null)
+                } else if (clazz != null) {
                     try {
-                        value = JacksonUtils.xmlStreamToBean(stream, clazz);
+                        value = xmlHelper.xmlStreamToBean(stream, clazz);
                         if (value == null) {
                             value = ReflectionHelper.newInstance(clazz);
                         }
@@ -298,13 +303,14 @@ public class ExecutableArgumentHandler {
                         LOGGER.error("", e);
                         value = ReflectionHelper.newInstance(clazz);
                     }
+                }
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
                 if (clazz == List.class) {
                     try {
                         Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                        value = JacksonUtils.jsonStreamToListBean(stream, (Class<?>)actualType[0]);
+                        value = jsonHelper.jsonStreamToListBean(stream, (Class<?>)actualType[0]);
                         if (value == null) {
                             value = new ArrayList<>();
                         }
@@ -315,7 +321,7 @@ public class ExecutableArgumentHandler {
                 } else if (clazz == Set.class) {
                     try {
                         Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                        value = JacksonUtils.jsonStreamToSetBean(stream, (Class<?>)actualType[0]);
+                        value = jsonHelper.jsonStreamToSetBean(stream, (Class<?>)actualType[0]);
                         if (value == null) {
                             value = new HashSet<>();
                         }
@@ -323,9 +329,9 @@ public class ExecutableArgumentHandler {
                         LOGGER.error("", e);
                         value = new HashSet<>();
                     }
-                } else if (clazz != null)
+                } else if (clazz != null) {
                     try {
-                        value = JacksonUtils.jsonStreamToBean(stream, clazz);
+                        value = jsonHelper.jsonStreamToBean(stream, clazz);
                         if (value == null) {
                             value = ReflectionHelper.newInstance(clazz);
                         }
@@ -333,6 +339,7 @@ public class ExecutableArgumentHandler {
                         LOGGER.error("", e);
                         value = ReflectionHelper.newInstance(clazz);
                     }
+                }
                 break;
             case TEXT_PLAIN_UTF8:
             case TEXT_CSS_UTF8:
@@ -371,23 +378,25 @@ public class ExecutableArgumentHandler {
             case APPLICATION_XML_UTF8:
                 if (clazz == List.class) {
                     Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.xmlToListBean(body, (Class<?>)actualType[0]);
+                    value = xmlHelper.xmlToListBean(body, (Class<?>)actualType[0]);
                 } else if (clazz == Set.class) {
                     Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.xmlToSetBean(body, (Class<?>)actualType[0]);
-                } else
-                    value = JacksonUtils.xmlToBean(body, clazz);
+                    value = xmlHelper.xmlToSetBean(body, (Class<?>)actualType[0]);
+                } else {
+                    value = xmlHelper.xmlToBean(body, clazz);
+                }
                 break;
             case APPLICATION_JSON:
             case APPLICATION_JSON_UTF8:
                 if (clazz == List.class) {
                     Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.jsonToListBean(body, (Class<?>)actualType[0]);
+                    value = jsonHelper.jsonToListBean(body, (Class<?>)actualType[0]);
                 } else if (clazz == Set.class) {
                     Type[] actualType = TypeHelper.getActualType(invokedParameter.getType());
-                    value = JacksonUtils.jsonToCollectionBean(body, Set.class, (Class<?>)actualType[0]);
-                } else
-                    value = JacksonUtils.jsonToBean(body, clazz);
+                    value = jsonHelper.jsonToCollectionBean(body, Set.class, (Class<?>)actualType[0]);
+                } else {
+                    value = jsonHelper.jsonToBean(body, clazz);
+                }
                 break;
             // TODO MORE CASE
             default:

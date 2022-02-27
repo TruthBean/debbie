@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,6 +12,8 @@ package com.truthbean.debbie.mvc.router;
 import com.truthbean.debbie.data.validate.DefaultDataValidateFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MultipartFile;
+import com.truthbean.debbie.jackson.data.JacksonJsonHelper;
+import com.truthbean.debbie.jackson.data.JacksonXmlHelper;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.request.RequestParameterInfo;
 import com.truthbean.debbie.mvc.request.RequestParameterResolver;
@@ -42,7 +44,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterMethodArgumentHandler.class);
 
     public RouterMethodArgumentHandler(ClassLoader classLoader) {
-        super(classLoader);
+        super(classLoader, new JacksonJsonHelper(), new JacksonXmlHelper());
     }
 
     public List<Object> handleMethodParams(RouterRequestValues parameters, List<ExecutableArgument> methodParams, MediaType requestType) {

@@ -73,7 +73,7 @@ public class EmptyApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory config(Object application) {
+    public <T> ApplicationFactory config(T application) {
         return this;
     }
 

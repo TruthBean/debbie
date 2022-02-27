@@ -357,6 +357,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Class<T> getInterface(Collection<Class<?>> ignoreInterfaces) {
         if (noInterface) {
             return null;
@@ -368,24 +369,27 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
                 LOGGER.trace(() -> clazz.getName() + " has no direct interface");
                 noInterface = true;
                 beanInterface = null;
-            } else if (beanInterface.getPackageName().startsWith("java.")) {
-                outer: for (Class<?> classInterface : interfaces) {
-                    for (Class<?> ignoreInterface : ignoreInterfaces) {
-                        if (classInterface == ignoreInterface) {
-                            continue outer;
-                        }
+                return null;
+            }
+            outer: for (Class<?> classInterface : interfaces) {
+                for (Class<?> ignoreInterface : ignoreInterfaces) {
+                    if (classInterface.getPackageName().startsWith("java.") || classInterface == ignoreInterface) {
+                        continue outer;
                     }
-                    // 取第一个符合条件的接口
-                    this.beanInterface = classInterface;
-                    noInterface = false;
-                    break;
                 }
-                if (this.beanInterface == null) {
-                    noInterface = true;
-                }
+                // 取第一个符合条件的接口
+                this.beanInterface = classInterface;
+                noInterface = false;
+                break;
+            }
+            if (this.beanInterface == null) {
+                noInterface = true;
             }
         }
-        return (Class<T>) beanInterface;
+        if (!noInterface) {
+            return (Class<T>) beanInterface;
+        }
+        return null;
     }
 
     @Override

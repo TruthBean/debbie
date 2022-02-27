@@ -1,0 +1,161 @@
+/**
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Debbie is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ * http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+package com.truthbean.debbie.core;
+
+import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.boot.DebbieModuleStarter;
+import com.truthbean.debbie.empty.EmptyApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
+import com.truthbean.debbie.spi.SpiLoader;
+
+import java.util.function.Consumer;
+
+/**
+ * @author TruthBean
+ * @since 0.1.0
+ */
+public interface ApplicationFactory {
+    void config(BeanScanConfiguration configuration);
+
+    void release();
+
+    DebbieApplication factoryApplication();
+
+    ApplicationContext getApplicationContext();
+
+    DebbieApplication postCreateApplication();
+
+    DebbieApplication createApplication(Class<?> applicationClass);
+
+    /**
+     * register module starter before configure or create
+     *
+     * @param moduleStarter debbie module starter
+     * @return this instance
+     */
+    ApplicationFactory registerModuleStarter(DebbieModuleStarter moduleStarter);
+
+    ApplicationFactory preInit(String... args);
+
+    /**
+     * configure properties and register beans
+     *
+     * @param applicationClass main class which annotated by DebbieBootApplication
+     * @return custom life ApplicationFactory
+     */
+    ApplicationFactory init(Class<?> applicationClass);
+
+    /**
+     * configure properties and register beans
+     *
+     * @return custom life ApplicationFactory
+     */
+    ApplicationFactory init();
+
+    ApplicationFactory config(Class<?> applicationClass);
+
+    ApplicationFactory createApplicationFactory();
+
+    DebbieApplication createApplication();
+
+    /**
+     * custom to do register, config, create, release and so on
+     * <p>
+     * eg:
+     * ApplicationFactory.custom(Class<?> applicationClass, String... args)
+     * -- ApplicationFactory.preInit(String... args)
+     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
+     * -- ApplicationFactory.init(Class<?> applicationClass)
+     * -- ApplicationFactory.createApplicationFactory()
+     * -- ApplicationFactory.createApplication()
+     * -- ..
+     * -- ApplicationFactory.release()
+     *
+     * @param applicationClass main class which annotated by DebbieBootApplication
+     * @param args             main function args
+     * @return custom life ApplicationFactory
+     */
+    static ApplicationFactory custom(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
+        }
+        return DebbieApplicationFactory.custom(applicationClass, args);
+    }
+
+    /**
+     * custom to do register, config, create, release and so on
+     * <p>
+     * eg:
+     * ApplicationFactory.custom(String... args)
+     * -- ApplicationFactory.preInit(String... args)
+     * -- ApplicationFactory.registerModuleStarter(DebbieModuleStarter moduleStarter)
+     * -- ApplicationFactory.init()
+     * -- ApplicationFactory.createApplicationFactory()
+     * -- ApplicationFactory.createApplication()
+     * -- ..
+     * -- ApplicationFactory.release()
+     *
+     * @param args             main function args
+     * @param args main function args
+     * @return custom life ApplicationFactory
+     */
+    static ApplicationFactory custom(String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory()).preInit(args);
+        }
+        return DebbieApplicationFactory.custom(args);
+    }
+
+    static DebbieApplication create(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .createApplication(applicationClass);
+        }
+        return DebbieApplicationFactory.create(applicationClass, args);
+    }
+
+    static ApplicationFactory configure(Class<?> applicationClass, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .config(applicationClass);
+        }
+        return DebbieApplicationFactory.configure(applicationClass, args);
+    }
+
+    static ApplicationFactory configure(ClassLoader classLoader, Consumer<BeanScanConfiguration> consumer, String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args);
+        }
+        return DebbieApplicationFactory.configure(classLoader, consumer, args);
+    }
+
+    static DebbieApplication create(String... args) {
+        if (DebbieApplication.isDisable()) {
+            return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                    .preInit(args)
+                    .createApplication();
+        }
+        return DebbieApplicationFactory.create(args);
+    }
+
+    static ApplicationFactory configure(String... args) {
+        return DebbieApplicationFactory.configure(args);
+        if (!DebbieApplication.isDisable()) {
+            return DebbieApplicationFactory.configure(args);
+        }
+        return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory())
+                .preInit(args);
+    }
+}
+

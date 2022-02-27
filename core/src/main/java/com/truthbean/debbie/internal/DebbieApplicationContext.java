@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,6 +23,7 @@ import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.proxy.BeanProxyType;
+import com.truthbean.debbie.proxy.JdkBeanProxyHandler;
 import com.truthbean.debbie.task.TaskFactory;
 import com.truthbean.transformer.DataTransformerCenter;
 
@@ -89,7 +90,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     protected void postConstructor() {
-        final DebbieBeanProxyHandler beanProxyHandler = new DebbieBeanProxyHandler(this);
+        final JdkBeanProxyHandler beanProxyHandler = new JdkBeanProxyHandler(this);
 
         this.beanInfoManager.registerBeanLifecycle(new SimpleBeanLifecycle(this, beanProxyHandler));
         this.beanInfoManager.registerBeanLifecycle(new ReflectionBeanLifecycle(beanProxyHandler, this));
@@ -171,7 +172,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
 
     @Override
     public <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names) {
-        beanInfoManager.register(new SimpleBeanFactory<>(bean, beanClass, BeanProxyType.JDK, names));
+        beanInfoManager.registerBeanInfo(new SimpleBeanFactory<>(bean, beanClass, BeanProxyType.JDK, names));
     }
 
     @Override
@@ -294,21 +295,21 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
         synchronized (beanInfoManager) {
             Set<Bean> result = new HashSet<>();
             LOGGER.trace(() -> "factory bean with type " + superType.getName());
-            List<BeanInfo<?>> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
+            List<BeanInfo<? extends Bean>> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
             if (beanInfoList != null && !beanInfoList.isEmpty()) {
-                for (BeanInfo<?> beanInfo : beanInfoList) {
+                for (BeanInfo<? extends Bean> beanInfo : beanInfoList) {
                     Set<String> beanNames = beanInfo.getBeanNames();
                     if (beanInfo instanceof BeanFactory) {
                         if (beanNames != null && !beanNames.isEmpty()) {
                             for (String beanName : beanNames) {
-                                Bean bean = (Bean) ((BeanFactory<?>) beanInfo).factoryProxiedBean(beanName, superType, this);
+                                Bean bean = ((BeanFactory<? extends Bean>) beanInfo).factoryProxiedBean(beanName, superType, this);
                                 if (bean == null) {
                                     throw new BeanCreatedException("factory bean (" + beanName + ", " + superType + ") error");
                                 }
                                 result.add(bean);
                             }
                         } else {
-                            Bean bean = (Bean) ((BeanFactory<?>) beanInfo).factoryBean(this);
+                            Bean bean = ((BeanFactory<? extends Bean>) beanInfo).factoryBean(this);
                             if (bean == null) {
                                 throw new BeanCreatedException("factory bean (" + superType + ") error");
                             }

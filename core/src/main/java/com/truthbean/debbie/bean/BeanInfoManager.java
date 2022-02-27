@@ -67,7 +67,7 @@ public interface BeanInfoManager extends BeanAnnotationManager {
 
     <Bean> void register(final Class<Bean> clazz);
 
-    boolean register(BeanInfo<?> beanInfo);
+    boolean registerBeanInfo(BeanInfo<?> beanInfo);
 
     void registerBeanLifecycle(BeanLifecycle beanLifecycle);
 
@@ -88,7 +88,7 @@ public interface BeanInfoManager extends BeanAnnotationManager {
 
     Set<BeanInfo> getAllBeanInfo();
 
-    List<BeanInfo<?>> getBeanInfoList(Class<?> type, boolean require);
+    <Bean> List<BeanInfo<? extends Bean>> getBeanInfoList(Class<Bean> type, boolean require);
 
     <Bean> BeanInfo<Bean> getBeanInfo(String serviceName, Class<Bean> type, boolean require);
 
@@ -145,6 +145,8 @@ public interface BeanInfoManager extends BeanAnnotationManager {
     <T> boolean containsBean(Class<T> beanType);
 
     boolean containsBean(String beanName);
+
+    void printGraalvmConfig(ApplicationContext context);
 
     void destroy(BeanInfo<?> beanInfo);
 

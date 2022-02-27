@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -27,6 +27,7 @@ module com.truthbean.debbie.mvc {
     opens com.truthbean.debbie.mvc.request to com.truthbean.common.mini, com.truthbean.debbie.core;
 
     requires transitive com.truthbean.debbie.core;
+    requires transitive com.truthbean.debbie.jackson;
 
     uses com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
     uses com.truthbean.debbie.mvc.router.RouterAnnotationParser;

@@ -2,7 +2,6 @@ package com.truthbean.debbie.proxy;
 
 import com.truthbean.debbie.bean.ClassBeanInfo;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.proxy.asm.AbstractProxy;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -59,7 +58,7 @@ public class MethodProxyHandlerProcessor<T> {
         return this;
     }
 
-    public T proxy(AbstractProxy<T> proxy) {
+    public T proxy(BeanProxy<T> proxy) {
         return proxy.proxy(beanInfo.getBean());
     }
 }

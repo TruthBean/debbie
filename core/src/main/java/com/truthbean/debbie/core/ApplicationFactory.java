@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -63,7 +63,7 @@ public interface ApplicationFactory {
 
     ApplicationFactory config();
 
-    ApplicationFactory config(Object application);
+    <T> ApplicationFactory config(T application);
 
     ApplicationFactory config(BeanScanConfiguration configuration);
 
@@ -88,27 +88,27 @@ public interface ApplicationFactory {
         return DebbieApplicationFactory.newEmpty();
     }
 
-    static ApplicationFactory configure(Class<?> applicationClass, String... args) {
+    static <T> ApplicationFactory configure(Class<T> applicationClass, String... args) {
         return newEmpty().preInit(applicationClass, args).init().config();
     }
 
-    static ApplicationFactory configure(Object application, String... args) {
+    static <T> ApplicationFactory configure(T application, String... args) {
         return newEmpty().preInit(application.getClass(), args).init().config(application);
     }
 
-    static ApplicationFactory create(Class<?> applicationClass, String... args) {
+    static <T> ApplicationFactory create(Class<T> applicationClass, String... args) {
         return newEmpty().preInit(applicationClass, args).init().config().create().build();
     }
 
-    static ApplicationFactory create(Object application, String... args) {
+    static <T> ApplicationFactory create(T application, String... args) {
         return newEmpty().preInit(application.getClass(), args).init().config(application).create().build();
     }
 
-    static DebbieApplication factory(Class<?> applicationClass, String... args) {
+    static <T> DebbieApplication factory(Class<T> applicationClass, String... args) {
         return newEmpty().preInit(applicationClass, args).init().config().create().postCreate().build().factory();
     }
 
-    static DebbieApplication factory(Object application, String... args) {
+    static <T> DebbieApplication factory(T application, String... args) {
         return newEmpty()
                 .preInit(application.getClass(), args)
                 .init()

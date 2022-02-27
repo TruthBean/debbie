@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,8 +11,10 @@
 buildscript {
     repositories {
         mavenLocal()
+        /*maven(url = "http://192.168.1.12:18081/repository/public/") {
+            isAllowInsecureProtocol = true
+        }*/
         maven("https://mirrors.huaweicloud.com/repository/maven/")
-        jcenter()
         maven("https://plugins.gradle.org/m2/")
         maven("https://repo.spring.io/plugins-release/")
     }
@@ -23,6 +25,9 @@ group = "com.truthbean"
 allprojects {
     repositories {
         mavenLocal()
+        /*maven(url = "http://192.168.1.12:18081/repository/public/") {
+            isAllowInsecureProtocol = true
+        }*/
         maven("https://mirrors.huaweicloud.com/repository/maven/")
     }
 }
@@ -51,12 +56,18 @@ subprojects {
 
     repositories {
         mavenLocal()
+        /*maven(url = "http://192.168.1.12:18081/repository/public/") {
+            isAllowInsecureProtocol = true
+        }*/
         maven("https://mirrors.huaweicloud.com/repository/maven/")
     }
 
     buildscript {
         repositories {
             mavenLocal()
+            /*maven(url = "http://192.168.1.12:18081/repository/public/") {
+                isAllowInsecureProtocol = true
+            }*/
             maven("https://mirrors.huaweicloud.com/repository/maven/")
             maven("https://plugins.gradle.org/m2/")
         }
@@ -75,7 +86,7 @@ subprojects {
     apply(plugin = "eclipse")
 
     tasks.withType<Test> {
-        useJUnitPlatform()
+        // useJUnitPlatform()
     }
 
     afterEvaluate {

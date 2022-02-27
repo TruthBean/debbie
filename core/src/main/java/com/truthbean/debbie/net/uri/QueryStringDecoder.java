@@ -176,9 +176,9 @@ public class QueryStringDecoder {
     /**
      * @return the decoded path string of the URI.
      */
-    public String path() {
+    public String path(boolean ignoreEncode) {
         if (path == null) {
-            path = decodeComponent(uri, 0, pathEndIdx(), charset, true);
+            path = decodeComponent(uri, 0, pathEndIdx(), charset, true, ignoreEncode);
         }
         return path;
     }
@@ -269,8 +269,8 @@ public class QueryStringDecoder {
         if (valueStart <= nameStart) {
             valueStart = valueEnd + 1;
         }
-        String name = decodeComponent(s, nameStart, valueStart - 1, charset, false);
-        String value = decodeComponent(s, valueStart, valueEnd, charset, false);
+        String name = decodeComponent(s, nameStart, valueStart - 1, charset, false, false);
+        String value = decodeComponent(s, valueStart, valueEnd, charset, false, false);
         List<String> values = params.get(name);
         if (values == null) {
             // Often there's only 1 VALUE.
@@ -284,7 +284,7 @@ public class QueryStringDecoder {
     /**
      * Decodes a bit of an URL encoded by a browser.
      * <p>
-     * This is equivalent to calling {@link #decodeComponent(String, Charset)}
+     * This is equivalent to calling {@link #decodeComponent(String, Charset, boolean)}
      * with the UTF-8 charset (recommended to comply with RFC 3986, Section 2).
      * @param s The string to decode (can be empty).
      * @return The decoded string, or {@code s} if there's nothing to decode.
@@ -293,7 +293,7 @@ public class QueryStringDecoder {
      * escape sequence.
      */
     public static String decodeComponent(final String s) {
-        return decodeComponent(s, Constants.DEFAULT_CHARSET);
+        return decodeComponent(s, Constants.DEFAULT_CHARSET, false);
     }
 
     /**
@@ -318,14 +318,14 @@ public class QueryStringDecoder {
      * @throws IllegalArgumentException if the string contains a malformed
      * escape sequence.
      */
-    public static String decodeComponent(final String s, final Charset charset) {
+    public static String decodeComponent(final String s, final Charset charset, boolean ignoreEncode) {
         if (s == null) {
             return Constants.EMPTY_STRING;
         }
-        return decodeComponent(s, 0, s.length(), charset, false);
+        return decodeComponent(s, 0, s.length(), charset, false, ignoreEncode);
     }
 
-    private static String decodeComponent(String s, int from, int toExcluded, Charset charset, boolean isPath) {
+    private static String decodeComponent(String s, int from, int toExcluded, Charset charset, boolean isPath, boolean ignoreEncode) {
         int len = toExcluded - from;
         if (len <= 0) {
             return Constants.EMPTY_STRING;
@@ -354,7 +354,7 @@ public class QueryStringDecoder {
 
         for (int i = firstEscaped; i < toExcluded; i++) {
             char c = s.charAt(i);
-            if (c != '%') {
+            if (ignoreEncode || c != '%') {
                 strBuf.append(c != '+' || isPath? c : Constants.SPACE);
                 continue;
             }

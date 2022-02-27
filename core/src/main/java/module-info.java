@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -40,7 +40,6 @@ module com.truthbean.debbie.core {
     exports com.truthbean.debbie.properties;
 
     exports com.truthbean.debbie.proxy;
-    exports com.truthbean.debbie.proxy.asm;
     exports com.truthbean.debbie.proxy.jdk;
 
     exports com.truthbean.debbie.reflection;
@@ -55,14 +54,6 @@ module com.truthbean.debbie.core {
 
     requires transitive com.truthbean.transformer;
     requires transitive com.truthbean.logger.core;
-
-    requires transitive org.objectweb.asm;
-
-    requires transitive com.fasterxml.jackson.databind;
-    requires transitive com.fasterxml.jackson.dataformat.xml;
-    requires transitive com.fasterxml.jackson.dataformat.yaml;
-    // requires com.fasterxml.jackson.module.jaxb;
-    requires org.yaml.snakeyaml;
 
     exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
     exports com.truthbean.debbie to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;

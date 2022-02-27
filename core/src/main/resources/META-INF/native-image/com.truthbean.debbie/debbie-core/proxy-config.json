@@ -1,5 +1,6 @@
 [
   [],
+  ["com.truthbean.debbie.core.ApplicationFactory"],
   ["com.truthbean.debbie.event.GenericStartedEventListener"],
   ["com.truthbean.debbie.event.DebbieEventListener"],
   ["com.truthbean.debbie.event.EventMulticaster"],

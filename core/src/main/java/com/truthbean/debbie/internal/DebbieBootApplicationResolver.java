@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -47,7 +47,7 @@ class DebbieBootApplicationResolver {
 
         var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
-        beanInfoManager.register(beanFactory);
+        beanInfoManager.registerBeanInfo(beanFactory);
         var bean = beanFactory.factoryBean(applicationContext);
         configuration.copyFrom(bean);
     }
@@ -96,19 +96,27 @@ class DebbieBootApplicationResolver {
                                         Class<?> applicationClass, BeanInfoManager beanInfoManager,
                                         DebbieReflectionBeanFactory<?> applicationBeanFactory) {
         applicationBeanFactory.setBeanType(BeanType.SINGLETON);
-        beanInfoManager.register(applicationBeanFactory);
+        beanInfoManager.registerBeanInfo(applicationBeanFactory);
 
         Annotation annotation = applicationBeanFactory.getAnnotatedClassAnnotation(DebbieBootApplication.class);
         if (annotation != null) {
             DebbieBootApplication debbieBootApplication = applicationBeanFactory.getClassAnnotation(DebbieBootApplication.class);
             resolveDebbieBootApplicationAnnotation(annotation, debbieBootApplication, configuration);
-            Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
-            if (targetClasses.isEmpty()) {
-                configuration.addScanBasePackages(applicationClass.getPackageName());
+            Set<String> packages = configuration.getScanBasePackages();
+            String packageName = applicationClass.getPackageName();
+            boolean flag = true;
+            for (String s : packages) {
+                if (packageName.startsWith(s)) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                configuration.addScanBasePackages(packageName);
             }
 
             var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
-            beanInfoManager.register(beanFactory);
+            beanInfoManager.registerBeanInfo(beanFactory);
             var bean = beanFactory.factoryBean(applicationContext);
             configuration.copyFrom(bean);
             configuration.setApplicationClass(applicationClass);
@@ -120,9 +128,17 @@ class DebbieBootApplicationResolver {
             DebbieScan scan = debbieBootApplication.scan();
             resolveDebbieScan(configuration, scan);
 
-            Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
-            if (targetClasses.isEmpty()) {
-                configuration.addScanBasePackages(applicationClass.getPackageName());
+            Set<String> packages = configuration.getScanBasePackages();
+            String packageName = applicationClass.getPackageName();
+            boolean flag = true;
+            for (String s : packages) {
+                if (packageName.startsWith(s)) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                configuration.addScanBasePackages(packageName);
             }
 
             Class<? extends Annotation>[] injectTypes = debbieBootApplication.customInjectType();
@@ -130,10 +146,9 @@ class DebbieBootApplicationResolver {
 
             configuration.setApplicationClass(applicationClass);
             var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
-            beanInfoManager.register(beanFactory);
+            beanInfoManager.registerBeanInfo(beanFactory);
             var bean = beanFactory.factoryBean(applicationContext);
             configuration.copyFrom(bean);
-            // applicationContext.refreshBeans();
         } else {
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {

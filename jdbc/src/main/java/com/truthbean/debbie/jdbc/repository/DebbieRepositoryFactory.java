@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -44,6 +44,7 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public R factoryNamedBean(String name, ApplicationContext applicationContext) {
         if (bean == null) {
             synchronized (reference) {
@@ -57,8 +58,10 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
                     localBean.setJdbcTransactionRepository(repositoryHandler);
                     localBean.setEntityResolver(entityResolver);
                     List<Type> types = beanInfo.getActualTypes();
-                    localBean.setEntityClass((Class<E>) types.get(0));
-                    localBean.setIdClass((Class<I>) types.get(1));
+                    if (types.size() == 2 && types.get(0) instanceof Class<?> && types.get(1) instanceof Class<?>) {
+                        localBean.setEntityClass((Class<E>) types.get(0));
+                        localBean.setIdClass((Class<I>) types.get(1));
+                    }
                     bean = localBean;
                 }
             }

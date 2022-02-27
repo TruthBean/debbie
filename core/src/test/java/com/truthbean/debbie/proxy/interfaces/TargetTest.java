@@ -1,7 +1,7 @@
 package com.truthbean.debbie.proxy.interfaces;
 
+import com.truthbean.debbie.asm.proxy.AsmProxy;
 import com.truthbean.debbie.proxy.*;
-import com.truthbean.debbie.proxy.asm.AsmProxy;
 import com.truthbean.debbie.proxy.bean.TargetImplement;
 import com.truthbean.debbie.proxy.bean.TargetInterface;
 

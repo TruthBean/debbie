@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.annotation.AnnotationInfo;
@@ -21,13 +22,13 @@ import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.properties.PropertyInject;
-import com.truthbean.debbie.proxy.asm.AsmGenerated;
 import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -50,6 +51,8 @@ final class DebbieBeanCenter implements BeanInfoManager {
         injectTypes.add(PropertyInject.class);
         registerInjectType("javax.inject.Inject");
         registerInjectType("jakarta.inject.Inject");
+        registerInjectType("javax.annotation.Resource");
+        registerInjectType("jakarta.annotation.Resource");
 
         beanRegisters.add(new DefaultBeanRegister());
         this.ignoredInterfaces.add(DebbieProperties.class);
@@ -83,6 +86,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
     private final Set<BeanLifecycle> beanLifecycles = new HashSet<>();
 
     private final Set<Class<?>> ignoredInterfaces = new HashSet<>();
+    private final Set<Class<? extends Annotation>> ignoredAnnotations = new HashSet<>();
 
     private Class<? extends Annotation> injectType;
 
@@ -124,6 +128,16 @@ final class DebbieBeanCenter implements BeanInfoManager {
     @Override
     public Set<Class<?>> getIgnoreInterface() {
         return ignoredInterfaces;
+    }
+
+    @Override
+    public void addIgnoreAnnotation(Class<? extends Annotation> annotation) {
+        ignoredAnnotations.add(annotation);
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getIgnoredAnnotations() {
+        return ignoredAnnotations;
     }
 
     @Override
@@ -195,7 +209,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public synchronized boolean register(BeanInfo<?> baseBeanInfo) {
+    public synchronized boolean registerBeanInfo(BeanInfo<?> baseBeanInfo) {
         if (baseBeanInfo == null) {
             return false;
         }
@@ -478,8 +492,17 @@ final class DebbieBeanCenter implements BeanInfoManager {
         if (beanClass.isAnnotation()) {
             return false;
         }
-        return beanClass.getAnnotation(AsmGenerated.class) == null && beanClass.getAnnotation(NonBean.class) == null &&
-                !JavaassistProxyBean.class.isAssignableFrom(beanClass);
+        for (Class<?> ignoredInterface : ignoredInterfaces) {
+            if (beanClass == ignoredInterface) {
+                return false;
+            }
+        }
+        for (Class<? extends Annotation> ignoredAnnotation : ignoredAnnotations) {
+            if (beanClass.isAnnotationPresent(ignoredAnnotation)) {
+                return false;
+            }
+        }
+        return beanClass.getAnnotation(NonBean.class) == null && !JavaassistProxyBean.class.isAssignableFrom(beanClass);
     }
 
     @Override
@@ -502,7 +525,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 }
                 for (BeanRegister beanRegister : beanRegisters) {
                     if (beanRegister.support(beanInfo)) {
-                        register(beanRegister.getBeanFactory(beanInfo));
+                        registerBeanInfo(beanRegister.getBeanFactory(beanInfo));
                         break;
                     }
                 }
@@ -790,7 +813,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
     }
 
     @Override
-    public List<BeanInfo<?>> getBeanInfoList(Class<?> type, boolean require) {
+    public <Bean> List<BeanInfo<? extends Bean>> getBeanInfoList(Class<Bean> type, boolean require) {
         return getBeanInfoList(type, require, handledBeanInfoSet.keySet());
     }
 
@@ -822,7 +845,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
             if (e instanceof OneMoreBeanRegisteredException) {
                 throw e;
             }
-            LOGGER.error(e.getMessage());
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -883,7 +906,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
     @Override
     public <T> boolean containsBean(Class<T> beanType) {
         synchronized (this) {
-            List<BeanInfo<?>> list = this.getBeanInfoList(beanType, false);
+            List<BeanInfo<? extends T>> list = this.getBeanInfoList(beanType, false);
             return list != null && !list.isEmpty();
         }
     }
@@ -895,8 +918,92 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
     }
 
-    private void getDebbieBeanInfoList(final Class<?> type, final Set<BeanInfo> beanInfoSet,
-                                           final List<BeanInfo<?>> list) {
+    @Override
+    public void printGraalvmConfig(ApplicationContext context) {
+        List<BeanInfo<? extends BeanScanConfiguration>> list = this.getBeanInfoList(BeanScanConfiguration.class, true);
+        Set<String> packages = new HashSet<>();
+        for (BeanInfo<? extends BeanScanConfiguration> info : list) {
+            Set<String> names = info.getBeanNames();
+            for (String name : names) {
+                if (info instanceof BeanFactory<?> beanFactory) {
+                    BeanScanConfiguration bean = (BeanScanConfiguration) beanFactory.factoryNamedBean(name, context);
+                    packages.addAll(bean.getScanBasePackages());
+                }
+            }
+        }
+        StringBuilder scanClasses = new StringBuilder("debbie.core.scan.classes=");
+        StringBuilder reflectConfig = new StringBuilder("[\n");
+        StringBuilder proxyConfig = new StringBuilder("[\n  [],\n");
+        Set<BeanInfo> set = this.getAllBeanInfo();
+        for (BeanInfo info : set) {
+            Class beanClass = info.getBeanClass();
+            String name = beanClass.getName();
+            if (beanClass.isInterface()) {
+                proxyConfig.append("  [\"").append(name).append("\"],\n");
+            }
+            for (String s : packages) {
+                if (name.startsWith(s + ".")) {
+                    scanClasses.append(name).append(",");
+                }
+                reflectConfig.append("  {\n    \"name\": \"")
+                        .append(name)
+                        .append("\",\n    \"methods\": [\n");
+                Constructor[] constructors = beanClass.getConstructors();
+                if (constructors.length > 0) {
+                    for (Constructor constructor : constructors) {
+                        reflectConfig.append("      {\"name\": \"<init>\", \"parameterTypes\": [");
+                        Class<?>[] types = constructor.getParameterTypes();
+                        for (Class<?> type : types) {
+                            reflectConfig.append("\"").append(type.getName()).append("\", ");
+                        }
+                        reflectConfig.append("] },\n");
+                    }
+                }
+                if (info instanceof DebbieReflectionBeanFactory beanFactory) {
+                    Map<Method, Set<Annotation>> map = beanFactory.getMethodWithAnnotations();
+                    Set<Method> methods = map.keySet();
+                    for (Method method : methods) {
+                        reflectConfig.append("      {\"name\":\"").append(method.getName()).append("\", \"parameterTypes\": [");
+                        Class<?>[] types = method.getParameterTypes();
+                        for (Class<?> type : types) {
+                            reflectConfig.append("\"").append(type.getName()).append("\", ");
+                        }
+                        reflectConfig.append("] },\n");
+                    }
+                }
+                if (reflectConfig.lastIndexOf(",\n") == reflectConfig.length() - 2) {
+                    reflectConfig.deleteCharAt(reflectConfig.length() - 1);
+                    reflectConfig.deleteCharAt(reflectConfig.length() - 1);
+                }
+                reflectConfig.append("\n    ],\n")
+                        .append("    \"allDeclaredConstructors\": true,\n")
+                        .append("    \"allPublicConstructors\": true,\n")
+                        .append("    \"allDeclaredMethods\": true,\n")
+                        .append("    \"allPublicMethods\": true,\n")
+                        .append("    \"allDeclaredFields\": true,\n")
+                        .append("    \"allPublicFields\": true\n")
+                        .append("  },\n");
+            }
+        }
+        if (reflectConfig.lastIndexOf(",\n") == reflectConfig.length() - 2) {
+            reflectConfig.deleteCharAt(reflectConfig.length() - 1);
+            reflectConfig.deleteCharAt(reflectConfig.length() - 1);
+        }
+        reflectConfig.append("\n]");
+
+        if (proxyConfig.lastIndexOf(",\n") == proxyConfig.length() - 2) {
+            proxyConfig.deleteCharAt(proxyConfig.length() - 1);
+            proxyConfig.deleteCharAt(proxyConfig.length() - 1);
+        }
+        proxyConfig.append("\n]");
+        LOGGER.info("scanned classes: \n" + scanClasses);
+        LOGGER.info("graalvm reflect config: \n" + reflectConfig);
+        LOGGER.info("graalvm proxy config: \n" + proxyConfig);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> void getDebbieBeanInfoList(final Class<T> type, final Set<BeanInfo> beanInfoSet,
+                                           final List<BeanInfo<? extends T>> list) {
         for (BeanInfo<?> debbieBeanInfo : beanInfoSet) {
             var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
                     || (debbieBeanInfo instanceof ClassDetailedBeanInfo
@@ -904,7 +1011,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                     && type.isAssignableFrom(((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces))
             );
             if (flag) {
-                list.add(debbieBeanInfo);
+                list.add((BeanInfo<? extends T>) debbieBeanInfo);
             }
         }
     }
@@ -937,10 +1044,10 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private List<BeanInfo<?>> getBeanInfoList(Class<?> type, boolean require,
+    @SuppressWarnings("rawtypes")
+    private <T> List<BeanInfo<? extends T>> getBeanInfoList(Class<T> type, boolean require,
                                                             final Set<BeanInfo> beanInfoSet) {
-        List<BeanInfo<?>> list = new ArrayList<>();
+        List<BeanInfo<? extends T>> list = new ArrayList<>();
 
         if (type != null) {
             getDebbieBeanInfoList(type, beanInfoSet, list);
@@ -953,8 +1060,8 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 }
             }
 
-            List<BeanInfo<?>> result = new ArrayList<>();
-            for (BeanInfo<?> beanInfo : list) {
+            List<BeanInfo<? extends T>> result = new ArrayList<>();
+            for (BeanInfo<? extends T> beanInfo : list) {
                 if (type.isAssignableFrom(beanInfo.getBeanClass())) {
                     if (beanInfo.getBeanType() == BeanType.SINGLETON) {
                         result.add(beanInfo);

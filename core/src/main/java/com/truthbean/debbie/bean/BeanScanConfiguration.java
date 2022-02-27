@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -211,31 +211,41 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         }
         if (!scanBasePackages.isEmpty()) {
             scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = scanClasses(classLoader, resourceResolver, packageName);
-                classes.addAll(classList);
+                List<Class<?>> classList = scanClasses(resourceResolver, packageName);
+                if (!scanExcludePackages.isEmpty()) {
+                    outer: for (Class<?> aClass : classList) {
+                        for (String s : scanExcludePackages) {
+                            if (aClass.getPackageName().startsWith(s)) {
+                                continue outer;
+                            }
+                        }
+                        classes.add(aClass);
+                    }
+                } else {
+                    classes.addAll(classList);
+                }
             });
         }
         if (!scanExcludeClasses.isEmpty()) {
             classes.removeAll(scanExcludeClasses);
         }
-        if (!scanExcludePackages.isEmpty()) {
-            // TODO: 后期优化
-            scanBasePackages.forEach(packageName -> {
-                List<Class<?>> classList = scanClasses(classLoader, resourceResolver, packageName);
-                classList.forEach(classes::remove);
-            });
-        }
         scannedClasses.addAll(classes);
         return Collections.unmodifiableSet(scannedClasses);
     }
 
-    private synchronized List<Class<?>> scanClasses(final ClassLoader classLoader,
-                                                    final ResourceResolver resourceResolver, final String packageName) {
+    private synchronized List<Class<?>> scanClasses(final ResourceResolver resourceResolver, final String packageName) {
         if (classLoader == null) {
             LOGGER.error("classLoader is null!");
             return new ArrayList<>();
         }
         if (enableScanResources) {
+            if (!scanExcludePackages.isEmpty()) {
+                for (String s : scanExcludePackages) {
+                    if (packageName.startsWith(s)) {
+                        return new ArrayList<>();
+                    }
+                }
+            }
             if (resourceResolver != null) {
                 List<String> resources =
                         ResourcesHandler.getAllClassPathResources(packageName.replace(".", "/"), classLoader);
@@ -248,6 +258,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         return new ArrayList<>();
     }
 
+    @SuppressWarnings("unused")
     public Set<Class<?>> getScannedClasses() {
         return Collections.unmodifiableSet(this.scannedClasses);
     }

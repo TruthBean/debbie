@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -36,7 +36,7 @@ public class ChainBeanTest {
         String bean001Name = "bean001";
         Bean001 bean001 = new Bean001("bean001");
         BeanFactory<Bean001> beanInfo = new SimpleBeanFactory<>(bean001, BeanType.SINGLETON, BeanProxyType.NO, bean001Name);
-        beanInitialization.register(beanInfo);
+        beanInitialization.registerBeanInfo(beanInfo);
 
         EventMulticaster eventMulticaster = applicationContext.factory(EventMulticaster.class);
         eventMulticaster.addEventListener(new TestBeanEventListener());

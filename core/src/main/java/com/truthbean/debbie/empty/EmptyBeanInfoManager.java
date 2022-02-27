@@ -94,6 +94,16 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
+    public void addIgnoreAnnotation(Class<? extends Annotation> annotation) {
+
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getIgnoredAnnotations() {
+        return new HashSet<>();
+    }
+
+    @Override
     public void registerClass(Class<?> beanClass) {
 
     }
@@ -104,7 +114,7 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
-    public boolean register(BeanInfo<?> beanInfo) {
+    public boolean registerBeanInfo(BeanInfo<?> beanInfo) {
         return false;
     }
 
@@ -154,7 +164,7 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
-    public List<BeanInfo<?>> getBeanInfoList(Class<?> type, boolean require) {
+    public <Bean> List<BeanInfo<? extends Bean>> getBeanInfoList(Class<Bean> type, boolean require) {
         return null;
     }
 
@@ -221,6 +231,10 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     @Override
     public boolean containsBean(String beanName) {
         return false;
+    }
+
+    @Override
+    public void printGraalvmConfig(ApplicationContext context) {
     }
 
     @Override

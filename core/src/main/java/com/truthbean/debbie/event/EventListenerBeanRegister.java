@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -62,7 +62,7 @@ public class EventListenerBeanRegister {
         // register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
         // register.registerSingletonBean(eventPublisher, EventMulticaster.class, "eventMulticaster");
         var eventPublisherBeanFactory = new SimpleBeanFactory<>(eventPublisher, EventMulticaster.class, BeanProxyType.NO, "eventPublisher", "eventMulticaster");
-        beanInfoManager.register(eventPublisherBeanFactory);
+        beanInfoManager.registerBeanInfo(eventPublisherBeanFactory);
         eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的
         Set<BeanInfo> eventListenersBeans = beanInfoManager.getBeansByInterface(DebbieEventListener.class);
@@ -71,14 +71,17 @@ public class EventListenerBeanRegister {
                 Class<?> beanClass = listenersBean.getBeanClass();
                 if (listenersBean instanceof BeanFactory<DebbieEventListener<? extends AbstractDebbieEvent>> beanFactory) {
                     DebbieEventListener beanValue = beanFactory.factoryBean(applicationContext);
-                    eventPublisher.addEventListener(beanValue.getEventType(), listenersBean);
-                } else {
-                    Type[] types = ReflectionUtils.getActualTypes(beanClass);
-                    if (types == null || types.length != 1) {
-                        throw new EventListenerRegisterException("EventListener(" + beanClass + ") has wrong event type");
+                    if (beanValue != null && beanFactory.isCreated()) {
+                        eventPublisher.addEventListener(beanValue.getEventType(), listenersBean);
+                        continue;
                     }
-                    eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) types[0], (BeanInfo<? extends DebbieEventListener<? extends AbstractDebbieEvent>>) listenersBean);
                 }
+
+                Type[] types = ReflectionUtils.getActualTypes(beanClass);
+                if (types == null || types.length != 1) {
+                    throw new EventListenerRegisterException("EventListener(" + beanClass + ") has wrong event type");
+                }
+                eventPublisher.addEventListener((Class<? extends AbstractDebbieEvent>) types[0], listenersBean);
             }
         }
         Set<BeanInfo<?>> classInfoSet = beanInfoManager.getAnnotatedClass(EventBeanListener.class);

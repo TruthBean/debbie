@@ -32,7 +32,7 @@ public interface BeanLifecycle {
 
     <T> T postConstruct(T bean, Object... params);
 
-    default <T, K extends T> T doPreCreated(K bean, Class<T> clazz, BeanProxyType proxyType) {
+    default <T, K extends T> T doPreCreated(BeanInfo<K> beanInfo, K bean, Class<T> clazz, BeanProxyType proxyType) {
         return bean;
     }
 

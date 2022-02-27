@@ -43,9 +43,9 @@ public class SimpleBeanLifecycle implements BeanLifecycle, BeanCreator {
     }
 
     @Override
-    public <T, K extends T> T doPreCreated(K bean, Class<T> clazz, BeanProxyType proxyType) {
+    public <T, K extends T> T doPreCreated(BeanInfo<K> beanInfo, K bean, Class<T> clazz, BeanProxyType proxyType) {
         if (enableJdkProxy && beanProxyHandler != null) {
-            return beanProxyHandler.proxyCreatedBean(bean, clazz, proxyType);
+            return beanProxyHandler.proxyCreatedBean(beanInfo, bean, clazz, proxyType);
         }
         return bean;
     }

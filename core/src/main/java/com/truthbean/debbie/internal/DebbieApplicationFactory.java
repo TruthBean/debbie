@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -124,14 +124,14 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     @Override
     public ApplicationFactory register(BeanInfo<?> beanInfo) {
         var beanInfoManager = applicationContext.getBeanInfoManager();
-        beanInfoManager.register(beanInfo);
+        beanInfoManager.registerBeanInfo(beanInfo);
         return this;
     }
 
     @Override
     public ApplicationFactory register(BeanFactory<?> beanFactory) {
         var beanInfoManager = applicationContext.getBeanInfoManager();
-        beanInfoManager.register(beanFactory);
+        beanInfoManager.registerBeanInfo(beanFactory);
         return this;
     }
 
@@ -139,7 +139,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     public ApplicationFactory register(Collection<BeanInfo<?>> collection) {
         var beanInfoManager = applicationContext.getBeanInfoManager();
         for (BeanInfo<?> beanInfo : collection) {
-            beanInfoManager.register(beanInfo);
+            beanInfoManager.registerBeanInfo(beanInfo);
         }
         return this;
     }
@@ -170,7 +170,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory config(Object application) {
+    public <T> ApplicationFactory config(T application) {
         LOGGER.debug(() -> "init configuration");
         var classLoader = applicationContext.getClassLoader();
         var configuration = ClassesScanProperties.toConfiguration(classLoader);
@@ -207,7 +207,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         }
 
         registerResourceResolver(resourceResolver, beanInfoManager);
-        // beanInfoManager.refreshBeans();
 
         if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
@@ -230,12 +229,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             beanInfoManager.register(targetClasses);
         }
 
-        // beanConfiguration
-        // applicationContext.registerBeanConfiguration(targetClasses);
-        // beanInfoManager.refreshBeans();
-        // transformer
-        // DataTransformerFactory.register(targetClasses);
-        // event
         EventListenerBeanRegister eventListenerBeanRegister = new EventListenerBeanRegister(applicationContext);
         EventListenerBeanManager register = eventListenerBeanRegister.register();
         applicationContext.setEventListenerBeanManager(register);
@@ -244,7 +237,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory create() {
-        // applicationContext.refreshBeans();
         callStarter();
         return this;
     }
@@ -256,7 +248,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory build() {
-        // applicationContext.refreshBeans();
         return this;
     }
 
@@ -336,7 +327,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     private void registerResourceResolver(ResourceResolver resourceResolver, BeanInfoManager beanInfoManager) {
         SimpleBeanFactory<ResourceResolver, ResourceResolver> beanInfo = new SimpleBeanFactory<>(resourceResolver, ResourceResolver.class, BeanProxyType.NO, "resourceResolver");
-        beanInfoManager.register(beanInfo);
+        beanInfoManager.registerBeanInfo(beanInfo);
     }
 
     protected synchronized void callStarter() {

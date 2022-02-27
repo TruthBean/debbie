@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -40,7 +40,6 @@ import com.truthbean.transformer.text.DoubleArrayTransformer;
 import com.truthbean.transformer.text.FloatArrayTransformer;
 import com.truthbean.transformer.text.FloatTransformer;
 import com.truthbean.transformer.text.IntegerTransformer;
-import com.truthbean.debbie.data.transformer.text.JsonNodeTransformer;
 import com.truthbean.transformer.text.LongTransformer;
 import com.truthbean.transformer.text.ShortTransformer;
 import com.truthbean.debbie.data.transformer.text.UrlTransformer;
@@ -81,11 +80,6 @@ class DataTransformerRegister {
         DataTransformerCenter.register(new TimestampSqlTimeTransformer(), Timestamp.class, Time.class);
         DataTransformerCenter.register(new DateSqlDateTransformer(), Date.class, java.sql.Date.class);
         DataTransformerCenter.register(new DateSqlTimeTransformer(), Date.class, Time.class);
-        try {
-            Class<?> jsonNode = getClass().getClassLoader().loadClass("com.fasterxml.jackson.databind.JsonNode");
-            DataTransformerCenter.register(new JsonNodeTransformer(), jsonNode, String.class);
-        } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
-        }
         DataTransformerCenter.register(new UrlTransformer(), URL.class, String.class);
 
         DataTransformerCenter.register(BigDecimalTransformer.INSTANCE, BigDecimal.class, String.class);

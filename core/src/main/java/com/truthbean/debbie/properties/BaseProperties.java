@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,6 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.debbie.data.serialize.JacksonYamlUtils;
 import com.truthbean.debbie.env.ResourceEnvironmentContent;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
@@ -298,8 +297,8 @@ public class BaseProperties implements ResourceEnvironmentContent {
         result.putAll(env);
         // project properties
         Properties properties = new Properties();
-        Map map = JacksonYamlUtils.yml2Properties(inputStream);
-        properties.putAll(map);
+        // Map map = JacksonYamlUtils.yml2Properties(inputStream);
+        // properties.putAll(map);
         // customize properties will cover system properties
         result.putAll(properties);
         // jvm properties

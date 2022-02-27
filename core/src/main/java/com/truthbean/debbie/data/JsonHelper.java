@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,6 +10,9 @@
 package com.truthbean.debbie.data;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author truthbean/Rogar·Q
@@ -42,4 +45,13 @@ public interface JsonHelper {
      * @return obj
      */
     <T> T jsonStreamToBean(InputStream jsonInputStream, Class<T> clazz);
+
+    @SuppressWarnings("rawtypes")
+    <T> Collection<T> jsonToCollectionBean(String body, Class<? extends Collection> setClass, Class<T> clazz);
+
+    <T> List<T> jsonToListBean(String body, Class<T> clazz);
+
+    <T> Set<T> jsonStreamToSetBean(InputStream stream, Class<T> clazz);
+
+    <T> List<T> jsonStreamToListBean(InputStream stream, Class<T> clazz);
 }

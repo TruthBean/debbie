@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -45,7 +45,7 @@ class RawRequestWrapper implements RouterRequest {
     private final DefaultRouterRequest routerRequestCache;
     private final SessionManager sessionManager;
 
-    RawRequestWrapper(List<String> rawRequest, SocketAddress remoteAddress, final SessionManager sessionManager) {
+    RawRequestWrapper(List<String> rawRequest, SocketAddress remoteAddress, final SessionManager sessionManager, final boolean ignoreEncode) {
         this.raw = rawRequest;
         this.sessionManager = sessionManager;
 
@@ -63,7 +63,7 @@ class RawRequestWrapper implements RouterRequest {
         if (decoder.hasParams()) {
             this.routerRequestCache.addQueries(decoder.parameters());
         }
-        this.routerRequestCache.setUrl(decoder.path());
+        this.routerRequestCache.setUrl(decoder.path(ignoreEncode));
         Map<String, List<String>> matrix = UriUtils.resolveMatrixByPath(getUrl());
         this.routerRequestCache.setMatrix(matrix);
 

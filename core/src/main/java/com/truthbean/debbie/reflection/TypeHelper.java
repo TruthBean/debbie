@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,10 +15,6 @@ import com.truthbean.common.mini.CommonConstants;
 import com.truthbean.common.mini.util.ClassHelper;
 import com.truthbean.common.mini.util.NumericUtils;
 import com.truthbean.common.mini.util.ReflectionUtils;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,26 +24,9 @@ import java.util.List;
  * @since 0.0.1
  * Created on 2018-03-09 14:37
  */
-public final class TypeHelper extends ClassHelper {
-    private TypeHelper() {
+public class TypeHelper extends ClassHelper {
+    protected TypeHelper() {
         super();
-    }
-
-    public static int getAccessByModifiers(int modifier) {
-        if (Modifier.isPublic(modifier)) {
-            return Opcodes.ACC_PUBLIC;
-        } else if (Modifier.isProtected(modifier)) {
-            return  Opcodes.ACC_PROTECTED;
-        } else if (Modifier.isPrivate(modifier)) {
-            return  Opcodes.ACC_PRIVATE;
-        } else if (Modifier.isStatic(modifier)) {
-            return  Opcodes.ACC_STATIC;
-        } else if (Modifier.isFinal(modifier)) {
-            return  Opcodes.ACC_FINAL;
-        } else if (Modifier.isSynchronized(modifier)) {
-            return Opcodes.ACC_SYNCHRONIZED;
-        }
-        return 0;
     }
 
     @SuppressWarnings("unchecked")
@@ -385,19 +364,6 @@ public final class TypeHelper extends ClassHelper {
         }
         return false;
     }
-
-    public static Type[] getTypes(@SuppressWarnings("rawtypes") Class[] classes) {
-        if (classes == null) {
-            return new Type[0];
-        }
-        Type[] types = new Type[classes.length];
-        for (int i = 0; i < classes.length; i++) {
-            types[i] = Type.getType(classes[i]);
-        }
-        return types;
-    }
-
-
 
     private static final Logger logger = LoggerFactory.getLogger(TypeHelper.class);
 }

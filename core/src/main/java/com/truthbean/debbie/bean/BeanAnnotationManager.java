@@ -59,4 +59,8 @@ public interface BeanAnnotationManager {
     void addIgnoreInterface(Class<?> ignoreInterface);
 
     Set<Class<?>> getIgnoreInterface();
+
+    void addIgnoreAnnotation(Class<? extends Annotation> annotation);
+
+    Set<Class<? extends Annotation>> getIgnoredAnnotations();
 }

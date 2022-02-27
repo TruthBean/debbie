@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -48,16 +48,16 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
         DataTransformerCenter.register(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
 
         DdlRepositoryFactory factory = new DdlRepositoryFactory("ddlRepository");
-        beanInfoManager.register(factory);
+        beanInfoManager.registerBeanInfo(factory);
         beanInfoManager.registerBeanAnnotation(SqlRepository.class, new DefaultBeanComponentParser());
         beanInfoManager.registerBeanRegister(new SqlRepositoryBeanRegister());
 
         DataSourceProperties instance = DataSourceProperties.getInstance();
         var dataSourceConfigurationBeanFactory = new PropertiesConfigurationBeanFactory<>(instance, DataSourceConfiguration.class);
-        beanInfoManager.register(dataSourceConfigurationBeanFactory);
+        beanInfoManager.registerBeanInfo(dataSourceConfigurationBeanFactory);
 
         var dataSourcePoolConfigurationBeanFactory = new PropertiesConfigurationBeanFactory<>(new DefaultDataSourcePoolProperties(), DefaultDataSourcePoolConfiguration.class);
-        beanInfoManager.register(dataSourcePoolConfigurationBeanFactory);
+        beanInfoManager.registerBeanInfo(dataSourcePoolConfigurationBeanFactory);
 
         registerDataSourceFactory(applicationContext);
 
@@ -86,7 +86,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
                 } else {
                     simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name);
                 }
-                beanInfoManager.register(simpleBeanFactory);
+                beanInfoManager.registerBeanInfo(simpleBeanFactory);
             }
         } else {
             if (dataSourceFactoryBeanInfo instanceof MutableBeanFactory<DataSourceFactory> mutableBeanFactory) {
@@ -98,7 +98,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
                         mutableBeanFactory.addBeanName(dataSourceFactory.getName());
                         mutableBeanFactory.setBeanType(BeanType.SINGLETON);
 
-                        beanInfoManager.register(mutableBeanFactory);
+                        beanInfoManager.registerBeanInfo(mutableBeanFactory);
                         beanInfoManager.refresh(mutableBeanFactory);
                     }
                 }

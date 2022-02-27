@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -35,12 +35,12 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
     public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
         var httpClientFactory = new HttpClientFactory(applicationContext.getClassLoader());
         var beanFactory = new SimpleBeanFactory<>(httpClientFactory, HttpClientFactory.class, BeanType.SINGLETON, BeanProxyType.NO, "httpClientFactory");
-        beanInfoManager.register(beanFactory);
+        beanInfoManager.registerBeanInfo(beanFactory);
         beanInfoManager.registerBeanAnnotation(HttpClientRouter.class, DefaultBeanComponentParser.INSTANCE);
         beanInfoManager.registerBeanRegister(new HttpClientRouterBeanRegister(httpClientFactory));
 
         var configurationBeanFactory = new PropertiesConfigurationBeanFactory<>(new HttpClientProperties(), HttpClientConfiguration.class);
-        beanInfoManager.register(configurationBeanFactory);
+        beanInfoManager.registerBeanInfo(configurationBeanFactory);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -78,6 +78,7 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T construct(T object, Object... params) {
         Object firstParamValue = null;
         if (params != null && params.length > 0) {
@@ -93,6 +94,7 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
         return object;
     }
 
+    @SuppressWarnings("unchecked")
     private <Bean> void prepareIfNotExist(DebbieReflectionBeanFactory<Bean> beanFactory) {
         DebbieReflectionBeanFactory<Bean> preparation = null;
         if (singletonBeanFactoryMap.containsKey(beanFactory)) {
@@ -113,6 +115,7 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T postConstruct(T tempValue, Object... params) {
         if (params != null && params.length > 0) {
             Object object = params[0];
@@ -127,9 +130,9 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
     }
 
     @Override
-    public <T, K extends T> T doPreCreated(K bean, Class<T> clazz, BeanProxyType proxyType) {
+    public <T, K extends T> T doPreCreated(BeanInfo<K> beanInfo, K bean, Class<T> clazz, BeanProxyType proxyType) {
         if (enableJdkProxy && beanProxyHandler != null) {
-            return beanProxyHandler.proxyCreatedBean(bean, clazz, proxyType);
+            return beanProxyHandler.proxyCreatedBean(beanInfo, bean, clazz, proxyType);
         }
         return bean;
     }
@@ -761,6 +764,7 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
         return factoryProperty(applicationContext, valueType, keyPrefix, propertyInject);
     }
 
+    @SuppressWarnings("unchecked")
     public static Object factoryProperty(ApplicationContext applicationContext,
                                          Class<?> valueType, String keyPrefix, PropertyInject propertyInject) {
         String key = keyPrefix;
@@ -824,6 +828,7 @@ public class ReflectionBeanLifecycle implements BeanLifecycle, BeanCreator {
         return transform;
     }
 
+    @SuppressWarnings({"unchecked"})
     private Object resolvePropertyValue(ApplicationContext applicationContext,
                                         Class<?> valueType, String keyPrefix, PropertyInject propertyInject) {
         String key = keyPrefix;

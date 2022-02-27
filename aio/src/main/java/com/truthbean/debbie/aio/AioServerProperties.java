@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -38,12 +38,14 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private static final String HTTP_VERSION = ".http.version";
     private static final String SERVER_MESSAGE = ".message";
     private static final String CONNECTION_TIMEOUT = ".connection.timeout";
+    private static final String URL_ENCODED = ".url.encoded";
 
     // ===========================================================================
     static final String ENABLE_KEY = "debbie.server.aio.enable";
     private static final String HTTP_VERSION_KEY = "debbie.server.aio.http.version";
     private static final String SERVER_MESSAGE_KEY = "debbie.server.aio.message";
     private static final String CONNECTION_TIMEOUT_KEY = "debbie.server.aio.connection.timeout";
+    private static final String URL_ENCODED_KEY = "debbie.server.aio.url.encoded";
     // ===========================================================================
 
 
@@ -129,6 +131,18 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
                 AioServerConfiguration configuration = getConfiguration(DEFAULT_PROFILE, classLoader);
                 long connectionTimeout = getLongValue(v, 5000L);
                 configuration.setConnectionTimeout(connectionTimeout);
+            }
+            if (!k.equals(URL_ENCODED_KEY) && k.endsWith(URL_ENCODED)) {
+                var startIndex = AIO_SERVER_PREFIX.length();
+                var endIndex = k.length() - URL_ENCODED.length();
+                String name = k.substring(startIndex, endIndex);
+                AioServerConfiguration configuration = getConfiguration(name, classLoader);
+                boolean encoded = getBoolean(v, true);
+                configuration.setIgnoreEncode(!encoded);
+            } else if (k.equals(URL_ENCODED_KEY)) {
+                AioServerConfiguration configuration = getConfiguration(DEFAULT_PROFILE, classLoader);
+                boolean encoded = getBoolean(v, true);
+                configuration.setIgnoreEncode(!encoded);
             }
         });
     }

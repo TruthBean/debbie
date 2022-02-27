@@ -8,10 +8,7 @@ import com.truthbean.debbie.bean.BeanInfo;
  * Created on 2021/11/14 22:12.
  */
 public interface BeanProxyHandler {
-
-    <T, K extends T> T proxyCreatedBean(BeanInfo<K> beanInfo, K bean, BeanProxyType proxyType);
-
-    default <T, K extends T> T proxyCreatedBean(K bean, Class<T> clazz, BeanProxyType proxyType) {
+    default <T, K extends T> T proxyCreatedBean(BeanInfo<K> beanInfo, K bean, Class<T> clazz, BeanProxyType proxyType) {
         return bean;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -30,10 +30,9 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ThreadTest {
     public static class ThreadOne {
-        private final Boolean value = Boolean.FALSE;
 
         public void runOne() {
-            synchronized (value) {
+            synchronized (this) {
                 System.out.println("1");
                 System.out.println("11");
                 System.out.println("111");
@@ -44,10 +43,9 @@ public class ThreadTest {
     }
 
     public static class ThreadTwo {
-        private final Boolean value = Boolean.FALSE;
 
         public void runTwo() {
-            synchronized (value) {
+            synchronized (this) {
                 System.out.println("2");
                 System.out.println("22");
                 System.out.println("222");

@@ -4,10 +4,9 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.graalvm.model.Account;
 import com.truthbean.debbie.graalvm.service.AccountService;
-import com.truthbean.debbie.mvc.MvcConfiguration;
+import com.truthbean.debbie.jackson.util.JacksonUtils;
 import com.truthbean.debbie.mvc.router.CustomizeMvcRouterRegister;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
-import com.truthbean.debbie.util.JacksonUtils;
 
 /**
  * @author TruthBean

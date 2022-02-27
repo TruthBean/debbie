@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 class RequestCompleteHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestCompleteHandler.class);
 
-    RouterRequest handle(final long connectionTimeout,
+    RouterRequest handle(final long connectionTimeout, final boolean ignoreEncode,
                          final AsynchronousSocketChannel channel, final SessionManager sessionManager) {
         try {
             // 请求内容
@@ -83,7 +83,7 @@ class RequestCompleteHandler {
                 return null;
             }
 
-            return new RawRequestWrapper(lines, remoteAddress, sessionManager);
+            return new RawRequestWrapper(lines, remoteAddress, sessionManager, ignoreEncode);
         } catch (InterruptedException | ExecutionException | IOException e) {
             LOG.error("", e);
         }
@@ -112,7 +112,7 @@ class RequestCompleteHandler {
                 return null;
             }
 
-            return new RawRequestWrapper(lines, remoteAddress, sessionManager);
+            return new RawRequestWrapper(lines, remoteAddress, sessionManager, false);
         }
     }
 }

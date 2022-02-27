@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 TruthBean(Rogar·Q)
+ * Copyright (c) 2022 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -66,7 +66,7 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
         TaskRunnable taskRunnable = taskInfo.getTaskExecutor();
         BeanFactory<?> taskBeanInfo = new SimpleBeanFactory<>(taskRunnable, BeanType.SINGLETON, BeanProxyType.NO, taskRunnable.getName());
         var beanInfoManager = applicationContext.getBeanInfoManager();
-        beanInfoManager.register(taskBeanInfo);
+        beanInfoManager.registerBeanInfo(taskBeanInfo);
         taskBeans.add(taskBeanInfo);
         taskInfo.setConsumer(this::doTask);
         taskList.add(taskInfo);

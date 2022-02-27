@@ -89,7 +89,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
                 Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();
                 for (BeanLifecycle beanLifecycle : beanLifecycles) {
                     if (beanLifecycle.support(getBeanClass()) && beanLifecycle.support(this)) {
-                        Bean proxy = (Bean) beanLifecycle.doPreCreated(needBean, beanInterface, BeanProxyType.JDK);
+                        Bean proxy = (Bean) beanLifecycle.doPreCreated(this, needBean, beanInterface, BeanProxyType.JDK);
                         if (proxy instanceof Proxy) {
                             return proxy;
                         }
@@ -123,7 +123,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
                 }
                 if (localBean != null) {
                     localBean = beanLifecycle.postConstruct(localBean, this);
-                    localBean = beanLifecycle.doPreCreated(localBean, getClazz(), BeanProxyType.JDK);
+                    localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), BeanProxyType.JDK);
                     localBean = beanLifecycle.getCreatedBean(localBean);
                 }
                 if (localBean != null) {

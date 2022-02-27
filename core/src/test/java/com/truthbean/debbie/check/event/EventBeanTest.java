@@ -38,7 +38,7 @@ class EventBeanTest {
         beanInfo.addBeanName("testStartedEvent");
         ApplicationFactory factory = ApplicationFactory.configure(EventBeanTest.class, args);
         ApplicationContext context = factory.getApplicationContext();
-        context.getBeanInfoManager().register(beanInfo);
+        context.getBeanInfoManager().registerBeanInfo(beanInfo);
 
         // todo
         GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();

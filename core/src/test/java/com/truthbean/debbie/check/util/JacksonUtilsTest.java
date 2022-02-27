@@ -1,6 +1,6 @@
 package com.truthbean.debbie.check.util;
 
-import com.truthbean.debbie.util.JacksonUtils;
+import com.truthbean.debbie.jackson.util.JacksonUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
