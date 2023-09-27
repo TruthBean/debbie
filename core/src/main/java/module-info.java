@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-import com.truthbean.debbie.core.ApplicationFactory;
+import com.truthbean.debbie.environment.EnvironmentContext;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -29,12 +29,11 @@ module com.truthbean.debbie.core {
     exports com.truthbean.debbie.data.serialize;
 
     exports com.truthbean.debbie.event;
-    exports com.truthbean.debbie.env;
+    exports com.truthbean.debbie.environment;
     exports com.truthbean.debbie.io;
     exports com.truthbean.debbie.lang;
     exports com.truthbean.debbie.lang.security;
 
-    exports com.truthbean.debbie.net;
     exports com.truthbean.debbie.net.uri;
 
     exports com.truthbean.debbie.properties;
@@ -62,19 +61,20 @@ module com.truthbean.debbie.core {
     uses com.truthbean.debbie.boot.AbstractApplication;
     uses com.truthbean.debbie.reflection.ExecutableArgumentResolver;
     uses com.truthbean.debbie.task.TaskAction;
-    uses com.truthbean.debbie.env.EnvironmentContent;
-    uses com.truthbean.debbie.env.MutableEnvironmentContent;
-    uses com.truthbean.debbie.env.EnvironmentContentProfile;
-    uses ApplicationFactory;
+    uses com.truthbean.debbie.environment.Environment;
+    uses com.truthbean.debbie.environment.EnvironmentSpi;
+    uses EnvironmentContext;
+    uses com.truthbean.debbie.core.ApplicationFactory;
+    uses com.truthbean.debbie.environment.ResourceEnvironment;
 
     provides com.truthbean.logger.LoggerConfig
             with com.truthbean.debbie.boot.DebbieLoggerConfig;
 
-    provides com.truthbean.debbie.env.EnvironmentContent
-            with com.truthbean.debbie.properties.BaseProperties;
+    provides com.truthbean.debbie.environment.Environment
+            with com.truthbean.debbie.properties.PropertiesResourceEnvironment;
 
-    provides com.truthbean.debbie.env.MutableEnvironmentContent
-            with com.truthbean.debbie.properties.BaseProperties;
+    provides com.truthbean.debbie.environment.ResourceEnvironment
+            with com.truthbean.debbie.properties.PropertiesResourceEnvironment;
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.core.DebbieCoreModuleStarter;

@@ -8,6 +8,7 @@ module com.truthbean.debbie.jackson {
     requires transitive com.fasterxml.jackson.databind;
     requires transitive com.fasterxml.jackson.dataformat.xml;
     requires transitive com.fasterxml.jackson.dataformat.yaml;
+    requires transitive com.fasterxml.jackson.datatype.jsr310;
     // requires com.fasterxml.jackson.module.jaxb;
     requires org.yaml.snakeyaml;
 

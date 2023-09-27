@@ -4,7 +4,8 @@ import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.server.AbstractWebServerApplication;
@@ -36,6 +37,7 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     private NettyConfiguration configuration;
+    private MvcConfiguration mvcConfiguration;
     private SessionManager sessionManager;
     private ApplicationContext applicationContext;
 
@@ -45,8 +47,8 @@ public class NettyServerApplication extends AbstractWebServerApplication {
     }
 
     @Override
-    public boolean isEnable(EnvironmentContent envContent) {
-        return super.isEnable(envContent) && envContent.getBooleanValue(NettyProperties.ENABLE_KEY, false);
+    public boolean isEnable(Environment environment) {
+        return super.isEnable(environment) && environment.getBooleanValue(NettyProperties.ENABLE_KEY, false);
     }
 
     @Override
@@ -56,16 +58,18 @@ public class NettyServerApplication extends AbstractWebServerApplication {
             LOGGER.warn("debbie-netty module is disabled, debbie.netty.enable is false");
             return null;
         }
+        MvcConfiguration mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
-        MvcRouterRegister.registerRouter(configuration, applicationContext);
-        RouterFilterManager.registerFilter(configuration, beanInfoManager);
-        RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
-        RouterFilterManager.registerCorsFilter(configuration, "/**");
-        RouterFilterManager.registerCsrfFilter(configuration, "/**");
-        RouterFilterManager.registerSecurityFilter(configuration, "/**");
+        MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
+        RouterFilterManager.registerFilter(mvcConfiguration, beanInfoManager);
+        RouterFilterManager.registerCharacterEncodingFilter(mvcConfiguration, "/**");
+        RouterFilterManager.registerCorsFilter(mvcConfiguration, "/**");
+        RouterFilterManager.registerCsrfFilter(mvcConfiguration, "/**");
+        RouterFilterManager.registerSecurityFilter(mvcConfiguration, "/**");
         final SessionManager sessionManager = new SimpleSessionManager();
 
         this.configuration = configuration;
+        this.mvcConfiguration = mvcConfiguration;
         this.sessionManager = sessionManager;
         this.applicationContext = applicationContext;
         super.setLogger(LOGGER);
@@ -84,7 +88,7 @@ public class NettyServerApplication extends AbstractWebServerApplication {
         try {
             // (2)
             ServerBootstrap b = new ServerBootstrap();
-            HttpChannelInitializer httpChannelInitializer = new HttpChannelInitializer(configuration, sessionManager, applicationContext);
+            HttpChannelInitializer httpChannelInitializer = new HttpChannelInitializer(configuration, mvcConfiguration, sessionManager, applicationContext);
             b.group(bossGroup, workerGroup)
                 // (3)
                 .channel(NioServerSocketChannel.class)

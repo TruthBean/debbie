@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,31 +9,42 @@
  */
 package com.truthbean.debbie.reflection;
 
-import com.truthbean.common.mini.util.OsUtils;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.core.util.OsUtils;
+import com.truthbean.debbie.environment.Environment;
 
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.5.0
  */
 public class ReflectionConfigurer {
-    private static EnvironmentContent envContent;
+    private static Environment environment;
 
     public static final String ENABLE_KEY = "debbie.reflect.enable";
 
-    public ReflectionConfigurer(EnvironmentContent envContent) {
-        ReflectionConfigurer.envContent = envContent;
+    public ReflectionConfigurer(Environment environment) {
+        ReflectionConfigurer.environment = environment;
     }
 
     public static boolean enable() {
-        return envContent.getBooleanValue(ENABLE_KEY, true);
+        return environment.getBooleanValue(ENABLE_KEY, true);
     }
 
-    public static boolean isReflectEnable(EnvironmentContent envContent) {
-        return envContent.getBooleanValue(ENABLE_KEY, true);
+    public static boolean isReflectEnable(Environment environment) {
+        return environment.getBooleanValue(ENABLE_KEY, true);
+    }
+
+    public static boolean isReflectEnable(Environment environment, Environment defaultEnvironment) {
+        if (environment != null && environment.containKey(ENABLE_KEY)) {
+            return environment.getBooleanValue(ENABLE_KEY, true);
+        }
+        if (defaultEnvironment != null) {
+            return defaultEnvironment.getBooleanValue(ENABLE_KEY, true);
+        } else {
+            return false;
+        }
     }
 
     public boolean isReflectEnable() {
-        return !OsUtils.nonJvm() && envContent.getBooleanValue(ENABLE_KEY, true);
+        return !OsUtils.nonJvm() && environment.getBooleanValue(ENABLE_KEY, true);
     }
 }

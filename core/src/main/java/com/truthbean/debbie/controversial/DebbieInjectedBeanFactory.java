@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,8 +14,8 @@ import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
-import com.truthbean.debbie.env.EnvContentAware;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.env.EnvironmentAware;
+import com.truthbean.debbie.env.Environment;
 import com.truthbean.debbie.proxy.BeanProxyHandler;
 import com.truthbean.transformer.DataTransformer;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
@@ -210,8 +210,8 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
             ((ApplicationContextAware) object).setApplicationContext(applicationContext);
         } if (object instanceof DebbieEventPublisherAware) {
             ((DebbieEventPublisherAware) object).setEventPublisher(applicationContext.factory("eventPublisher"));
-        } else if (object instanceof EnvContentAware) {
-            ((EnvContentAware) object).setEnvContent(applicationContext.getEnvContent());
+        } else if (object instanceof EnvironmentAware) {
+            ((EnvironmentAware) object).setEnvironment(applicationContext.getEnvironmentHolder());
         }
 
     }
@@ -263,7 +263,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 *//*
 */
 /*try {
-                    method.invoke(object, VALUE);
+                    method.invoke(object, value);
                 } catch (IllegalAccessException e) {
                     LOGGER.error("method (" + method + ") have no access. ", e);
                 } catch (InvocationTargetException e) {
@@ -297,8 +297,8 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
                 }
             }
         }
-        EnvironmentContent envContent = applicationContext.getEnvContent();
-        String value = envContent.getValue(key);
+        Environment environment = applicationContext.getEnvironmentHolder();
+        String value = environment.getValue(key);
         if (value == null && propertyInject != null) {
             value = propertyInject.defaultValue();
         }
@@ -393,7 +393,7 @@ class DebbieInjectedBeanFactory implements InjectedBeanFactory {
             required = ((BeanInject) inject).require();
         }
         if (factoryBeanInfo instanceof DebbieClassFactoryBeanInfo<?> classBeanInfo) {
-            var fieldBeanInfoMap = classBeanInfo.getFieldBeanDependent();
+            var fieldBeanInfoMap = classBeanInfo.getFieldBeanDependencies();
             if (fieldBeanInfoMap == null || fieldBeanInfoMap.isEmpty()) {
                 if (required) {
                     throw new NoBeanException("no bean " + name + " found .");

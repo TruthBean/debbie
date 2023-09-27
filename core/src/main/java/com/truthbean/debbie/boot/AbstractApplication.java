@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,23 +10,23 @@
 package com.truthbean.debbie.boot;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.LoggerFactory;
+import com.truthbean.core.concurrent.NamedThreadFactory;
+import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.PooledExecutor;
-import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.event.DebbieReadyEvent;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
-import com.truthbean.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,11 +54,24 @@ public abstract class AbstractApplication implements DebbieApplication {
     private Thread shutdownHook;
 
     /**
-     * startup and shutdown thread
+     * startup thread
      */
-    private final ThreadFactory namedThreadFactory = new NamedThreadFactory("DebbieApplication-StartupShutDown", true)
+    private final ThreadFactory startupNamedThreadFactory = new NamedThreadFactory("DebbieApplication-Startup", true)
             .setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
-    private final PooledExecutor startupShutdownThreadPool = new ThreadPooledExecutor(1, 2, namedThreadFactory);
+    private final ExecutorService startupExecutorService = new java.util.concurrent.ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
+            startupNamedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    private final PooledExecutor startupExecutor = new ThreadPooledExecutor(startupExecutorService, 5000L, "DebbieApplication-Startup");
+
+    /**
+     * shutdown thread
+     */
+    private final ThreadFactory shutdownNamedThreadFactory = new NamedThreadFactory("DebbieApplication-ShutDown", true)
+            .setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
+    private final ExecutorService shutdownExecutorService = new java.util.concurrent.ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
+            shutdownNamedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    private final PooledExecutor shutdownExecutor = new ThreadPooledExecutor(shutdownExecutorService, 5000L, "DebbieApplication-ShutDow");
 
     private boolean useProperties = true;
 
@@ -74,7 +87,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         return false;
     }
 
-    public boolean isEnable(EnvironmentContent envContent) {
+    public boolean isEnable(Environment environment) {
         return true;
     }
 
@@ -94,10 +107,11 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     /**
      * init application
+     *
      * @param applicationContext applicationContext
-     * @param classLoader main class's classLoader
-     * @see ApplicationContext
+     * @param classLoader        main class's classLoader
      * @return DebbieApplication implement
+     * @see ApplicationContext
      */
     public abstract DebbieApplication init(ApplicationContext applicationContext,
                                            ClassLoader classLoader);
@@ -114,7 +128,10 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     @Override
     public final void start() {
-        startupShutdownThreadPool.execute(() -> {
+        startupExecutor.execute(() -> {
+            logger.debug("application running: " + running.get());
+            logger.debug("application exiting: " + applicationContext.isExiting());
+            logger.debug("application exited: " + exited.get());
             if (running.compareAndSet(false, true) && exited.get()) {
                 ApplicationArgs applicationArgs = applicationContext.getApplicationArgs();
                 registerShutdownHook();
@@ -122,7 +139,7 @@ public abstract class AbstractApplication implements DebbieApplication {
                     start(beforeStartTime, applicationArgs);
                     applicationContext.publishEvent(new DebbieReadyEvent(applicationContext, this));
                     exited.set(false);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     exited.set(false);
                     logger.error("Application start error: \n", e);
                     exit();
@@ -146,7 +163,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         final long uptime = mxBean.getUptime();
         final long startTime = mxBean.getStartTime();
         logger.info(() -> "application start spends " + between.toMillis() +
-                "ms ( JVM started at "  + new Timestamp(startTime) + ", running for "  + uptime + "ms )");
+                "ms ( JVM started at " + new Timestamp(startTime) + ", running for " + uptime + "ms )");
     }
 
     /**
@@ -166,7 +183,8 @@ public abstract class AbstractApplication implements DebbieApplication {
             this.shutdownHook = new Thread(SHUTDOWN_HOOK_THREAD_NAME) {
                 @Override
                 public void run() {
-                    while (!exited.get()) {
+                    if (!exited.get()) {
+                        logger.debug("shutdown hook to exit...");
                         exit();
                     }
                 }
@@ -181,21 +199,35 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     @Override
     public final void exit() {
-        startupShutdownThreadPool.execute(() -> {
-            if (running.get() && exited.compareAndSet(false, true)) {
-                logger.debug("application is exiting...");
-                beforeExit(applicationContext);
-                doExit(applicationContext.getApplicationArgs());
-            }
-        });
-        startupShutdownThreadPool.destroy();
+        logger.debug("application running: " + running.get());
+        logger.debug("application exiting: " + applicationContext.isExiting());
+        logger.debug("application exited: " + exited.get());
+        if (running.get() && !exited.get() && !applicationContext.isExiting()) {
+            shutdownExecutor.execute(() -> {
+                try {
+                    if (running.get() && !exited.get()) {
+                        logger.debug("application is exiting...");
+                        beforeExit(applicationContext);
+                        doExit(applicationContext.getApplicationArgs());
+                    }
+                    logger.info("DebbieApplication-Startup thread will close...");
+                    startupExecutor.destroy();
+                    logger.info("DebbieApplication-ShutDown thread will close...");
+                    shutdownExecutor.destroy();
+                    exited.set(true);
+                } catch (Throwable e) {
+                    logger.error("", e);
+                }
+            });
+        }
         LoggerFactory.destroy();
     }
 
     /**
      * exit application
+     *
      * @param beforeStartTime before start time, long timestamp
-     * @param args args
+     * @param args            args
      */
     protected abstract void exit(Instant beforeStartTime, ApplicationArgs args);
 
@@ -205,7 +237,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         Duration between = Duration.between(beforeStartTime, now);
         long uptime = mxBean.getUptime();
         long startTime = mxBean.getStartTime();
-        logger.info(() -> "JVM started at "  + new Timestamp(startTime) + ", had run for "  + uptime + "ms");
+        logger.info(() -> "JVM started at " + new Timestamp(startTime) + ", had run for " + uptime + "ms");
         if (logger.isDebugEnabled()) {
             logger.debug(() -> "application start spends " + between.toDays() + " days");
             logger.debug(() -> "application start spends " + between.toMinutes() + " minutes");
@@ -218,29 +250,29 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     public final void doExit(ApplicationArgs args) {
         // if (startupShutdownLock.tryLock()) {
-            try {
-                exit(beforeStartTime, args);
-                if (applicationFactory instanceof DebbieApplicationFactory) {
-                    applicationFactory.release();
-                }
-                // If we registered a JVM shutdown hook, we don't need it anymore now:
-                // We've already explicitly closed the context.
-                if (this.shutdownHook != null) {
-                    try {
-                        Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
-                        this.running.set(false);
-                    } catch (IllegalStateException ex) {
-                        // VM is already shutting down
-                        logger.info("JVM is shutting down (" + ex.getMessage() + ")");
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("do application exiting error. ", e);
-            } finally {
-                // startupShutdownLock.unlock();
-                // call gc
-                System.gc();
+        try {
+            exit(beforeStartTime, args);
+            if (applicationFactory instanceof DebbieApplicationFactory) {
+                applicationFactory.release();
             }
+            // If we registered a JVM shutdown hook, we don't need it anymore now:
+            // We've already explicitly closed the context.
+            if (this.shutdownHook != null) {
+                try {
+                    Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
+                    this.running.set(false);
+                } catch (IllegalStateException ex) {
+                    // VM is already shutting down
+                    logger.info("JVM is shutting down (" + ex.getMessage() + ")");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("do application exiting error. ", e);
+        } finally {
+            // startupShutdownLock.unlock();
+            // call gc
+            System.gc();
+        }
         // }
     }
 }

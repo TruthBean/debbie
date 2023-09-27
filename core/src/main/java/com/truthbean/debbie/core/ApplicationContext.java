@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,10 +11,12 @@ package com.truthbean.debbie.core;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.ApplicationArgs;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.io.ResourceResolver;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,7 +32,9 @@ public interface ApplicationContext extends DebbieEventPublisher {
 
     ClassLoader getClassLoader();
 
-    EnvironmentContent getEnvContent();
+    EnvironmentDepositoryHolder getEnvironmentHolder();
+
+    Environment getDefaultEnvironment();
 
     ResourceResolver getResourceResolver();
 
@@ -53,6 +57,10 @@ public interface ApplicationContext extends DebbieEventPublisher {
     <T> T factory(String beanName);
 
     <T> T factory(Class<T> beanType);
+
+    <T> List<T> factories(Class<T> beanType);
+
+    <T> T factory(String profile, String category, Class<T> beanType);
 
     void release(String... args);
 

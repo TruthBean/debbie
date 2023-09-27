@@ -10,7 +10,7 @@ import java.util.function.Supplier;
  * @since 0.5.3
  * Created on 2021/12/07 14:02.
  */
-public interface MutableBeanInfo<Bean> extends BeanInfo<Bean> {
+public interface MutableBeanInfo<Bean> extends MultiNameBeanInfo<Bean> {
     void setBeanProxyType(BeanProxyType beanProxyType);
 
     void setBeanType(BeanType beanType);

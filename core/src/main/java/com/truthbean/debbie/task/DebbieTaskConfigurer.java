@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,8 @@ import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.bean.SimpleBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
@@ -25,13 +26,14 @@ public class DebbieTaskConfigurer {
 
     private static final String ENABLE_KEY = "debbie.task.enable";
 
-    public boolean enable(EnvironmentContent envContent) {
-        return envContent.getBooleanValue(ENABLE_KEY, true);
+    public boolean enable(Environment environment) {
+        return environment.getBooleanValue(ENABLE_KEY, true);
     }
 
     public void configure(ApplicationContext applicationContext) {
-        EnvironmentContent envContent = applicationContext.getEnvContent();
-        if (!enable(envContent)) {
+        EnvironmentDepositoryHolder environmentDepositoryHolder = applicationContext.getEnvironmentHolder();
+        Environment environment = environmentDepositoryHolder.getEnvironmentIfPresent(environmentDepositoryHolder.getDefaultProfile());
+        if (!enable(environment)) {
             LOGGER.info("debbie task is not enable");
             return;
         }

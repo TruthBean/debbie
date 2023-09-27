@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -8,6 +8,9 @@
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.bean;
+
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.lang.annotation.*;
 
@@ -31,5 +34,11 @@ public @interface BeanInject {
 
     boolean require() default true;
 
-    boolean noProxy() default false;
+    BeanType type() default BeanType.SINGLETON;
+
+    BeanProxyType proxy() default BeanProxyType.JDK;
+
+    String category() default EnvironmentDepositoryHolder.DEFAULT_CATEGORY;
+
+    String profile() default "";
 }

@@ -2,12 +2,15 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,10 +31,14 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
 
         var className = configurationClass.getSimpleName();
         names.add(StringUtils.toFirstCharLowerCase(className));
-        var profiles = property.getProfiles();
+        var profiles = property.getCategories();
         for (String profile : profiles) {
             names.add(profile + className);
         }
+    }
+
+    public Map<String, Configuration> factoryCategoryBean(String profile, ApplicationContext applicationContext) {
+        return property.getCategoryConfigurationMap(profile, applicationContext);
     }
 
     @Override
@@ -45,13 +52,24 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
         var defaultConfigurationName = "default" + simpleName;
         var configurationName = StringUtils.toFirstCharLowerCase(simpleName);
         if (!StringUtils.hasText(name) || name.equals(defaultConfigurationName) || name.equals(configurationName)) {
-            return property.getConfiguration(DebbieProperties.DEFAULT_PROFILE, applicationContext);
+            return property.getConfiguration(EnvironmentDepositoryHolder.DEFAULT_PROFILE, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
         }
         if (name.endsWith(simpleName)) {
             var newName = name.substring(0, name.length() - simpleName.length());
-            return property.getConfiguration(newName, applicationContext);
+            return property.getConfiguration(newName, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
         }
-        return property.getConfiguration(name, applicationContext);
+        return property.getConfiguration(name, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
+    }
+
+    @Override
+    public Configuration factory(String profile, String category, String name, Class beanClass, BeanType type, BeanProxyType proxyType, ApplicationContext applicationContext) {
+        if (StringUtils.hasText(profile)) {
+            profile = EnvironmentDepositoryHolder.DEFAULT_PROFILE;
+        }
+        if (StringUtils.hasText(category)) {
+            category = EnvironmentDepositoryHolder.DEFAULT_CATEGORY;
+        }
+        return property.getConfiguration(profile, category, applicationContext);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.filter.RouterFilterHandler;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
@@ -20,7 +21,7 @@ import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-import com.truthbean.common.mini.util.OsUtils;
+import com.truthbean.core.util.OsUtils;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
@@ -39,13 +40,15 @@ import java.util.concurrent.Future;
 class ResponseCompletionHandler {
 
     private final ApplicationContext applicationContext;
+    private final MvcConfiguration mvcConfiguration;
     private final AioServerConfiguration configuration;
     private final RouterRequest routerRequest;
 
     ResponseCompletionHandler(ApplicationContext applicationContext, RouterRequest routerRequest,
-                                     AioServerConfiguration configuration) {
+                              AioServerConfiguration configuration, MvcConfiguration mvcConfiguration) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
+        this.mvcConfiguration = mvcConfiguration;
         this.routerRequest = routerRequest;
     }
 
@@ -57,7 +60,7 @@ class ResponseCompletionHandler {
         var statusLine = "HTTP/" + configuration.getHttpVersion() + " 200 OK" + lf;
         MediaTypeInfo responseType = routerResponse.getResponseType();
         if (responseType == null) {
-            responseType = configuration.getDefaultContentType();
+            responseType = mvcConfiguration.getDefaultContentType();
         }
         var contentTypeLine = HttpHeader.HttpHeaderNames.CONTENT_TYPE.getName() + ": " + responseType.toString() + lf;
 
@@ -137,11 +140,11 @@ class ResponseCompletionHandler {
         final RouterResponse routerResponse = new RouterResponse();
         if (handleFilter(routerRequest, routerResponse)) {
             // static
-            byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
+            byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, mvcConfiguration.getStaticResourcesMapping());
             if (bytes != null) {
                 writeChannel(channel, routerResponse, bytes);
             } else {
-                RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
+                RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, mvcConfiguration);
                 logger.debug("--> handle response");
                 matchedRouter.getResponse().copyNoNull(routerResponse);
                 var afterResponse = MvcRouterHandler.handleRouter(matchedRouter, this.applicationContext);

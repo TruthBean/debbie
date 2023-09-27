@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -21,6 +21,12 @@ dependencies {
     testImplementation(project(":debbie-aio"))
     testImplementation(project(":debbie-jdbc"))
     testImplementation(project(":debbie-asm"))
+    testImplementation(project(":debbie-httpclient"))
+    testImplementation(project(":debbie-jackson"))
+    testImplementation(project(":debbie-mvc"))
+    testImplementation(project(":debbie-netty"))
+    testImplementation(project(":debbie-rmi"))
+    testImplementation(project(":debbie-server"))
     testImplementation("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")

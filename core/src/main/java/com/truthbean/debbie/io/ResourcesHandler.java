@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,7 @@ package com.truthbean.debbie.io;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 

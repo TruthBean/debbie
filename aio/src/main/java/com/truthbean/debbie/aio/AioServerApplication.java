@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,31 +9,21 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.common.mini.util.ReflectionUtils;
-import com.truthbean.common.mini.util.StringUtils;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
-import com.truthbean.debbie.concurrent.NamedThreadFactory;
+import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.concurrent.PooledExecutor;
-import com.truthbean.debbie.concurrent.ThreadLoggerUncaughtExceptionHandler;
+import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.mvc.filter.RouterFilterManager;
-import com.truthbean.debbie.mvc.router.MvcRouterRegister;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.server.AbstractWebServerApplication;
-import com.truthbean.debbie.server.session.SessionManager;
-import com.truthbean.debbie.server.session.SimpleSessionManager;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousServerSocketChannel;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -41,74 +31,30 @@ import java.util.concurrent.*;
  * @since 0.0.2
  * Created on 2019-12-17 19:55
  */
-public class AioServerApplication extends AbstractWebServerApplication implements Runnable {
+public class AioServerApplication extends AbstractWebServerApplication {
 
-    private volatile AsynchronousServerSocketChannel server;
-
-    private ApplicationContext applicationContext;
-    private AioServerConfiguration configuration;
-
-    private SessionManager sessionManager;
+    private final ConcurrentMap<String, RealAioServerRunner> runnerMap = new ConcurrentHashMap<>();
 
     @Override
-    public boolean isEnable(EnvironmentContent envContent) {
-        return super.isEnable(envContent) && envContent.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
+    public boolean isEnable(Environment environment) {
+        return super.isEnable(environment) && environment.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
     }
 
     @Override
     public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
-        final AioServerConfiguration configuration = applicationContext.factory(AioServerConfiguration.class);
-        if (configuration == null) {
+        // applicationContext.getBeanInfoManager().getBeanInfoList()
+        final List<AioServerConfiguration> configurations = applicationContext.factories(AioServerConfiguration.class);
+        if (configurations == null) {
             LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
             return null;
         }
-        var beanInfoManager = applicationContext.getBeanInfoManager();
-        MvcRouterRegister.registerRouter(configuration, applicationContext);
-        RouterFilterManager.registerFilter(configuration, beanInfoManager);
-        RouterFilterManager.registerCharacterEncodingFilter(configuration, "/**");
-        RouterFilterManager.registerCorsFilter(configuration, "/**");
-        RouterFilterManager.registerCsrfFilter(configuration, "/**");
-        RouterFilterManager.registerSecurityFilter(configuration, "/**");
-        final SessionManager sessionManager = new SimpleSessionManager();
-        try {
-            doInit(applicationContext, configuration, sessionManager);
-        } catch (Exception e) {
-            LOGGER.error("create aio server error", e);
+        for (AioServerConfiguration configuration : configurations) {
+            runnerMap.put(configuration.getUuid(), new RealAioServerRunner(applicationContext, configuration)
+                    .init(applicationContext, configuration));
         }
+
         super.setLogger(LOGGER);
         return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void doInit(ApplicationContext applicationContext, AioServerConfiguration configuration,
-                        final SessionManager sessionManager) throws Exception {
-        int port = configuration.getPort();
-        this.applicationContext = applicationContext;
-        this.configuration = configuration;
-
-        this.sessionManager = sessionManager;
-
-        // 创建线程池
-        var threadFactory = new NamedThreadFactory("AioServerThreadPool").setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
-        int core = Runtime.getRuntime().availableProcessors();
-        var executor = new ThreadPoolExecutor(core, core * 10,
-                0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(1024), threadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-        // 用于资源共享的异步通道管理器
-        var asyncChannelGroup = AsynchronousChannelGroup.withThreadPool(executor);
-        SocketAddress socketAddress;
-        if (StringUtils.hasText(configuration.getSocketPath())) {
-            Class<? extends SocketAddress> unixDomainSocketAddressClass = (Class<? extends SocketAddress>) Class.forName("java.net.UnixDomainSocketAddress");
-            Method method = ReflectionUtils.getMethod(unixDomainSocketAddressClass, "of", new Class[]{String.class});
-            Object o = ReflectionUtils.invokeStaticMethod(method, configuration.getSocketPath());
-            socketAddress = (SocketAddress) o;
-        } else {
-            // todo 区分 tcp/udp/unix/ssl socket
-            // 创建 用在服务端的异步Socket.以下简称服务器socket。
-            // 异步通道管理器，会把服务端所用到的相关参数
-            socketAddress = new InetSocketAddress(port);
-        }
-        server = AsynchronousServerSocketChannel.open(asyncChannelGroup).bind(socketAddress);
     }
 
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory("aio-server-application-")
@@ -117,11 +63,15 @@ public class AioServerApplication extends AbstractWebServerApplication implement
 
     @Override
     protected void start(Instant beforeStartTime, ApplicationArgs args) {
-        LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
-        printlnWebUrl(LOGGER, configuration.getPort());
-        printStartTime();
-        postBeforeStart();
-        singleThreadPool.execute(this);
+        runnerMap.forEach((uuid, runner) -> {
+            runner.printMessage((configuration) -> {
+                LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+                printlnWebUrl(LOGGER, configuration.getPort());
+            });
+            printStartTime();
+            postBeforeStart();
+            singleThreadPool.execute(runner);
+        });
     }
 
     @Override
@@ -129,21 +79,7 @@ public class AioServerApplication extends AbstractWebServerApplication implement
         LOGGER.debug(() -> "destroy running thread");
         printExitTime();
         singleThreadPool.destroy();
-    }
-
-    @Override
-    public void run() {
-        try {
-            LOGGER.debug(() -> "running .... ");
-            // 为服务端socket指定接收操作对象.accept原型是：
-            // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
-            // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
-            // 即是listener。另一个参数V，就是原型中的客户端socket
-            var mvcCompletionHandler = new ServerCompletionHandler(configuration, sessionManager, applicationContext);
-            server.accept(server, mvcCompletionHandler);
-        } catch (Exception e) {
-            LOGGER.error("", e);
-        }
+        runnerMap.clear();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AioServerApplication.class);

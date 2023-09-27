@@ -12,7 +12,7 @@ import com.truthbean.debbie.proxy.BeanProxyType;
  * @since 0.5.3
  * Created on 2021/12/03 22:05.
  */
-public class SimpleBeanLifecycle implements BeanLifecycle, BeanCreator {
+public class SimpleBeanLifecycle extends AbstractBeanLifecycle {
 
     private final ApplicationContext applicationContext;
     private final BeanProxyHandler beanProxyHandler;
@@ -20,7 +20,7 @@ public class SimpleBeanLifecycle implements BeanLifecycle, BeanCreator {
 
     public SimpleBeanLifecycle(ApplicationContext applicationContext, BeanProxyHandler beanProxyHandler) {
         this.applicationContext = applicationContext;
-        enableJdkProxy = applicationContext.getEnvContent().getBooleanValue(ClassesScanProperties.JDK_PROXY_ENABLE_KEY, true);
+        enableJdkProxy = applicationContext.getDefaultEnvironment().getBooleanValue(ClassesScanProperties.JDK_PROXY_ENABLE_KEY, true);
         this.beanProxyHandler = beanProxyHandler;
     }
 
@@ -30,13 +30,13 @@ public class SimpleBeanLifecycle implements BeanLifecycle, BeanCreator {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T construct(T preparedBean, Object... params) {
         return preparedBean;
     }
 
     @Override
     public <T> T postConstruct(T bean, Object... params) {
+        LOGGER.trace("postConstruct : " + bean);
         doConstructPost(bean);
         resolveAwareValue(applicationContext, bean);
         return bean;
@@ -52,6 +52,8 @@ public class SimpleBeanLifecycle implements BeanLifecycle, BeanCreator {
 
     @Override
     public <Bean> Bean getCreatedBean(Bean bean, Object... params) {
+        LOGGER.trace("getCreatedBean : " + bean);
+        doCreatedPost(bean);
         return bean;
     }
 

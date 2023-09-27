@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2022 TruthBean(Rogar·Q)
+  Copyright (c) 2023 TruthBean(Rogar·Q)
   Debbie is licensed under Mulan PSL v2.
   You can use this software according to the terms and conditions of the Mulan PSL v2.
   You may obtain a copy of Mulan PSL v2 at:
@@ -9,9 +9,10 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.io.IOException;
@@ -23,9 +24,8 @@ import java.util.Set;
  * @author TruthBean
  * @since 0.0.1
  */
-public class HttpClientProperties extends EnvironmentContentHolder implements DebbieProperties<HttpClientConfiguration> {
-    private static final HttpClientConfiguration configuration = new HttpClientConfiguration();
-    private final Map<String, HttpClientConfiguration> map = new HashMap<>();
+public class HttpClientProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<HttpClientConfiguration> {
+    private final Map<String, Map<String, HttpClientConfiguration>> map = new HashMap<>();
 
     //===========================================================================
     private static final String PROXY_HOST_KEY = "debbie.httpclient.proxy.host";
@@ -43,55 +43,70 @@ public class HttpClientProperties extends EnvironmentContentHolder implements De
 
 
     public HttpClientProperties() {
-        HttpClientProxy proxy = new HttpClientProxy();
-        proxy.setProxyHost(getValue(PROXY_HOST_KEY));
-        proxy.setProxyPort(getIntegerValue(PROXY_PORT_KEY, 0));
-        proxy.setUser(getValue(PROXY_BASIC_AUTH_USE_KEY));
-        proxy.setPassword(getValue(PROXY_BASIC_AUTH_PASSWORD_KEY));
-        configuration.setProxy(proxy);
+        Set<String> profiles = super.getProfiles();
+        for (String profile : profiles) {
+            Environment environment = super.getEnvironmentIfPresent(profile);
+            HttpClientProxy proxy = new HttpClientProxy();
+            proxy.setProxyHost(environment.getValue(PROXY_HOST_KEY));
+            proxy.setProxyPort(environment.getIntegerValue(PROXY_PORT_KEY, 0));
+            proxy.setUser(environment.getValue(PROXY_BASIC_AUTH_USE_KEY));
+            proxy.setPassword(environment.getValue(PROXY_BASIC_AUTH_PASSWORD_KEY));
+            HttpClientConfiguration configuration = new HttpClientConfiguration();
+            configuration.setProfile(profile);
+            configuration.setCategory(DEFAULT_CATEGORY);
+            configuration.setProxy(proxy);
 
-        configuration.setRetryTime(getIntegerValue(RETRY_TIME_KEY, 0));
+            configuration.setRetryTime(environment.getIntegerValue(RETRY_TIME_KEY, 0));
 
-        configuration.setConnectTimeout(getIntegerValue(CONNECTION_TIMEOUT_KEY, 10000));
-        configuration.setResponseTimeout(getIntegerValue(RESPONSE_TIMEOUT_KEY, 10000));
-        configuration.setReadTimeout(getIntegerValue(READ_TIMEOUT_KEY, 10000));
+            configuration.setConnectTimeout(environment.getIntegerValue(CONNECTION_TIMEOUT_KEY, 10000));
+            configuration.setResponseTimeout(environment.getIntegerValue(RESPONSE_TIMEOUT_KEY, 10000));
+            configuration.setReadTimeout(environment.getIntegerValue(READ_TIMEOUT_KEY, 10000));
 
-        configuration.setAuthUser(getValue(BASIC_AUTH_USER_KEY));
-        configuration.setAuthPassword(getValue(BASIC_AUTH_PASSWORD_KEY));
+            configuration.setAuthUser(environment.getValue(BASIC_AUTH_USER_KEY));
+            configuration.setAuthPassword(environment.getValue(BASIC_AUTH_PASSWORD_KEY));
 
-        configuration.setInsecure(getBooleanValue(INSECURE_KEY, false));
-        map.put(DEFAULT_PROFILE, configuration);
-    }
-
-    public static HttpClientConfiguration toConfiguration() {
-        return configuration;
-    }
-
-    @Override
-    public Set<String> getProfiles() {
-        return map.keySet();
-    }
-
-    @Override
-    public HttpClientConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
-        if (StringUtils.hasText(name)) {
-            return map.get(name);
+            configuration.setInsecure(environment.getBooleanValue(INSECURE_KEY, false));
+            Map<String, HttpClientConfiguration> map = new HashMap<>();
+            map.put(DEFAULT_CATEGORY, configuration);
+            this.map.put(profile, map);
         }
-        return configuration;
+    }
+
+    @Override
+    public Map<String, Map<String, HttpClientConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
+        return map;
+    }
+
+    @Override
+    public Set<String> getCategories(String profile) {
+        return map.get(profile).keySet();
+    }
+
+    @Override
+    public HttpClientConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        return map.get(profile).get(category);
     }
 
     public HttpClientConfiguration loadConfiguration() {
-        return configuration;
+        return map.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
-    @Override
-    public HttpClientConfiguration getConfiguration(ApplicationContext applicationContext) {
-        return configuration;
+    public HttpClientConfiguration getDefaultConfiguration() {
+        return map.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
     @Override
     public void close() throws IOException {
-        configuration.close();
+        map.forEach((profile, m) -> {
+            m.forEach((category, config) -> config.close());
+            m.clear();
+        });
         map.clear();
     }
 }

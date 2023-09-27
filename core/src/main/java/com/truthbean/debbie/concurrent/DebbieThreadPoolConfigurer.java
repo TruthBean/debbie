@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,8 +9,11 @@
  */
 package com.truthbean.debbie.concurrent;
 
+import com.truthbean.core.concurrent.NamedThreadFactory;
+import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -22,8 +25,9 @@ public class DebbieThreadPoolConfigurer {
 
     public ThreadPooledExecutor configure(ApplicationContext applicationContext) {
 
-        EnvironmentContent envContent = applicationContext.getEnvContent();
-        var time = envContent.getLongValue(threadPoolExecutorAwaitTerminationTimeKey, 5000L);
+        EnvironmentDepositoryHolder environmentDepositoryHolder = applicationContext.getEnvironmentHolder();
+        Environment environment = environmentDepositoryHolder.getEnvironmentIfPresent(environmentDepositoryHolder.getDefaultProfile());
+        var time = environment.getLongValue(threadPoolExecutorAwaitTerminationTimeKey, 5000L);
         var core = Runtime.getRuntime().availableProcessors();
         var max = core * 100;
         var queueLength = max * 100;

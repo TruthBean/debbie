@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,7 +15,7 @@ import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.concurrent.DebbieThreadPoolConfigurer;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.task.DebbieTaskConfigurer;
@@ -68,8 +68,8 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void postStarter(ApplicationContext applicationContext) {
-        EnvironmentContent envContent = applicationContext.getEnvContent();
-        boolean value = envContent.getBooleanValue("debbie.task.enable", true);
+        Environment environment = applicationContext.getDefaultEnvironment();
+        boolean value = environment.getBooleanValue("debbie.task.enable", true);
         if (value) {
             GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
             // do task

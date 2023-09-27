@@ -2,7 +2,7 @@ package com.truthbean.debbie.httpclient.test;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.httpclient.HttpClientHandler;
 import com.truthbean.debbie.httpclient.HttpClientProperties;
 import com.truthbean.debbie.httpclient.HttpClientResponse;

@@ -6,7 +6,7 @@ import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.data.transformer.text.jackson.JsonNodeTransformer;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.transformer.DataTransformerCenter;
 
 import java.lang.annotation.Annotation;
@@ -19,14 +19,14 @@ import java.util.Map;
  */
 public class JacksonModuleStarter implements DebbieModuleStarter {
     @Override
-    public boolean enable(EnvironmentContent envContent) {
+    public boolean enable(Environment environment) {
         boolean enable = false;
         try {
             getClass().getClassLoader().loadClass("com.fasterxml.jackson.databind.JsonNode");
             enable = true;
         } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
         }
-        return DebbieModuleStarter.super.enable(envContent) && enable;
+        return DebbieModuleStarter.super.enable(environment) && enable;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -94,7 +94,7 @@ public class MvcRouterHandler {
             if (response.getHandler() == null || response.getHandler().getClass() == NothingResponseHandler.class) {
                 if (responseType == null || (responseType.isAny() && responseTypeInRequestHeader.isAny())) {
                     if (defaultResponseTypes.isEmpty()) {
-                        LOGGER.error("responseTypes has not default VALUE, set application/json as default!");
+                        LOGGER.error("responseTypes has not default value, set application/json as default!");
                         defaultResponseTypes.add(MediaType.APPLICATION_JSON_UTF8.info());
                     }
                     response.setResponseType(defaultResponseTypes.iterator().next());

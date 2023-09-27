@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,7 @@
 package com.truthbean.debbie.controversial;
 
 import com.truthbean.Logger;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanCondition;
 import com.truthbean.debbie.bean.BeanFactory;
@@ -56,7 +56,7 @@ class DebbieFactoryBeanInfo<Bean> implements MutableFactoryBeanInfo<Bean> {
     public DebbieFactoryBeanInfo(FactoryBeanInfo<Bean> factoryBeanInfo) {
         this.beanClass = factoryBeanInfo.getBeanClass();
         this.bean = factoryBeanInfo.getBean();
-        this.addBeanName(factoryBeanInfo.getServiceName());
+        this.addBeanName(factoryBeanInfo.getName());
         this.addBeanName(factoryBeanInfo.getBeanNames());
         this.beanFactory = factoryBeanInfo.getBeanFactory();
         this.beanType = factoryBeanInfo.getBeanType();
@@ -127,7 +127,7 @@ class DebbieFactoryBeanInfo<Bean> implements MutableFactoryBeanInfo<Bean> {
     }
 
     @Override
-    public String getServiceName() {
+    public String getName() {
         String name = this.beanNames.isEmpty() ? null : this.beanNames.iterator().next();
         if (name == null || name.isBlank()) {
             name = this.getBeanClass().getSimpleName();

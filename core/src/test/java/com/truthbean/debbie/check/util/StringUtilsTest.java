@@ -1,6 +1,6 @@
 package com.truthbean.debbie.check.util;
 
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
 /**

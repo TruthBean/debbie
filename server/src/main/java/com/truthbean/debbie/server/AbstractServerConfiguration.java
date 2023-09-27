@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,20 +9,19 @@
  */
 package com.truthbean.debbie.server;
 
-import com.truthbean.debbie.mvc.MvcConfiguration;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  */
-public abstract class AbstractServerConfiguration extends MvcConfiguration {
+public abstract class AbstractServerConfiguration implements DebbieConfiguration {
 
     private String name;
 
     // NOTE: 端口不能用short类型，因为short类型范围是-32768~32767，而Linux目前的端口最大可以为65535
     private int port = 8080;
     private String host = "localhost";
-    private boolean web = true;
 
     private String serverHeader;
 
@@ -32,11 +31,6 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
      */
     private String socketPath;
 
-    protected AbstractServerConfiguration(ClassLoader classLoader) {
-        super(classLoader);
-    }
-
-    @Override
     public String getName() {
         return name;
     }
@@ -53,15 +47,6 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     protected AbstractServerConfiguration port(int port) {
         // TODO: check port between -1 to 65535
         this.port = port;
-        return this;
-    }
-
-    public boolean isWeb() {
-        return web;
-    }
-
-    protected AbstractServerConfiguration web(boolean web) {
-        this.web = web;
         return this;
     }
 
@@ -93,11 +78,9 @@ public abstract class AbstractServerConfiguration extends MvcConfiguration {
     }
 
     public void check() {
-        if (web) {
-            boolean illegal = ((host == null || host.isBlank()) || port <= 0) || socketPath == null;
-            if (illegal) {
-                throw new RuntimeException("host is null or port is wrong, or java 16 unix domain socket path is null");
-            }
+        boolean illegal = ((host == null || host.isBlank()) || port <= 0) || socketPath == null;
+        if (illegal) {
+            throw new RuntimeException("host is null or port is wrong, or java 16 unix domain socket path is null");
         }
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -44,6 +44,8 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
         beanInfoManager.addIgnoreInterface(EntityResolverAware.class);
         beanInfoManager.addIgnoreInterface(ResultMapRegister.class);
+        beanInfoManager.addIgnoreInterface(CreatePost.class);
+        beanInfoManager.addIgnoreInterface(ConstructPost.class);
 
         DataTransformerCenter.register(new TransactionIsolationLevelTransformer(), TransactionIsolationLevel.class, String.class);
 

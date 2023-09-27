@@ -1,7 +1,7 @@
 package com.truthbean.debbie.agent;
 
 import com.truthbean.Logger;
-import com.truthbean .LoggerFactory;
+import com.truthbean.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -20,8 +20,21 @@ public class PreMainTraceAgent {
      * @param inst Java Class 字节码转换的工具
      */
     public static void premain(String agentArgs, Instrumentation inst) {
-        LOGGER.trace("agentArgs : " + agentArgs);
+        LOGGER.trace("Running premain with agentArgs : " + agentArgs);
         inst.addTransformer(new DefineTransformer(), true);
+    }
+
+    public static void premain(String agentArgs) {
+        LOGGER.trace("Running premain without Instrumentation with agentArgs : " + agentArgs);
+    }
+
+    public static void agentmain(String agentArgs, Instrumentation inst) {
+        LOGGER.trace("Running agentmain with agentArgs : " + agentArgs);
+        inst.addTransformer(new DefineTransformer(), true);
+    }
+
+    public static void agentmain(String agentArgs) {
+        LOGGER.trace("Running agentmain without Instrumentation with agentArgs : " + agentArgs);
     }
 
     static class DefineTransformer implements ClassFileTransformer {

@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager;
 @DebbieBootApplication(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
 public class DebbieGraalvmApplication {
 
-    @BeanInject
+    @BeanInject(require = false)
     private LogService logService;
 
     public static void main(String[] args) {

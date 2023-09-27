@@ -3,8 +3,9 @@ package com.truthbean.debbie.empty;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
-import com.truthbean.debbie.env.SystemEnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
+import com.truthbean.debbie.environment.SystemEnvironment;
 import com.truthbean.debbie.event.AbstractDebbieEvent;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
@@ -19,7 +20,7 @@ class EmptyApplicationContext implements ApplicationContext {
 
     private final ClassLoader classLoader = ClassLoaderUtils.getClassLoader(EmptyApplicationContext.class);
     private final ApplicationArgs applicationArgs = new ApplicationArgs();
-    private final EnvironmentContent environmentContent = new SystemEnvironmentContent();
+    private final Environment environment = new SystemEnvironment();
     private final ResourceResolver resourceResolver = new ResourceResolver();
     private final BeanInfoManager beanInfoManager = new EmptyBeanInfoManager();
     private final GlobalBeanFactory globalBeanFactory = new EmptyGlobalBeanFactory();
@@ -36,8 +37,13 @@ class EmptyApplicationContext implements ApplicationContext {
     }
 
     @Override
-    public EnvironmentContent getEnvContent() {
-        return environmentContent;
+    public EnvironmentDepositoryHolder getEnvironmentHolder() {
+        return null;
+    }
+
+    @Override
+    public Environment getDefaultEnvironment() {
+        return environment;
     }
 
     @Override
@@ -90,6 +96,16 @@ class EmptyApplicationContext implements ApplicationContext {
 
     @Override
     public <T> T factory(Class<T> beanType) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> factories(Class<T> beanType) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public <T> T factory(String profile, String category, Class<T> beanType) {
         return null;
     }
 

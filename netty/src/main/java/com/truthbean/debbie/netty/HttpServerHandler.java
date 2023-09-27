@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,6 +13,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.io.FileNameUtils;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.debbie.mvc.filter.RouterFilterHandler;
 import com.truthbean.debbie.mvc.filter.RouterFilterInfo;
@@ -23,7 +24,7 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.server.session.SessionManager;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -58,14 +59,17 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
     private boolean keepAlive;
     private final ThreadLocal<NettyRouterRequest> routerRequest;
+    private final MvcConfiguration mvcConfiguration;
     private final NettyConfiguration configuration;
 
     private final SessionManager sessionManager;
 
     private final ApplicationContext applicationContext;
 
-    public HttpServerHandler(NettyConfiguration configuration, SessionManager sessionManager, ApplicationContext applicationContext) {
+    public HttpServerHandler(NettyConfiguration configuration, MvcConfiguration mvcConfiguration,
+                             SessionManager sessionManager, ApplicationContext applicationContext) {
         this.configuration = configuration;
+        this.mvcConfiguration = mvcConfiguration;
         this.sessionManager = sessionManager;
         this.applicationContext = applicationContext;
         this.routerRequest = new ThreadLocal<>();
@@ -127,7 +131,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
         if (routerRequest != null) {
             final RouterResponse routerResponse = new RouterResponse();
             if (handleFilter(routerRequest, routerResponse, ctx)) {
-                byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, configuration.getStaticResourcesMapping());
+                byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, mvcConfiguration.getStaticResourcesMapping());
                 if (bytes != null) {
                     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                     HttpStatus httpStatus = routerResponse.getStatus();
@@ -149,7 +153,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
                     }
                     doHandleResponse(ctx, routerRequest, routerResponse, byteBuf, status, false);
                 } else {
-                    RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, configuration);
+                    RouterInfo routerInfo = MvcRouterHandler.getMatchedRouter(routerRequest, mvcConfiguration);
                     RouterResponse response = routerInfo.getResponse();
                     response.copyNoNull(routerResponse);
                     var afterResponse = MvcRouterHandler.handleRouter(routerInfo, applicationContext);
@@ -244,7 +248,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter { // (1)
 
         MediaTypeInfo responseType = routerResponse.getResponseType();
         if (responseType == null) {
-            responseType = configuration.getDefaultContentType();
+            responseType = mvcConfiguration.getDefaultContentType();
         }
 
         if (setContentType)

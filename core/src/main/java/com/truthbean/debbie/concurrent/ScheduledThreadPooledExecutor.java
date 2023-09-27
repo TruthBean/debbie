@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.concurrent;
 
+import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.lang.Callback;
 import com.truthbean.logger.LogLevel;
 import com.truthbean.LoggerFactory;
@@ -52,6 +53,11 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, A
     }
 
     @Override
+    public Future<?> submit(Runnable runnable) {
+        return this.executorService.submit(runnable);
+    }
+
+    @Override
     public <R> Future<R> submit(Callback<R> task, Object... args) {
         return this.executorService.submit(() -> task.call(args));
     }
@@ -91,7 +97,7 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, A
                     System.out.println("wait");
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.log(System.Logger.Level.ERROR, "", e);
                 executorService.shutdownNow();
             }
         }
@@ -102,4 +108,6 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, A
         destroy();
         destroy();
     }
+
+    private static final System.Logger LOGGER = System.getLogger(ScheduledThreadPooledExecutor.class.getName());
 }

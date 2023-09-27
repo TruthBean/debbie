@@ -1,18 +1,19 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.concurrent;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
+import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.lang.Callback;
 import com.truthbean.logger.LogLevel;
-import com.truthbean.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,11 +31,13 @@ public class ThreadPooledExecutor implements PooledExecutor {
 
     private final ExecutorService executorService;
 
+    private final String name;
+
     public ThreadPooledExecutor() {
         this(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() * 10,
                 new NamedThreadFactory()
-                .setUncaughtExceptionHandler((t, e) ->
-                        LoggerFactory.getLogger(LogLevel.ERROR, t.getClass()).error("", e)), 5000L);
+                        .setUncaughtExceptionHandler((t, e) ->
+                                LoggerFactory.getLogger(LogLevel.ERROR, t.getClass()).error("", e)), 5000L);
     }
 
     public ThreadPooledExecutor(int coreSize, int maximumPoolSize, ThreadFactory threadFactory) {
@@ -47,6 +50,11 @@ public class ThreadPooledExecutor implements PooledExecutor {
         this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(1024), threadFactory, new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
+        if (threadFactory instanceof NamedThreadFactory) {
+            this.name = ((NamedThreadFactory) threadFactory).getName();
+        } else {
+            this.name = "";
+        }
     }
 
     public ThreadPooledExecutor(int coreSize, int maximumPoolSize, int queueLength, ThreadFactory threadFactory, long awaitTerminationTime) {
@@ -55,19 +63,46 @@ public class ThreadPooledExecutor implements PooledExecutor {
         this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(queueLength), threadFactory, new DiscardOldestPolicy());
+        if (threadFactory instanceof NamedThreadFactory) {
+            this.name = ((NamedThreadFactory) threadFactory).getName();
+        } else {
+            this.name = "";
+        }
     }
 
-    public ThreadPooledExecutor(ExecutorService executorService, long awaitTerminationTime) {
+    public ThreadPooledExecutor(int coreSize, int maximumPoolSize, int queueLength, ThreadFactory threadFactory,
+                                long awaitTerminationTime, RejectedExecutionHandler rejectedExecutionHandler) {
         this.awaitTerminationTime = awaitTerminationTime;
 
+        this.executorService = new java.util.concurrent.ThreadPoolExecutor(coreSize, maximumPoolSize,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(queueLength), threadFactory, rejectedExecutionHandler);
+        if (threadFactory instanceof NamedThreadFactory) {
+            this.name = ((NamedThreadFactory) threadFactory).getName();
+        } else {
+            this.name = "";
+        }
+    }
+
+    public ThreadPooledExecutor(ExecutorService executorService, long awaitTerminationTime, String name) {
+        this.awaitTerminationTime = awaitTerminationTime;
         this.executorService = executorService;
+        this.name = name;
     }
 
     @Override
     public void execute(Runnable task) {
-        if (task == null) return;
-        if (isRunning())
+        if (task == null) {
+            return;
+        }
+        if (isRunning()) {
             this.executorService.execute(task);
+        }
+    }
+
+    @Override
+    public Future<?> submit(Runnable runnable) {
+        return this.executorService.submit(runnable);
     }
 
     @Override
@@ -75,7 +110,7 @@ public class ThreadPooledExecutor implements PooledExecutor {
         try {
             return this.executorService.invokeAll(tasks, timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            LOGGER.error("executorService.invokeAll error. ", e);
+            LOGGER.error("executorService[" + name + "].invokeAll error. ", e);
         }
         return new ArrayList<>();
     }
@@ -86,29 +121,35 @@ public class ThreadPooledExecutor implements PooledExecutor {
     }
 
     @Override
-    public <R> Future<R> submit(Callback<R> task, Object...args) {
+    public <R> Future<R> submit(Callback<R> task, Object... args) {
         return this.executorService.submit(() -> task.call(args));
     }
 
     @Override
     public void destroy() {
-        while (isRunning()) {
+        if (isRunning()) {
             try {
                 executorService.shutdown();
-                while (!executorService.isTerminated() && ! executorService.isShutdown()) {
+                if (isRunning()) {
                     // wait
                     boolean termination = executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS);
-                    LOGGER.info("waiting for executorService termination");
-                    if (termination) {
-                        break;
-                    } else {
-                        LOGGER.info("force shutdown now");
+                    LOGGER.info("waiting for executorService[" + name + "] termination");
+                    if (!termination) {
+                        LOGGER.info("force shutdown " + name + " now");
                         executorService.shutdownNow();
+                        if (isRunning()) {
+                            // Preserve interrupt status
+                            Thread.currentThread().interrupt();
+                        }
                     }
                 }
             } catch (InterruptedException e) {
-                LOGGER.error("executorService.destroy error. ", e);
+                LOGGER.error("executorService[" + name + "].destroy error. ", e);
                 executorService.shutdownNow();
+                if (isRunning()) {
+                    // Preserve interrupt status
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }

@@ -46,9 +46,9 @@ public class BeanConfigurationRegisterTest {
                 System.out.println(test.getHehe());
                 System.out.println("------------------------------------------------------------------------------");
 
-                System.out.println(beanFactory.factory(ABean.class));
-                System.out.println("------------------------------------------------------------------------------");
                 System.out.println(beanFactory.factory(BBean.class));
+                System.out.println("------------------------------------------------------------------------------");
+                System.out.println(beanFactory.factory(ABean.class));
                 System.out.println("------------------------------------------------------------------------------");
                 System.out.println(beanFactory.factory(CBean.class));
                 System.out.println("------------------------------------------------------------------------------");

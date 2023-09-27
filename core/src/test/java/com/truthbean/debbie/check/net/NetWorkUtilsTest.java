@@ -1,6 +1,6 @@
 package com.truthbean.debbie.check.net;
 
-import com.truthbean.debbie.net.NetWorkUtils;
+import com.truthbean.core.util.NetWorkUtils;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;

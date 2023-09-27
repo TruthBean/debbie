@@ -16,7 +16,7 @@
 package com.truthbean.debbie.net.uri;
 
 import com.truthbean.debbie.util.Constants;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -29,7 +29,7 @@ import java.nio.charset.CoderResult;
 import java.util.*;
 
 /**
- * Splits an HTTP query string into a path string and key-VALUE parameter pairs.
+ * Splits an HTTP query string into a path string and key-value parameter pairs.
  * This decoder is for one time use only.  Create a new instance for each URI:
  * <pre>
  * {@link QueryStringDecoder} decoder = new {@link QueryStringDecoder}("/hello?recipient=world&amp;x=1;y=2");
@@ -49,7 +49,7 @@ import java.util.*;
  * <h3>HashDOS vulnerability fix</h3>
  *
  * As a workaround to the <a href="http://netty.io/s/hashdos">HashDOS</a> vulnerability, the decoder
- * limits the maximum number of decoded key-VALUE parameter pairs, up to {@literal 1024} by
+ * limits the maximum number of decoded key-value parameter pairs, up to {@literal 1024} by
  * default, and you can configure it when you construct the decoder by passing an additional
  * integer parameter.
  *
@@ -184,7 +184,7 @@ public class QueryStringDecoder {
     }
 
     /**
-     * @return the decoded key-VALUE parameter pairs of the URI.
+     * @return the decoded key-value parameter pairs of the URI.
      */
     public Map<String, List<String>> parameters() {
         if (params == null) {
@@ -273,7 +273,7 @@ public class QueryStringDecoder {
         String value = decodeComponent(s, valueStart, valueEnd, charset, false, false);
         List<String> values = params.get(name);
         if (values == null) {
-            // Often there's only 1 VALUE.
+            // Often there's only 1 value.
             values = new ArrayList<String>(1);
             params.put(name, values);
         }

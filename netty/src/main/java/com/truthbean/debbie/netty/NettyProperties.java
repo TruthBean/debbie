@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,12 +9,9 @@
  */
 package com.truthbean.debbie.netty;
 
-import com.truthbean.common.mini.util.StringUtils;
-import com.truthbean.debbie.bean.BeanScanConfiguration;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.mvc.MvcConfiguration;
-import com.truthbean.debbie.mvc.MvcProperties;
-import com.truthbean.debbie.properties.ClassesScanProperties;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.server.BaseServerProperties;
 
 import java.io.IOException;
@@ -29,54 +26,66 @@ import java.util.Set;
  */
 public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
 
-    private final Map<String, NettyConfiguration> configurationMap = new HashMap<>();
+    private final Map<String, Map<String, NettyConfiguration>> configurationMap = new HashMap<>();
 
     public static final String ENABLE_KEY = "debbie.netty.enable";
 
     @Override
-    public Set<String> getProfiles() {
+    public Map<String, Map<String, NettyConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
+        return configurationMap;
+    }
+
+    @Override
+    public Set<String> getCategories(String profile) {
+        return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public Set<String> getCategories() {
         return configurationMap.keySet();
     }
 
     @Override
-    public NettyConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
-        if (StringUtils.hasText(name)) {
-            if (configurationMap.isEmpty()) {
-                buildConfiguration(applicationContext);
-            }
-            return configurationMap.get(name);
-        } else {
-            return getConfiguration(applicationContext);
+    public NettyConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
         }
-    }
-
-    @Override
-    public NettyConfiguration getConfiguration(ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
         if (configurationMap.isEmpty()) {
             buildConfiguration(applicationContext);
         }
         if (configurationMap.isEmpty()) {
-            configurationMap.put(DEFAULT_PROFILE, new NettyConfiguration(applicationContext.getClassLoader()));
+            Map<String, NettyConfiguration> map = new HashMap<>();
+            map.put(DEFAULT_CATEGORY, new NettyConfiguration(applicationContext.getClassLoader()));
+            configurationMap.put(getDefaultProfile(), map);
         }
-        return configurationMap.get(DEFAULT_PROFILE);
+        return configurationMap.get(profile).get(category);
     }
 
     private void buildConfiguration(ApplicationContext applicationContext) {
-        var classLoader = applicationContext.getClassLoader();
+        Set<String> profiles = super.getProfiles();
+        for (String profile : profiles) {
+            Environment environment = super.getEnvironmentIfPresent(profile);
+            var classLoader = applicationContext.getClassLoader();
 
-        NettyConfiguration configuration = new NettyConfiguration(classLoader);
+            NettyConfiguration configuration = new NettyConfiguration(classLoader);
 
-        BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
-        MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration(classLoader);
-        configuration.copyFrom(mvcConfiguration);
-        configuration.copyFrom(beanConfiguration);
+            // BeanScanConfiguration beanConfiguration = ClassesScanProperties.toConfiguration(classLoader);
+            // MvcConfiguration mvcConfiguration = MvcProperties.toConfiguration(classLoader);
+            // configuration.copyFrom(mvcConfiguration);
+            // configuration.copyFrom(beanConfiguration);
 
-        NettyProperties properties = new NettyProperties();
-        properties.loadAndSet(properties, configuration);
+            NettyProperties properties = new NettyProperties();
+            properties.loadAndSet(profile, properties, configuration);
 
-        configuration.setEnable(getBooleanValue(ENABLE_KEY, true));
+            // configuration.setEnable(getBooleanValue(ENABLE_KEY, true));
 
-        configurationMap.put(DEFAULT_PROFILE, configuration);
+            Map<String, NettyConfiguration> map = new HashMap<>();
+            map.put(DEFAULT_CATEGORY, configuration);
+            configurationMap.put(profile, map);
+        }
     }
 
     @Override

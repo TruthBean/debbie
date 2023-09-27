@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -120,7 +120,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             return;
         }
 
-        LOGGER.trace(() -> "creator " + beanClass + " has no raw VALUE");
+        LOGGER.trace(() -> "creator " + beanClass + " has no raw value");
 
         if (initMethod != null) {
             LOGGER.trace(() -> "create " + beanClass + " preparation by init method dependence");
@@ -232,7 +232,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
                 if (allParamsHasValue) {
                     this.bean = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
                 } else {
-                    this.beanInfo.setInitMethodBeanDependent(initMethodBeanDependence);
+                    this.beanInfo.setInitMethodBeanDependencies(initMethodBeanDependence);
                 }
             }
         }
@@ -365,7 +365,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
                     if (allParamsHasValue) {
                         this.bean = constructor.newInstance(values);
                     } else {
-                        this.beanInfo.setConstructorBeanDependent(constructorBeanDependent);
+                        this.beanInfo.setConstructorBeanDependencies(constructorBeanDependent);
                     }
                 }
             }
@@ -394,7 +394,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
     }
 
     private void createPreparationByInitMethodDependent(ApplicationContext applicationContext) {
-        Collection<BeanExecutableDependence> initMethodBeanDependent = beanInfo.getInitMethodBeanDependent();
+        Collection<BeanExecutableDependence> initMethodBeanDependent = beanInfo.getInitMethodBeanDependencies();
         for (BeanExecutableDependence dependence : initMethodBeanDependent) {
             BeanInfo debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {
@@ -409,7 +409,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             if (debbieBeanInfo instanceof MutableFactoryBeanInfo) {
                 DebbieClassFactoryBeanInfo<?> mutableBeanInfo = (DebbieClassFactoryBeanInfo<?>) debbieBeanInfo;
                 if (mutableBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
-                    mutableBeanInfo.setHasVirtualValue(true);
+                    mutableBeanInfo.setVirtualValue(true);
                     // injectedBeanFactory.factory(mutableBeanInfo, false);
                 }
             } else if (debbieBeanInfo instanceof FactoryBeanInfo) {
@@ -420,18 +420,18 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             }
         }
         if (beanInfo.getBean() == null &&
-                (beanInfo.getInitMethodBeanDependent().isEmpty() || beanInfo.isInitMethodBeanDependentHasValue())) {
+                (beanInfo.getInitMethodBeanDependencies().isEmpty() || beanInfo.isInitMethodBeanDependentHasValue())) {
             createRawBeanByInitMethodDependent();
             if (bean != null) {
                 beanInfo.setBean(bean);
-                beanInfo.setHasVirtualValue(false);
+                beanInfo.setVirtualValue(false);
             }
         }
     }
 
     private void createPreparationByConstructorDependent(ApplicationContext applicationContext) {
         beanInfo.getCircleDependencyInConstructor();
-        Collection<BeanExecutableDependence> constructorBeanDependent = beanInfo.getConstructorBeanDependent();
+        Collection<BeanExecutableDependence> constructorBeanDependent = beanInfo.getConstructorBeanDependencies();
         for (BeanExecutableDependence dependence : constructorBeanDependent) {
             var type = dependence.getType();
             var debbieBeanInfo = dependence.getBeanInfo();
@@ -446,7 +446,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             if (debbieBeanInfo instanceof DebbieClassFactoryBeanInfo) {
                 DebbieClassFactoryBeanInfo<?> mutableBeanInfo = (DebbieClassFactoryBeanInfo<?>) debbieBeanInfo;
                 if (mutableBeanInfo.optional().isEmpty() && mutableBeanInfo.hasNoVirtualValue()) {
-                    mutableBeanInfo.setHasVirtualValue(true);
+                    mutableBeanInfo.setVirtualValue(true);
                     injectedBeanFactory.factory(mutableBeanInfo, false);
                 }
             } else if (debbieBeanInfo instanceof FactoryBeanInfo && ((FactoryBeanInfo)debbieBeanInfo).optional().isEmpty()) {
@@ -460,18 +460,18 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
         }*//*
 
         if (beanInfo.getBean() == null &&
-                (beanInfo.getConstructorBeanDependent().isEmpty() || beanInfo.isConstructorBeanDependentHasValue())) {
+                (beanInfo.getConstructorBeanDependencies().isEmpty() || beanInfo.isConstructorBeanDependentHasValue())) {
             createRawBeanByConstructorDependent();
             if (bean != null) {
                 beanInfo.setBean(bean);
-                beanInfo.setHasVirtualValue(false);
+                beanInfo.setVirtualValue(false);
             }
         }
     }
 
     @SuppressWarnings({"unchecked"})
     private void createRawBeanByInitMethodDependent() {
-        List<BeanExecutableDependence> beanDependent = this.beanInfo.getInitMethodBeanDependent();
+        List<BeanExecutableDependence> beanDependent = this.beanInfo.getInitMethodBeanDependencies();
         int parameterCount = initMethod.getParameterCount();
         Parameter[] parameters = initMethod.getParameters();
 
@@ -489,18 +489,18 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             var dependence = beanDependent.get(i);
             var bean = dependence.getBeanInfo();
             if (bean != null) {
-                String serviceName = bean.getServiceName();
+                String serviceName = bean.getName();
                 LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") by initMethod(" + initMethod.getName() + ") " +
                         "dependent " + serviceName);
                 if (bean instanceof DebbieClassFactoryBeanInfo) {
                     DebbieClassFactoryBeanInfo<?> localBeanInfo = (DebbieClassFactoryBeanInfo<?>) bean;
                     if (required && localBeanInfo.hasNoVirtualValue() && localBeanInfo.isEmpty()) {
-                        throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
                     }
                 } else if (bean instanceof FactoryBeanInfo) {
                     FactoryBeanInfo factoryBeanInfo1 = (FactoryBeanInfo) bean;
                     if (required && factoryBeanInfo1.isEmpty()) {
-                        throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                        throw new NoBeanException("bean " + serviceName + " value is null .");
                     }
                 }
                 if (bean instanceof FactoryBeanInfo) {
@@ -531,7 +531,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
     }
 
     private void createRawBeanByConstructorDependent() {
-        List<BeanExecutableDependence> beanDependent = this.beanInfo.getConstructorBeanDependent();
+        List<BeanExecutableDependence> beanDependent = this.beanInfo.getConstructorBeanDependencies();
         Constructor<Bean>[] constructors = beanInfo.getConstructors();
         if (constructors != null && constructors.length > 0) {
             Constructor<Bean> constructor = constructors[0];
@@ -555,13 +555,13 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
                 var dependence = beanDependent.get(i);
                 var bean = dependence.getBeanInfo();
                 if (bean != null) {
-                    String serviceName = bean.getServiceName();
+                    String serviceName = bean.getName();
                     LOGGER.trace(() -> "resolve bean(" + beanClass.getName() + ") constructor dependent " + serviceName);
                     if (bean instanceof FactoryBeanInfo) {
                         FactoryBeanInfo factoryBeanInfo1 = (FactoryBeanInfo) bean;
                         Object beanValue = factoryBeanInfo1.getBean();
                         if (required && beanValue == null) {
-                            throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                            throw new NoBeanException("bean " + serviceName + " value is null .");
                         }
                         if (beanValue != null) {
                             LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
@@ -570,7 +570,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
                     } else if (bean instanceof BeanFactory) {
                         Object beanValue = ((BeanFactory<?>) bean).factoryBean(applicationContext);
                         if (required && beanValue == null) {
-                            throw new NoBeanException("bean " + serviceName + " VALUE is null .");
+                            throw new NoBeanException("bean " + serviceName + " value is null .");
                         }
                         if (beanValue != null) {
                             LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
@@ -578,7 +578,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
                         }
                     }
                 } else if (required) {
-                    throw new NoBeanException("bean " + parameter.getType() + " VALUE is null .");
+                    throw new NoBeanException("bean " + parameter.getType() + " value is null .");
                 } else {
                     values[i] = ReflectionHelper.getDefaultValue(dependence.getType());
                 }
@@ -682,7 +682,7 @@ class BeanCreatorImpl<Bean> implements ReflectionBeanCreator<Bean> {
             }
 
             if (!map.isEmpty()) {
-                this.beanInfo.setFieldBeanDependent(map);
+                this.beanInfo.setFieldBeanDependencies(map);
             }
         } catch (Exception e) {
             BeanCreatedException.throwException(LOGGER, e);

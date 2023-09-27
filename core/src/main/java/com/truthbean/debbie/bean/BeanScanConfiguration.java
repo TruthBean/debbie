@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,7 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -26,7 +26,8 @@ import java.util.*;
  * Created on 2019/3/5 23:16.
  */
 public class BeanScanConfiguration implements DebbieConfiguration {
-    private String name;
+    private String profile;
+    private String category;
     private boolean enable;
     private final Set<Class<?>> scanClasses;
 
@@ -75,12 +76,21 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getProfile() {
+        return profile;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public void setClassLoader(ClassLoader classLoader) {
@@ -264,9 +274,23 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     }
 
     @Override
+    public BeanScanConfiguration copy() {
+        BeanScanConfiguration configuration = new BeanScanConfiguration();
+        configuration.profile = profile;
+        configuration.category = category;
+        configuration.enable = enable;
+        configuration.scanClasses.addAll(scanClasses);
+        configuration.customInjectType.addAll(customInjectType);
+        configuration.classLoader = classLoader;
+        configuration.applicationClass = applicationClass;
+        return configuration;
+    }
+
+    @Override
     public void close() {
         synchronized (BeanScanConfiguration.class) {
-            this.name = null;
+            this.profile = null;
+            this.category = null;
             this.scanClasses.clear();
             this.scanBasePackages.clear();
             this.scanExcludePackages.clear();

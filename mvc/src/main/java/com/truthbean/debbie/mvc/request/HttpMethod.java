@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -98,8 +98,8 @@ public enum HttpMethod {
     }
 
     /**
-     * Resolve the given method VALUE to an {@code HttpMethod}.
-     * @param method the method VALUE as a String
+     * Resolve the given method value to an {@code HttpMethod}.
+     * @param method the method value as a String
      * @return the corresponding {@code HttpMethod}, or {@code null} if not found
      * @since 0.0.2
      */
@@ -110,8 +110,8 @@ public enum HttpMethod {
 
     /**
      * Determine whether this {@code HttpMethod} matches the given
-     * method VALUE.
-     * @param method the method VALUE as a String
+     * method value.
+     * @param method the method value as a String
      * @return {@code true} if it matches, {@code false} otherwise
      * @since 0.0.2
      */

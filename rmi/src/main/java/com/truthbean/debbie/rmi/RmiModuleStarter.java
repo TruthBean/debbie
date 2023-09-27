@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,7 +12,7 @@ package com.truthbean.debbie.rmi;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 
 import java.util.LinkedHashSet;
@@ -25,8 +25,8 @@ import java.util.Set;
 public class RmiModuleStarter implements DebbieModuleStarter {
 
     @Override
-    public boolean enable(EnvironmentContent envContent) {
-        return envContent.getBooleanValue(RmiServerProperties.ENABLE_KEY, false);
+    public boolean enable(Environment environment) {
+        return environment.getBooleanValue(RmiServerProperties.ENABLE_KEY, false);
     }
 
     @Override

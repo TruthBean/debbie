@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -16,7 +16,8 @@ import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.event.*;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
@@ -45,7 +46,9 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     private final ResourceResolver resourceResolver;
 
     private final ApplicationArgs applicationArgs;
-    private final EnvironmentContent envContent;
+
+    private final Environment defaultEnvironment;
+    private final EnvironmentDepositoryHolder environmentDepositoryHolder;
 
     private static final Object OBJECT = new Object();
 
@@ -54,14 +57,15 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     private final AtomicBoolean exiting = new AtomicBoolean(false);
 
     protected DebbieApplicationContext(@Nullable Class<?> applicationClass, ClassLoader classLoader,
-                                       ApplicationArgs applicationArgs, EnvironmentContent envContent,
+                                       ApplicationArgs applicationArgs, EnvironmentDepositoryHolder environmentDepositoryHolder,
                                        Class<?>... beanClasses) {
         exiting.set(false);
         synchronized (OBJECT) {
             this.applicationArgs = applicationArgs;
-            this.envContent = envContent;
+            this.environmentDepositoryHolder = environmentDepositoryHolder;
             this.resourceResolver = new ResourceResolver();
-            this.beanInfoManager = doBeanInitialization(applicationClass, classLoader, resourceResolver, envContent);
+            this.defaultEnvironment = environmentDepositoryHolder.getEnvironmentIfPresent(environmentDepositoryHolder.getDefaultProfile());
+            this.beanInfoManager = doBeanInitialization(applicationClass, classLoader, resourceResolver, defaultEnvironment);
             this.resourceResolver.addResource(beanClasses);
             this.resourceResolver.addResource(applicationClass);
 
@@ -70,8 +74,8 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     private BeanInfoManager doBeanInitialization(@Nullable Class<?> applicationClass, ClassLoader classLoader,
-                                                 ResourceResolver resourceResolver, EnvironmentContent envContent) {
-        if (envContent.getBooleanValue(ClassesScanProperties.RESOURCE_SCAN_ENABLE_KEY, true)) {
+                                                 ResourceResolver resourceResolver, Environment environment) {
+        if (environment.getBooleanValue(ClassesScanProperties.RESOURCE_SCAN_ENABLE_KEY, true)) {
             List<String> resources = ResourcesHandler.getAllClassPathResources("", classLoader);
             resourceResolver.addResource(classLoader, resources);
             resources = ResourcesHandler.getAllClassPathResources(".", classLoader);
@@ -83,7 +87,9 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
                 resourceResolver.addResource(classLoader, resources);
             }
         }
-        DebbieBeanCenter debbieBeanCenter = new DebbieBeanCenter(envContent);
+        DebbieBeanCenter debbieBeanCenter = new DebbieBeanCenter(environment);
+        SimpleBeanFactory<DebbieApplicationContext, DebbieApplicationContext> applicationContextBeanFactory = new SimpleBeanFactory<>(this);
+        debbieBeanCenter.registerBeanInfo(applicationContextBeanFactory);
         debbieBeanCenter.registerBeanRegister(new ConfigurationBeanRegister(this));
         debbieBeanCenter.registerBeanAnnotation(BeanComponent.class, new DefaultBeanComponentParser());
         return debbieBeanCenter;
@@ -136,8 +142,13 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     @Override
-    public EnvironmentContent getEnvContent() {
-        return envContent;
+    public Environment getDefaultEnvironment() {
+        return defaultEnvironment;
+    }
+
+    @Override
+    public EnvironmentDepositoryHolder getEnvironmentHolder() {
+        return environmentDepositoryHolder;
     }
 
     @Override
@@ -200,6 +211,18 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     public <T> T factory(Class<T> type) {
         LOGGER.trace(() -> "factory bean with type " + type.getName());
         return factory(null, type,  true, true, true);
+    }
+
+    @Override
+    public <T> List<T> factories(Class<T> beanType) {
+        // todo
+        return null;
+    }
+
+    @Override
+    public <T> T factory(String profile, String category, Class<T> type) {
+        LOGGER.trace(() -> "factory bean with type(" + type.getName() + ") and profile(" + profile + ") and category(" + category + ")");
+        return null;
     }
 
     @Override
@@ -298,7 +321,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
             List<BeanInfo<? extends Bean>> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
             if (beanInfoList != null && !beanInfoList.isEmpty()) {
                 for (BeanInfo<? extends Bean> beanInfo : beanInfoList) {
-                    Set<String> beanNames = beanInfo.getBeanNames();
+                    Set<String> beanNames = new HashSet<>(); // todo beanInfo.getBeanNames();
                     if (beanInfo instanceof BeanFactory) {
                         if (beanNames != null && !beanNames.isEmpty()) {
                             for (String beanName : beanNames) {

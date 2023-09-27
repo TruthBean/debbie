@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,10 +11,10 @@ package com.truthbean.debbie.reflection;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.common.mini.CommonConstants;
-import com.truthbean.common.mini.util.ClassHelper;
-import com.truthbean.common.mini.util.NumericUtils;
-import com.truthbean.common.mini.util.ReflectionUtils;
+import com.truthbean.core.CommonConstants;
+import com.truthbean.core.util.ClassHelper;
+import com.truthbean.core.util.NumericUtils;
+import com.truthbean.core.util.ReflectionUtils;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,7 +236,7 @@ public class TypeHelper extends ClassHelper {
         if (value == null || value.isEmpty()) return true;
 
         boolean result = true;
-        // java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(VALUE.getClass());
+        // java.lang.reflect.Type[] valueActualTypes = ReflectionHelper.getActualTypes(value.getClass());
         for (Object object : value) {
             if (object instanceof String str) {
                 // todo 需要改良这里的硬编码

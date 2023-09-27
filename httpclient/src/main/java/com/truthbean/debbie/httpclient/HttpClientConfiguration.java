@@ -1,9 +1,9 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -17,7 +17,8 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
  */
 public class HttpClientConfiguration implements DebbieConfiguration {
     private boolean enable;
-    private String name;
+    private String profile;
+    private String category;
 
     private HttpClientProxy proxy;
 
@@ -44,6 +45,9 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     private boolean insecure;
 
+    public HttpClientConfiguration() {
+    }
+
     @Override
     public boolean isEnable() {
         return enable;
@@ -54,12 +58,21 @@ public class HttpClientConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getProfile() {
+        return profile;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public HttpClientProxy getProxy() {
@@ -145,6 +158,12 @@ public class HttpClientConfiguration implements DebbieConfiguration {
 
     public void setUseCache(boolean useCache) {
         this.useCache = useCache;
+    }
+
+    @Override
+    public HttpClientConfiguration copy() {
+        // todo
+        return this;
     }
 
     @Override

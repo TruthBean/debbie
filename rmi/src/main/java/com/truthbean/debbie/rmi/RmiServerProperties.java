@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,17 +10,18 @@
 package com.truthbean.debbie.rmi;
 
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author truthbean
  * @since 0.0.2
  */
-public class RmiServerProperties extends EnvironmentContentHolder implements DebbieProperties<RmiServerConfiguration> {
+public class RmiServerProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<RmiServerConfiguration> {
 
     private final RmiServerConfiguration configuration;
 
@@ -38,13 +39,22 @@ public class RmiServerProperties extends EnvironmentContentHolder implements Deb
     }
 
     @Override
-    public Set<String> getProfiles() {
+    public Map<String, Map<String, RmiServerConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
         return null;
     }
 
     @Override
+    public Set<String> getCategories(String profile) {
+        return null;
+    }
+
+    @Override
+    public RmiServerConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        return null;
+    }
+
     public RmiServerConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
-        if (DEFAULT_PROFILE.equals(name)) {
+        if (getDefaultProfile().equals(name)) {
             return configuration;
         }
         return null;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -18,7 +18,8 @@ import com.truthbean.debbie.properties.DebbieConfiguration;
 public class RmiServerConfiguration implements DebbieConfiguration {
 
     private boolean enable;
-    private String name;
+    private String profile;
+    private String category;
 
     private String rmiBindAddress;
 
@@ -50,16 +51,31 @@ public class RmiServerConfiguration implements DebbieConfiguration {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getProfile() {
+        return profile;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    @Override
+    public RmiServerConfiguration copy() {
+        return null;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     @Override
     public void close() {
-        this.name = null;
+        this.profile = null;
+        this.category = null;
     }
 }

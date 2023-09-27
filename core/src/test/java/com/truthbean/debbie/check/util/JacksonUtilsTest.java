@@ -40,13 +40,13 @@ class JacksonUtilsTest {
 
     @Test
     void xmlToBean() {
-        var text = "<key1>VALUE</key1>";
+        var text = "<key1>value</key1>";
         System.out.println(JacksonUtils.xmlToJsonNode(text));
     }
 
     @Test
     void xmlStreamToBean() {
-        var text = "<map><key1>VALUE</key1><key1>VALUE</key1></map>";
+        var text = "<map><key1>value</key1><key1>value</key1></map>";
         InputStream inputStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
         List list = JacksonUtils.xmlStreamToBean(inputStream, List.class);
         System.out.println(list.toString());

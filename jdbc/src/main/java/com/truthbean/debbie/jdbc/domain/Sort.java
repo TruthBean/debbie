@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,7 @@ package com.truthbean.debbie.jdbc.domain;
 
 import com.truthbean.debbie.data.Streamable;
 import com.truthbean.debbie.util.Assert;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -298,11 +298,11 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
         }
 
         /**
-         * Returns the {@link Direction} enum for the given {@link String} VALUE.
+         * Returns the {@link Direction} enum for the given {@link String} value.
          *
-         * @param value string VALUE
+         * @param value string value
          * @return Direction
-         * @throws IllegalArgumentException in case the given VALUE cannot be parsed into an enum VALUE.
+         * @throws IllegalArgumentException in case the given value cannot be parsed into an enum value.
          */
         public static Direction fromString(String value) {
 
@@ -310,15 +310,15 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
                 return Direction.valueOf(value.toUpperCase(Locale.US));
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format(
-                        "Invalid VALUE '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
+                        "Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
             }
         }
 
         /**
          * Returns the {@link Direction} enum for the given {@link String} or null if it cannot be parsed into an enum
-         * VALUE.
+         * value.
          *
-         * @param value string VALUE
+         * @param value string value
          * @return Optional&lt;Direction&gt;
          */
         public static Optional<Direction> fromOptionalString(String value) {

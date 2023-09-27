@@ -1,8 +1,7 @@
 package com.truthbean.debbie.bean.custom;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.bean.BeanInject;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -49,7 +48,11 @@ class CustomBeanAnnotatedBeanTest {
 
     public static void main(String[] args) {
         CustomBeanAnnotatedBeanTest test = new CustomBeanAnnotatedBeanTest();
-        DebbieApplication.run(test, args);
+        ApplicationFactory applicationFactory = ApplicationFactory.configure(test, args);
+        ApplicationContext applicationContext = applicationFactory.getApplicationContext();
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.registerReflectionBeanRegister(CustomBeanAnnotation.class);
+        applicationFactory.create().postCreate().build().factory().start();
     }
 
     @Test

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -22,7 +22,8 @@ import java.util.Objects;
  * @since 0.0.1
  */
 public class DataSourceConfiguration implements Copyable<DataSourceConfiguration>, DebbieConfiguration {
-    private String name;
+    private String profile;
+    private String category;
 
     private boolean enable;
     private DataSourceDriverName driverName;
@@ -42,7 +43,8 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
 
     public DataSourceConfiguration(DataSourceConfiguration configuration) {
         this.enable = configuration.enable;
-        this.name = configuration.name;
+        this.profile = configuration.profile;
+        this.category = configuration.category;
         this.driverName = configuration.driverName;
         this.url = configuration.url;
         this.user = configuration.user;
@@ -67,17 +69,21 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
     }
 
     @Override
-    public void close() {
-        // todo
+    public String getCategory() {
+        return category;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public DataSourceDriverName getDriverName() {
@@ -145,16 +151,28 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
     }
 
     @Override
+    public void close() {
+        // todo
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DataSourceConfiguration that = (DataSourceConfiguration) o;
-        return Objects.equals(name, that.name) && driverName == that.driverName && Objects.equals(url, that.url) && Objects.equals(user, that.user) && Objects.equals(password, that.password) && Objects.equals(autoCommit, that.autoCommit) && defaultTransactionIsolationLevel == that.defaultTransactionIsolationLevel && Objects.equals(driverProperties, that.driverProperties) && Objects.equals(dataSourceFactoryClass, that.dataSourceFactoryClass);
+        return Objects.equals(profile, that.profile) && Objects.equals(category, category)
+                && driverName == that.driverName && Objects.equals(url, that.url)
+                && Objects.equals(user, that.user) && Objects.equals(password, that.password)
+                && Objects.equals(autoCommit, that.autoCommit)
+                && defaultTransactionIsolationLevel == that.defaultTransactionIsolationLevel
+                && Objects.equals(driverProperties, that.driverProperties)
+                && Objects.equals(dataSourceFactoryClass, that.dataSourceFactoryClass);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, driverName, url, user, password, autoCommit, defaultTransactionIsolationLevel, driverProperties, dataSourceFactoryClass);
+        return Objects.hash(profile, category, driverName, url, user, password, autoCommit,
+                defaultTransactionIsolationLevel, driverProperties, dataSourceFactoryClass);
     }
 
     @Override
@@ -171,7 +189,8 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
     @Override
     public String toString() {
         return "{" +
-                "\"name\":" + name +
+                "\"profile\":" + profile +
+                "\"category\":" + category +
                 ",\"driverName\":\"" + driverName +
                 "\",\"url\":\"" + url + '\"' +
                 ",\"user\":\"" + user + '\"' +

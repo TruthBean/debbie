@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,8 +9,9 @@
  */
 package com.truthbean.debbie.jdbc.datasource.pool;
 
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
@@ -24,7 +25,7 @@ import java.util.Set;
  * @since 0.0.1
  * Created on 2018-03-26 16:41
  */
-public class DefaultDataSourcePoolProperties extends EnvironmentContentHolder implements DebbieProperties<DefaultDataSourcePoolConfiguration> {
+public class DefaultDataSourcePoolProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<DefaultDataSourcePoolConfiguration> {
 
     private final boolean unpool;
 
@@ -40,16 +41,18 @@ public class DefaultDataSourcePoolProperties extends EnvironmentContentHolder im
     private static final String PING_CONNECTION_NOT_USED_FOR_KEY = "debbie.datasource.pool.ping-connection-not-used-for";
     //===========================================================================
 
+    private DataSourceProperties dataSourceProperties;
     private static DefaultDataSourcePoolConfiguration configuration;
-    private final Map<String, DefaultDataSourcePoolConfiguration> configurationMap = new HashMap<>();
+    private final Map<String, Map<String, DefaultDataSourcePoolConfiguration>> configurationMap = new HashMap<>();
 
     public DefaultDataSourcePoolProperties() {
         super();
         if (getMatchedKey(POOL_KEY_PREFIX).isEmpty()) {
             unpool = true;
+            dataSourceProperties = new DataSourceProperties();
         } else {
             unpool = false;
-            DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getConfiguration();
+            DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getDefaultConfiguration();
             configuration = new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
             configuration.setMaxActiveConnection(getIntegerValue(MAX_ACTIVE_CONNECTION_KEY, 10));
             configuration.setMaxIdleConnection(getIntegerValue(MAX_IDLE_CONNECTION_KEY, 5));
@@ -65,26 +68,50 @@ public class DefaultDataSourcePoolProperties extends EnvironmentContentHolder im
                 configuration.setPingConnectionNotUsedFor(getIntegerValue(PING_CONNECTION_NOT_USED_FOR_KEY, 0));
                 configuration.setDataSourceFactoryClass(DefaultDataSourcePoolFactory.class);
             }
-            configurationMap.put(DEFAULT_PROFILE, configuration);
+            Map<String, DefaultDataSourcePoolConfiguration> map;
+            if (configurationMap.containsKey(getDefaultProfile())) {
+                map = configurationMap.get(getDefaultProfile());
+            } else {
+                map = new HashMap<>();
+            }
+            map.put(DEFAULT_CATEGORY, configuration);
         }
     }
 
     @Override
-    public Set<String> getProfiles() {
-        return configurationMap.keySet();
+    public Map<String, Map<String, DefaultDataSourcePoolConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
+        return configurationMap;
     }
 
     @Override
+    public Set<String> getCategories(String profile) {
+        if (unpool) {
+            return dataSourceProperties.getCategories(profile);
+        }
+        return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public DefaultDataSourcePoolConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        return configurationMap.get(profile).get(category);
+    }
+
     public DefaultDataSourcePoolConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
-        if (DEFAULT_PROFILE.equals(name)) {
+        if (DEFAULT_CATEGORY.equals(name)) {
             return getConfiguration(applicationContext);
         }
-        return configurationMap.get(name);
+        return configurationMap.get(getDefaultProfile()).get(name);
     }
 
     @Override
     public DefaultDataSourcePoolConfiguration getConfiguration(ApplicationContext applicationContext) {
-        DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getConfiguration();
+        DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getDefaultConfiguration();
         if (unpool) {
             return new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
         }
@@ -100,6 +127,7 @@ public class DefaultDataSourcePoolProperties extends EnvironmentContentHolder im
 
     @Override
     public void close() throws Exception {
+        configurationMap.forEach((key, map) -> map.clear());
         configurationMap.clear();
         configuration = null;
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,7 +10,7 @@
 package com.truthbean.debbie.bean.custom;
 
 import com.truthbean.debbie.bean.BeanCondition;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -19,7 +19,7 @@ import com.truthbean.debbie.env.EnvironmentContent;
  */
 public class TestCondition implements BeanCondition {
     @Override
-    public boolean matches(EnvironmentContent envContent) {
-        return envContent.containKey("com.truthbean.debbie.core.test.enable");
+    public boolean matches(Environment environment) {
+        return environment.containKey("com.truthbean.debbie.core.test.enable");
     }
 }

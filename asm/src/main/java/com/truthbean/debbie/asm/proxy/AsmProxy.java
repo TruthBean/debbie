@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.asm.proxy;
 
-import com.truthbean.common.mini.util.ReflectionUtils;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.proxy.MethodCallBack;
 import com.truthbean.debbie.proxy.MethodProxyHandlerHandler;
 import com.truthbean.debbie.reflection.ByteArrayClassLoader;
@@ -17,7 +17,7 @@ import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.asm.reflect.AsmClassInfo;
 import com.truthbean.debbie.asm.reflect.AsmConstructorInfo;
 import com.truthbean.debbie.asm.reflect.AsmMethodInfo;
-import com.truthbean.common.mini.util.OsUtils;
+import com.truthbean.core.util.OsUtils;
 import org.objectweb.asm.*;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;

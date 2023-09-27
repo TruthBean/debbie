@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,13 +9,13 @@
  */
 package com.truthbean.debbie.boot;
 
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.logger.LogLevel;
 import com.truthbean.logger.LoggerConfig;
 import com.truthbean.logger.SystemOutLogger;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -31,11 +31,11 @@ public class DebbieLoggerConfig implements LoggerConfig {
 
     public DebbieLoggerConfig() {
         var logger = new SystemOutLogger()
-                .setName("com.truthbean.debbie.properties.BaseProperties")
+                .setName("com.truthbean.debbie.properties.PropertiesResourceEnvironment")
                 .setDefaultLevel(LogLevel.INFO);
-        EnvironmentContentHolder baseProperties = new EnvironmentContentHolder();
+        EnvironmentDepositoryHolder baseProperties = new DebbieEnvironmentDepositoryHolder();
         baseProperties.setLogger(logger);
-        this.properties = baseProperties.getProperties();
+        this.properties = baseProperties.getAllProperties();
         this.levelMap.put("root", LogLevel.WARN);
         this.levelMap.put("com.truthbean", LogLevel.INFO);
         Runtime.getRuntime().addShutdownHook(new Thread(levelMap::clear));

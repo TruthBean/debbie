@@ -12,7 +12,9 @@ import com.truthbean.transformer.DataTransformer;
 // import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
-@DebbieApplicationTest(scan = @DebbieScan(basePackages = "com.truthbean.debbie"))
+import java.util.Optional;
+
+@DebbieApplicationTest(scan = @DebbieScan(basePackages = {"com.truthbean.debbie.check.bean", "com.truthbean.debbie.bean.inter"}))
 class BeanConfigRegisterTest {
 
     static {
@@ -20,27 +22,55 @@ class BeanConfigRegisterTest {
     }
 
     @Test
+    void testAbc() {
+        C c = new CImpl();
+        B b = new BImpl(c);
+        A a = new AImpl(b, c);
+        Abc abc = new AbcImpl(a, b, c);
+        System.out.println(abc);
+
+        CBean cBean = new CBean();
+        ABean aBean = new ABean(cBean);
+        BBean bBean = new BBean(aBean, cBean);
+        cBean.setABean(bBean);
+        cBean.setBBean(aBean);
+        System.out.println(bBean);
+    }
+
+    @Test
+    public void testParams(@BeanInject(name = "我是谁") Object 我是谁) {
+        System.out.println(我是谁);
+    }
+
+    @Test
+    void testCycle(@BeanInject ABean aBean, @BeanInject BBean bBean, @BeanInject CBean cBean) {
+        System.out.println(cBean);
+        System.out.println(aBean);
+        System.out.println(bBean);
+    }
+
+    @Test
     void register(@BeanInject("dataTransformer") DataTransformer<Integer, Character> dataTransformer,
-                         @BeanInject("hehe") Object hehe,
-                         @BeanInject("狄青") Object 狄青,
-                         @BeanInject("幽灵") Object 幽灵,
-                         @BeanInject PropertiesConfigurationTest test,
-                         @BeanInject ABean aBean,
-                         @BeanInject BBean bBean,
-                         @BeanInject CBean cBean,
-                         @BeanInject ABCBean abcBean,
-                         @BeanInject A a, @BeanInject B b, @BeanInject C c,
-                         @BeanInject Abc abc,
-                         @BeanInject DemoBeanComponent demoBeanComponent) {
+                  @BeanInject("hehe") Object hehe,
+                  @BeanInject("狄青") Object 狄青,
+                  @BeanInject("幽灵") Object 幽灵,
+                  @BeanInject(require = false) Optional<PropertiesConfigurationTest> optional,
+                  @BeanInject BBean bBean,
+                  @BeanInject ABean aBean,
+                  @BeanInject CBean cBean,
+                  @BeanInject ABCBean abcBean,
+                  @BeanInject A a, @BeanInject B b, @BeanInject C c,
+                  @BeanInject Abc abc,
+                  @BeanInject DemoBeanComponent demoBeanComponent) {
         System.out.println(dataTransformer.reverse('a'));
         System.out.println(hehe);
         System.out.println(狄青);
         System.out.println(幽灵);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        System.out.println(test.getHehe());
+        optional.ifPresent(test -> System.out.println(test.getHehe()));
         System.out.println("------------------------------------------------------------------------------");
-        System.out.println(aBean);
         System.out.println(bBean);
+        System.out.println(aBean);
         System.out.println(cBean);
         System.out.println("------------------------------------------------------------------------------");
         System.out.println(abcBean);

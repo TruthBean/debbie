@@ -46,10 +46,10 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassInfo<Bean> implement
     private Method initMethod;
     private Method destroyMethod;
 
-    private List<BeanExecutableDependence> constructorBeanDependent;
-    private List<BeanExecutableDependence> initMethodBeanDependent;
-    private Map<FieldInfo, BaseBeanInfo> fieldBeanDependent;
-    private boolean hasVirtualValue;
+    private List<BeanExecutableDependence> constructorBeanDependencies;
+    private List<BeanExecutableDependence> initMethodBeanDependencies;
+    private Map<FieldInfo, BaseBeanInfo> fieldBeanDependencies;
+    private boolean virtualValue;
 
     private final Set<BeanCondition> conditions = new HashSet<>();
 
@@ -500,22 +500,22 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassInfo<Bean> implement
                         this.bean = constructor.newInstance(values);
                         return;
                     }
-                    List<BeanExecutableDependence> constructorBeanDependent = new ArrayList<>();
+                    List<BeanExecutableDependence> constructorBeanDependencies = new ArrayList<>();
                     if (firstParamValue != null) {
                         DebbieClassBeanInfo<Object> info = new DebbieClassBeanInfo<>(Object.class);
                         info.setBean(firstParamValue);
-                        constructorBeanDependent.add(new BeanExecutableDependence(0, info, Object.class));
+                        constructorBeanDependencies.add(new BeanExecutableDependence(0, info, Object.class));
                     }
 
                     boolean constructorInjectRequired = isInitExecutableInjectRequired(constructor);
 
                     Parameter[] parameters = constructor.getParameters();
                     boolean allParamsHasValue = createPreparationByExecutable(singletonBeans, parameters,
-                            parameterCount, values, constructorBeanDependent, constructorInjectRequired, firstParamValue);
+                            parameterCount, values, constructorBeanDependencies, constructorInjectRequired, firstParamValue);
                     if (allParamsHasValue) {
                         this.bean = constructor.newInstance(values);
                     } else {
-                        this.factoryBeanInfo.setConstructorBeanDependent(constructorBeanDependent);
+                        this.factoryBeanInfo.setConstructorBeanDependent(constructorBeanDependencies);
                     }
                 }
             }
@@ -544,8 +544,8 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassInfo<Bean> implement
     }
 
     private void createPreparationByInitMethodDependent(ApplicationContext applicationContext) {
-        Collection<BeanExecutableDependence> initMethodBeanDependent = factoryBeanInfo.getInitMethodBeanDependent();
-        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
+        Collection<BeanExecutableDependence> initMethodBeanDependencies = factoryBeanInfo.getInitMethodBeanDependent();
+        for (BeanExecutableDependence dependence : initMethodBeanDependencies) {
             BaseBeanInfo debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {
                 var type = dependence.getType();
@@ -583,8 +583,8 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassInfo<Bean> implement
 
     private void createPreparationByConstructorDependent(ApplicationContext applicationContext) {
         factoryBeanInfo.getCircleDependencyInConstructor();
-        Collection<BeanExecutableDependence> constructorBeanDependent = factoryBeanInfo.getConstructorBeanDependent();
-        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+        Collection<BeanExecutableDependence> constructorBeanDependencies = factoryBeanInfo.getConstructorBeanDependent();
+        for (BeanExecutableDependence dependence : constructorBeanDependencies) {
             var type = dependence.getType();
             BaseBeanInfo debbieBeanInfo = dependence.getBeanInfo();
             if (debbieBeanInfo == null) {

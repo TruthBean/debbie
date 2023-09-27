@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -115,7 +115,7 @@ public class RouterAnnotationInfo {
     public RouterAnnotationInfo(AnnotationInfo info) {
         if (info.getOrigin().annotationType() == Router.class) {
             this.name = info.invokeAttribute("name");
-            this.value = info.invokeAttribute("VALUE");
+            this.value = info.invokeAttribute("value");
             this.urlPatterns = info.invokeAttribute("urlPatterns");
             this.method = info.invokeAttribute("method");
             this.requestType = info.invokeAttribute("requestType");
@@ -419,7 +419,7 @@ public class RouterAnnotationInfo {
                 "\"desc\":\"" + desc + "\"" + "," +
                 "\"version\":\"" + version + "\"" + "," +
                 "\"hidden\":" + hidden + "," +
-                "\"VALUE\":" + Arrays.toString(value) + "," +
+                "\"value\":" + Arrays.toString(value) + "," +
                 "\"urlPatterns\":" + Arrays.toString(urlPatterns) + "," +
                 "\"method\":" + Arrays.toString(method) + "," +
                 "\"requestType\":" + requestType + "," +

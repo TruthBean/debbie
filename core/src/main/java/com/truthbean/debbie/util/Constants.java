@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.util;
 
-import com.truthbean.common.mini.CommonConstants;
+import com.truthbean.core.CommonConstants;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -55,13 +55,17 @@ public interface Constants extends CommonConstants {
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     String APPLICATION = "application";
+    String DEBBIE_APPLICATION_PROPERTIES = "debbie.application.properties";
+    String PROPERTIES = ".properties";
     String APPLICATION_PROPERTIES = "application.properties";
     String APPLICATION_YAML = "application.yaml";
+    String YAML = ".yaml";
     String APPLICATION_YML = "application.yml";
+    String YML = ".yml";
 
     boolean USE_HTTPS = true;
 
-    
+    String PROFILES = "application.profiles";
 
     String CONFIG_LOCATION_DELIMITERS = ",; \t\n";
 }

@@ -1,6 +1,7 @@
 package com.truthbean.debbie.check.bean;
 
 import com.truthbean.debbie.bean.BeanConfiguration;
+import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieBean;
 import com.truthbean.transformer.DataTransformer;
 
@@ -32,6 +33,16 @@ public class BeanConfigurationTest {
                 System.out.println("匿名内部类...");
             }
         };
+    }
+
+    @DebbieBean(name = "大帅比")
+    public Object handsomeGuy() {
+        return "大帅比";
+    }
+
+    @DebbieBean(name = "我是谁")
+    public Object who(@BeanInject("大帅比") Object handsomeGuy) {
+        return "我是" + handsomeGuy;
     }
 
     @DebbieBean(name = "狄青")

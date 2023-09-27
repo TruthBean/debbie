@@ -1,7 +1,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.Logger;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.domain.Page;

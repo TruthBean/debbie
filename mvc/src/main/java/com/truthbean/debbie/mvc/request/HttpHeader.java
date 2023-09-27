@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -121,7 +121,7 @@ public class HttpHeader {
 
         @Override
         public String toString() {
-            return "{\"name\":\"customize\",\"VALUE\":\"" + name + "\"}";
+            return "{\"name\":\"customize\",\"value\":\"" + name + "\"}";
         }
 
         @Override
@@ -442,7 +442,7 @@ public class HttpHeader {
 
         @Override
         public String toString() {
-            return "{\"name\":\"" + super.toString() + "\",\"VALUE\":\"" + name + "\"}";
+            return "{\"name\":\"" + super.toString() + "\",\"value\":\"" + name + "\"}";
         }
     }
 }

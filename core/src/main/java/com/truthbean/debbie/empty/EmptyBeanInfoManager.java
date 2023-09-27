@@ -75,7 +75,10 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
 
     @Override
     public void registerBeanRegister(BeanRegister beanRegister) {
+    }
 
+    @Override
+    public void registerReflectionBeanRegister(Class<? extends Annotation> annotationClass) {
     }
 
     @Override

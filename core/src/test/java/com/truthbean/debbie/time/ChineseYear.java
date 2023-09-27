@@ -14,51 +14,59 @@ import static java.time.temporal.ChronoUnit.*;
 
 public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable<ChineseYear>, Serializable {
     /**
-     * sun year
+     * calendar year
      * 公历年
      */
-    private final long sunYear;
+    private final long calendarYear;
 
     /**
-     * chinese year
+     * chinese lunarYear
      * 农历年
+     *
+     * the sexagenary cycle
      */
-    private final String year;
+    private final String lunarYear;
 
+    /**
+     * Heavenly Stem
+     * 天干
+     *
+     * Celestial Stem
+     */
     private final String tiangan;
 
     private final String dizhi;
 
     private final String shengxiao;
 
-    private ChineseYear(long sunYear) {
-        this.sunYear = sunYear;
-        this.year = ChineseDateTimeCalculator.thisYear(sunYear);
-        tiangan = String.valueOf(year.charAt(0));
-        dizhi = String.valueOf(year.charAt(1));
-        shengxiao = ChineseDateTimeCalculator.thisYearZodiac(sunYear);
+    private ChineseYear(long calendarYear) {
+        this.calendarYear = calendarYear;
+        this.lunarYear = ChineseDateTimeCalculator.thisYear(calendarYear);
+        tiangan = String.valueOf(lunarYear.charAt(0));
+        dizhi = String.valueOf(lunarYear.charAt(1));
+        shengxiao = ChineseDateTimeCalculator.thisYearZodiac(calendarYear);
     }
 
-    private ChineseYear(int sunYear) {
-        this.sunYear = sunYear;
-        this.year = ChineseDateTimeCalculator.thisYear(sunYear);
-        tiangan = String.valueOf(year.charAt(0));
-        dizhi = String.valueOf(year.charAt(1));
-        shengxiao = ChineseDateTimeCalculator.thisYearZodiac(sunYear);
+    private ChineseYear(int calendarYear) {
+        this.calendarYear = calendarYear;
+        this.lunarYear = ChineseDateTimeCalculator.thisYear(calendarYear);
+        tiangan = String.valueOf(lunarYear.charAt(0));
+        dizhi = String.valueOf(lunarYear.charAt(1));
+        shengxiao = ChineseDateTimeCalculator.thisYearZodiac(calendarYear);
     }
 
-    public String getYear() {
-        return year;
+    public String getLunarYear() {
+        return lunarYear;
     }
 
     public Year toYear() {
-        YEAR.checkValidValue(sunYear);
-        return Year.of((int) sunYear);
+        YEAR.checkValidValue(calendarYear);
+        return Year.of((int) calendarYear);
     }
 
 
-    public Long getSunYear() {
-        return sunYear;
+    public Long getCalendarYear() {
+        return calendarYear;
     }
 
     public String getTiangan() {
@@ -75,7 +83,7 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
 
     @Override
     public int compareTo(ChineseYear o) {
-        return (int) (sunYear - o.sunYear);
+        return (int) (calendarYear - o.calendarYear);
     }
 
     @Override
@@ -83,7 +91,7 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
         if (!Chronology.from(temporal).equals(IsoChronology.INSTANCE)) {
             throw new DateTimeException("Adjustment only supported on ISO date-time");
         }
-        return temporal.with(YEAR, sunYear);
+        return temporal.with(YEAR, calendarYear);
     }
 
     @Override
@@ -105,9 +113,9 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
             ChronoField f = (ChronoField) field;
             f.checkValidValue(newValue);
             switch (f) {
-                case YEAR_OF_ERA: return ChineseYear.of(sunYear < 1 ? 1 - newValue : newValue);
+                case YEAR_OF_ERA: return ChineseYear.of(calendarYear < 1 ? 1 - newValue : newValue);
                 case YEAR: return ChineseYear.of(newValue);
-                case ERA: return (getLong(ERA) == newValue ? this : ChineseYear.of(1 - sunYear));
+                case ERA: return (getLong(ERA) == newValue ? this : ChineseYear.of(1 - calendarYear));
             }
             throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
         }
@@ -138,7 +146,7 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
         if (yearsToAdd == 0) {
             return this;
         }
-        return of(YEAR.checkValidIntValue(sunYear + yearsToAdd));  // overflow safe
+        return of(YEAR.checkValidIntValue(calendarYear + yearsToAdd));  // overflow safe
     }
 
     public static ChineseYear of(int isoYear) {
@@ -164,7 +172,7 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
     public long until(Temporal endExclusive, TemporalUnit unit) {
         ChineseYear end = ChineseYear.from(endExclusive);
         if (unit instanceof ChronoUnit) {
-            long yearsUntil = end.sunYear - sunYear;  // no overflow
+            long yearsUntil = end.calendarYear - calendarYear;  // no overflow
             switch ((ChronoUnit) unit) {
                 case YEARS: return yearsUntil;
                 case DECADES: return yearsUntil / 10;
@@ -204,7 +212,7 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
     @Override
     public ValueRange range(TemporalField field) {
         if (field == YEAR_OF_ERA) {
-            return (sunYear <= 0 ? ValueRange.of(1, Year.MAX_VALUE + 1) : ValueRange.of(1, Year.MAX_VALUE));
+            return (calendarYear <= 0 ? ValueRange.of(1, Year.MAX_VALUE + 1) : ValueRange.of(1, Year.MAX_VALUE));
         }
         return Temporal.super.range(field);
     }
@@ -218,9 +226,9 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
     public long getLong(TemporalField field) {
         if (field instanceof ChronoField) {
             switch ((ChronoField) field) {
-                case YEAR_OF_ERA: return (sunYear < 1 ? 1 - sunYear : sunYear);
-                case YEAR: return sunYear;
-                case ERA: return (sunYear < 1 ? 0 : 1);
+                case YEAR_OF_ERA: return (calendarYear < 1 ? 1 - calendarYear : calendarYear);
+                case YEAR: return calendarYear;
+                case ERA: return (calendarYear < 1 ? 0 : 1);
             }
             throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
         }
@@ -235,11 +243,21 @@ public final class ChineseYear implements Temporal, TemporalAdjuster, Comparable
     @Override
     public String toString() {
         return "{" +
-                "\"sunYear\":" + sunYear +
-                ",\"year\":\"" + year + '\"' +
+                "\"calendarYear\":" + calendarYear +
+                ",\"lunarYear\":\"" + lunarYear + '\"' +
                 ",\"tiangan\":\"" + tiangan + '\"' +
                 ",\"dizhi\":\"" + dizhi + '\"' +
                 ",\"shengxiao\":\"" + shengxiao + '\"' +
+                '}';
+    }
+
+    public String toChineseString() {
+        return "{" +
+                "\"公历年\":" + calendarYear +
+                ",\"农历年\":\"" + lunarYear + '\"' +
+                ",\"天干\":\"" + tiangan + '\"' +
+                ",\"地支\":\"" + dizhi + '\"' +
+                ",\"生肖\":\"" + shengxiao + '\"' +
                 '}';
     }
 

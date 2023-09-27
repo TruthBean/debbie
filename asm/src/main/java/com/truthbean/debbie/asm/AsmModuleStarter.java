@@ -5,7 +5,7 @@ import com.truthbean.debbie.asm.proxy.AsmGenerated;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContent;
+import com.truthbean.debbie.environment.Environment;
 
 /**
  * @author TruthBean
@@ -14,8 +14,8 @@ import com.truthbean.debbie.env.EnvironmentContent;
  */
 public class AsmModuleStarter implements DebbieModuleStarter {
     @Override
-    public boolean enable(EnvironmentContent envContent) {
-        return DebbieModuleStarter.super.enable(envContent);
+    public boolean enable(Environment environment) {
+        return DebbieModuleStarter.super.enable(environment);
     }
 
     @Override

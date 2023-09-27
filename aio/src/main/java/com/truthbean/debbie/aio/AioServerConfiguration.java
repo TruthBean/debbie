@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.server.AbstractServerConfiguration;
 
 /**
@@ -18,7 +19,6 @@ import com.truthbean.debbie.server.AbstractServerConfiguration;
  */
 public class AioServerConfiguration extends AbstractServerConfiguration {
     protected AioServerConfiguration(ClassLoader classLoader) {
-        super(classLoader);
     }
 
     private boolean enable;
@@ -37,6 +37,25 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
     }
 
     @Override
+    public String getProfile() {
+        return null;
+    }
+
+    @Override
+    public String getCategory() {
+        return null;
+    }
+
+    @Override
+    public <T extends DebbieConfiguration> T copy() {
+        return null;
+    }
+
+    @Override
+    public void close() {
+
+    }
+
     public void setEnable(boolean enable) {
         this.enable = enable;
     }

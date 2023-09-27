@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
  * @author TruthBean/Rogar·Q
  * @since Created on 2020-06-23 23:15.
  */
-class InjectedBeanFactoryTest {
+public class InjectedBeanFactoryTest {
 
     @Test
-    void configure() {
+    public void configure() {
         for (int i = 0; i < 2; i++) {
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             applicationFactory.release();

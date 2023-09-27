@@ -38,10 +38,6 @@ public class JdkBeanProxyHandler implements BeanProxyHandler {
                 if (beanInterface != null) {
                     LOGGER.trace(() -> "resolve field dependent bean(" + beanInterface + ") by implement class " + beanClass);
                     JdkDynamicProxy<T, K> dynamicProxy = new JdkDynamicProxy<>();
-                    if (!classBeanInfo.isCreated()) {
-                        LOGGER.error("bean(" + beanInterface + ") has no VALUE!!");
-                        return null;
-                    }
                     return dynamicProxy.invokeJdkProxy(this.applicationContext, beanInterface, bean);
                 }
             }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.properties;
 
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -27,81 +27,107 @@ import java.util.Set;
  * Created on 2019/3/5 21:58.
  */
 @SuppressWarnings({"unchecked"})
-public class ClassesScanProperties extends EnvironmentContentHolder implements DebbieProperties<BeanScanConfiguration> {
-    private static final Map<String, BeanScanConfiguration> configurationMap = new HashMap<>();
+public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<BeanScanConfiguration> {
+    private static final Map<String, Map<String, BeanScanConfiguration>> configurationMap = new HashMap<>();
 
-    //===========================================================================
+    //===============================================================================================================
+    public static final String SCAN_ENABLE_KEY = "debbie.core.scan.enable";
     public static final String SCAN_CLASSES_KEY = "debbie.core.scan.classes";
     public static final String SCAN_BASE_PACKAGES_KEY = "debbie.core.scan.base-packages";
     public static final String SCAN_EXCLUDE_PACKAGES_KEY = "debbie.core.scan.exclude-packages";
     public static final String SCAN_EXCLUDE_CLASSES_KEY = "debbie.core.scan.exclude-classes";
 
     public static final String CUSTOM_INJECT_KEY = "debbie.core.scan.inject-classes";
-    //===========================================================================
+    //===============================================================================================================
     public static final String JDK_PROXY_ENABLE_KEY = "debbie.jdk-proxy.enable";
     public static final String RESOURCE_SCAN_ENABLE_KEY = "debbie.resource.scan.enable";
+    //===============================================================================================================
 
     static {
         BeanScanConfiguration configuration = new BeanScanConfiguration();
+        configuration.setProfile(DEFAULT_PROFILE);
+        configuration.setCategory(DEFAULT_CATEGORY);
 
         ClassesScanProperties properties = new ClassesScanProperties();
-        Set<Class<?>> classes = properties.getClassSetValue(SCAN_CLASSES_KEY, ",");
-        if (classes != null) {
-            configuration.addScanClasses(classes);
-        }
+        boolean enable = properties.getBooleanValue(SCAN_ENABLE_KEY, true);
+        configuration.setEnable(enable);
 
-        boolean scan = properties.getBooleanValue(RESOURCE_SCAN_ENABLE_KEY, true);
-        configuration.setEnableScanResources(scan);
+        if (configuration.isEnable()) {
+            Set<Class<?>> classes = properties.getClassSetValue(SCAN_CLASSES_KEY, ",");
+            if (classes != null) {
+                configuration.addScanClasses(classes);
+            }
 
-        List<String> packages = properties.getStringListValue(SCAN_BASE_PACKAGES_KEY, ",");
-        if (packages != null) {
-            configuration.addScanBasePackages(packages);
-        }
+            boolean scan = properties.getBooleanValue(RESOURCE_SCAN_ENABLE_KEY, true);
+            configuration.setEnableScanResources(scan);
 
-        List<String> excludePackages = properties.getStringListValue(SCAN_EXCLUDE_PACKAGES_KEY, ",");
-        if (excludePackages != null) {
-            configuration.addScanExcludePackages(excludePackages);
-        }
+            List<String> packages = properties.getStringListValue(SCAN_BASE_PACKAGES_KEY, ",");
+            if (packages != null) {
+                configuration.addScanBasePackages(packages);
+            }
 
-        Set<Class<?>> excludeClasses = properties.getClassSetValue(SCAN_EXCLUDE_CLASSES_KEY, ",");
-        if (excludeClasses != null) {
-            configuration.addScanExcludeClasses(excludeClasses);
-        }
+            List<String> excludePackages = properties.getStringListValue(SCAN_EXCLUDE_PACKAGES_KEY, ",");
+            if (excludePackages != null) {
+                configuration.addScanExcludePackages(excludePackages);
+            }
 
-        Set<Class<?>> injectClasses = properties.getClassSetValue(CUSTOM_INJECT_KEY, ",");
-        if (injectClasses != null) {
-            for (Class<?> injectClass : injectClasses) {
-                if (Annotation.class.isAssignableFrom(injectClass)) {
-                    configuration.addCustomInjectType((Class<? extends Annotation>) injectClass);
+            Set<Class<?>> excludeClasses = properties.getClassSetValue(SCAN_EXCLUDE_CLASSES_KEY, ",");
+            if (excludeClasses != null) {
+                configuration.addScanExcludeClasses(excludeClasses);
+            }
+
+            Set<Class<?>> injectClasses = properties.getClassSetValue(CUSTOM_INJECT_KEY, ",");
+            if (injectClasses != null) {
+                for (Class<?> injectClass : injectClasses) {
+                    if (Annotation.class.isAssignableFrom(injectClass)) {
+                        configuration.addCustomInjectType((Class<? extends Annotation>) injectClass);
+                    }
                 }
             }
         }
-
-        configurationMap.put(DEFAULT_PROFILE, configuration);
+        if (configurationMap.isEmpty()) {
+            Map<String, BeanScanConfiguration> map = new HashMap<>();
+            map.put(DEFAULT_CATEGORY, configuration);
+            configurationMap.put(DEFAULT_PROFILE, map);
+        } else {
+            Map<String, BeanScanConfiguration> map = configurationMap.get(DEFAULT_PROFILE);
+            map.put(DEFAULT_CATEGORY, configuration);
+        }
     }
 
     public static BeanScanConfiguration toConfiguration(ClassLoader classLoader) {
-        BeanScanConfiguration configuration = configurationMap.get(DEFAULT_PROFILE);
-        configuration.setClassLoader(classLoader);
+        Map<String, BeanScanConfiguration> map = configurationMap.get(DEFAULT_PROFILE);
+        BeanScanConfiguration configuration = map.get(DEFAULT_CATEGORY);
+        if (configuration.getClassLoader() == null) {
+            configuration.setClassLoader(classLoader);
+        }
         return configuration;
     }
 
     @Override
-    public Set<String> getProfiles() {
-        return configurationMap.keySet();
+    public Map<String, Map<String, BeanScanConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
+        return configurationMap;
     }
 
     @Override
-    public BeanScanConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
-        if (StringUtils.hasText(name)) {
-            BeanScanConfiguration configuration = configurationMap.get(name);
-            if (configuration.getClassLoader() != null) {
-                configuration.setClassLoader(applicationContext.getClassLoader());
-            }
-            return configuration;
-        } else {
-            return getConfiguration(applicationContext);
+    public Set<String> getCategories(String profile) {
+        return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public BeanScanConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
         }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        Map<String, BeanScanConfiguration> map = configurationMap.get(profile);
+        BeanScanConfiguration configuration = map.get(category);
+        if (configuration.getClassLoader() != null) {
+            configuration.setClassLoader(applicationContext.getClassLoader());
+        }
+        return configuration;
     }
 
     @Override
@@ -112,6 +138,7 @@ public class ClassesScanProperties extends EnvironmentContentHolder implements D
 
     @Override
     public void close() throws IOException {
+        configurationMap.forEach((profile, map) -> map.clear());
         configurationMap.clear();
     }
 }

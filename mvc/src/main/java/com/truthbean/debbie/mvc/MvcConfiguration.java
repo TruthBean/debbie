@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,7 +15,8 @@ import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.exception.DispatcherMappingFormatException;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
+import com.truthbean.debbie.properties.DebbieConfiguration;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +27,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/2/25 22:08.
  */
-public class MvcConfiguration extends BeanScanConfiguration {
+public class MvcConfiguration implements DebbieConfiguration {
 
     /**
      * static resources mapping
@@ -76,12 +77,10 @@ public class MvcConfiguration extends BeanScanConfiguration {
 
     private Class<? extends AbstractResponseContentHandler<?, ?>> responseContentHandler;
 
-    public MvcConfiguration(ClassLoader classLoader) {
-        super(classLoader);
+    public MvcConfiguration() {
     }
 
-    public MvcConfiguration(MvcConfiguration configuration, ClassLoader classLoader) {
-        super(classLoader);
+    public MvcConfiguration(MvcConfiguration configuration) {
         copyFrom(configuration);
     }
 
@@ -249,7 +248,7 @@ public class MvcConfiguration extends BeanScanConfiguration {
     }
 
     public static Builder builder(ClassLoader classLoader) {
-        return new Builder(new MvcConfiguration(classLoader));
+        return new Builder(new MvcConfiguration());
     }
 
     public static final class Builder {
@@ -368,6 +367,43 @@ public class MvcConfiguration extends BeanScanConfiguration {
         public MvcConfiguration build() {
             return configuration;
         }
+    }
+
+    @Override
+    public MvcConfiguration copy() {
+        MvcConfiguration configuration = new MvcConfiguration();
+        configuration.staticResourcesMappingLocation.putAll(staticResourcesMappingLocation);
+        configuration.dispatcherMapping = dispatcherMapping;
+        configuration.allowClientResponseType = allowClientResponseType;
+        configuration.defaultResponseTypes.addAll(defaultContentTypes);
+        configuration.acceptClientContentType = acceptClientContentType;
+        configuration.defaultContentTypes.addAll(defaultContentTypes);
+        configuration.enableCors = enableCors;
+        configuration.corsOrigins.addAll(corsOrigins);
+        configuration.corsMethods.addAll(corsMethods);
+        configuration.corsHeaders.addAll(corsHeaders);
+        configuration.enableCrsf = enableCrsf;
+        configuration.enableSecurity = enableSecurity;
+        configuration.templateSuffix = templateSuffix;
+        configuration.templatePrefix = templatePrefix;
+        configuration.charset = charset;
+        configuration.responseContentHandler = responseContentHandler;
+        return configuration;
+    }
+
+    @Override
+    public boolean isEnable() {
+        return false;
+    }
+
+    @Override
+    public String getProfile() {
+        return null;
+    }
+
+    @Override
+    public String getCategory() {
+        return null;
     }
 
     @Override

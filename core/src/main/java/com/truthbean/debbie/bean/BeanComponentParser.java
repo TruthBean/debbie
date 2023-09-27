@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,7 +15,7 @@ import com.truthbean.debbie.annotation.AnnotationMethodInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -63,7 +63,7 @@ public interface BeanComponentParser {
                         attribute = method.getName();
                     }
                     if (type == BeanComponent.class) {
-                        if (("VALUE".equals(attribute) || "VALUE".equals(method.getName()))
+                        if (("value".equals(attribute) || "value".equals(method.getName()))
                                 && method.getReturnType() == String.class) {
                             valueMethod = method;
                             continue;
@@ -170,7 +170,7 @@ public interface BeanComponentParser {
                         beanName = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }
-                    if (info.aliasFor("VALUE", String.class)) {
+                    if (info.aliasFor("value", String.class)) {
                         nameValue = (String) annotationInfo.properties().get(name).getValue();
                         continue;
                     }

@@ -1,15 +1,15 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.server;
 
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.UUID;
@@ -18,7 +18,7 @@ import java.util.UUID;
  * @author TruthBean
  * @since 0.0.1
  */
-public abstract class BaseServerProperties<C extends AbstractServerConfiguration> extends EnvironmentContentHolder
+public abstract class BaseServerProperties<C extends AbstractServerConfiguration> extends DebbieEnvironmentDepositoryHolder
         implements DebbieProperties<C> {
 
     //===========================================================================
@@ -33,12 +33,28 @@ public abstract class BaseServerProperties<C extends AbstractServerConfiguration
     // NOTE: need java16 least
     private static final String SOCKET_PATH = "debbie.server.unix.socket";
     // ===========================================================================
+    private static final String SERVER_PREFIX = "debbie.server.";
+    private static final String DOT_PORT = ".port";
+    private static final String DOT_HOST = ".host";
+    private static final String DOT_SERVER_HEADER = ".server-header";
 
-    public <P extends BaseServerProperties<C>> void loadAndSet(P properties, C configuration) {
+    public <P extends BaseServerProperties<C>> void loadAndSet(String category, P properties, C configuration) {
         String name = properties.getStringValue(APPLICATION_NAME, UUID.randomUUID().toString());
-        int port = properties.getIntegerValue(SERVER_PORT, 8080);
-        String host = properties.getStringValue(SERVER_HOST, "0.0.0.0");
-        configuration.name(name).web(true).port(port).host(host);
+        var portStr = properties.getValue(SERVER_PREFIX + "." + category + DOT_PORT);
+        int port;
+        if (portStr == null) {
+            port = properties.getIntegerValue(SERVER_PORT, 8080);
+        } else {
+            port = properties.getInteger(portStr, 8080);
+        }
+        var hostStr = properties.getValue(SERVER_PREFIX + "." + category + DOT_PORT);
+        String host;
+        if (hostStr == null) {
+            host = properties.getStringValue(SERVER_HOST, "0.0.0.0");
+        } else {
+            host = properties.getStringValue(hostStr, "0.0.0.0");
+        }
+        configuration.name(name).port(port).host(host);
     }
 
 }

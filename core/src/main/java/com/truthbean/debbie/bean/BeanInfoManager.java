@@ -63,6 +63,8 @@ public interface BeanInfoManager extends BeanAnnotationManager {
 
     void registerBeanRegister(BeanRegister beanRegister);
 
+    void registerReflectionBeanRegister(Class<? extends Annotation> annotationClass);
+
     void registerClass(Class<?> beanClass);
 
     <Bean> void register(final Class<Bean> clazz);

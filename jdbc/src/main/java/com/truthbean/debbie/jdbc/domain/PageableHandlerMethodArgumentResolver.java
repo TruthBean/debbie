@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,7 +13,7 @@ import com.truthbean.debbie.data.validate.DataValidateFactory;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
 import com.truthbean.debbie.util.Assert;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -300,7 +300,7 @@ public class PageableHandlerMethodArgumentResolver implements ExecutableArgument
      * Tries to parse the given {@link String} into an integer and applies the given boundaries. Will return 0 if the
      * {@link String} cannot be parsed.
      *
-     * @param parameter  the parameter VALUE.
+     * @param parameter  the parameter value.
      * @param upper      the upper bound to be applied.
      * @param shiftIndex whether to shift the index if {@link #oneIndexedParameters} is set to true.
      * @return

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,10 +10,10 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.properties.DebbieProperties;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -26,8 +26,8 @@ import java.util.Set;
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends EnvironmentContentHolder implements DebbieProperties<DataSourceConfiguration>, Closeable {
-    private final Map<String, DataSourceConfiguration> configurationMap = new HashMap<>();
+public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<DataSourceConfiguration>, Closeable {
+    private final Map<String, Map<String, DataSourceConfiguration>> configurationMap = new HashMap<>();
 
     protected static final String DATASOURCE_KEY_PREFIX = "debbie.datasource.";
 
@@ -61,100 +61,112 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     private void setCustomConfiguration() {
-        Map<String, String> dataSourceProperties = getMatchedKey(DATASOURCE_KEY_PREFIX);
-        dataSourceProperties.forEach((k, v) -> {
-            if (!k.equals(URL_KEY) && k.endsWith(URL)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - URL.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                String url = getText(v, "jdbc:mysql://localhost:3306");
-                configuration.setUrl(url);
-            }
-            if (!k.equals(DRIVER_NAME_KEY) && k.endsWith(DRIVER_NAME)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - DRIVER_NAME.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                configuration.setDriverName(getDriverName(v, configuration.getUrl()));
-            }
-            if (!k.equals(USER_KEY) && k.endsWith(USER)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - USER.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                String user = getText(v, "root");
-                configuration.setUser(user);
-            }
-            if (!k.equals(PASSWORD_KEY) && k.endsWith(PASSWORD)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - PASSWORD.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                configuration.setPassword(v);
-            }
-            if (!k.equals(AUTO_COMMIT_KEY) && k.endsWith(AUTO_COMMIT)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - AUTO_COMMIT.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                configuration.setAutoCommit(getBoolean(v, false));
-            }
-            if (!k.equals(DEFAULT_TRANSACTION_ISOLATION_LEVEL) && k.endsWith(LEVEL)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - LEVEL.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                if (StringUtils.hasText(v)) {
-                    TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.valueOf(v.toUpperCase());
-                    configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
-                } else {
-                    configuration.setDefaultTransactionIsolationLevel(TransactionIsolationLevel.TRANSACTION_READ_COMMITTED);
+        Set<String> profiles = super.getProfiles();
+        for (String profile : profiles) {
+            Map<String, String> dataSourceProperties = getMatchedKey(DATASOURCE_KEY_PREFIX);
+            dataSourceProperties.forEach((k, v) -> {
+                if (!k.equals(URL_KEY) && k.endsWith(URL)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - URL.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    String url = getText(v, "jdbc:mysql://localhost:3306");
+                    configuration.setUrl(url);
                 }
-            }
-            if (!k.equals(DATA_SOURCE_FACTORY) && k.endsWith(FACTORY)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.length() - FACTORY.length();
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
-                @SuppressWarnings("unchecked")
-                Class<? extends DataSourceFactory> dataSourceFactoryClass = (Class<? extends DataSourceFactory>) getClass(v, defaultClassName);
-                configuration.setDataSourceFactoryClass(dataSourceFactoryClass);
-            }
-            if (!k.startsWith(DRIVER_PROPERTIES_PREFIX) && k.startsWith(DATASOURCE_KEY_PREFIX) && k.contains(DRIVER)) {
-                var startIndex = DATASOURCE_KEY_PREFIX.length();
-                var endIndex = k.indexOf(DRIVER);
-                String name = k.substring(startIndex, endIndex);
-                DataSourceConfiguration configuration = getConfiguration(name);
-                Map<String, Object> driverProperties;
-                if (configuration.getDriverProperties() != null) {
-                    driverProperties = configuration.getDriverProperties();
-                } else {
-                    driverProperties = new HashMap<>();
+                if (!k.equals(DRIVER_NAME_KEY) && k.endsWith(DRIVER_NAME)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - DRIVER_NAME.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    configuration.setDriverName(getDriverName(v, configuration.getUrl()));
                 }
-                String key = k.substring(k.indexOf(DRIVER) + DRIVER.length());
-                driverProperties.put(key, v);
-                configuration.setDriverProperties(driverProperties);
-            }
-        });
+                if (!k.equals(USER_KEY) && k.endsWith(USER)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - USER.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    String user = getText(v, "root");
+                    configuration.setUser(user);
+                }
+                if (!k.equals(PASSWORD_KEY) && k.endsWith(PASSWORD)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - PASSWORD.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    configuration.setPassword(v);
+                }
+                if (!k.equals(AUTO_COMMIT_KEY) && k.endsWith(AUTO_COMMIT)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - AUTO_COMMIT.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    configuration.setAutoCommit(getBoolean(v, false));
+                }
+                if (!k.equals(DEFAULT_TRANSACTION_ISOLATION_LEVEL) && k.endsWith(LEVEL)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - LEVEL.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    if (StringUtils.hasText(v)) {
+                        TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.valueOf(v.toUpperCase());
+                        configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
+                    } else {
+                        configuration.setDefaultTransactionIsolationLevel(TransactionIsolationLevel.TRANSACTION_READ_COMMITTED);
+                    }
+                }
+                if (!k.equals(DATA_SOURCE_FACTORY) && k.endsWith(FACTORY)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.length() - FACTORY.length();
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
+                    @SuppressWarnings("unchecked")
+                    Class<? extends DataSourceFactory> dataSourceFactoryClass = (Class<? extends DataSourceFactory>) getClass(v, defaultClassName);
+                    configuration.setDataSourceFactoryClass(dataSourceFactoryClass);
+                }
+                if (!k.startsWith(DRIVER_PROPERTIES_PREFIX) && k.startsWith(DATASOURCE_KEY_PREFIX) && k.contains(DRIVER)) {
+                    var startIndex = DATASOURCE_KEY_PREFIX.length();
+                    var endIndex = k.indexOf(DRIVER);
+                    String name = k.substring(startIndex, endIndex);
+                    DataSourceConfiguration configuration = getConfiguration(profile, name);
+                    Map<String, Object> driverProperties;
+                    if (configuration.getDriverProperties() != null) {
+                        driverProperties = configuration.getDriverProperties();
+                    } else {
+                        driverProperties = new HashMap<>();
+                    }
+                    String key = k.substring(k.indexOf(DRIVER) + DRIVER.length());
+                    driverProperties.put(key, v);
+                    configuration.setDriverProperties(driverProperties);
+                }
+            });
+        }
     }
 
-    private DataSourceConfiguration getConfiguration(String name) {
+    private DataSourceConfiguration getConfiguration(String profile, String category) {
+        Map<String, DataSourceConfiguration> map;
+        if (configurationMap.containsKey(profile)) {
+            map = configurationMap.get(profile);
+        } else {
+            map = new HashMap<>();
+        }
         DataSourceConfiguration configuration;
-        if (configurationMap.containsKey(name)) {
-            configuration = configurationMap.get(name);
+        if (map.containsKey(category)) {
+            configuration = map.get(category);
         } else {
             configuration = new DataSourceConfiguration();
-            configuration.setName(name);
-            configurationMap.put(name, configuration);
+            configuration.setProfile(profile);
+            configuration.setCategory(category);
+            map.put(category, configuration);
         }
+        configurationMap.put(profile, map);
         return configuration;
     }
 
     private void setDefaultConfiguration() {
         DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration();
-        defaultConfiguration.setName("default");
+        defaultConfiguration.setProfile(getDefaultProfile());
+        defaultConfiguration.setCategory(DEFAULT_CATEGORY);
         String url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
         defaultConfiguration.setUrl(url);
 
@@ -188,7 +200,14 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
         Class<? extends DataSourceFactory> dataSourceFactoryClass =
                 (Class<? extends DataSourceFactory>) getClassValue(DATA_SOURCE_FACTORY, defaultClassName);
         defaultConfiguration.setDataSourceFactoryClass(dataSourceFactoryClass);
-        configurationMap.put(DEFAULT_PROFILE, defaultConfiguration);
+        Map<String, DataSourceConfiguration> map;
+        if (configurationMap.containsKey(getDefaultProfile())) {
+            map = configurationMap.get(getDefaultProfile());
+        } else {
+            map = new HashMap<>();
+        }
+        map.put(DEFAULT_CATEGORY, defaultConfiguration);
+        configurationMap.put(getDefaultProfile(), map);
     }
 
     private DataSourceDriverName getDriverName(String driverName, String url) {
@@ -259,8 +278,18 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     @Override
-    public Set<String> getProfiles() {
-        return configurationMap.keySet();
+    public Map<String, Map<String, DataSourceConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
+        return configurationMap;
+    }
+
+    @Override
+    public Set<String> getCategories(String profile) {
+        return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public DataSourceConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        return null;
     }
 
     public TransactionIsolationLevel getTransactionIsolationLevelValue(String key, TransactionIsolationLevel defaultValue) {
@@ -273,37 +302,33 @@ public class DataSourceProperties extends EnvironmentContentHolder implements De
     }
 
     public DataSourceConfiguration getDefaultConfiguration() {
-        return configurationMap.get(DEFAULT_PROFILE);
-    }
-
-    public DataSourceConfiguration getConfiguration() {
-        return configurationMap.get(DEFAULT_PROFILE);
+        return configurationMap.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
     public Map<String, DataSourceConfiguration> getConfigurationMap() {
-        return new HashMap<>(configurationMap);
+        return new HashMap<>(configurationMap.get(getDefaultProfile()));
     }
 
     public static DataSourceConfiguration toConfiguration() {
-        return INSTANCE.configurationMap.get(DEFAULT_PROFILE);
+        return INSTANCE.configurationMap.get(DEFAULT_PROFILE).get(DEFAULT_CATEGORY);
     }
 
-    @Override
     public DataSourceConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
         if (StringUtils.hasText(name)) {
-            return configurationMap.get(name);
+            return configurationMap.get(getDefaultProfile()).get(name);
         } else {
-            return configurationMap.get(DEFAULT_PROFILE);
+            return configurationMap.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
         }
     }
 
     @Override
     public DataSourceConfiguration getConfiguration(ApplicationContext applicationContext) {
-        return configurationMap.get(DEFAULT_PROFILE);
+        return configurationMap.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
     @Override
     public void close() throws IOException {
+        configurationMap.forEach((profile, map) -> map.clear());
         configurationMap.clear();
     }
 }

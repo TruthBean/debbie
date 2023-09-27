@@ -2,7 +2,7 @@ package com.truthbean.debbie.check.data.transformer;
 
 import com.truthbean.transformer.DataTransformer;
 import com.truthbean.transformer.Transformer;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 
 /**
  * @author TruthBean/Rogar·Q

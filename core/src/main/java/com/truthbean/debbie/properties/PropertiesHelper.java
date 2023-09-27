@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,7 +11,7 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.common.mini.util.OsUtils;
+import com.truthbean.core.util.OsUtils;
 import com.truthbean.LoggerFactory;
 
 import java.io.*;
@@ -42,7 +42,7 @@ public final class PropertiesHelper {
     private static final Map<String, Properties> RAW_PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * properties with VALUE replaced by real VALUE
+     * properties with value replaced by real value
      */
     private static final Map<String, Properties> PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
@@ -58,7 +58,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property VALUE
+     * get property value
      *
      * @param filename properties file name
      * @param key key
@@ -69,7 +69,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get raw property VALUE
+     * get raw property value
      *
      * @param filename properties file name
      * @param key key
@@ -80,7 +80,7 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property int VALUE
+     * get property int value
      *
      * @param key key
      * @param filename filename
@@ -103,11 +103,11 @@ public final class PropertiesHelper {
     }
 
     /**
-     * get property bool VALUE
+     * get property bool value
      *
      * @param filename properties file name
      * @param key property key
-     * @return property bool VALUE
+     * @return property bool value
      */
     public static boolean getBoolProperty(String filename, String key) {
         String valueStr = getProperty(filename, key, null);
@@ -145,9 +145,9 @@ public final class PropertiesHelper {
     /**
      * replace property
      *
-     * @param expression properties VALUE contains, like a.b.c=a-${user.dir}
+     * @param expression properties value contains, like a.b.c=a-${user.dir}
      * @param params the properties
-     * @return the real property VALUE
+     * @return the real property value
      */
     public static String replaceProperty(String expression, Properties params) {
         if (expression == null || expression.length() == 0 || !expression.contains("$")) {
@@ -172,7 +172,7 @@ public final class PropertiesHelper {
                 }
             }
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("env VALUE:" + value);
+                LOGGER.debug("env value:" + value);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
         matcher.appendTail(sb);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,9 @@ import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
-import com.truthbean.debbie.env.EnvironmentContentHolder;
+import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
+import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.event.EventListenerBeanManager;
 import com.truthbean.debbie.event.EventListenerBeanRegister;
 import com.truthbean.debbie.io.ResourceResolver;
@@ -42,11 +44,14 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     private static final Instant beforeStartTime = Instant.now();
 
     private final ReflectionConfigurer reflectionConfigurer;
-    private final EnvironmentContentHolder envContent;
+
+    private final EnvironmentDepositoryHolder environmentDepositoryHolder;
+    private final Environment environment;
 
     protected DebbieApplicationFactory() {
-        envContent = new EnvironmentContentHolder();
-        this.reflectionConfigurer = new ReflectionConfigurer(envContent);
+        environmentDepositoryHolder = new DebbieEnvironmentDepositoryHolder();
+        environment = environmentDepositoryHolder.getEnvironmentIfPresent(environmentDepositoryHolder.getDefaultProfile());
+        this.reflectionConfigurer = new ReflectionConfigurer(environment);
     }
 
     public static DebbieApplicationFactory newEmpty() {
@@ -68,7 +73,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             Set<AbstractApplication> set = SpiLoader.loadProviderSet(AbstractApplication.class, classLoader);
             if (set != null && !set.isEmpty()) {
                 for (AbstractApplication application : set) {
-                    if (application.isEnable(envContent)) {
+                    if (application.isEnable(environment)) {
                         result = application;
                         break;
                     }
@@ -107,7 +112,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory init(Class<?>... beanClasses) {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs, envContent, beanClasses);
+        this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs, environmentDepositoryHolder, beanClasses);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
@@ -115,7 +120,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory init(ClassLoader classLoader, Class<?>... beanClasses) {
-        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, envContent, beanClasses);
+        this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, environmentDepositoryHolder, beanClasses);
         applicationContext.postConstructor();
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
@@ -196,7 +201,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
         if (!this.debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-                if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+                if (debbieModuleStarter.enable(environment)) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") getComponentAnnotation");
                     Map<Class<? extends Annotation>, BeanComponentParser> componentAnnotations = debbieModuleStarter.getComponentAnnotation();
                     if (componentAnnotations != null && !componentAnnotations.isEmpty()) {
@@ -210,14 +215,14 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
         if (!debbieModuleStarters.isEmpty()) {
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-                if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+                if (debbieModuleStarter.enable(environment)) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") registerBean");
                     debbieModuleStarter.registerBean(applicationContext, beanInfoManager);
                 }
             }
 
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-                if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+                if (debbieModuleStarter.enable(environment)) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") configure");
                     debbieModuleStarter.configure(applicationContext);
                 }
@@ -280,7 +285,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
                 List<DebbieModuleStarter> list = new ArrayList<>(debbieModuleStarters);
                 list.sort(Comparator.reverseOrder());
                 for (DebbieModuleStarter debbieModuleStarter : list) {
-                    if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+                    if (debbieModuleStarter.enable(environment)) {
                         LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") destruct");
                         debbieModuleStarter.release(applicationContext);
                     }
@@ -337,7 +342,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
         if (!debbieModuleStarters.isEmpty()) {
             debbieModuleStarters = new TreeSet<>(debbieModuleStarters);
             for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-                if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+                if (debbieModuleStarter.enable(environment)) {
                     LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") start");
                     debbieModuleStarter.starter(applicationContext);
                 }
@@ -358,7 +363,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             debbieModuleStarters = debbieModuleStarterSet;
         }
         for (DebbieModuleStarter debbieModuleStarter : debbieModuleStarters) {
-            if (debbieModuleStarter.enable(applicationContext.getEnvContent())) {
+            if (debbieModuleStarter.enable(environment)) {
                 LOGGER.info(() -> "debbieModuleStarter (" + debbieModuleStarter.toStr() + ") postStarter");
                 debbieModuleStarter.postStarter(applicationContext);
             }

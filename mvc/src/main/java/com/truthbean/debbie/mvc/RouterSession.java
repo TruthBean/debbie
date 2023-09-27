@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -43,7 +43,7 @@ public interface RouterSession {
      * request.
      *
      * <p>Actions that your application takes, such as getting or setting
-     * a VALUE associated with the session, do not affect the access
+     * a value associated with the session, do not affect the access
      * time.
      *
      * @return last accessed time
@@ -75,13 +75,13 @@ public interface RouterSession {
      * If an object of the same name is already bound to the session,
      * the object is replaced.
      *
-     * If the VALUE passed in is null, this has the same effect as calling
+     * If the value passed in is null, this has the same effect as calling
      * `removeAttribute()`.
      *
      * @param name  the name to which the object is bound;
      * cannot be null
      * @param value the object to be bound
-     * An IOFuture containing the previous VALUE
+     * An IOFuture containing the previous value
      * @throws IllegalStateException if this method is called on an invalidated session
      */
     void setAttribute(String name, Object value);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.task;
 
+import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.concurrent.*;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -17,7 +18,7 @@ import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.*;
 import com.truthbean.Logger;
 import com.truthbean.debbie.spi.SpiLoader;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Method;
@@ -80,7 +81,7 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
     public void prepare() {
         final Set<BeanInfo> taskBeanSet = new LinkedHashSet<>(this.taskBeans);
         for (BeanInfo taskBean : taskBeanSet) {
-            Object task = globalBeanFactory.factory(taskBean.getServiceName());
+            Object task = globalBeanFactory.factory(taskBean.getName());
             LOGGER.trace(() -> "task bean " + taskBean.getBeanClass());
             if (taskBean instanceof ClassInfo classInfo) {
                 Set<Method> methods = classInfo.getAnnotationMethod(DebbieTask.class);

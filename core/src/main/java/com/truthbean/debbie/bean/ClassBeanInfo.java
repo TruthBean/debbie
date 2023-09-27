@@ -2,7 +2,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
@@ -44,10 +44,10 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
     private Method initMethod;
     private Method destroyMethod;
 
-    private List<BeanExecutableDependence> constructorBeanDependent;
-    private List<BeanExecutableDependence> initMethodBeanDependent;
-    private Map<FieldInfo, BeanInfo<?>> fieldBeanDependent;
-    private boolean hasVirtualValue;
+    private List<BeanExecutableDependence> constructorBeanDependencies;
+    private List<BeanExecutableDependence> initMethodBeanDependencies;
+    private Map<FieldInfo, BeanInfo<?>> fieldBeanDependencies;
+    private boolean virtualValue;
 
     private final Set<BeanCondition> conditions = new HashSet<>();
 
@@ -129,10 +129,10 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         this.beanInterface = classBeanInfo.beanInterface;
         this.initMethod = classBeanInfo.initMethod;
         this.destroyMethod = classBeanInfo.destroyMethod;
-        this.constructorBeanDependent = classBeanInfo.constructorBeanDependent;
-        this.initMethodBeanDependent = classBeanInfo.initMethodBeanDependent;
-        this.fieldBeanDependent = classBeanInfo.fieldBeanDependent;
-        this.hasVirtualValue = classBeanInfo.hasVirtualValue;
+        this.constructorBeanDependencies = classBeanInfo.constructorBeanDependencies;
+        this.initMethodBeanDependencies = classBeanInfo.initMethodBeanDependencies;
+        this.fieldBeanDependencies = classBeanInfo.fieldBeanDependencies;
+        this.virtualValue = classBeanInfo.virtualValue;
         this.conditions.addAll(classBeanInfo.conditions);
         this.preparationCreated = classBeanInfo.preparationCreated;
         this.created = classBeanInfo.created;
@@ -167,7 +167,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         if (lazyCreate == null) {
             lazyCreate = info.isLazy();
         } else {
-            // note: default VALUE is true
+            // note: default value is true
             lazyCreate = true;
         }
 
@@ -216,44 +216,44 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         }
     }
 
-    public void setConstructorBeanDependent(List<BeanExecutableDependence> constructorBeanDependent) {
-        this.constructorBeanDependent = constructorBeanDependent;
+    public void setConstructorBeanDependencies(List<BeanExecutableDependence> constructorBeanDependencies) {
+        this.constructorBeanDependencies = constructorBeanDependencies;
     }
 
     public void addConstructorBeanDependent(Integer index, BeanInfo<?> beanInfo) {
-        if (this.constructorBeanDependent == null) {
-            this.constructorBeanDependent = new ArrayList<>();
+        if (this.constructorBeanDependencies == null) {
+            this.constructorBeanDependencies = new ArrayList<>();
         }
-        this.constructorBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass(), beanInfo.getServiceName()));
+        this.constructorBeanDependencies.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass(), beanInfo.getName()));
     }
 
-    public void setInitMethodBeanDependent(List<BeanExecutableDependence> initMethodBeanDependent) {
-        this.initMethodBeanDependent = initMethodBeanDependent;
+    public void setInitMethodBeanDependencies(List<BeanExecutableDependence> initMethodBeanDependencies) {
+        this.initMethodBeanDependencies = initMethodBeanDependencies;
     }
 
     public void addInitMethodBeanDependent(Integer index, BeanInfo<?> beanInfo) {
-        if (this.initMethodBeanDependent == null) {
-            this.initMethodBeanDependent = new ArrayList<>();
+        if (this.initMethodBeanDependencies == null) {
+            this.initMethodBeanDependencies = new ArrayList<>();
         }
-        this.initMethodBeanDependent.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass(), beanInfo.getServiceName()));
+        this.initMethodBeanDependencies.add(new BeanExecutableDependence(index, beanInfo, beanInfo.getBeanClass(), beanInfo.getName()));
     }
 
-    public void setFieldBeanDependent(Map<FieldInfo, ? extends BeanInfo<?>> fieldBeanDependent) {
-        if (this.fieldBeanDependent == null) {
-            this.fieldBeanDependent = new HashMap<>();
+    public void setFieldBeanDependencies(Map<FieldInfo, ? extends BeanInfo<?>> fieldBeanDependencies) {
+        if (this.fieldBeanDependencies == null) {
+            this.fieldBeanDependencies = new HashMap<>();
         }
-        this.fieldBeanDependent.putAll(fieldBeanDependent);
+        this.fieldBeanDependencies.putAll(fieldBeanDependencies);
     }
 
-    public List<BeanExecutableDependence> getInitMethodBeanDependent() {
-        if (initMethodBeanDependent == null) {
-            initMethodBeanDependent = new ArrayList<>();
+    public List<BeanExecutableDependence> getInitMethodBeanDependencies() {
+        if (initMethodBeanDependencies == null) {
+            initMethodBeanDependencies = new ArrayList<>();
         }
-        return initMethodBeanDependent;
+        return initMethodBeanDependencies;
     }
 
     public boolean isInitMethodBeanDependentHasValue() {
-        for (BeanExecutableDependence dependence : initMethodBeanDependent) {
+        for (BeanExecutableDependence dependence : initMethodBeanDependencies) {
             if (!dependence.isPresent()) {
                 return false;
             }
@@ -261,18 +261,18 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         return true;
     }
 
-    public List<BeanExecutableDependence> getConstructorBeanDependent() {
-        if (constructorBeanDependent == null) {
-            constructorBeanDependent = new ArrayList<>();
+    public List<BeanExecutableDependence> getConstructorBeanDependencies() {
+        if (constructorBeanDependencies == null) {
+            constructorBeanDependencies = new ArrayList<>();
         }
-        return constructorBeanDependent;
+        return constructorBeanDependencies;
     }
 
     public void getCircleDependencyInConstructor() {
-        if (constructorBeanDependent == null) {
+        if (constructorBeanDependencies == null) {
             return;
         }
-        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+        for (BeanExecutableDependence dependence : constructorBeanDependencies) {
             getCircleDependencyInConstructor(this, dependence.getBeanInfo(), new StringBuilder());
         }
     }
@@ -283,11 +283,11 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
             return;
         }
         if (dependency instanceof ClassBeanInfo<?> classBeanInfo) {
-            if (classBeanInfo.constructorBeanDependent == null) {
+            if (classBeanInfo.constructorBeanDependencies == null) {
                 return;
             }
             Class<?> beanType = beanInfo.getBeanClass();
-            for (BeanExecutableDependence dependence : classBeanInfo.constructorBeanDependent) {
+            for (BeanExecutableDependence dependence : classBeanInfo.constructorBeanDependencies) {
                 var type = dependence.getType();
                 LOGGER.trace(beanType + " ===>>> " + type);
                 if (beanType == type) {
@@ -300,7 +300,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
     }
 
     public boolean isConstructorBeanDependentHasValue() {
-        for (BeanExecutableDependence dependence : constructorBeanDependent) {
+        for (BeanExecutableDependence dependence : constructorBeanDependencies) {
             BeanInfo<?> beanInfo = dependence.getBeanInfo();
             if (beanInfo instanceof DebbieReflectionBeanFactory<?> reflectionBeanFactory) {
                 if (!(reflectionBeanFactory.isPreparationCreated() || reflectionBeanFactory.isCreated())
@@ -317,8 +317,78 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         return true;
     }
 
-    public Map<FieldInfo, BeanInfo<?>> getFieldBeanDependent() {
-        return fieldBeanDependent;
+    public boolean isConstructorBeanDependentHasVirtualValue() {
+        if (constructorBeanDependencies != null && !constructorBeanDependencies.isEmpty()) {
+            for (BeanExecutableDependence dependence : constructorBeanDependencies) {
+                BeanInfo<?> beanInfo = dependence.getBeanInfo();
+                if (beanInfo instanceof DebbieReflectionBeanFactory<?> reflectionBeanFactory) {
+                    if (reflectionBeanFactory.hasVirtualValue()) {
+                        return true;
+                    }
+                }
+                if (beanInfo instanceof BeanFactory localFactoryBeanInfo) {
+                    if (!localFactoryBeanInfo.isCreated() || dependence.getValue() == null) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isFieldBeanDependencyHasVirtualValue() {
+        if (fieldBeanDependencies != null && !fieldBeanDependencies.isEmpty()) {
+            Set<Map.Entry<FieldInfo, BeanInfo<?>>> entries = fieldBeanDependencies.entrySet();
+            for (Map.Entry<FieldInfo, BeanInfo<?>> entry : entries) {
+                FieldInfo fieldInfo = entry.getKey();
+                if (!fieldInfo.hasValue()) {
+                    return true;
+                }
+                BeanInfo<?> beanInfo = entry.getValue();
+                if (beanInfo instanceof DebbieReflectionBeanFactory<?> reflectionBeanFactory) {
+                    if (reflectionBeanFactory.hasVirtualValue()) {
+                        return true;
+                    }
+                }
+                if (beanInfo instanceof BeanFactory localFactoryBeanInfo) {
+                    if (!localFactoryBeanInfo.isCreated()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public Map<FieldInfo, BeanInfo<?>> getHasVirtualValueFieldBeanDependencies() {
+        Map<FieldInfo, BeanInfo<?>> map = new HashMap<>();
+        if (fieldBeanDependencies != null && !fieldBeanDependencies.isEmpty()) {
+            Set<Map.Entry<FieldInfo, BeanInfo<?>>> entries = fieldBeanDependencies.entrySet();
+            for (Map.Entry<FieldInfo, BeanInfo<?>> entry : entries) {
+                FieldInfo fieldInfo = entry.getKey();
+                if (!fieldInfo.hasValue()) {
+                    map.put(entry.getKey(), entry.getValue());
+                    continue;
+                }
+                BeanInfo<?> beanInfo = entry.getValue();
+                if (beanInfo instanceof DebbieReflectionBeanFactory<?> reflectionBeanFactory) {
+                    if (reflectionBeanFactory.hasVirtualValue()) {
+                        map.put(entry.getKey(), entry.getValue());
+                        continue;
+                    }
+                }
+                if (beanInfo instanceof BeanFactory localFactoryBeanInfo) {
+                    if (!localFactoryBeanInfo.isCreated()) {
+                        map.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    public Map<FieldInfo, BeanInfo<?>> getFieldBeanDependencies() {
+        return fieldBeanDependencies;
     }
 
     public Boolean getLazyCreate() {
@@ -442,16 +512,16 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         this.destroyMethod = destroyMethod;
     }
 
-    public boolean isHasVirtualValue() {
-        return hasVirtualValue;
+    public boolean hasVirtualValue() {
+        return virtualValue;
     }
 
-    public void setHasVirtualValue(boolean hasVirtualValue) {
-        this.hasVirtualValue = hasVirtualValue;
+    public void setVirtualValue(boolean virtualValue) {
+        this.virtualValue = virtualValue;
     }
 
     public boolean hasNoVirtualValue() {
-        return !hasVirtualValue;
+        return !virtualValue;
     }
 
     public boolean isPreparationCreated() {
@@ -530,7 +600,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
     }
 
     @Override
-    public String getServiceName() {
+    public String getName() {
         String name = this.beanNames.isEmpty() ? null : this.beanNames.iterator().next();
         if (name == null || name.isBlank()) {
             name = super.getClazz().getSimpleName();
@@ -582,19 +652,19 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         properties.clear();
 
         bean = null;
-        if (constructorBeanDependent != null) {
-            constructorBeanDependent.clear();
+        if (constructorBeanDependencies != null) {
+            constructorBeanDependencies.clear();
         }
-        constructorBeanDependent = null;
-        if (initMethodBeanDependent != null) {
-            initMethodBeanDependent.clear();
+        constructorBeanDependencies = null;
+        if (initMethodBeanDependencies != null) {
+            initMethodBeanDependencies.clear();
         }
-        initMethodBeanDependent = null;
-        if (fieldBeanDependent != null) {
-            fieldBeanDependent.clear();
+        initMethodBeanDependencies = null;
+        if (fieldBeanDependencies != null) {
+            fieldBeanDependencies.clear();
         }
-        fieldBeanDependent = null;
-        hasVirtualValue = false;
+        fieldBeanDependencies = null;
+        virtualValue = false;
     }
 
     @Override
@@ -623,10 +693,10 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         this.preparedBean = beanInfo.preparedBean;
         this.bean = beanInfo.bean;
         this.properties.putAll(beanInfo.properties);
-        this.constructorBeanDependent = beanInfo.constructorBeanDependent;
-        this.initMethodBeanDependent = beanInfo.initMethodBeanDependent;
-        this.fieldBeanDependent = beanInfo.fieldBeanDependent;
-        this.hasVirtualValue = beanInfo.hasVirtualValue;
+        this.constructorBeanDependencies = beanInfo.constructorBeanDependencies;
+        this.initMethodBeanDependencies = beanInfo.initMethodBeanDependencies;
+        this.fieldBeanDependencies = beanInfo.fieldBeanDependencies;
+        this.virtualValue = beanInfo.virtualValue;
         this.conditions.addAll(beanInfo.conditions);
         this.preparationCreated = beanInfo.preparationCreated;
         this.created = beanInfo.created;
@@ -654,10 +724,10 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
                 "\"beanInterface\":" + beanInterface + "," +
                 "\"initMethod\":" + initMethod + "," +
                 "\"destroyMethod\":" + destroyMethod + "," +
-                "\"constructorBeanDependent\":" + constructorBeanDependent + "," +
-                "\"initMethodBeanDependent\":" + initMethodBeanDependent + "," +
-                "\"fieldBeanDependent\":" + fieldBeanDependent + "," +
-                "\"hasVirtualValue\":" + hasVirtualValue + "}";
+                "\"constructorBeanDependencies\":" + constructorBeanDependencies + "," +
+                "\"initMethodBeanDependencies\":" + initMethodBeanDependencies + "," +
+                "\"fieldBeanDependencies\":" + fieldBeanDependencies + "," +
+                "\"virtualValue\":" + virtualValue + "}";
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassBeanInfo.class);

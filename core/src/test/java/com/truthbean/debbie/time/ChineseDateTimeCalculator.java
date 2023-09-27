@@ -6,13 +6,13 @@ import com.truthbean.LoggerFactory;
 import static com.truthbean.debbie.time.ChineseDateTimeConstant.*;
 
 public class ChineseDateTimeCalculator {
-    public String[] 六十甲子表() {
+    public String[] sexagenaryCycle() {
         String[] result = new String[60];
         int index = 0, i = 0, j = 0;
         while (index < 60) {
-            if (i == HEAVENLY_STEAM.length) i = 0;
+            if (i == HEAVENLY_STEAMS.length) i = 0;
             if (j == EARTHLY_BRANCHES.length) j = 0;
-            result[index++] = HEAVENLY_STEAM[i] + EARTHLY_BRANCHES[j];
+            result[index++] = HEAVENLY_STEAMS[i] + EARTHLY_BRANCHES[j];
             i++;
             j++;
         }
@@ -20,8 +20,8 @@ public class ChineseDateTimeCalculator {
     }
 
     public String nextYear(ChineseYear year) {
-        long index = (year.getSunYear() - 3) % 60;
-        return SIXTY_JIAZI_FORM[(int) index];
+        long index = (year.getCalendarYear() - 3) % 60;
+        return SEXAGENARY_CYCLE[(int) index];
     }
 
     public String nextYear(long sunYear) {
@@ -34,12 +34,12 @@ public class ChineseDateTimeCalculator {
 
     public static String thisYear(int sunYear) {
         int index = (sunYear - 4) % 60;
-        return SIXTY_JIAZI_FORM[index];
+        return SEXAGENARY_CYCLE[index];
     }
 
     public static String thisYear(long sunYear) {
         int index = (int) ((sunYear - 4) % 60);
-        return SIXTY_JIAZI_FORM[index];
+        return SEXAGENARY_CYCLE[index];
     }
 
     public static String thisYearZodiac(long sunYear) {

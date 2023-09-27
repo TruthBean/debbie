@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,6 +10,7 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.server.session.SessionManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -26,9 +27,9 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final HttpServerHandler httpServerHandler;
 
-    public HttpChannelInitializer(NettyConfiguration configuration, SessionManager sessionManager,
-                                  ApplicationContext applicationContext) {
-        this.httpServerHandler = new HttpServerHandler(configuration, sessionManager, applicationContext);
+    public HttpChannelInitializer(NettyConfiguration configuration, MvcConfiguration mvcConfiguration,
+                                  SessionManager sessionManager, ApplicationContext applicationContext) {
+        this.httpServerHandler = new HttpServerHandler(configuration, mvcConfiguration, sessionManager, applicationContext);
     }
 
     @Override

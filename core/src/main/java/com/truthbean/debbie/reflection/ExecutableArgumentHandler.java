@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -16,7 +16,7 @@ import com.truthbean.debbie.data.JsonHelper;
 import com.truthbean.debbie.data.XmlHelper;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.StreamHelper;
-import com.truthbean.common.mini.util.StringUtils;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
 import java.io.IOException;
@@ -121,7 +121,7 @@ public class ExecutableArgumentHandler {
             if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
                 handleObjectParam(map, invokedParameter, ignoreCase);
                 if (invokedParameter.getValue() != null) {
-                    //set VALUE to filed
+                    //set value to filed
                     ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
                             invokedParameter.getRawType());
                 }
@@ -142,7 +142,7 @@ public class ExecutableArgumentHandler {
             if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
                 handleParam(map, invokedParameter, ignoreCase);
                 if (invokedParameter.getValue() != null) {
-                    //set VALUE to filed
+                    //set value to filed
                     ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
                             invokedParameter.getRawType());
                 }
@@ -162,7 +162,7 @@ public class ExecutableArgumentHandler {
             /*if (field.getName().equals(invokedParameter.getName()) && map.containsKey(field.getName())) {
                 handleParam(map, invokedParameter);
                 if (invokedParameter.getValue() != null) {
-                    //set VALUE to filed
+                    //set value to filed
                     ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
                             invokedParameter.getType());
                 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 TruthBean(Rogar·Q)
+ * Copyright (c) 2023 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,6 +10,7 @@
 package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.Logger;
@@ -29,12 +30,14 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
 
     private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
+    private final MvcConfiguration mvcConfiguration;
     private final SessionManager sessionManager;
 
-    ServerCompletionHandler(AioServerConfiguration configuration, SessionManager sessionManager,
-                                   final ApplicationContext applicationContext) {
+    ServerCompletionHandler(AioServerConfiguration configuration, MvcConfiguration mvcConfiguration,
+                            SessionManager sessionManager, final ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
+        this.mvcConfiguration = mvcConfiguration;
         this.sessionManager = sessionManager;
     }
 
@@ -69,7 +72,7 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
     private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,
                                              AsynchronousServerSocketChannel attachment) {
         if (routerRequest != null) {
-            var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration);
+            var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration, mvcConfiguration);
             responseCompletionHandler.handle(channel);
         }
 
