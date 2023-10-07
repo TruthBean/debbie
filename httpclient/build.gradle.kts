@@ -12,9 +12,9 @@ dependencies {
 
     // ===============================================================================================================
     val truthbeanVersion: String by project
-    testImplementation("com.truthbean:log4j2-boot:$truthbeanVersion")
+    testImplementation("com.truthbean:truthbean-log4j2-boot:$truthbeanVersion")
 
-    implementation(platform("com.truthbean:parent:$truthbeanVersion"))
+    implementation(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
     testImplementation(project(":debbie-test"))
 

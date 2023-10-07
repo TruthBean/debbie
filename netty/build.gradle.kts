@@ -11,14 +11,14 @@ dependencies {
     api(project(":debbie-server"))
 
     val truthbeanVersion: String by project
-    api(platform("com.truthbean:parent:$truthbeanVersion"))
+    api(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
     api("io.netty:netty-codec-http2")
 
     // ================================================================================================================
     testImplementation(project(":debbie-test"))
 
-    testImplementation("com.truthbean:log4j2-boot:$truthbeanVersion")
+    testImplementation("com.truthbean:truthbean-log4j2-boot:$truthbeanVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")

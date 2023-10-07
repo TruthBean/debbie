@@ -15,7 +15,7 @@ dependencies {
 
 // ====================================================================================================================
 
-    testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
+    testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }
 

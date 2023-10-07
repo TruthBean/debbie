@@ -9,9 +9,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author TruthBean
@@ -49,9 +47,8 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
     @Override
     public Configuration factoryNamedBean(String name, ApplicationContext applicationContext) {
         String simpleName = configurationClass.getSimpleName();
-        var defaultConfigurationName = "default" + simpleName;
         var configurationName = StringUtils.toFirstCharLowerCase(simpleName);
-        if (!StringUtils.hasText(name) || name.equals(defaultConfigurationName) || name.equals(configurationName)) {
+        if (!StringUtils.hasText(name) || name.equals(simpleName) || name.equals(configurationName)) {
             return property.getConfiguration(EnvironmentDepositoryHolder.DEFAULT_PROFILE, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
         }
         if (name.endsWith(simpleName)) {
@@ -59,6 +56,12 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
             return property.getConfiguration(newName, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
         }
         return property.getConfiguration(name, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
+    }
+
+    public Collection<Configuration> factoryBeans(ApplicationContext applicationContext) {
+        Map<String, Map<String, Configuration>> configurationMap = property.getAllProfiledCategoryConfiguration(applicationContext);
+        Map<String, Configuration> map = configurationMap.get(EnvironmentDepositoryHolder.DEFAULT_PROFILE);
+        return map.values();
     }
 
     @Override
@@ -73,7 +76,7 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
     }
 
     @Override
-    public Set<String> getBeanNames() {
+    public Set<String> getAllName() {
         return names;
     }
 

@@ -11,14 +11,14 @@ dependencies {
     api(project(":debbie-core"))
 
     val truthbeanVersion: String by project
-    api(platform("com.truthbean:parent:$truthbeanVersion"))
+    api(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
     api("org.junit.jupiter:junit-jupiter-api")
     api("org.junit.jupiter:junit-jupiter-params")
     api("org.junit.jupiter:junit-jupiter-engine")
 
     // ==============================================================================================================
-    testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
+    testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }
     testImplementation("org.apache.tomcat:tomcat-juli")

@@ -11,6 +11,7 @@ package com.truthbean.debbie.aio.test;
 
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
@@ -22,17 +23,19 @@ import java.util.concurrent.Callable;
  * Created on 2019-12-17 20:32
  */
 @DebbieApplicationTest
+// @DebbieBootApplication
 public class AioApplicationTest {
 
     public static void main(String[] args) {
-        var application = DebbieApplication.create(args);
+        /*var application = DebbieApplication.create(args);
         application.start();
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
         // application.exit();
+        DebbieApplication.run(AioApplicationTest.class, args);
     }
 
     @Test

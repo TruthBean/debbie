@@ -735,7 +735,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void resolveFieldDependentBean(Object preparedBean, MultiNameBeanInfo<?> beanInfo, FieldInfo fieldInfo, Annotation inject) {
+    private void resolveFieldDependentBean(Object preparedBean, BeanInfo<?> beanInfo, FieldInfo fieldInfo, Annotation inject) {
         String name = null;
         Field field = fieldInfo.getField();
         if (inject instanceof BeanInject) {
@@ -751,7 +751,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
 
         final String finalName = name;
         fieldInfo.setName(finalName);
-        LOGGER.trace(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getBeanNames() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
+        LOGGER.trace(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getAllName() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
         var required = beanInfoManager.injectedRequired(inject, false);
         if (beanInfo instanceof DebbieReflectionBeanFactory reflectionBeanFactory) {
             Map<FieldInfo, BeanFactory> fieldBeanInfoMap = reflectionBeanFactory.getFieldBeanDependencies();
@@ -772,7 +772,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             Object value = fieldBeanFactory.factoryProxiedBean(name, field.getType(), applicationContext);
             if (required && value == null) {
                 if (!(fieldBeanFactory instanceof DebbieReflectionBeanFactory<?>)) {
-                    LOGGER.error(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getBeanNames() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
+                    LOGGER.error(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getAllName() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
                     throw new NoBeanException("no bean " + name + " found .");
                 }
             } else {

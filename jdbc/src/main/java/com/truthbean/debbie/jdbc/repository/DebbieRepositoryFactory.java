@@ -70,8 +70,8 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
     }
 
     @Override
-    public Set<String> getBeanNames() {
-        return beanInfo.getBeanNames();
+    public Set<String> getAllName() {
+        return beanInfo.getAllName();
     }
 
     @Override

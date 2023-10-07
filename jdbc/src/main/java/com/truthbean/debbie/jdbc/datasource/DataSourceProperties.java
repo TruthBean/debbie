@@ -11,35 +11,34 @@ package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.core.util.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-19 12:49.
  */
-public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<DataSourceConfiguration>, Closeable {
+public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<DataSourceConfiguration> {
     private final Map<String, Map<String, DataSourceConfiguration>> configurationMap = new HashMap<>();
 
     protected static final String DATASOURCE_KEY_PREFIX = "debbie.datasource.";
 
-    private static final String DRIVER_NAME = ".driver-name";
-    private static final String URL = ".url";
-    private static final String USER = ".user";
-    private static final String PASSWORD = ".password";
+    private static final String DRIVER_NAME = "driver-name";
+    private static final String URL = "url";
+    private static final String USER = "user";
+    private static final String PASSWORD = "password";
 
-    private static final String AUTO_COMMIT = ".auto-commit";
-    private static final String LEVEL = ".default-transaction-isolation-level";
-    private static final String DRIVER = ".driver.";
-    private static final String FACTORY = ".factory";
+    private static final String AUTO_COMMIT = "auto-commit";
+    private static final String LEVEL = "default-transaction-isolation-level";
+    private static final String DRIVER = "driver.";
+    private static final String FACTORY = "factory";
     //=================================================================================================================
     private static final String DRIVER_NAME_KEY = "debbie.datasource.driver-name";
     private static final String URL_KEY = "debbie.datasource.url";
@@ -53,94 +52,50 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
 
     private static final String DATA_SOURCE_FACTORY = "debbie.datasource.factory";
     //=================================================================================================================
-    private static final DataSourceProperties INSTANCE = new DataSourceProperties();
 
-    public DataSourceProperties() {
-        setDefaultConfiguration();
-        setCustomConfiguration();
+    public DataSourceProperties(ApplicationContext applicationContext) {
+        Set<String> profiles = getProfiles();
+        for (String profile : profiles) {
+            applicationContext.getEnvironmentHolder()
+                    .getEnvironment(profile)
+                    .ifPresent(environment -> {
+                        DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration();
+                        setConfiguration(defaultConfiguration, environment, profile, DEFAULT_CATEGORY, "");
+                        Set<String> categories = getRawCategories();
+                        for (String category : categories) {
+                            DataSourceConfiguration configuration = new DataSourceConfiguration(defaultConfiguration);
+                            setConfiguration(configuration, environment, profile, category, category + ".");
+                        }
+                    });
+        }
     }
 
-    private void setCustomConfiguration() {
-        Set<String> profiles = super.getProfiles();
-        for (String profile : profiles) {
-            Map<String, String> dataSourceProperties = getMatchedKey(DATASOURCE_KEY_PREFIX);
-            dataSourceProperties.forEach((k, v) -> {
-                if (!k.equals(URL_KEY) && k.endsWith(URL)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - URL.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    String url = getText(v, "jdbc:mysql://localhost:3306");
-                    configuration.setUrl(url);
-                }
-                if (!k.equals(DRIVER_NAME_KEY) && k.endsWith(DRIVER_NAME)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - DRIVER_NAME.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    configuration.setDriverName(getDriverName(v, configuration.getUrl()));
-                }
-                if (!k.equals(USER_KEY) && k.endsWith(USER)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - USER.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    String user = getText(v, "root");
-                    configuration.setUser(user);
-                }
-                if (!k.equals(PASSWORD_KEY) && k.endsWith(PASSWORD)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - PASSWORD.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    configuration.setPassword(v);
-                }
-                if (!k.equals(AUTO_COMMIT_KEY) && k.endsWith(AUTO_COMMIT)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - AUTO_COMMIT.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    configuration.setAutoCommit(getBoolean(v, false));
-                }
-                if (!k.equals(DEFAULT_TRANSACTION_ISOLATION_LEVEL) && k.endsWith(LEVEL)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - LEVEL.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    if (StringUtils.hasText(v)) {
-                        TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.valueOf(v.toUpperCase());
-                        configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
-                    } else {
-                        configuration.setDefaultTransactionIsolationLevel(TransactionIsolationLevel.TRANSACTION_READ_COMMITTED);
-                    }
-                }
-                if (!k.equals(DATA_SOURCE_FACTORY) && k.endsWith(FACTORY)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.length() - FACTORY.length();
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
-                    @SuppressWarnings("unchecked")
-                    Class<? extends DataSourceFactory> dataSourceFactoryClass = (Class<? extends DataSourceFactory>) getClass(v, defaultClassName);
-                    configuration.setDataSourceFactoryClass(dataSourceFactoryClass);
-                }
-                if (!k.startsWith(DRIVER_PROPERTIES_PREFIX) && k.startsWith(DATASOURCE_KEY_PREFIX) && k.contains(DRIVER)) {
-                    var startIndex = DATASOURCE_KEY_PREFIX.length();
-                    var endIndex = k.indexOf(DRIVER);
-                    String name = k.substring(startIndex, endIndex);
-                    DataSourceConfiguration configuration = getConfiguration(profile, name);
-                    Map<String, Object> driverProperties;
-                    if (configuration.getDriverProperties() != null) {
-                        driverProperties = configuration.getDriverProperties();
-                    } else {
-                        driverProperties = new HashMap<>();
-                    }
-                    String key = k.substring(k.indexOf(DRIVER) + DRIVER.length());
-                    driverProperties.put(key, v);
-                    configuration.setDriverProperties(driverProperties);
-                }
-            });
+    private Set<String> getRawCategories() {
+        Set<String> set = new HashSet<>();
+        String[] arr = getStringArray(getValue(DATASOURCE_KEY_PREFIX + CATEGORIES_KEY_NAME), ",");
+        if (arr == null || arr.length == 0) {
+            arr = getStringArray(getValue(DATASOURCE_KEY_PREFIX + CATEGORIES_KEY_NAME), ";");
         }
+        if (arr != null) {
+            set.addAll(Set.of(arr));
+        }
+        set.add("");
+        return set;
+    }
+
+    private void setConfiguration(DataSourceConfiguration configuration, Environment environment,
+                                  String profile, String category, String doCategory) {
+        configuration.setProfile(profile);
+        configuration.setCategory(category);
+        setConfiguration(configuration, environment, doCategory);
+        Map<String, DataSourceConfiguration> map;
+        if (configurationMap.containsKey(profile)) {
+            map = configurationMap.get(profile);
+        } else {
+            map = new HashMap<>();
+        }
+        map.put(category, configuration);
+        configurationMap.put(profile, map);
     }
 
     private DataSourceConfiguration getConfiguration(String profile, String category) {
@@ -163,51 +118,47 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
         return configuration;
     }
 
-    private void setDefaultConfiguration() {
-        DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration();
-        defaultConfiguration.setProfile(getDefaultProfile());
-        defaultConfiguration.setCategory(DEFAULT_CATEGORY);
-        String url = getStringValue(URL_KEY, "jdbc:mysql://localhost:3306");
-        defaultConfiguration.setUrl(url);
+    private void setConfiguration(DataSourceConfiguration configuration, Environment environment, String category) {
+        String key = DATASOURCE_KEY_PREFIX + category + URL;
+        String url = environment.getStringValue(key, "jdbc:mysql://localhost:3306");
+        configuration.setUrl(url);
 
-        String driverName = getValue(DRIVER_NAME_KEY);
+        key = DATASOURCE_KEY_PREFIX + category + DRIVER_NAME;
+        String driverName = environment.getValue(key);
         DataSourceDriverName dataSourceDriverName = getDriverName(driverName, url);
-        defaultConfiguration.setDriverName(dataSourceDriverName);
+        configuration.setDriverName(dataSourceDriverName);
 
-        String user = getStringValue(USER_KEY, "root");
-        defaultConfiguration.setUser(user);
+        key = DATASOURCE_KEY_PREFIX + category + USER;
+        String user = environment.getStringValue(key, "root");
+        configuration.setUser(user);
 
-        String password = getStringValue(PASSWORD_KEY, null);
-        defaultConfiguration.setPassword(password);
+        key = DATASOURCE_KEY_PREFIX + category + PASSWORD;
+        String password = environment.getStringValue(key, null);
+        configuration.setPassword(password);
 
-        Boolean autoCommit = getBooleanValue(AUTO_COMMIT_KEY, false);
-        defaultConfiguration.setAutoCommit(autoCommit);
+        key = DATASOURCE_KEY_PREFIX + category + AUTO_COMMIT;
+        Boolean autoCommit = environment.getBooleanValue(key, false);
+        configuration.setAutoCommit(autoCommit);
 
-        TransactionIsolationLevel transactionIsolationLevel =
-                getTransactionIsolationLevelValue(DEFAULT_TRANSACTION_ISOLATION_LEVEL, TransactionIsolationLevel.TRANSACTION_READ_COMMITTED);
-        defaultConfiguration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
+        key = DATASOURCE_KEY_PREFIX + category + LEVEL;
+        String stringValue = environment.getStringValue(key, TransactionIsolationLevel.TRANSACTION_READ_COMMITTED.name().toUpperCase());
+        TransactionIsolationLevel transactionIsolationLevel = TransactionIsolationLevel.valueOf(stringValue);
+        configuration.setDefaultTransactionIsolationLevel(transactionIsolationLevel);
 
-        Map<String, Object> driverProperties = new HashMap<>(getMatchedKey(DRIVER_PROPERTIES_PREFIX));
+        String datasourceKey = DATASOURCE_KEY_PREFIX + category + DRIVER;
+        Map<String, Object> driverProperties = new HashMap<>(environment.getMatchedKey(key));
         Map<String, Object> properties = new HashMap<>();
-        driverProperties.forEach((key, value) -> {
-            String k = key.substring(DRIVER_PROPERTIES_PREFIX.length());
-            properties.put(k, value);
+        driverProperties.forEach((k, value) -> {
+            properties.put(k.substring(datasourceKey.length()), value);
         });
-        defaultConfiguration.setDriverProperties(properties);
+        configuration.setDriverProperties(properties);
 
+        key = DATASOURCE_KEY_PREFIX + category + FACTORY;
         var defaultClassName = "com.truthbean.debbie.jdbc.datasource.DefaultDataSourceFactory";
         @SuppressWarnings("unchecked")
         Class<? extends DataSourceFactory> dataSourceFactoryClass =
-                (Class<? extends DataSourceFactory>) getClassValue(DATA_SOURCE_FACTORY, defaultClassName);
-        defaultConfiguration.setDataSourceFactoryClass(dataSourceFactoryClass);
-        Map<String, DataSourceConfiguration> map;
-        if (configurationMap.containsKey(getDefaultProfile())) {
-            map = configurationMap.get(getDefaultProfile());
-        } else {
-            map = new HashMap<>();
-        }
-        map.put(DEFAULT_CATEGORY, defaultConfiguration);
-        configurationMap.put(getDefaultProfile(), map);
+                (Class<? extends DataSourceFactory>) environment.getClassValue(key, defaultClassName);
+        configuration.setDataSourceFactoryClass(dataSourceFactoryClass);
     }
 
     private DataSourceDriverName getDriverName(String driverName, String url) {
@@ -289,16 +240,12 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
 
     @Override
     public DataSourceConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
-        return null;
+        return configurationMap.get(profile).get(category);
     }
 
     public TransactionIsolationLevel getTransactionIsolationLevelValue(String key, TransactionIsolationLevel defaultValue) {
         String stringValue = getStringValue(key, defaultValue.name().toUpperCase());
         return TransactionIsolationLevel.valueOf(stringValue);
-    }
-
-    public static DataSourceProperties getInstance() {
-        return INSTANCE;
     }
 
     public DataSourceConfiguration getDefaultConfiguration() {
@@ -309,8 +256,8 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
         return new HashMap<>(configurationMap.get(getDefaultProfile()));
     }
 
-    public static DataSourceConfiguration toConfiguration() {
-        return INSTANCE.configurationMap.get(DEFAULT_PROFILE).get(DEFAULT_CATEGORY);
+    public static DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
+        return new DataSourceProperties(applicationContext).configurationMap.get(DEFAULT_PROFILE).get(DEFAULT_CATEGORY);
     }
 
     public DataSourceConfiguration getConfiguration(String name, ApplicationContext applicationContext) {

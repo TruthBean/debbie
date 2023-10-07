@@ -34,7 +34,7 @@ public class DataSourceConfigurationFactory {
         if (!configurations.isEmpty()) {
             return configurations;
         } else {
-            var configuration = (Configuration) new DefaultDataSourcePoolProperties().getConfiguration(applicationContext);
+            var configuration = (Configuration) new DefaultDataSourcePoolProperties(applicationContext).getConfiguration(applicationContext);
             Collection<Configuration> collection = new HashSet<>();
             collection.add(configuration);
             return collection;
@@ -52,7 +52,7 @@ public class DataSourceConfigurationFactory {
                 return configuration;
             }
         }
-        return  (Configuration) new DefaultDataSourcePoolProperties().getConfiguration(applicationContext);
+        return  (Configuration) new DefaultDataSourcePoolProperties(applicationContext).getConfiguration(applicationContext);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceConfigurationFactory.class);

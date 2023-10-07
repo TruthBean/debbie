@@ -96,6 +96,8 @@ public interface BeanInfoManager extends BeanAnnotationManager {
 
     <Bean> BeanFactory<Bean> getBeanFactory(String serviceName, Class<Bean> type, boolean require);
 
+    <Bean> BeanFactory<Bean> getFinalBeanFactory(String serviceName, Class<Bean> type, boolean require);
+
     <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException);
 
     <T> BeanFactory<T> getBeanFactory(String serviceName, Class<T> type, boolean require, boolean throwException);

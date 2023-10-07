@@ -14,7 +14,7 @@ dependencies {
 
 // ====================================================================================================================
 
-    testImplementation("com.truthbean:log4j2-boot:$truthbeanVersion")
+    testImplementation("com.truthbean:truthbean-log4j2-boot:$truthbeanVersion")
 
     testImplementation("mysql:mysql-connector-java")
 

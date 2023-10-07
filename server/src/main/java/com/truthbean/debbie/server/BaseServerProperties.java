@@ -40,14 +40,14 @@ public abstract class BaseServerProperties<C extends AbstractServerConfiguration
 
     public <P extends BaseServerProperties<C>> void loadAndSet(String category, P properties, C configuration) {
         String name = properties.getStringValue(APPLICATION_NAME, UUID.randomUUID().toString());
-        var portStr = properties.getValue(SERVER_PREFIX + "." + category + DOT_PORT);
+        var portStr = properties.getValue(SERVER_PREFIX + category + DOT_PORT);
         int port;
         if (portStr == null) {
             port = properties.getIntegerValue(SERVER_PORT, 8080);
         } else {
             port = properties.getInteger(portStr, 8080);
         }
-        var hostStr = properties.getValue(SERVER_PREFIX + "." + category + DOT_PORT);
+        var hostStr = properties.getValue(SERVER_PREFIX + category + DOT_HOST);
         String host;
         if (hostStr == null) {
             host = properties.getStringValue(SERVER_HOST, "0.0.0.0");

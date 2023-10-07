@@ -35,7 +35,7 @@ class DdlRepositoryHandlerTest {
         var applicationFactory = ApplicationFactory.configure(DataSourceConfigurationTest.class);
 
         ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-        var config = DataSourceProperties.toConfiguration();
+        var config =  DataSourceProperties.toConfiguration(applicationContext);
         factory = new DefaultDataSourceFactory();
         factory.factory(config);
 

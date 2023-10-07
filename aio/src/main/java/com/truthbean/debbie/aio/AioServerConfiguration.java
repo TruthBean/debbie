@@ -18,8 +18,6 @@ import com.truthbean.debbie.server.AbstractServerConfiguration;
  * Created on 2019-12-17 20:28
  */
 public class AioServerConfiguration extends AbstractServerConfiguration {
-    protected AioServerConfiguration(ClassLoader classLoader) {
-    }
 
     private boolean enable;
 
@@ -30,6 +28,13 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
     private long connectionTimeout;
 
     private boolean ignoreEncode;
+
+    protected AioServerConfiguration(ClassLoader classLoader) {
+    }
+
+    protected AioServerConfiguration(ClassLoader classLoader, boolean enable) {
+        this.enable = enable;
+    }
 
     @Override
     public boolean isEnable() {
@@ -90,5 +95,17 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
 
     public void setIgnoreEncode(boolean ignoreEncode) {
         this.ignoreEncode = ignoreEncode;
+    }
+
+    void setDefaultIfNull(AioServerConfiguration defaultConfiguration) {
+        if (httpVersion == null && defaultConfiguration.httpVersion != null) {
+            httpVersion = defaultConfiguration.httpVersion;
+        }
+        if (serverMessage == null && defaultConfiguration.serverMessage != null) {
+            serverMessage = defaultConfiguration.serverMessage;
+        }
+        if (connectionTimeout == 0L && defaultConfiguration.connectionTimeout != 0L) {
+            connectionTimeout = defaultConfiguration.connectionTimeout;
+        }
     }
 }

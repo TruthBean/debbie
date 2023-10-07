@@ -62,7 +62,7 @@ public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
     }
 
     @Override
-    public Set<String> getBeanNames() {
+    public Set<String> getAllName() {
         return names;
     }
 

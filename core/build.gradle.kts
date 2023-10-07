@@ -10,10 +10,10 @@
 dependencies {
     // import a BOM. The versions used in this file will override any other version found in the graph
     val truthbeanVersion: String by project
-    api(platform("com.truthbean:parent:$truthbeanVersion"))
+    api(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
-    api("com.truthbean:logger-core:$truthbeanVersion")
-    api("com.truthbean:transformer:$truthbeanVersion")
+    api("com.truthbean:truthbean-logger-core:$truthbeanVersion")
+    api("com.truthbean:truthbean-transformer:$truthbeanVersion")
 
     // test =========================================================================================================
 
@@ -28,7 +28,7 @@ dependencies {
     testImplementation(project(":debbie-rmi"))
     testImplementation(project(":debbie-server"))
     testImplementation("org.mariadb.jdbc:mariadb-java-client")
-    testImplementation("com.truthbean:stdout-boot:$truthbeanVersion") {
+    testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }
 

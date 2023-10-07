@@ -45,14 +45,14 @@ public class DefaultDataSourcePoolProperties extends DebbieEnvironmentDepository
     private static DefaultDataSourcePoolConfiguration configuration;
     private final Map<String, Map<String, DefaultDataSourcePoolConfiguration>> configurationMap = new HashMap<>();
 
-    public DefaultDataSourcePoolProperties() {
+    public DefaultDataSourcePoolProperties(ApplicationContext applicationContext) {
         super();
         if (getMatchedKey(POOL_KEY_PREFIX).isEmpty()) {
             unpool = true;
-            dataSourceProperties = new DataSourceProperties();
+            dataSourceProperties = new DataSourceProperties(applicationContext);
         } else {
             unpool = false;
-            DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getDefaultConfiguration();
+            DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties(applicationContext).getDefaultConfiguration();
             configuration = new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
             configuration.setMaxActiveConnection(getIntegerValue(MAX_ACTIVE_CONNECTION_KEY, 10));
             configuration.setMaxIdleConnection(getIntegerValue(MAX_IDLE_CONNECTION_KEY, 5));
@@ -111,7 +111,7 @@ public class DefaultDataSourcePoolProperties extends DebbieEnvironmentDepository
 
     @Override
     public DefaultDataSourcePoolConfiguration getConfiguration(ApplicationContext applicationContext) {
-        DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties().getDefaultConfiguration();
+        DataSourceConfiguration dataSourceConfiguration = new DataSourceProperties(applicationContext).getDefaultConfiguration();
         if (unpool) {
             return new DefaultDataSourcePoolConfiguration(dataSourceConfiguration);
         }

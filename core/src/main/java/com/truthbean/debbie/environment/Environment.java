@@ -23,18 +23,21 @@ public interface Environment extends TextData {
         return properties().containsKey(key);
     }
 
-    default Map<String, String> getCategoryValue(String keyPrefix, String keySuffix) {
-        if (keyPrefix == null || keyPrefix.isBlank() || keySuffix.isBlank()) {
+    default Map<String, String> getCategoryValues(String keyPrefix, String category) {
+        if (keyPrefix == null || keyPrefix.isBlank()) {
             throw new PropertiesException("illegal keyPrefix");
+        }
+        String realKeyPrefix;
+        if (category != null && category.isBlank()) {
+            realKeyPrefix = keyPrefix + category;
+        } else {
+            realKeyPrefix = keyPrefix;
         }
         var properties = properties();
         Map<String, String> result = new HashMap<>();
         properties.forEach((k, v) -> {
-            if (k instanceof String && ((String) k).startsWith(keyPrefix) && ((String) k).endsWith(keySuffix)) {
-                String category = ((String) k).substring(keySuffix.length(), ((String) k).length() - keySuffix.length());
-                if (!category.contains(".")) {
-                    result.put(category, (String) v);
-                }
+            if (k instanceof String key && key.startsWith(realKeyPrefix)) {
+                result.put(key, (String) v);
             }
         });
         return result;

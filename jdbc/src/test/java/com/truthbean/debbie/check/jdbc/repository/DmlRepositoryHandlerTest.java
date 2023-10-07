@@ -43,7 +43,7 @@ class DmlRepositoryHandlerTest {
         var beanInfoManager = applicationContext.getBeanInfoManager();
         beanInfoManager.register(Surname.class);
 
-        var config = DataSourceProperties.toConfiguration();
+        var config = DataSourceProperties.toConfiguration(applicationContext);
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 

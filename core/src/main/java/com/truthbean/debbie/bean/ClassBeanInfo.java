@@ -583,7 +583,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
     }
 
     @Override
-    public Set<String> getBeanNames() {
+    public Set<String> getAllName() {
         return beanNames;
     }
 

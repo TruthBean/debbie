@@ -762,7 +762,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                     ((FactoryBeanInfo<?>) i).create(applicationContext);
                 } else*/ if (i instanceof BeanFactory<?> beanFactory) {
                 if (!lazyCreate && !applicationContext.isExiting()) {
-                        Set<String> names = beanFactory.getBeanNames();
+                        Set<String> names = beanFactory.getAllName();
                         for (String name : names) {
                             beanFactory.factoryNamedBean(name, applicationContext);
                         }
@@ -814,6 +814,26 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 }
             }
             return getBeanFactory(serviceName, type, require, handledBeanInfoSet.keySet(), true);
+        } catch (Exception e) {
+            if (e instanceof OneMoreBeanRegisteredException) {
+                throw e;
+            }
+            LOGGER.error("", e);
+        }
+        return null;
+    }
+
+    @Override
+    public <Bean> BeanFactory<Bean> getFinalBeanFactory(String serviceName, Class<Bean> type, boolean require) {
+        try {
+            if (serviceName == null && type == Object.class) {
+                if (require) {
+                    throw new NoBeanException("bean(" + Object.class + ") need name but null");
+                } else {
+                    return null;
+                }
+            }
+            return getBeanInfo(BeanFactory.class, serviceName, type, require, handledBeanInfoSet.keySet(), true, true);
         } catch (Exception e) {
             if (e instanceof OneMoreBeanRegisteredException) {
                 throw e;
@@ -1003,16 +1023,25 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
     }*/
 
+    @SuppressWarnings({"Unchecked", "Rawtypes"})
     private <Info extends BeanInfo<Bean>, Bean extends I, I>
-    void getBeanFactoryListByType(final Class<I> type, final Set<BeanInfo> beanInfoSet, final List<Info> list) {
+    void getBeanFactoryListByType(final Class<I> type, final Set<BeanInfo> beanInfoSet, final List<Info> list,
+                                  final boolean notCheckAssignable) {
         for (BeanInfo debbieBeanInfo : beanInfoSet) {
-            var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
-                    || (debbieBeanInfo instanceof ClassDetailedBeanInfo
-                    && ((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces) != null
-                    && type.isAssignableFrom(((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces))
-            );
-            if (flag && debbieBeanInfo instanceof BeanFactory) {
-                list.add((Info) debbieBeanInfo);
+            if (notCheckAssignable) {
+                var flag = type == debbieBeanInfo.getBeanClass();
+                if (flag && debbieBeanInfo instanceof BeanFactory) {
+                    list.add((Info) debbieBeanInfo);
+                }
+            } else {
+                var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
+                        || (debbieBeanInfo instanceof ClassDetailedBeanInfo
+                        && ((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces) != null
+                        && type.isAssignableFrom(((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces))
+                );
+                if (flag && debbieBeanInfo instanceof BeanFactory) {
+                    list.add((Info) debbieBeanInfo);
+                }
             }
         }
     }
@@ -1051,21 +1080,21 @@ final class DebbieBeanCenter implements BeanInfoManager {
 
     private <Bean extends I, I> BeanInfo<Bean> getBeanInfo(String serviceName, final Class<I> type, boolean require,
                                                            final Set<BeanInfo> beanInfoSet, boolean throwException) {
-        return getBeanInfo(BeanInfo.class, serviceName, type, require, beanInfoSet, throwException);
+        return getBeanInfo(BeanInfo.class, serviceName, type, require, beanInfoSet, throwException, false);
     }
 
     private <Bean extends I, I> BeanFactory<Bean> getBeanFactory(String serviceName, final Class<I> type, boolean require,
                                                                  final Set<BeanInfo> beanInfoSet, boolean throwException) {
-        return getBeanInfo(BeanFactory.class, serviceName, type, require, beanInfoSet, throwException);
+        return getBeanInfo(BeanFactory.class, serviceName, type, require, beanInfoSet, throwException, false);
     }
 
     private <Info extends BeanInfo<Bean>, Bean extends I, I>
     Info getBeanInfo(Class<Info> infoClass, String serviceName, final Class<I> type, boolean require,
-                                  final Set<BeanInfo> beanInfoSet, boolean throwException) {
+                     final Set<BeanInfo> beanInfoSet, boolean throwException, final boolean notCheckAssignable) {
         List<Info> list = new ArrayList<>();
         if (serviceName != null && !serviceName.isBlank()) {
             for (BeanInfo debbieBeanInfo : beanInfoSet) {
-                /*todo if (debbieBeanInfo.containName(serviceName)) {
+                if (debbieBeanInfo.containName(serviceName)) {
                     if (type != null) {
                         var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
                                 || (debbieBeanInfo instanceof ClassDetailedBeanInfo
@@ -1078,13 +1107,13 @@ final class DebbieBeanCenter implements BeanInfoManager {
                     } else if (debbieBeanInfo instanceof BeanFactory) {
                         list.add((Info) debbieBeanInfo);
                     }
-                }*/
+                }
             }
         }
 
         if (list.isEmpty()) {
             if (type != null) {
-                getBeanFactoryListByType(type, beanInfoSet, list);
+                getBeanFactoryListByType(type, beanInfoSet, list, notCheckAssignable);
             }
 
             if (list.isEmpty()) {
@@ -1110,16 +1139,16 @@ final class DebbieBeanCenter implements BeanInfoManager {
             }
             List<Info> copy = new ArrayList<>(list);
             for (Info next : copy) {
-                /*todo if (next.getBeanClass() != type || !next.getBeanNames().contains(name)) {
+                if (next.getBeanClass() != type || !next.containName(name)) {
                     list.remove(next);
-                }*/
+                }
             }
             if (list.isEmpty()) {
                 list = new ArrayList<>(copy);
                 for (Info next : copy) {
-                    /*todo if (serviceName != null && !next.getBeanNames().contains(name)) {
+                    if (serviceName != null && !next.containName(name)) {
                         list.remove(next);
-                    }*/
+                    }
                 }
                 if (list.size() != 1) {
                     list = new ArrayList<>(copy);
@@ -1132,10 +1161,10 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 if (list.size() != 1) {
                     list = new ArrayList<>(copy);
                     for (Info next : copy) {
-                        /*todo if (!(next.getBeanNames().contains("default")
-                                || (type != null && next.getBeanNames().contains("default" + type.getSimpleName())))) {
+                        if (!(next.containName("default")
+                                || (type != null && next.containName("default" + type.getSimpleName())))) {
                             list.remove(next);
-                        }*/
+                        }
                     }
                 }
             }
@@ -1149,11 +1178,11 @@ final class DebbieBeanCenter implements BeanInfoManager {
             if (ele.getBeanType() == BeanType.SINGLETON) {
                 return ele;
             } else {
-                // todo return (Info) ele.copy();
+                return (Info) ele.copy();
             }
         }
         if (throwException) {
-            throw new NoBeanException("bean " + type + ", " + serviceName +" not found");
+            throw new NoBeanException("bean " + type + ", " + serviceName + " not found");
         } else {
             return null;
         }

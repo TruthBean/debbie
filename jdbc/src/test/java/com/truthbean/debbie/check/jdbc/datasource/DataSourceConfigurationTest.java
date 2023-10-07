@@ -28,7 +28,7 @@ import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 public class DataSourceConfigurationTest {
 
     static {
-        System.setProperty("logging.level.com.truthbean.debbie", "TRACE");
+        System.setProperty("logging.level.com.truthbean.debbie", "info");
     }
 
     private final DataSourceConfiguration configuration;
@@ -37,9 +37,9 @@ public class DataSourceConfigurationTest {
 
     private final DdlRepository ddlRepository;
 
-    public DataSourceConfigurationTest(@BeanInject DataSourceConfiguration configuration,
-                                       @BeanInject(name = "mariadb") DataSourceConfiguration mariadbConfiguration,
-                                       @BeanInject(name = "h2") DataSourceConfiguration h2Configuration,
+    public DataSourceConfigurationTest(@BeanInject(name = "dataSourceConfiguration") DataSourceConfiguration configuration,
+                                       @BeanInject(profile = "mariadb") DataSourceConfiguration mariadbConfiguration,
+                                       @BeanInject(profile = "h2") DataSourceConfiguration h2Configuration,
                                        @BeanInject DdlRepository ddlRepository) {
         this.configuration = configuration;
         this.mariadbConfiguration = mariadbConfiguration;
@@ -60,7 +60,14 @@ public class DataSourceConfigurationTest {
         var context = applicationFactory.getApplicationContext();
         var beanFactory = context.getGlobalBeanFactory();
         // application.start(args);
-        DataSourceConfigurationTest factory = beanFactory.factory(DataSourceConfigurationTest.class);
-        factory.print();
+        // DataSourceConfigurationTest factory = beanFactory.factory(DataSourceConfigurationTest.class);
+        // factory.print();
+        DataSourceConfiguration dataSourceConfiguration = beanFactory.factory(DataSourceConfiguration.class);
+        System.out.println(dataSourceConfiguration);
+        DataSourceConfiguration mariadbDataSourceConfiguration = beanFactory.factory(DataSourceConfiguration.class);
+        System.out.println(dataSourceConfiguration);
+        DataSourceConfiguration h2DataSourceConfiguration = beanFactory.factory(DataSourceConfiguration.class);
+        System.out.println(dataSourceConfiguration);
+
     }
 }

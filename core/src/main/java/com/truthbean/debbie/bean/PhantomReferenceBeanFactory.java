@@ -15,6 +15,8 @@ import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -27,11 +29,13 @@ public class PhantomReferenceBeanFactory<T> implements BeanFactory<T> {
     private final Class<?> beanType;
 
     private final ReferenceQueue<T> queue;
+    private final Set<String> names = new HashSet<>();
 
     public PhantomReferenceBeanFactory(T bean) {
         this.beanType = bean.getClass();
         this.queue = new ReferenceQueue<>();
         this.reference = new PhantomReference<>(bean, queue);
+        names.add(bean.getClass().getName());
 
         new Thread(() -> {
             while (true) {
@@ -51,8 +55,14 @@ public class PhantomReferenceBeanFactory<T> implements BeanFactory<T> {
     }
 
     @Override
+    public Set<String> getAllName() {
+        return names;
+    }
+
+    @Override
     public void destruct(ApplicationContext applicationContext) {
         reference.clear();
+        names.clear();
         try {
             queue.remove(5000);
         } catch (InterruptedException e) {

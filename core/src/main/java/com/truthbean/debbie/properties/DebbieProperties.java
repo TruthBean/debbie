@@ -23,7 +23,9 @@ import static com.truthbean.debbie.environment.EnvironmentDepositoryHolder.DEFAU
  */
 public interface DebbieProperties<C extends DebbieConfiguration> extends AutoCloseable {
 
-    String CATEGORIES_NAME = "_categories";
+    String CATEGORIES_KEY_NAME = "_categories";
+
+    String ENABLE_KEY_NAME = "enable";
 
     /**
      * @return [profile: [category: configuration]]

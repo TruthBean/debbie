@@ -211,7 +211,7 @@ public class SimpleBeanFactory<Bean extends I, I> implements BeanFactory<Bean> {
     }
 
     @Override
-    public Set<String> getBeanNames() {
+    public Set<String> getAllName() {
         return beanNames;
     }
 
@@ -254,8 +254,8 @@ public class SimpleBeanFactory<Bean extends I, I> implements BeanFactory<Bean> {
         }
         // if (!super.equals(o)) return false;
         SimpleBeanFactory<Bean, I> beanInfo = (SimpleBeanFactory<Bean, I>) o;
-        Set<String> beanNames = getBeanNames();
-        Set<String> oBeanNames = beanInfo.getBeanNames();
+        Set<String> beanNames = getAllName();
+        Set<String> oBeanNames = beanInfo.getAllName();
         boolean beanNameEmpty = beanNames == null || beanNames.isEmpty() || oBeanNames == null || oBeanNames.isEmpty();
         if (beanNameEmpty) {
             return true;

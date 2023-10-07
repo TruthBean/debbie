@@ -10,17 +10,20 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.debbie.bean.BeanClosure;
+import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,13 +40,24 @@ public interface DataSourceFactory extends BeanClosure {
      * @param configurationClass configurationClass
      * @return DataSourceFactory
      */
+    @SuppressWarnings("Unchecked")
     static <Configuration extends DataSourceConfiguration> Set<DataSourceFactory> factory(
             ApplicationContext applicationContext, Class<Configuration> configurationClass) {
-        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        var collection = globalBeanFactory.getBeanList(configurationClass);
+
+        BeanFactory<Configuration> beanFactory =
+                applicationContext.getBeanInfoManager().getFinalBeanFactory(null, configurationClass, false);
+        if (beanFactory == null) {
+            return null;
+        }
         Set<DataSourceFactory> factories = new HashSet<>();
-        for (Configuration config : collection) {
-            factories.add(loadFactory(config));
+        if (beanFactory instanceof PropertiesConfigurationBeanFactory<?, ?> propertiesConfigurationBeanFactory) {
+            Collection<?> configurations = propertiesConfigurationBeanFactory.factoryBeans(applicationContext);
+            for (Object configuration : configurations) {
+                Configuration dataSourceConfiguration = (Configuration) configuration;
+                if (dataSourceConfiguration.isEnable()) {
+                    factories.add(loadFactory(dataSourceConfiguration));
+                }
+            }
         }
         return factories;
     }

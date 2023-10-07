@@ -12,6 +12,8 @@ package com.truthbean.debbie.bean;
 import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.ref.SoftReference;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -22,9 +24,16 @@ public class SoftReferenceBeanFactory<T> implements BeanFactory<T> {
 
     private SoftReference<T> bean;
     private final Class<T> beanType;
+    private final Set<String> names = new HashSet<>();
 
     public SoftReferenceBeanFactory(Class<T> beanClass) {
         this.beanType = beanClass;
+        names.add(beanClass.getName());
+    }
+
+    @Override
+    public Set<String> getAllName() {
+        return names;
     }
 
     @Override

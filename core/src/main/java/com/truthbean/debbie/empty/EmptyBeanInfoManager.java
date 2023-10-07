@@ -182,6 +182,11 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
+    public <Bean> BeanFactory<Bean> getFinalBeanFactory(String serviceName, Class<Bean> type, boolean require) {
+        return null;
+    }
+
+    @Override
     public <T> BeanInfo<T> getBeanInfo(String serviceName, Class<T> type, boolean require, boolean throwException) {
         return null;
     }

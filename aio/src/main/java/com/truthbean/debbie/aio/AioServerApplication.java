@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.core.concurrent.NamedThreadFactory;
@@ -17,12 +18,14 @@ import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.server.AbstractWebServerApplication;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -40,17 +43,24 @@ public class AioServerApplication extends AbstractWebServerApplication {
         return super.isEnable(environment) && environment.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
     }
 
+    @SuppressWarnings("Unchecked")
     @Override
     public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
-        // applicationContext.getBeanInfoManager().getBeanInfoList()
-        final List<AioServerConfiguration> configurations = applicationContext.factories(AioServerConfiguration.class);
-        if (configurations == null) {
-            LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
+        LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
+        BeanFactory<AioServerConfiguration> beanFactory =
+                applicationContext.getBeanInfoManager().getBeanFactory(null, AioServerConfiguration.class, false);
+        if (beanFactory == null) {
             return null;
         }
-        for (AioServerConfiguration configuration : configurations) {
-            runnerMap.put(configuration.getUuid(), new RealAioServerRunner(applicationContext, configuration)
-                    .init(applicationContext, configuration));
+        if (beanFactory instanceof PropertiesConfigurationBeanFactory<?, ?> propertiesConfigurationBeanFactory) {
+            Collection<?> configurations = propertiesConfigurationBeanFactory.factoryBeans(applicationContext);
+            for (Object configuration : configurations) {
+                AioServerConfiguration aioServerConfiguration = (AioServerConfiguration) configuration;
+                if (aioServerConfiguration.isEnable()) {
+                    runnerMap.put(aioServerConfiguration.getUuid(), new RealAioServerRunner(applicationContext, aioServerConfiguration)
+                            .init(applicationContext, aioServerConfiguration));
+                }
+            }
         }
 
         super.setLogger(LOGGER);
@@ -65,7 +75,7 @@ public class AioServerApplication extends AbstractWebServerApplication {
     protected void start(Instant beforeStartTime, ApplicationArgs args) {
         runnerMap.forEach((uuid, runner) -> {
             runner.printMessage((configuration) -> {
-                LOGGER.debug(() -> "aio server config uri: http://" + configuration.getHost() + ":" + configuration.getPort());
+                LOGGER.debug(() -> "aio server config(" + configuration.getName() + ") uri: http://" + configuration.getHost() + ":" + configuration.getPort());
                 printlnWebUrl(LOGGER, configuration.getPort());
             });
             printStartTime();

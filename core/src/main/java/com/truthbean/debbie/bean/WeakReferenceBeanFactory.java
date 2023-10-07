@@ -12,6 +12,8 @@ package com.truthbean.debbie.bean;
 import com.truthbean.debbie.core.ApplicationContext;
 
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -22,9 +24,16 @@ public class WeakReferenceBeanFactory<T> implements BeanFactory<T> {
 
     private WeakReference<T> bean;
     private final Class<T> beanClass;
+    private final Set<String> beanNames;
 
     public WeakReferenceBeanFactory(Class<T> beanClass) {
         this.beanClass = beanClass;
+        this.beanNames = new HashSet<>();
+    }
+
+    @Override
+    public Set<String> getAllName() {
+        return beanNames;
     }
 
     @Override

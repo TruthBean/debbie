@@ -14,9 +14,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.server.BaseServerProperties;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -28,10 +26,10 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private final Map<String, Map<String, AioServerConfiguration>> configurationMap = new HashMap<>();
 
     private static final String AIO_SERVER_PREFIX = "debbie.server.aio.";
-    private static final String HTTP_VERSION = ".http.version";
-    private static final String SERVER_MESSAGE = ".message";
-    private static final String CONNECTION_TIMEOUT = ".connection.timeout";
-    private static final String URL_ENCODED = ".url.encoded";
+    private static final String HTTP_VERSION = "http.version";
+    private static final String SERVER_MESSAGE = "message";
+    private static final String CONNECTION_TIMEOUT = "connection.timeout";
+    private static final String URL_ENCODED = "url.encoded";
 
     // ===========================================================================
     static final String ENABLE_KEY = "debbie.server.aio.enable";
@@ -42,6 +40,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     // ===========================================================================
 
     public AioServerProperties(final ApplicationContext applicationContext) {
+        setDefaultProfile(DEFAULT_PROFILE);
         getConfiguration(applicationContext);
     }
 
@@ -53,6 +52,23 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     @Override
     public Set<String> getCategories(final String profile) {
         return configurationMap.get(profile).keySet();
+    }
+
+    private boolean isGlobalEnable() {
+        return getBooleanValue(ENABLE_KEY, true);
+    }
+
+    private Set<String> getRawCategories() {
+        Set<String> set = new HashSet<>();
+        String[] arr = getStringArray(getValue(AIO_SERVER_PREFIX + CATEGORIES_KEY_NAME), ",");
+        if (arr == null || arr.length == 0) {
+            arr = getStringArray(getValue(AIO_SERVER_PREFIX + CATEGORIES_KEY_NAME), ";");
+        }
+        if (arr != null) {
+            set.addAll(Set.of(arr));
+        }
+        set.add("");
+        return set;
     }
 
     @Override
@@ -74,7 +90,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
             buildConfiguration(applicationContext);
         }
         if (configurationMap.isEmpty()) {
-            var configuration = new AioServerConfiguration(applicationContext.getClassLoader());
+            var configuration = new AioServerConfiguration(applicationContext.getClassLoader(), true);
             super.loadAndSet(DEFAULT_CATEGORY, this, configuration);
             Map<String, AioServerConfiguration> map = new HashMap<>();
             map.put(DEFAULT_CATEGORY, configuration);
@@ -84,68 +100,65 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     }
 
     private void buildConfiguration(ApplicationContext applicationContext) {
-        Set<String> profiles = getProfiles();
-        for (String profile : profiles) {
-            Environment environment = getEnvironmentIfPresent(profile);
-            Map<String, String> aioProperties = environment.getMatchedKey(AIO_SERVER_PREFIX);
-            var classLoader = applicationContext.getClassLoader();
-
-            aioProperties.forEach((k, v) -> {
-                if (k.equals(ENABLE_KEY)) {
-                    AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                    boolean enable = getBoolean(v, false);
-                    configuration.setEnable(enable);
-                }
-                if (!k.equals(HTTP_VERSION_KEY) && k.endsWith(HTTP_VERSION)) {
-                    var startIndex = AIO_SERVER_PREFIX.length();
-                    var endIndex = k.length() - HTTP_VERSION.length();
-                    String category = k.substring(startIndex, endIndex);
-                    AioServerConfiguration configuration = getConfiguration(profile, category, classLoader);
-                    String httpVersion = getStringValue(v, "1.1");
-                    configuration.setHttpVersion(httpVersion);
-                } else if (k.equals(HTTP_VERSION_KEY)) {
-                    AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                    String httpVersion = getStringValue(v, "1.1");
-                    configuration.setHttpVersion(httpVersion);
-                }
-                if (!k.equals(SERVER_MESSAGE_KEY) && k.endsWith(SERVER_MESSAGE)) {
-                    var startIndex = AIO_SERVER_PREFIX.length();
-                    var endIndex = k.length() - SERVER_MESSAGE.length();
-                    String name = k.substring(startIndex, endIndex);
-                    AioServerConfiguration configuration = getConfiguration(profile, name, classLoader);
-                    String httpVersion = getStringValue(v, "A Simple Java Aio WebServer by Debbie Framework");
-                    configuration.setHttpVersion(httpVersion);
-                } else if (k.equals(SERVER_MESSAGE_KEY)) {
-                    AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                    String httpVersion = getStringValue(v, "A Simple Java Aio WebServer by Debbie Framework");
-                    configuration.setHttpVersion(httpVersion);
-                }
-                if (!k.equals(CONNECTION_TIMEOUT_KEY) && k.endsWith(CONNECTION_TIMEOUT)) {
-                    var startIndex = AIO_SERVER_PREFIX.length();
-                    var endIndex = k.length() - CONNECTION_TIMEOUT.length();
-                    String name = k.substring(startIndex, endIndex);
-                    AioServerConfiguration configuration = getConfiguration(profile, name, classLoader);
-                    long connectionTimeout = getLongValue(v, 5000L);
-                    configuration.setConnectionTimeout(connectionTimeout);
-                } else if (k.equals(CONNECTION_TIMEOUT_KEY)) {
-                    AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                    long connectionTimeout = getLongValue(v, 5000L);
-                    configuration.setConnectionTimeout(connectionTimeout);
-                }
-                if (!k.equals(URL_ENCODED_KEY) && k.endsWith(URL_ENCODED)) {
-                    var startIndex = AIO_SERVER_PREFIX.length();
-                    var endIndex = k.length() - URL_ENCODED.length();
-                    String name = k.substring(startIndex, endIndex);
-                    AioServerConfiguration configuration = getConfiguration(profile, name, classLoader);
-                    boolean encoded = getBoolean(v, true);
-                    configuration.setIgnoreEncode(!encoded);
-                } else if (k.equals(URL_ENCODED_KEY)) {
-                    AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                    boolean encoded = getBoolean(v, true);
-                    configuration.setIgnoreEncode(!encoded);
-                }
-            });
+        if (!isGlobalEnable()) {
+            return;
         }
+        Set<String> profiles = getProfiles();
+        Set<String> categories = getRawCategories();
+        for (String profile : profiles) {
+            for (String category : categories) {
+                buildConfiguration(applicationContext, profile, category + ".");
+            }
+            Map<String, AioServerConfiguration> map = configurationMap.get(profile);
+            if (map != null && !map.isEmpty()) {
+                AioServerConfiguration defaultAioServerConfiguration = map.get(DEFAULT_CATEGORY);
+                for (String category : categories) {
+                    if (!category.isBlank()) {
+                        AioServerConfiguration aioServerConfiguration = map.get(DEFAULT_CATEGORY);
+                        aioServerConfiguration.setDefaultIfNull(defaultAioServerConfiguration);
+                    }
+                }
+            }
+        }
+    }
+
+    private void buildConfiguration(ApplicationContext applicationContext, String profile, String category) {
+        Environment environment = getEnvironmentIfPresent(profile);
+        Map<String, String> aioProperties = environment.getMatchedKey(AIO_SERVER_PREFIX);
+        var classLoader = applicationContext.getClassLoader();
+
+        aioProperties.forEach((k, v) -> {
+            String key = AIO_SERVER_PREFIX + category + ENABLE_KEY_NAME;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, category, classLoader);
+                boolean enable = getBoolean(v, true);
+                configuration.setEnable(enable);
+            }
+            key = AIO_SERVER_PREFIX + category + HTTP_VERSION;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, category, classLoader);
+                String httpVersion = getStringValue(v, "1.1");
+                configuration.setHttpVersion(httpVersion);
+            }
+            key = AIO_SERVER_PREFIX + category + SERVER_MESSAGE;
+            if (k.endsWith(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                String httpVersion = getStringValue(v, "A Simple Java Aio WebServer by Debbie Framework");
+                configuration.setHttpVersion(httpVersion);
+            }
+            key = AIO_SERVER_PREFIX + category + CONNECTION_TIMEOUT;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                long connectionTimeout = getLongValue(v, 5000L);
+                configuration.setConnectionTimeout(connectionTimeout);
+            }
+            key = AIO_SERVER_PREFIX + category + URL_ENCODED;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                boolean encoded = getBoolean(v, true);
+                configuration.setIgnoreEncode(!encoded);
+            }
+        });
     }
 
     public static boolean enableAio(Environment environment) {
@@ -160,6 +173,9 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
         } else {
             map = new HashMap<>();
             configurationMap.put(profile, map);
+        }
+        if ("".equals(category)) {
+            category = DEFAULT_CATEGORY;
         }
         if (map.containsKey(category)) {
             configuration = map.get(category);

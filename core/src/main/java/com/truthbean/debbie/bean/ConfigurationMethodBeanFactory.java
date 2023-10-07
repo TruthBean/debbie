@@ -170,7 +170,7 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
     }
 
     @Override
-    public Set<String> getBeanNames() {
+    public Set<String> getAllName() {
         return names;
     }
 

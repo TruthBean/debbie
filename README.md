@@ -44,7 +44,7 @@ latest version: 0.5.5-RELEASE
 </dependency>
 ```
 
-## 目标
+## 目标/TODO
 --------
 ~~1. 先实现一个mvc内核~~
 
@@ -66,7 +66,7 @@ latest version: 0.5.5-RELEASE
 
 ~~10. 使用javassist或者ASM增强bean proxy功能~~
 
-~~11. 完善aio、rmi模块~~
+~~11. 完善aio模块~~
 
 12. 增加cache功能
 
