@@ -16,6 +16,9 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author TruthBean
  * @since 0.0.2
@@ -27,12 +30,19 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
     private final HttpClientFactory httpClientFactory;
     private final ClassBeanInfo<HttpClientBean> beanInfo;
 
+    private final Set<String> beanNames = new HashSet<>();
+
+
     @SuppressWarnings("unchecked")
     public HttpClientBeanFactory(HttpClientFactory httpClientFactory,
                                  ClassBeanInfo<HttpClientBean> beanInfo) {
         this.httpClientBeanClass = (Class<HttpClientBean>) beanInfo.getBeanClass();
         this.httpClientFactory = httpClientFactory;
         this.beanInfo = beanInfo;
+        Set<String> allName = this.beanInfo.getAllName();
+        for (String name : allName) {
+            allName.add(name + "*factory");
+        }
     }
 
     @Override
@@ -49,6 +59,11 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
             httpClientBean = httpClientFactory.factory(httpClientBeanClass);
         }
         return httpClientBean;
+    }
+
+    @Override
+    public Set<String> getAllName() {
+        return beanNames;
     }
 
     @Override

@@ -117,7 +117,7 @@ public class EnvironmentDepository {
         return environmentMap.get(profile);
     }
 
-    public boolean hashProfile(String profile) {
+    public boolean hasProfile(String profile) {
         return environmentMap.containsKey(profile);
     }
 

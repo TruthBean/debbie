@@ -24,7 +24,7 @@ public class DebbieEnvironmentDepositoryHolder implements EnvironmentDepositoryH
     private Logger logger;
 
     public DebbieEnvironmentDepositoryHolder() {
-        if (!PROFILE.hashProfile(this.profile())) {
+        if (!PROFILE.hasProfile(this.profile())) {
             PROFILE.addEnvironment(this.profile(), this);
         }
     }

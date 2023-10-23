@@ -14,6 +14,7 @@ import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.environment.*;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
+import com.truthbean.logger.SystemOutLogger;
 
 import java.io.*;
 import java.net.URL;
@@ -89,7 +90,7 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
     @Override
     public Logger getLogger() {
         if (this.logger == null) {
-            this.logger = LoggerFactory.getLogger(PropertiesResourceEnvironment.class);
+            this.logger = SystemOutLogger.getLogger(PropertiesResourceEnvironment.class);
         }
         return logger;
     }
@@ -165,7 +166,7 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
                     String profile = EnvironmentDepository.PROPERTIES + ":" + url;
                     // 优先使用profileKey自定义的名称，自定义的名称不能为系统已经存在的名称
                     profile = properties.getProperty(profileKey, profile);
-                    environmentMap.put(profile, new EnvironmentWrapper(properties, profile, priority() - 1 - i));
+                    environmentMap.put(profile, new EnvironmentWrapper(properties, profile, priority() - 1 - i, logger));
                 }
             }
         } else {
@@ -175,7 +176,7 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
                 String profile = EnvironmentDepositoryHolder.ORIGIN_PROFILE;
                 // 优先使用profileKey自定义的名称，自定义的名称不能为系统已经存在的名称
                 profile = properties.getProperty(profileKey, profile);
-                environmentMap.put(profile, new EnvironmentWrapper(properties, profile, priority() - 1));
+                environmentMap.put(profile, new EnvironmentWrapper(properties, profile, priority() - 1, logger));
             }
         }
         /*String profilesStr = System.getProperty(Constants.PROFILES);

@@ -14,6 +14,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
+import com.truthbean.debbie.properties.CategoriedProperties;
 import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.HashMap;
@@ -25,12 +26,20 @@ import java.util.Set;
  * @since 0.0.1
  * Created on 2018-03-26 16:41
  */
-public class DefaultDataSourcePoolProperties extends DebbieEnvironmentDepositoryHolder implements DebbieProperties<DefaultDataSourcePoolConfiguration> {
+public class DefaultDataSourcePoolProperties extends CategoriedProperties<DefaultDataSourcePoolConfiguration> {
 
     private final boolean unpool;
 
-    //===========================================================================
-    private static final String POOL_KEY_PREFIX = "debbie.datasource.pool";
+    //=====================================================================================================================================
+    private static final String POOL_KEY_PREFIX = "debbie.datasource.pool.";
+    private static final String MAX_ACTIVE_CONNECTION = "max-active-connection";
+    private static final String MAX_IDLE_CONNECTION = "max-idle-connection";
+    private static final String MAX_CHECKOUT_TIME = "max-checkout-time";
+    private static final String TIME_TO_WAIT = "time-to-wait";
+    private static final String MAX_LOCAL_BAD_CONNECTION_TOLERANCE = "max-local-bad-connection-tolerance";
+    private static final String PING_QUERY = "ping-query";
+    private static final String PING_CONNECTION_NOT_USED_FOR = "ping-connection-not-used-for";
+    //=====================================================================================================================================
 
     private static final String MAX_ACTIVE_CONNECTION_KEY = "debbie.datasource.pool.max-active-connection";
     private static final String MAX_IDLE_CONNECTION_KEY = "debbie.datasource.pool.max-idle-connection";
@@ -76,6 +85,11 @@ public class DefaultDataSourcePoolProperties extends DebbieEnvironmentDepository
             }
             map.put(DEFAULT_CATEGORY, configuration);
         }
+    }
+
+    @Override
+    public String getKeyPrefix() {
+        return POOL_KEY_PREFIX;
     }
 
     @Override
