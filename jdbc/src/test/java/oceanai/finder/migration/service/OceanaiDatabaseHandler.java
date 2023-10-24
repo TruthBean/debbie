@@ -24,7 +24,7 @@ import java.io.InputStream;
  */
 public class OceanaiDatabaseHandler implements ApplicationContextAware {
 
-    private final DataSourceConfiguration configuration = new DataSourceConfiguration();
+    private final DataSourceConfiguration configuration = new DataSourceConfiguration(true);
     private final DdlRepository ddlRepository;
     private final RepositoryHandler repositoryHandler;
 

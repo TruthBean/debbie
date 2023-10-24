@@ -19,6 +19,7 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.properties.*;
 import com.truthbean.debbie.proxy.BeanProxyHandler;
 import com.truthbean.debbie.proxy.BeanProxyType;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.transformer.DataTransformer;
@@ -152,7 +153,12 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     map.forEach((fieldInfo, beanInfo) -> {
                         if (beanInfo instanceof BeanFactory<?> fieldBeanFactory) {
                             Object fieldValue = fieldBeanFactory.factoryProxiedBean(fieldInfo.getName(), fieldInfo.getType(), applicationContext);
-                            ReflectionHelper.setField(finalLocalBean, fieldInfo.getField(), fieldValue);
+                            if (finalLocalBean.getClass().getName().startsWith("jdk.proxy")) {
+                                Object obj = getRealValueFromJdkProxy(finalLocalBean);
+                                ReflectionHelper.setField(obj, fieldInfo.getField(), fieldValue);
+                            } else {
+                                ReflectionHelper.setField(finalLocalBean, fieldInfo.getField(), fieldValue);
+                            }
                         }
                     });
                 }
@@ -160,6 +166,13 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             }
         }
         return tempValue;
+    }
+
+    private Object getRealValueFromJdkProxy(Object proxy) {
+        while (proxy.getClass().getName().startsWith("jdk.proxy")) {
+            proxy = JdkDynamicProxy.getRealValue(proxy);
+        }
+        return proxy;
     }
 
     @Override
@@ -301,6 +314,10 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
 
             if ((name == null || name.isBlank()) && parameter.isNamePresent()) {
                 name = parameter.getName();
+            }
+
+            if (name == null || name.isBlank()) {
+                name = parameter.getType().getName();
             }
 
             PropertyInject propertyInject = parameter.getAnnotation(PropertyInject.class);
@@ -650,7 +667,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                 if (name == null || name.isBlank()) {
                     name = field.getName();
                 }
-                var fieldValue = ReflectionHelper.getField(preparedBean, field);
+                var fieldValue = ReflectionHelper.getField(getRealValueFromJdkProxy(preparedBean), field);
                 if (fieldValue == null) {
                     var baseBeanFactory = beanInfoManager.getBeanFactory(name, fieldType, required, false);
                     if (required && baseBeanFactory == null) {
@@ -776,7 +793,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     throw new NoBeanException("no bean " + name + " found .");
                 }
             } else {
-                ReflectionHelper.setField(preparedBean, field, value);
+                ReflectionHelper.setField(getRealValueFromJdkProxy(preparedBean), field, value);
             }
         } else if (required) {
             throw new NoBeanException("no bean (" + name + ", " + field.getType() + ") found .");

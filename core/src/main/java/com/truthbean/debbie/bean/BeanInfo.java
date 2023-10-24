@@ -108,9 +108,9 @@ public interface BeanInfo<Bean> {
     default void setDefaultName() {
         Set<String> beanNames = getAllName();
         if (beanNames.isEmpty()) {
-            String name = getBeanClass().getSimpleName();
-            name = StringUtils.toFirstCharLowerCase(name);
-            beanNames.add(name);
+            // String name = getBeanClass().getSimpleName();
+            // name = StringUtils.toFirstCharLowerCase(name);
+            // beanNames.add(name);
             beanNames.add(getBeanClass().getName());
         }
     }

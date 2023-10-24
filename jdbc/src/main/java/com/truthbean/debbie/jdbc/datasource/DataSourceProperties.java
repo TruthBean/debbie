@@ -59,7 +59,7 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
             applicationContext.getEnvironmentHolder()
                     .getEnvironment(profile)
                     .ifPresent(environment -> {
-                        DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration();
+                        DataSourceConfiguration defaultConfiguration = new DataSourceConfiguration(true);
                         setConfiguration(defaultConfiguration, environment, profile, DEFAULT_CATEGORY, "");
                         Set<String> categories = getRawCategories();
                         for (String category : categories) {
@@ -109,7 +109,7 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
         if (map.containsKey(category)) {
             configuration = map.get(category);
         } else {
-            configuration = new DataSourceConfiguration();
+            configuration = new DataSourceConfiguration(true);
             configuration.setProfile(profile);
             configuration.setCategory(category);
             map.put(category, configuration);
@@ -119,6 +119,10 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
     }
 
     private void setConfiguration(DataSourceConfiguration configuration, Environment environment, String category) {
+        String enableKey = DATASOURCE_KEY_PREFIX + category + ENABLE_KEY_NAME;
+        boolean enable = environment.getBooleanValue(enableKey, true);
+        configuration.setEnable(enable);
+
         String key = DATASOURCE_KEY_PREFIX + category + URL;
         String url = environment.getStringValue(key, "jdbc:mysql://localhost:3306");
         configuration.setUrl(url);

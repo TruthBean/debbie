@@ -84,9 +84,9 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
                 String name = dataSourceFactory.getName();
                 SimpleBeanFactory<DataSourceFactory, DataSourceFactory> simpleBeanFactory;
                 if ("defaultDataSourceFactory".equals(name)) {
-                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, "dataSourceFactory");
+                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, "dataSourceFactory", DataSourceFactory.class.getName());
                 } else {
-                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name);
+                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, DataSourceFactory.class.getName());
                 }
                 beanInfoManager.registerBeanInfo(simpleBeanFactory);
             }

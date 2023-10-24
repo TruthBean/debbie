@@ -1168,8 +1168,10 @@ final class DebbieBeanCenter implements BeanInfoManager {
                     }
                 }
             }
-            if (list.size() != 1) {
+            if (list.size() > 1) {
                 throw new OneMoreBeanRegisteredException("bean(" + type + ", " + serviceName + ") must be only one");
+            } else if (list.isEmpty()) {
+                throw new NoBeanException("bean " + type + ", " + serviceName + " not found");
             }
         }
 

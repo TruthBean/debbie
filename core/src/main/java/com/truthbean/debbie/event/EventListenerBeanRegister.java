@@ -61,7 +61,7 @@ public class EventListenerBeanRegister {
         // SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
         // register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
         // register.registerSingletonBean(eventPublisher, EventMulticaster.class, "eventMulticaster");
-        var eventPublisherBeanFactory = new SimpleBeanFactory<>(eventPublisher, EventMulticaster.class, BeanProxyType.NO, "eventPublisher", "eventMulticaster");
+        var eventPublisherBeanFactory = new SimpleBeanFactory<>(eventPublisher, EventMulticaster.class, BeanProxyType.NO, "eventPublisher", "eventMulticaster", DebbieEventPublisher.class.getName(), EventMulticaster.class.getName());
         beanInfoManager.registerBeanInfo(eventPublisherBeanFactory);
         eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的

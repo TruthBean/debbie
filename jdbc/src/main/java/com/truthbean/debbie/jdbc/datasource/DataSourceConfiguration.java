@@ -38,7 +38,8 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
 
     private Class<? extends DataSourceFactory> dataSourceFactoryClass;
 
-    public DataSourceConfiguration() {
+    public DataSourceConfiguration(boolean enable) {
+        this.enable = enable;
     }
 
     public DataSourceConfiguration(DataSourceConfiguration configuration) {
