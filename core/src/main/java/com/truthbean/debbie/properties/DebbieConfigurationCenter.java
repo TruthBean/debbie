@@ -166,7 +166,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
             }
         }
         // return beanInfoManager.getRegisterBean(configurationClass, applicationContext);
-        return applicationContext.factory(configurationClass);
+        return applicationContext.getGlobalBeanFactory().factory(configurationClass);
     }
 
     /*public static <C extends DebbieConfiguration> C factoryConfiguration(Class<C> configurationClass, ApplicationContext applicationContext) {

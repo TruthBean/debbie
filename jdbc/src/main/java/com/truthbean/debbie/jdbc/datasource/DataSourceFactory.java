@@ -45,7 +45,7 @@ public interface DataSourceFactory extends BeanClosure {
             ApplicationContext applicationContext, Class<Configuration> configurationClass) {
 
         BeanFactory<Configuration> beanFactory =
-                applicationContext.getBeanInfoManager().getFinalBeanFactory(null, configurationClass, false);
+                applicationContext.getBeanInfoManager().getBeanFactory(null, configurationClass, false);
         if (beanFactory == null) {
             return null;
         }

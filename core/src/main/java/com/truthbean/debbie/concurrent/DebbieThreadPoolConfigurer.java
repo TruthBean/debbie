@@ -11,9 +11,11 @@ package com.truthbean.debbie.concurrent;
 
 import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
+import com.truthbean.debbie.bean.SimpleBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
+import com.truthbean.debbie.proxy.BeanProxyType;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -33,7 +35,9 @@ public class DebbieThreadPoolConfigurer {
         var queueLength = max * 100;
         var factory = new ThreadPooledExecutor(core, max, queueLength,
                 new NamedThreadFactory().setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler()), time);
-        applicationContext.registerSingleBean(ThreadPooledExecutor.class, factory, "threadPooledExecutor");
+
+        var simpleBeanFactory = new SimpleBeanFactory<>(factory, ThreadPooledExecutor.class, BeanProxyType.JDK, "threadPooledExecutor");
+        applicationContext.getBeanInfoManager().registerBeanInfo(simpleBeanFactory);
         return factory;
     }
 }

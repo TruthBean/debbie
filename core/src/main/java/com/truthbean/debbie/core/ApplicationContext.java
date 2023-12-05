@@ -44,23 +44,7 @@ public interface ApplicationContext extends DebbieEventPublisher {
 
     Set<BeanLifecycle> getBeanLifecycle();
 
-    <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names);
-
-    // <E extends AbstractDebbieEvent, EL extends DebbieEventListener<E>> void registerEventListener(Class<E> eventClass, EL listener);
-
-    void registerBeanLifecycle(BeanLifecycle beanLifecycle);
-
-    // void refreshBeans();
-
     <O, T> T transform(final O origin, final Class<T> target);
-
-    <T> T factory(String beanName);
-
-    <T> T factory(Class<T> beanType);
-
-    <T> List<T> factories(Class<T> beanType);
-
-    <T> T factory(String profile, String category, Class<T> beanType);
 
     void release(String... args);
 

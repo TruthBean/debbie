@@ -3,7 +3,10 @@ package com.truthbean.debbie.check.jdbc.repository;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.check.jdbc.entity.DateTimeEntity;
+import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.repository.DdlRepository;
+import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.AfterEach;
@@ -47,8 +50,20 @@ public class DateTimeRepositoryTest {
     }
 
     @Test
+    public void test(@BeanInject(name = "dataSourceConfiguration") DataSourceConfiguration configuration,
+                     @BeanInject(category = "mariadb") DataSourceConfiguration mariadbConfiguration,
+                     @BeanInject(category = "h2") DataSourceConfiguration h2Configuration,
+                     @BeanInject DdlRepository ddlRepository) {
+        System.out.println(configuration);
+        System.out.println(mariadbConfiguration);
+        System.out.println(h2Configuration);
+        TransactionManager.offer(new TransactionInfo());
+        System.out.println(ddlRepository.getTransaction());
+    }
+
+    @Test
     public synchronized void now(@BeanInject("mariadbDataSourceFactory") DataSourceFactory factory) {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
             TransactionManager.offer(factory.getTransaction());
             LocalDateTime localDateTime = dateTimeRepository.localDateTime();
             System.out.println("LocalDateTime");

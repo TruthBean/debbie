@@ -61,8 +61,10 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
     }
 
     @Override
-    public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
-        // TODO 这里的name没有用到！！！
+    public Bean factoryBean(ApplicationContext applicationContext) {
+        if (created && isSingleton()) {
+            return bean;
+        }
         if (!created || !isSingleton()) {
             createBean(null, null, applicationContext);
         }
@@ -75,7 +77,22 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
         return localBean;
     }
 
-    @Override
+    /*@Override
+    public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
+        // 这里的name没有用到！！！
+        if (!created || !isSingleton()) {
+            createBean(null, null, applicationContext);
+        }
+        final Bean localBean = preparedBean;
+        if (isSingleton()) {
+            bean = localBean;
+        } else {
+            bean = null;
+        }
+        return localBean;
+    }*/
+
+    /*@Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Bean factoryProxiedBean(String name, Class beanInterface, ApplicationContext applicationContext) {
         Bean needBean;
@@ -129,7 +146,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
             bean = null;
         }
         return localBean;
-    }
+    }*/
 
     @Override
     public Boolean isProxiedBean() {
@@ -167,7 +184,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
                         hasVirtualFields = true;
                     } else {
                         localBean = beanLifecycle.postConstruct(localBean, this, false, profile, category);
-                        localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), BeanProxyType.JDK);
+                        localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), getBeanProxyType());
                         localBean = beanLifecycle.getCreatedBean(localBean, this);
                     }
                 }
@@ -186,7 +203,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
                     }
                     if (hasVirtualFields && localBean != null) {
                         localBean = beanLifecycle.postConstruct(localBean, this, false, profile, category);
-                        localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), BeanProxyType.JDK);
+                        localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), getBeanProxyType());
                         localBean = beanLifecycle.getCreatedBean(localBean, this);
                     }
                     if (localBean != null) {

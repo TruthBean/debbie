@@ -197,6 +197,7 @@ public class TaskFactory implements TaskRegister, ApplicationContextAware, BeanC
             scheduledPooledExecutor.destroy();
             taskThreadPool.destroy();
             taskBeans.clear();
+            taskList.clear();
         }
     }
 

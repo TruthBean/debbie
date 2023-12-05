@@ -1,5 +1,7 @@
 package com.truthbean.debbie.graalvm;
 
+import com.truthbean.debbie.bean.GlobalBeanFactory;
+import com.truthbean.debbie.bean.GlobalBeanFactoryAware;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.graalvm.model.Account;
@@ -18,7 +20,7 @@ import java.util.UUID;
  * @since 0.5.3
  * Created on 2021/11/25 17:52.
  */
-public class ApplicationEntrypoint implements ApplicationContextAware {
+public class ApplicationEntrypoint implements GlobalBeanFactoryAware {
 
     private AccountService accountService;
     private LogService logService;
@@ -28,10 +30,10 @@ public class ApplicationEntrypoint implements ApplicationContextAware {
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.accountService = applicationContext.factory(AccountService.class);
-        this.logService = applicationContext.factory(LogService.class);
-        this.factory = applicationContext.factory(DataSourceFactory.class);
+    public void setGlobalBeanFactory(GlobalBeanFactory globalBeanFactory) {
+        this.accountService = globalBeanFactory.factory(AccountService.class);
+        this.logService = globalBeanFactory.factory(LogService.class);
+        this.factory = globalBeanFactory.factory(DataSourceFactory.class);
     }
 
     public void printId() {

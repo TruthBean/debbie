@@ -26,7 +26,7 @@ public class MvcRouterRegisterTest {
     public void before() {
         ApplicationFactory factory = ApplicationFactory.configure(MvcRouterRegisterTest.class);
         var context = factory.getApplicationContext();
-        MvcConfiguration mvcConfiguration = context.factory(MvcConfiguration.class);
+        MvcConfiguration mvcConfiguration = context.getGlobalBeanFactory().factory(MvcConfiguration.class);
         MvcRouterRegister.getInstance(mvcConfiguration).get(new String[]{"/register/get/router"}, (request, response) -> {
             response.setResponseType(MediaType.TEXT_ANY_UTF8);
             response.setContent("hello router!");
@@ -40,7 +40,7 @@ public class MvcRouterRegisterTest {
         BeanInfoManager beanInfoManager = context.getBeanInfoManager();
         beanInfoManager.register(RouterInvokerTest.class);
 
-        MvcConfiguration mvcConfiguration = context.factory(MvcConfiguration.class);
+        MvcConfiguration mvcConfiguration = context.getGlobalBeanFactory().factory(MvcConfiguration.class);
 
         MvcRouterRegister.registerRouter(mvcConfiguration, context);
 

@@ -12,11 +12,9 @@ package com.truthbean.debbie.bean;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.lang.reflect.Proxy;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -27,57 +25,9 @@ import java.util.function.Supplier;
  */
 public interface BeanFactory<Bean> extends RegistrableBeanInfo<Bean>, BeanClosure {
 
-    default Bean factoryBean(ApplicationContext applicationContext) {
-        return factoryNamedBean(null, applicationContext);
-    }
+    Bean factoryBean(ApplicationContext applicationContext);
 
-    Bean factoryNamedBean(String name, ApplicationContext applicationContext);
-
-    /**
-     * if isCreated() and isProxiedBean()
-     *   return getCreatedBean();
-     * else
-     *   factory and proxy
-     * @param name bean's name
-     * @param beanInterface BEAN's interface
-     * @param applicationContext debbie's applicationContext
-     * @return BEAN's proxy
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    default Bean factoryProxiedBean(String name, Class beanInterface, ApplicationContext applicationContext) {
-        Bean bean;
-        if (!isCreated()) {
-            bean = factoryNamedBean(name, applicationContext);
-        } else {
-            bean = getCreatedBean();
-        }
-        if (isCreated() && beanInterface != null && beanInterface.isInterface() && beanInterface.isInstance(bean)) {
-            bean = getCreatedBean();
-            if (!(bean instanceof Proxy)) {
-                Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();
-                for (BeanLifecycle beanLifecycle : beanLifecycles) {
-                    if (beanLifecycle.support(getBeanClass()) && beanLifecycle.support(this)) {
-                        Bean proxy = (Bean) beanLifecycle.doPreCreated(this, bean, beanInterface, BeanProxyType.JDK);
-                        if (proxy instanceof Proxy) {
-                            return proxy;
-                        }
-                    }
-                }
-            }
-            return bean;
-        }
-        return bean;
-    }
-
-    @SuppressWarnings({"rawtypes"})
-    default Bean factory(String name, Class beanClass, BeanType type, BeanProxyType proxyType, ApplicationContext applicationContext) {
-        return null;
-    }
-
-    @SuppressWarnings({"rawtypes"})
-    default Bean factory(String profile, String category, String name, Class beanClass, BeanType type, BeanProxyType proxyType, ApplicationContext applicationContext) {
-        return null;
-    }
+    // Bean factory(BeanInjection<Bean> beanInjection, ApplicationContext applicationContext);
 
     /**
      * is bean proxied
@@ -117,7 +67,7 @@ public interface BeanFactory<Bean> extends RegistrableBeanInfo<Bean>, BeanClosur
         }
     }
 
-    default Supplier<Bean> getBeanSupplier(final ApplicationContext applicationContext) {
+    default Supplier<Bean> supply(final ApplicationContext applicationContext) {
         if (isCreated()) {
             return this::getCreatedBean;
         } else {

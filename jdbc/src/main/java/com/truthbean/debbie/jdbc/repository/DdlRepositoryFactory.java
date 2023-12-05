@@ -31,6 +31,14 @@ public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
     }
 
     @Override
+    public DdlRepository factoryBean(ApplicationContext applicationContext) {
+        if (ddlRepository == null) {
+            ddlRepository = new DdlRepository();
+        }
+        return ddlRepository;
+    }
+
+    /*@Override
     public DdlRepository factoryNamedBean(String name, ApplicationContext applicationContext) {
         if (ddlRepository == null) {
             ddlRepository = new DdlRepository();
@@ -44,7 +52,7 @@ public class DdlRepositoryFactory implements BeanFactory<DdlRepository> {
             ddlRepository = new DdlRepository();
         }
         return ddlRepository;
-    }
+    }*/
 
     @Override
     public Class<?> getBeanClass() {

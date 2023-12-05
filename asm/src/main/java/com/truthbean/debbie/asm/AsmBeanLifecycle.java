@@ -1,6 +1,5 @@
 package com.truthbean.debbie.asm;
 
-import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.BeanLifecycle;
 import com.truthbean.debbie.proxy.BeanProxyHandler;
@@ -30,7 +29,7 @@ public class AsmBeanLifecycle implements BeanLifecycle {
     }
 
     @Override
-    public boolean support(BeanFactory<?> beanFactory) {
+    public boolean support(BeanInfo<?> beanFactory) {
         return beanFactory.getBeanProxyType() == BeanProxyType.ASM;
     }
 

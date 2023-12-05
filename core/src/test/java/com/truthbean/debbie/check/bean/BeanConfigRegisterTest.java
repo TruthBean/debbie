@@ -14,7 +14,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-@DebbieApplicationTest(scan = @DebbieScan(basePackages = {"com.truthbean.debbie.check.bean", "com.truthbean.debbie.bean.inter"}))
+@DebbieApplicationTest(scan =
+    @DebbieScan(basePackages = {"com.truthbean.debbie.check.bean",
+            "com.truthbean.debbie.bean.inter", "com.truthbean.debbie.bean.lifecycle"}))
 class BeanConfigRegisterTest {
 
     static {
@@ -54,7 +56,7 @@ class BeanConfigRegisterTest {
                   @BeanInject("hehe") Object hehe,
                   @BeanInject("狄青") Object 狄青,
                   @BeanInject("幽灵") Object 幽灵,
-                  @BeanInject(require = false) Optional<PropertiesConfigurationTest> optional,
+                  // @BeanInject(require = false) Optional<PropertiesConfigurationTest> optional,
                   @BeanInject BBean bBean,
                   @BeanInject ABean aBean,
                   @BeanInject CBean cBean,
@@ -67,7 +69,7 @@ class BeanConfigRegisterTest {
         System.out.println(狄青);
         System.out.println(幽灵);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        optional.ifPresent(test -> System.out.println(test.getHehe()));
+        // optional.ifPresent(test -> System.out.println(test.getHehe()));
         System.out.println("------------------------------------------------------------------------------");
         System.out.println(bBean);
         System.out.println(aBean);

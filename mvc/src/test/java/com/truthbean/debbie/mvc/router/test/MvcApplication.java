@@ -35,16 +35,17 @@ public class MvcApplication {
     }*/
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplication.create(MvcApplication.class, args);
-        ApplicationContext applicationContext = application.getApplicationContext();
-        MvcConfiguration mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
-        MvcRouterRegister.getInstance(mvcConfiguration)
-                .get(new String[]{"/register/get/router"}, (request, response) -> {
+        DebbieApplication.create(MvcApplication.class, args)
+                .then(applicationContext -> {
+                    MvcConfiguration mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
+                    MvcRouterRegister.getInstance(mvcConfiguration)
+                            .get(new String[]{"/register/get/router"}, (request, response) -> {
 
-                    // response.setResponseType(MediaType.TEXT_ANY_UTF8);
-                    response.setContent("hello router!");
-                });
-        application.start();
-        // application.exit();
+                                // response.setResponseType(MediaType.TEXT_ANY_UTF8);
+                                response.setContent("hello router!");
+                            });
+                }).start()
+                // .exit()
+        ;
     }
 }

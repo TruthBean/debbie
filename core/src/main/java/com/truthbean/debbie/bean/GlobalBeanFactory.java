@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -25,6 +26,8 @@ public interface GlobalBeanFactory {
     <T> T factory(Class<T> type);
 
     <T> T factoryWithoutProxy(Class<T> type);
+
+    <T> T factory(String serviceName, Class<T> type);
 
     <T> T factory(String serviceName, Class<T> type, boolean required);
 
@@ -48,7 +51,17 @@ public interface GlobalBeanFactory {
 
     // <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
 
+    <T> T factoryConfiguration(Class<T> type, String profile, String category);
+
+    <T> T factory(BeanInjection<T> injection);
+
+    <T> T factoryByRawBean(BeanInjection<T> injection, T rawBean);
+
+    <T> T factory(BeanInjection<T> injection, BeanSupplier<T> beanInfo);
+
     <Bean> Set<Bean> getBeanList(Class<Bean> superType);
+
+    <T> List<T> factories(Class<T> beanType);
 
     // <Bean> List<Bean> getBeanList(Class<Bean> superType, boolean withoutProxy);
 

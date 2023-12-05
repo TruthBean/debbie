@@ -1,5 +1,6 @@
 package com.truthbean.debbie.graalvm.listener;
 
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.event.DebbieEventListener;
@@ -30,17 +31,18 @@ public class DebbieReadyEventListener implements DebbieEventListener<DebbieReady
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
-        applicationContext.factory(ApplicationEntrypoint.class).printId();
-        Object myBean = applicationContext.factory("myBean");
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        globalBeanFactory.factory(ApplicationEntrypoint.class).printId();
+        Object myBean = globalBeanFactory.factory("myBean");
         System.out.println(myBean);
-        MyEvent myEvent = applicationContext.factory(MyEvent.class);
+        MyEvent myEvent = globalBeanFactory.factory(MyEvent.class);
         System.out.println(myEvent);
     }
 
     @Override
     public void onEvent(DebbieReadyEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
-        applicationContext.factory(LogService.class).log("hahahaha");
+        applicationContext.getGlobalBeanFactory().factory(LogService.class).log("hahahaha");
     }
 
     @Override

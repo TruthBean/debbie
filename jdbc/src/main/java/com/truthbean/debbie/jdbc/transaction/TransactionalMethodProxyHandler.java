@@ -82,7 +82,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         }
         LOGGER.debug(() -> "running before method (" + transactionInfo.getMethod() + ") invoke ..");
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
-        DataSourceConfiguration configuration = applicationContext.factory(DataSourceConfiguration.class);
+        DataSourceConfiguration configuration = globalBeanFactory.factory(DataSourceConfiguration.class);
 
         if (jdbcTransactional == null && classJdbcTransactional == null) {
             throw new MethodNoJdbcTransactionalException();

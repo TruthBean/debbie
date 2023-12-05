@@ -4,6 +4,7 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanInjection;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
@@ -18,6 +19,9 @@ import java.util.*;
  */
 public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConfiguration, Property extends DebbieProperties<Configuration>>
         implements BeanFactory<Configuration> {
+
+    public static final String profileResourceKey = "config.profile";
+    public static final String categoryResourceKey = "config.category";
 
     private final Set<String> names = new HashSet<>();
     private final Class<Configuration> configurationClass;
@@ -44,35 +48,36 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
         return property.getConfiguration(applicationContext);
     }
 
-    @Override
-    public Configuration factoryNamedBean(String name, ApplicationContext applicationContext) {
-        String simpleName = configurationClass.getSimpleName();
-        var configurationName = StringUtils.toFirstCharLowerCase(simpleName);
-        if (!StringUtils.hasText(name) || name.equals(simpleName) || name.equals(configurationName)) {
-            return property.getConfiguration(EnvironmentDepositoryHolder.DEFAULT_PROFILE, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
-        }
-        if (name.endsWith(simpleName)) {
-            var newName = name.substring(0, name.length() - simpleName.length());
-            return property.getConfiguration(newName, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
-        }
-        return property.getConfiguration(name, EnvironmentDepositoryHolder.DEFAULT_CATEGORY, applicationContext);
-    }
-
     public Collection<Configuration> factoryBeans(ApplicationContext applicationContext) {
         Map<String, Map<String, Configuration>> configurationMap = property.getAllProfiledCategoryConfiguration(applicationContext);
         Map<String, Configuration> map = configurationMap.get(EnvironmentDepositoryHolder.DEFAULT_PROFILE);
         return map.values();
     }
 
-    @Override
     public Configuration factory(String profile, String category, String name, Class beanClass, BeanType type, BeanProxyType proxyType, ApplicationContext applicationContext) {
-        if (StringUtils.hasText(profile)) {
+        if (!StringUtils.hasText(profile)) {
             profile = EnvironmentDepositoryHolder.DEFAULT_PROFILE;
         }
-        if (StringUtils.hasText(category)) {
+        if (!StringUtils.hasText(category)) {
             category = EnvironmentDepositoryHolder.DEFAULT_CATEGORY;
         }
         return property.getConfiguration(profile, category, applicationContext);
+    }
+
+    public Configuration factory(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = EnvironmentDepositoryHolder.DEFAULT_PROFILE;
+        }
+        if (!StringUtils.hasText(category)) {
+            category = EnvironmentDepositoryHolder.DEFAULT_CATEGORY;
+        }
+        return property.getConfiguration(profile, category, applicationContext);
+    }
+
+    public Configuration factory(BeanInjection<Configuration> beanInjection, ApplicationContext applicationContext) {
+        String profile = (String) beanInjection.getResource(profileResourceKey);
+        String category = (String) beanInjection.getResource(categoryResourceKey);
+        return factory(profile, category, applicationContext);
     }
 
     @Override

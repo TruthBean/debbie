@@ -48,8 +48,6 @@ public class BeanCreatedException extends RuntimeException {
         } else {
             cause = e;
         }
-        if (errorMessage != null)
-            throw new BeanCreatedException(errorMessage, cause, true, true);
-        else throw new BeanCreatedException("", Objects.requireNonNullElse(cause, e), true, true);
+        throw new BeanCreatedException(Objects.requireNonNullElse(errorMessage, ""), cause, true, true);
     }
 }

@@ -41,7 +41,7 @@ public class RealAioServerRunner implements Runnable{
     }
 
     public RealAioServerRunner init(ApplicationContext applicationContext, final AioServerConfiguration configuration) {
-        final MvcConfiguration mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
+        final MvcConfiguration mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
         var beanInfoManager = applicationContext.getBeanInfoManager();
         MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
         RouterFilterManager.registerFilter(mvcConfiguration, beanInfoManager);

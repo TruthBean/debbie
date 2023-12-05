@@ -158,6 +158,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         if (beanNames.isEmpty()) {
             if (info.hasName()) {
                 beanNames.add(info.getName());
+                beanNames.add(getBeanClass().getName());
             }
         }
         if (beanType == null) {
@@ -176,7 +177,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
         }
 
         Set<Class<? extends BeanCondition>> condition = info.getCondition();
-        if (condition != null && condition.size() > 0) {
+        if (condition != null && !condition.isEmpty()) {
             for (Class<? extends BeanCondition> conditionClass : condition) {
                 if (conditionClass == DefaultBeanCondition.class) {
                     this.conditions.add(DefaultBeanCondition.INSTANCE);
@@ -401,6 +402,11 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
 
     public Bean getBean() {
         return bean;
+    }
+
+    @Override
+    public Supplier<Bean> supply(ApplicationContext context) {
+        return this::getBean;
     }
 
     public void setPreparedBean(Bean preparedBean) {

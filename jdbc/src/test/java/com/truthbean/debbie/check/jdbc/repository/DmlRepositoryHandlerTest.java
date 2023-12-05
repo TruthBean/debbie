@@ -47,7 +47,7 @@ class DmlRepositoryHandlerTest {
         DataSourceFactory factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        surnameRepository = context.factory(SurnameRepository.class);
+        surnameRepository = context.getGlobalBeanFactory().factory(SurnameRepository.class);
     }
 
     @Test

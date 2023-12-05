@@ -69,12 +69,12 @@ public class SimpleMutableBeanFactory<Bean extends I, I> extends SimpleBeanFacto
                                     Set<String> beanNames, BeanCondition...conditions) {
         super(beanClass, beanType, beanProxyType, beanNames, conditions);
     }
-    @Override
+    /*@Override
     @SuppressWarnings("unchecked")
     public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
         this.bean = super.factoryNamedBean(name, applicationContext);
         return this.bean;
-    }
+    }*/
 
     @Override
     public void setBeanProxyType(BeanProxyType beanProxyType) {

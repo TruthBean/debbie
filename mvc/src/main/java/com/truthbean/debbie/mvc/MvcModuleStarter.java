@@ -34,7 +34,7 @@ public class MvcModuleStarter implements DebbieModuleStarter {
         var beanFactory = new PropertiesConfigurationBeanFactory<>(mvcProperties, MvcConfiguration.class);
         beanInfoManager.registerBeanInfo(beanFactory);
 
-        applicationContext.registerBeanLifecycle(new RouterBeanLifecycle(MvcRouterRegister.getInstance(mvcConfiguration)));
+        beanInfoManager.registerBeanLifecycle(new RouterBeanLifecycle(MvcRouterRegister.getInstance(mvcConfiguration)));
     }
 
     @Override

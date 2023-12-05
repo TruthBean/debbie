@@ -11,6 +11,7 @@ package com.truthbean.debbie.internal;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
@@ -19,6 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * @author TruthBean
+ * @since 0.0.2
+ */
 class ConfigurationBeanRegister implements BeanRegister {
 
     private final ApplicationContext applicationContext;
@@ -49,6 +54,7 @@ class ConfigurationBeanRegister implements BeanRegister {
                     name = method.getName();
                 }
                 BeanType type = debbieBean.type();
+                BeanProxyType proxy = debbieBean.proxy();
                 Class<? extends BeanCondition>[] conditions = debbieBean.conditions();
                 Set<BeanCondition> conditionSet = new HashSet<>();
                 for (Class<? extends BeanCondition> condition : conditions) {
@@ -64,7 +70,7 @@ class ConfigurationBeanRegister implements BeanRegister {
                     conditionSet.add(DefaultBeanCondition.INSTANCE);
                 }
 
-                var beanInfo = new ConfigurationMethodBeanFactory<>(configuration, method, type, name, conditionSet);
+                var beanInfo = new ConfigurationMethodBeanFactory<>(configuration, method, type, proxy, name, conditionSet);
                 applicationContext.getBeanInfoManager().registerBeanInfo(beanInfo);
             }
         }

@@ -19,6 +19,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.event.DebbieReadyEvent;
+import com.truthbean.debbie.internal.DebbieApplicationBootContext;
 import com.truthbean.debbie.internal.DebbieApplicationFactory;
 
 import java.lang.management.ManagementFactory;
@@ -28,6 +29,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * @author truthbean/Rogar·Q
@@ -75,6 +77,8 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     private boolean useProperties = true;
 
+    private ApplicationBootContext applicationBootContext;
+
     public void setUseProperties(boolean useProperties) {
         this.useProperties = useProperties;
     }
@@ -94,11 +98,13 @@ public abstract class AbstractApplication implements DebbieApplication {
     public void setApplicationFactory(ApplicationFactory applicationFactory) {
         this.applicationFactory = applicationFactory;
         this.applicationContext = applicationFactory.getApplicationContext();
+        this.applicationBootContext = new DebbieApplicationBootContext(applicationContext);
     }
 
     @Override
-    public ApplicationContext getApplicationContext() {
-        return this.applicationContext;
+    public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        applicationBootContextConsumer.accept(this.applicationBootContext);
+        return this;
     }
 
     protected void setLogger(Logger logger) {
@@ -127,7 +133,7 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     @Override
-    public final void start() {
+    public final DebbieStartedApplication start() {
         startupExecutor.execute(() -> {
             logger.debug("application running: " + running.get());
             logger.debug("application exiting: " + applicationContext.isExiting());
@@ -146,6 +152,7 @@ public abstract class AbstractApplication implements DebbieApplication {
                 }
             }
         });
+        return this;
     }
 
     /**
@@ -198,7 +205,7 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     @Override
-    public final void exit() {
+    public final DebbieExitedApplication exit() {
         logger.debug("application running: " + running.get());
         logger.debug("application exiting: " + applicationContext.isExiting());
         logger.debug("application exited: " + exited.get());
@@ -221,6 +228,7 @@ public abstract class AbstractApplication implements DebbieApplication {
             });
         }
         LoggerFactory.destroy();
+        return this;
     }
 
     /**

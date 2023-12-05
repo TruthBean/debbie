@@ -10,6 +10,7 @@
 package com.truthbean.debbie.aio;
 
 import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.core.concurrent.NamedThreadFactory;
@@ -47,8 +48,8 @@ public class AioServerApplication extends AbstractWebServerApplication {
     @Override
     public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
         LOGGER.info("com.truthbean.debbie.aio.AioServerApplication is not enable.");
-        BeanFactory<AioServerConfiguration> beanFactory =
-                applicationContext.getBeanInfoManager().getBeanFactory(null, AioServerConfiguration.class, false);
+        BeanInfo<AioServerConfiguration> beanFactory =
+                applicationContext.getBeanInfoManager().getBeanInfo(null, AioServerConfiguration.class, false);
         if (beanFactory == null) {
             return null;
         }

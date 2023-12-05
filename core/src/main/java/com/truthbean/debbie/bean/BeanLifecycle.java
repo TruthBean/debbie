@@ -24,7 +24,7 @@ public interface BeanLifecycle {
         return true;
     }
 
-    default boolean support(BeanFactory<?> beanFactory) {
+    default boolean support(BeanInfo<?> beanFactory) {
         return true;
     }
 

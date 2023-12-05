@@ -42,8 +42,8 @@ public class WeakReferenceBeanFactory<T> implements BeanFactory<T> {
     }
 
     @Override
-    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
-        this.bean = new WeakReference<>(applicationContext.factory(this.beanClass));
+    public T factoryBean(ApplicationContext applicationContext) {
+        this.bean = new WeakReference<>(applicationContext.getGlobalBeanFactory().factory(this.beanClass));
         return bean.get();
     }
 

@@ -1,7 +1,13 @@
 package com.truthbean.debbie.empty;
 
+import com.truthbean.debbie.boot.ApplicationBootContext;
 import com.truthbean.debbie.boot.DebbieApplication;
+import com.truthbean.debbie.boot.DebbieExitedApplication;
+import com.truthbean.debbie.boot.DebbieStartedApplication;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.internal.DebbieApplicationBootContext;
+
+import java.util.function.Consumer;
 
 /**
  * @author TruthBean
@@ -10,19 +16,23 @@ import com.truthbean.debbie.core.ApplicationContext;
 public class EmptyDebbieApplication implements DebbieApplication {
 
     private final ApplicationContext applicationContext = new EmptyApplicationContext();
+    private final ApplicationBootContext applicationBootContext = new DebbieApplicationBootContext(applicationContext);
 
     @Override
-    public void start() {
+    public DebbieStartedApplication start() {
         // applicationContext.refreshBeans();
+        return this;
     }
 
     @Override
-    public void exit() {
+    public DebbieExitedApplication exit() {
         applicationContext.release();
+        return this;
     }
 
     @Override
-    public ApplicationContext getApplicationContext() {
-        return applicationContext;
+    public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        applicationBootContextConsumer.accept(applicationBootContext);
+        return this;
     }
 }

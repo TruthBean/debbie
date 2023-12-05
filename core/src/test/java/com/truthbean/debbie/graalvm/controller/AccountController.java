@@ -19,7 +19,7 @@ public class AccountController implements ApplicationContextAware, CustomizeMvcR
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
-        accountService = applicationContext.factory(AccountService.class);
+        accountService = applicationContext.getGlobalBeanFactory().factory(AccountService.class);
     }
 
     @Override

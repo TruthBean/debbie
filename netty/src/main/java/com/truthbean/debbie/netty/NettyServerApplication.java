@@ -1,6 +1,7 @@
 package com.truthbean.debbie.netty;
 
 import com.truthbean.debbie.bean.BeanInfoManager;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -53,12 +54,13 @@ public class NettyServerApplication extends AbstractWebServerApplication {
 
     @Override
     public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
-        NettyConfiguration configuration = applicationContext.factory(NettyConfiguration.class);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        NettyConfiguration configuration = globalBeanFactory.factory(NettyConfiguration.class);
         if (configuration == null) {
             LOGGER.warn("debbie-netty module is disabled, debbie.netty.enable is false");
             return null;
         }
-        MvcConfiguration mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
+        MvcConfiguration mvcConfiguration = globalBeanFactory.factory(MvcConfiguration.class);
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
         MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
         RouterFilterManager.registerFilter(mvcConfiguration, beanInfoManager);

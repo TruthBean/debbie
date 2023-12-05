@@ -167,6 +167,11 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
+    public List<BeanInfo> getBeanInfoList(BeanInjection beanInjection) {
+        return null;
+    }
+
+    @Override
     public <Bean> List<BeanInfo<? extends Bean>> getBeanInfoList(Class<Bean> type, boolean require) {
         return null;
     }

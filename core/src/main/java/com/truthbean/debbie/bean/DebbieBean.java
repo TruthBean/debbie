@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.debbie.proxy.BeanProxyType;
+
 import java.lang.annotation.*;
 
 /**
@@ -23,6 +25,8 @@ public @interface DebbieBean {
     String name() default "";
 
     BeanType type() default BeanType.SINGLETON;
+
+    BeanProxyType proxy() default BeanProxyType.NO;
 
     Class<? extends BeanCondition>[] conditions() default {};
 }

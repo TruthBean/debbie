@@ -45,6 +45,32 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
 
     @Override
     @SuppressWarnings("unchecked")
+    public R factoryBean(ApplicationContext applicationContext) {
+        if (bean == null) {
+            synchronized (reference) {
+                if (bean == null) {
+                    GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+                    if (configuration == null) {
+                        configuration = globalBeanFactory.factory(DataSourceConfiguration.class);
+                    }
+                    beanFactory = new DebbieReflectionBeanFactory<>(beanInfo);
+                    R localBean = beanFactory.factoryBean(applicationContext);
+                    localBean.setJdbcTransactionRepository(repositoryHandler);
+                    localBean.setEntityResolver(entityResolver);
+                    List<Type> types = beanInfo.getActualTypes();
+                    if (types.size() == 2 && types.get(0) instanceof Class<?> && types.get(1) instanceof Class<?>) {
+                        localBean.setEntityClass((Class<E>) types.get(0));
+                        localBean.setIdClass((Class<I>) types.get(1));
+                    }
+                    bean = localBean;
+                }
+            }
+        }
+        return bean;
+    }
+
+    /*@Override
+    @SuppressWarnings("unchecked")
     public R factoryNamedBean(String name, ApplicationContext applicationContext) {
         if (bean == null) {
             synchronized (reference) {
@@ -67,7 +93,7 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
             }
         }
         return bean;
-    }
+    }*/
 
     @Override
     public Set<String> getAllName() {

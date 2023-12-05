@@ -590,6 +590,11 @@ final class DebbieBeanCenter implements BeanInfoManager {
     }
 
     @Override
+    public List<BeanInfo> getBeanInfoList(BeanInjection beanInjection) {
+        return getBeanInfoList(beanInjection.getBeanClass(), beanInjection.isRequire());
+    }
+
+    @Override
     public Set<Method> getBeanMethods(Class<?> beanClass) {
         var classInfoSet = BEAN_CLASSES;
         if (!classInfoSet.containsKey(beanClass)) {
@@ -742,34 +747,16 @@ final class DebbieBeanCenter implements BeanInfoManager {
     }
 
     @Override
-    // @SuppressWarnings({"unchecked", "rawtypes"})
     public void autoCreateSingletonBeans(ApplicationContext applicationContext) {
-        // GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         handledBeanInfoSet.forEach((i, value) -> {
             boolean lazyCreate = i.isLazyCreate();
-            /*if (!lazyCreate && i.getBeanType() == BeanType.SINGLETON && i instanceof MutableFactoryBeanInfo beanInfo) {
-
-                beanInfo.setBean(() -> {
-                    if (beanInfo.isEmpty()) {
-                        return globalBeanFactory.factory((FactoryBeanInfo<? extends Object>) i);
-                    } else {
-                        return beanInfo.getBean();
-                    }
-                });
-                this.refresh(beanInfo);
-            } else if (!lazyCreate && i.isSingleton()) {
-                if (i instanceof FactoryBeanInfo) {
-                    ((FactoryBeanInfo<?>) i).create(applicationContext);
-                } else*/ if (i instanceof BeanFactory<?> beanFactory) {
-                if (!lazyCreate && !applicationContext.isExiting()) {
-                        Set<String> names = beanFactory.getAllName();
-                        for (String name : names) {
-                            beanFactory.factoryNamedBean(name, applicationContext);
-                        }
-                    }
+            if (!lazyCreate && !applicationContext.isExiting()) {
+                if (i instanceof BeanFactory<?> beanFactory) {
+                    beanFactory.factoryBean(applicationContext);
+                } else {
+                    i.supply(applicationContext).get();
                 }
-
-            /*}*/
+            }
         });
     }
 
@@ -916,12 +903,12 @@ final class DebbieBeanCenter implements BeanInfoManager {
         List<BeanInfo<? extends BeanScanConfiguration>> list = this.getBeanInfoList(BeanScanConfiguration.class, true);
         Set<String> packages = new HashSet<>();
         for (BeanInfo<? extends BeanScanConfiguration> info : list) {
-            Set<String> names = new HashSet<>(); // todo info.getBeanNames();
-            for (String name : names) {
-                if (info instanceof BeanFactory<?> beanFactory) {
-                    BeanScanConfiguration bean = (BeanScanConfiguration) beanFactory.factoryNamedBean(name, context);
-                    packages.addAll(bean.getScanBasePackages());
-                }
+            if (info instanceof BeanFactory<?> beanFactory) {
+                BeanScanConfiguration bean = (BeanScanConfiguration) beanFactory.factoryBean(context);
+                packages.addAll(bean.getScanBasePackages());
+            } else {
+                BeanScanConfiguration bean = info.supply(context).get();
+                packages.addAll(bean.getScanBasePackages());
             }
         }
         StringBuilder scanClasses = new StringBuilder("debbie.core.scan.classes=");
@@ -1009,7 +996,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
     }
 
-    /*private <T> void getBeanFactoryListByType(final Class<T> type, final Set<BeanInfo> beanInfoSet,
+    /*private <T> void getBeanInfoListByType(final Class<T> type, final Set<BeanInfo> beanInfoSet,
                                               final List<BeanFactory> list) {
         for (BeanInfo debbieBeanInfo : beanInfoSet) {
             var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
@@ -1025,21 +1012,18 @@ final class DebbieBeanCenter implements BeanInfoManager {
 
     @SuppressWarnings({"Unchecked", "Rawtypes"})
     private <Info extends BeanInfo<Bean>, Bean extends I, I>
-    void getBeanFactoryListByType(final Class<I> type, final Set<BeanInfo> beanInfoSet, final List<Info> list,
-                                  final boolean notCheckAssignable) {
+    void getBeanInfoListByType(final Class<I> type, final Set<BeanInfo> beanInfoSet, final List<Info> list,
+                               final boolean notCheckAssignable) {
         for (BeanInfo debbieBeanInfo : beanInfoSet) {
-            if (notCheckAssignable) {
-                var flag = type == debbieBeanInfo.getBeanClass();
-                if (flag && debbieBeanInfo instanceof BeanFactory) {
-                    list.add((Info) debbieBeanInfo);
-                }
+            if (notCheckAssignable && type == debbieBeanInfo.getBeanClass()) {
+                list.add((Info) debbieBeanInfo);
             } else {
-                var flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
+                boolean flag = type.isAssignableFrom(debbieBeanInfo.getBeanClass())
                         || (debbieBeanInfo instanceof ClassDetailedBeanInfo
                         && ((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces) != null
                         && type.isAssignableFrom(((ClassDetailedBeanInfo) debbieBeanInfo).getInterface(ignoredInterfaces))
                 );
-                if (flag && debbieBeanInfo instanceof BeanFactory) {
+                if (flag) {
                     list.add((Info) debbieBeanInfo);
                 }
             }
@@ -1104,7 +1088,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                         if (flag && infoClass.isInstance(debbieBeanInfo)) {
                             list.add((Info) debbieBeanInfo);
                         }
-                    } else if (debbieBeanInfo instanceof BeanFactory) {
+                    } else if (infoClass.isInstance(debbieBeanInfo)){
                         list.add((Info) debbieBeanInfo);
                     }
                 }
@@ -1113,7 +1097,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
 
         if (list.isEmpty()) {
             if (type != null) {
-                getBeanFactoryListByType(type, beanInfoSet, list, notCheckAssignable);
+                getBeanInfoListByType(type, beanInfoSet, list, notCheckAssignable);
             }
 
             if (list.isEmpty()) {
@@ -1133,7 +1117,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
 
         if (list.size() > 1) {
-            String name = serviceName;
+            /*String name = serviceName;
             if ((name == null || name.isBlank()) && type != null) {
                 name = type.getName();
             }
@@ -1158,14 +1142,11 @@ final class DebbieBeanCenter implements BeanInfoManager {
                         }
                     }
                 }
-                if (list.size() != 1) {
-                    list = new ArrayList<>(copy);
-                    for (Info next : copy) {
-                        if (!(next.containName("default")
-                                || (type != null && next.containName("default" + type.getSimpleName())))) {
-                            list.remove(next);
-                        }
-                    }
+            }*/
+            List<Info> copy = new ArrayList<>(list);
+            for (Info next : copy) {
+                if (next.getBeanClass() != type) {
+                    list.remove(next);
                 }
             }
             if (list.size() > 1) {
@@ -1204,14 +1185,19 @@ final class DebbieBeanCenter implements BeanInfoManager {
         }
     }
 
+    @SuppressWarnings({"rawtypes"})
     private synchronized void destroyBeans(ApplicationContext applicationContext, Collection<BeanInfo> beans) {
         if (beans != null && !beans.isEmpty()) {
             for (BeanInfo bean : beans) {
                 LOGGER.trace(() -> "destruct bean " + bean.getBeanClass() + " with name " + bean.getName());
-                /*if (bean instanceof FactoryBeanInfo) {
-                    ((FactoryBeanInfo<?>) bean).destruct(applicationContext);
-                } else*/ if (bean instanceof BeanFactory) {
+                if (bean instanceof BeanClosure) {
                     ((BeanFactory<?>) bean).destruct(applicationContext);
+                } else if (bean instanceof AutoCloseable autoCloseable) {
+                    try {
+                        autoCloseable.close();
+                    } catch (Exception e) {
+                        throw new BeanDestructException(e);
+                    }
                 }
             }
         }
@@ -1234,5 +1220,4 @@ final class DebbieBeanCenter implements BeanInfoManager {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebbieBeanCenter.class);
-
 }

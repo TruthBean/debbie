@@ -23,11 +23,14 @@ import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
 import com.truthbean.debbie.lang.Nullable;
 import com.truthbean.debbie.properties.ClassesScanProperties;
+import com.truthbean.debbie.properties.DebbieConfiguration;
+import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.JdkBeanProxyHandler;
 import com.truthbean.debbie.task.TaskFactory;
 import com.truthbean.transformer.DataTransformerCenter;
 
+import java.lang.reflect.Proxy;
 import java.util.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -181,16 +184,6 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
         eventListenerBeanManager.publishEvent(event);
     }
 
-    @Override
-    public <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names) {
-        beanInfoManager.registerBeanInfo(new SimpleBeanFactory<>(bean, beanClass, BeanProxyType.JDK, names));
-    }
-
-    @Override
-    public void registerBeanLifecycle(BeanLifecycle beanLifecycle) {
-        beanInfoManager.registerBeanLifecycle(beanLifecycle);
-    }
-
     /*@Override
     public void refreshBeans() {
         this.beanInfoManager.refreshBeans();
@@ -210,7 +203,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     @Override
     public <T> T factory(Class<T> type) {
         LOGGER.trace(() -> "factory bean with type " + type.getName());
-        return factory(null, type,  true, true, true);
+        return factory(null, type, true, true, true);
     }
 
     @Override
@@ -220,8 +213,69 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     @Override
-    public <T> T factory(String profile, String category, Class<T> type) {
-        LOGGER.trace(() -> "factory bean with type(" + type.getName() + ") and profile(" + profile + ") and category(" + category + ")");
+    public <T> T factoryConfiguration(Class<T> type, String profile, String category) {
+        if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
+            BeanFactory<T> beanFactory = beanInfoManager.getBeanFactory(null, type, true, true);
+            if (beanFactory instanceof PropertiesConfigurationBeanFactory<?, ?> propertiesConfigurationBeanFactory) {
+                return (T) propertiesConfigurationBeanFactory.factory(profile, category, this);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <T> T factory(BeanInjection<T> injection) {
+        synchronized (beanInfoManager) {
+            var beanInfoList = this.beanInfoManager.getBeanInfoList(injection);
+            if (!injection.isRequire() && (beanInfoList == null || beanInfoList.isEmpty())) {
+                return null;
+            }
+            if (injection.isThrowException() && (beanInfoList == null || beanInfoList.isEmpty())) {
+                throw new BeanCreatedException("bean " + injection.getBeanClass() + "(" + injection.getBeanName() + ") has no factory");
+            }
+            T bean = null;
+            for (BeanInfo beanInfo : beanInfoList) {
+                bean = (T) beanInfo.supply(this).get();
+                if (bean != null) {
+                    break;
+                }
+            }
+            if (injection.isThrowException() && bean == null) {
+                throw new BeanCreatedException("create bean " + injection.getBeanClass() + " with name [" + injection.getBeanName() + "]) error");
+            }
+            return bean;
+        }
+    }
+
+    @Override
+    public <T> T factoryByRawBean(BeanInjection<T> injection, T rawBean) {
+        T localBean = rawBean;
+        Class<T> beanClass = injection.getBeanClass();
+        if (!(rawBean instanceof Proxy)) {
+            Set<BeanLifecycle> beanLifecycles = beanInfoManager.getBeanLifecycles();
+            for (BeanLifecycle beanLifecycle : beanLifecycles) {
+                if (beanLifecycle.support(beanClass)) {
+                    localBean = beanLifecycle.construct(rawBean);
+                    localBean = beanLifecycle.postConstruct(localBean);
+                    localBean = beanLifecycle.doPreCreated(null, localBean, beanClass, injection.getProxyType());
+                    if (localBean instanceof Proxy) {
+                        return localBean;
+                    }
+                }
+            }
+        }
+        return localBean;
+    }
+
+    @Override
+    public <T> T factory(BeanInjection<T> injection, BeanSupplier<T> beanInfo) {
+        if (beanInfo instanceof BeanFactory<T> beanFactory) {
+            // todo get bean by beanName, type, resource
+            // factoryProxiedBean(injection.getBeanClass(), injection.getProxyType(), beanFactory);
+            // todo do proxy
+        }
+
+        Supplier<T> supplier = beanInfo.supply(this);
         return null;
     }
 
@@ -272,7 +326,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     @Override
     public <T> T factoryByNoBean(Class<T> noBeanType) {
         synchronized (beanInfoManager) {
-            var beanInfo = this.beanInfoManager.getBeanFactory(null, noBeanType, false);
+            var beanInfo = this.beanInfoManager.getBeanFactory(null, noBeanType, false, false);
             var beanFactory = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieReflectionBeanFactory<>(noBeanType));
             return beanFactory.factoryBean(this);
         }
@@ -280,31 +334,73 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
 
     // @SuppressWarnings("unchecked")
     protected <T> T factory(String beanName, Class<T> type, boolean proxy, boolean require, boolean throwException) {
-        /*if (beanName != null && type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
-            DebbieConfiguration configuration = this.factory(beanName, (Class<? extends DebbieConfiguration>) type, false);
-            if (configuration != null) {
-                return (T) configuration;
-            }
-        }*/
         synchronized (beanInfoManager) {
-            var beanFactory = this.beanInfoManager.getBeanFactory(beanName, type, require);
-            if (!require && beanFactory == null) {
+            var beanInfo = this.beanInfoManager.getBeanInfo(beanName, type, require);
+            if (!require && beanInfo == null) {
                 return null;
             }
-            if (throwException && beanFactory == null) {
-                throw new BeanCreatedException("bean " + type + "(" + beanName + ") has no factory");
+            if (throwException && beanInfo == null) {
+                throw new BeanCreatedException("bean " + type + "(" + beanName + ") isn't registered to debbie");
             }
             T bean;
-            if (proxy) {
-                bean = beanFactory.factoryProxiedBean(beanName, type, this);
+            if (beanInfo instanceof BeanFactory<T> beanFactory) {
+                if (proxy) {
+                    bean = factoryProxiedBean(type, BeanProxyType.JDK, beanFactory);
+                } else if (beanInfo instanceof NamedBeanFactory<T> namedBeanFactory) {
+                    bean = namedBeanFactory.factoryNamedBean(beanName, this);
+                } else {
+                    bean = beanFactory.factoryBean(this);
+                }
             } else {
-                bean = beanFactory.factoryNamedBean(beanName, this);
+                bean = beanInfo.supply(this).get();
             }
             if (throwException && bean == null) {
                 throw new BeanCreatedException("create bean " + type + " with name [" + beanName + "]) error");
             }
             return bean;
         }
+    }
+
+    /**
+     * if isCreated() and isProxiedBean()
+     * return getCreatedBean();
+     * else
+     * factory and proxy
+     *
+     * @param beanInterface bean's interface
+     * @param proxyType bean proxy type
+     * @param beanFactory   bean's factory
+     * @return BEAN's proxy
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <T> T factoryProxiedBean(Class beanInterface, BeanProxyType proxyType, BeanFactory<T> beanFactory) {
+        T bean;
+        if (!beanFactory.isCreated()) {
+            bean = beanFactory.factoryBean(this);
+        } else {
+            bean = beanFactory.getCreatedBean();
+        }
+        if (beanFactory.isCreated() && beanInterface != null && beanInterface.isInterface() && beanInterface.isInstance(bean)) {
+            bean = beanFactory.getCreatedBean();
+            if (!(bean instanceof Proxy)) {
+                Set<BeanLifecycle> beanLifecycles = this.getBeanLifecycle();
+                for (BeanLifecycle beanLifecycle : beanLifecycles) {
+                    if (beanLifecycle.support(beanFactory.getBeanClass()) && beanLifecycle.support(beanFactory)) {
+                        T proxy = (T) beanLifecycle.doPreCreated(beanFactory, bean, beanInterface, proxyType);
+                        if (proxy instanceof Proxy) {
+                            return proxy;
+                        }
+                    }
+                }
+            }
+            return bean;
+        }
+        return bean;
+    }
+
+    @Override
+    public <T> T factory(String beanName, Class<T> type) {
+        return factory(beanName, type, true, true, true);
     }
 
     @Override
@@ -321,24 +417,11 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
             List<BeanInfo<? extends Bean>> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
             if (beanInfoList != null && !beanInfoList.isEmpty()) {
                 for (BeanInfo<? extends Bean> beanInfo : beanInfoList) {
-                    Set<String> beanNames = new HashSet<>(); // todo beanInfo.getBeanNames();
-                    if (beanInfo instanceof BeanFactory) {
-                        if (beanNames != null && !beanNames.isEmpty()) {
-                            for (String beanName : beanNames) {
-                                Bean bean = ((BeanFactory<? extends Bean>) beanInfo).factoryProxiedBean(beanName, superType, this);
-                                if (bean == null) {
-                                    throw new BeanCreatedException("factory bean (" + beanName + ", " + superType + ") error");
-                                }
-                                result.add(bean);
-                            }
-                        } else {
-                            Bean bean = ((BeanFactory<? extends Bean>) beanInfo).factoryBean(this);
-                            if (bean == null) {
-                                throw new BeanCreatedException("factory bean (" + superType + ") error");
-                            }
-                            result.add(bean);
-                        }
+                    Bean bean = beanInfo.supply(this).get();
+                    if (bean == null) {
+                        throw new BeanCreatedException("factory bean (" + superType + ") error");
                     }
+                    result.add(bean);
                 }
             }
             return result;

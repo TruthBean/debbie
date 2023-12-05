@@ -1,19 +1,21 @@
 package com.truthbean.debbie.bean;
 
 import com.truthbean.core.util.StringUtils;
+import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.proxy.BeanProxyType;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean
  * @since 0.5.3
  * Created on 2021/12/04 12:19.
  */
-public interface BeanInfo<Bean> {
+public interface BeanInfo<Bean> extends BeanSupplier<Bean> {
 
     /**
      * 不用Class&lt;Bean&gt;或者Class&lt;? extends Bean&gt;的原因是，考虑到泛型问题
@@ -113,10 +115,6 @@ public interface BeanInfo<Bean> {
             // beanNames.add(name);
             beanNames.add(getBeanClass().getName());
         }
-    }
-
-    default String profile() {
-        return "default";
     }
 
     BeanInfo<Bean> copy();

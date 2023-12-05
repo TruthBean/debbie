@@ -25,7 +25,7 @@ public class SimpleBeanLifecycle extends AbstractBeanLifecycle {
     }
 
     @Override
-    public boolean support(BeanFactory<?> beanFactory) {
+    public boolean support(BeanInfo<?> beanFactory) {
         return beanFactory instanceof SimpleBeanFactory;
     }
 
@@ -59,19 +59,19 @@ public class SimpleBeanLifecycle extends AbstractBeanLifecycle {
 
     @Override
     public void doBeforeDestruct(Object bean) {
+        super.doBeforeDestruct(bean);
     }
 
     @Override
     public void destruct(Object bean) {
-        if (bean instanceof AutoCloseable) {
+        if (bean instanceof BeanClosure) {
+            ((BeanClosure) bean).destruct(applicationContext);
+        } else if (bean instanceof AutoCloseable) {
             try {
                 ((AutoCloseable) bean).close();
             } catch (Exception e) {
                 LOGGER.error("bean(" + bean.getClass() + ") destruct error. ", e);
             }
-        }
-        if (bean instanceof BeanClosure) {
-            ((BeanClosure) bean).destruct(applicationContext);
         }
     }
 

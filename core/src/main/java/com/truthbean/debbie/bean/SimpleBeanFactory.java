@@ -154,7 +154,7 @@ public class SimpleBeanFactory<Bean extends I, I> implements BeanFactory<Bean> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
+    public Bean factoryBean(ApplicationContext applicationContext) {
         if (!created) {
             Bean localBean = bean;
             Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();

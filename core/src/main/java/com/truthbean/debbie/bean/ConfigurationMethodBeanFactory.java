@@ -31,6 +31,7 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
 
     private final Supplier<Configuration> supplier;
     private final BeanType beanType;
+    private final BeanProxyType proxyType;
     private final Method method;
     private final Set<String> names = new HashSet<>();
     private final Set<BeanCondition> conditions;
@@ -41,15 +42,17 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
         this.supplier = supplier;
         this.method = method;
         this.beanType = BeanType.SINGLETON;
+        this.proxyType = BeanProxyType.NO;
         this.names.add(method.getName());
         this.conditions = new HashSet<>();
     }
 
-    public ConfigurationMethodBeanFactory(Supplier<Configuration> supplier, Method method, BeanType beanType, String name,
-                                          Set<BeanCondition> conditions) {
+    public ConfigurationMethodBeanFactory(Supplier<Configuration> supplier, Method method, BeanType beanType,
+                                          BeanProxyType beanProxyType, String name, Set<BeanCondition> conditions) {
         this.supplier = supplier;
         this.method = method;
         this.beanType = beanType;
+        this.proxyType = beanProxyType;
         this.names.add(name);
         this.conditions = conditions;
     }
@@ -66,21 +69,20 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
                 Parameter parameter = parameters[i];
                 BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                 if (annotation != null) {
-                    String name = annotation.name();
-                    if (!StringUtils.hasText(name)) {
-                        name = annotation.value();
-                    }
-                    params[i] = applicationContext.factory(name);
+                    var beanInjection = new BeanInjection<>(parameter.getType(), annotation, parameter.isNamePresent() ? parameter.getName() : null);
+                    params[i] = applicationContext.getGlobalBeanFactory().factory(beanInjection);
                 }
             }
-            return ReflectionHelper.invokeMethod(supplier.get(), method, params);
+            bean = ReflectionHelper.invokeMethod(supplier.get(), method, params);
+        } else {
+            bean = ReflectionHelper.invokeMethod(supplier.get(), method);
         }
-        return ReflectionHelper.invokeMethod(supplier.get(), method);
+        return bean;
     }
 
-    @Override
-    public Bean factoryNamedBean(String name, ApplicationContext applicationContext) {
-        if (beanType == BeanType.SINGLETON && bean != null) {
+    /*@Override
+    public Bean factory(BeanInjection<Bean> beanInjection, ApplicationContext applicationContext) {
+        if (beanInjection.getBeanType() == BeanType.SINGLETON && bean != null) {
             return bean;
         }
         Parameter[] parameters = method.getParameters();
@@ -91,49 +93,14 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
                 Parameter parameter = parameters[i];
                 BeanInject annotation = parameter.getAnnotation(BeanInject.class);
                 if (annotation != null) {
-                    var required = annotation.require();
-                    String paramName = annotation.name();
-                    if (!StringUtils.hasText(paramName)) {
-                        paramName = annotation.value();
-                    }
-                    var paramType = parameter.getType();
-                    var baseBeanFactory = beanInfoManager.getBeanFactory(paramName, paramType, required, false);
-                    params[i] = baseBeanFactory.factoryProxiedBean(paramName, paramType, applicationContext);
+                    var beanInjection = new BeanInjection<>(parameter.getType(), annotation, parameter.isNamePresent() ? parameter.getName() : null);
+                    params[i] = applicationContext.getGlobalBeanFactory().factory(beanInjection);
                 }
             }
             return ReflectionHelper.invokeMethod(supplier.get(), method, params);
         }
         return ReflectionHelper.invokeMethod(supplier.get(), method);
-    }
-
-    @Override
-    @SuppressWarnings({"rawtypes"})
-    public Bean factory(String name, Class beanClass, BeanType type, BeanProxyType proxyType, ApplicationContext applicationContext) {
-        if (type == BeanType.SINGLETON && bean != null) {
-            return bean;
-        }
-        Parameter[] parameters = method.getParameters();
-        if (parameters != null && parameters.length > 0) {
-            Object[] params = new Object[parameters.length];
-            var beanInfoManager = applicationContext.getBeanInfoManager();
-            for (int i = 0; i < parameters.length; i++) {
-                Parameter parameter = parameters[i];
-                BeanInject annotation = parameter.getAnnotation(BeanInject.class);
-                if (annotation != null) {
-                    var required = annotation.require();
-                    String paramName = annotation.name();
-                    if (!StringUtils.hasText(paramName)) {
-                        paramName = annotation.value();
-                    }
-                    var paramType = parameter.getType();
-                    var baseBeanFactory = beanInfoManager.getBeanFactory(paramName, paramType, required, false);
-                    params[i] = baseBeanFactory.factoryProxiedBean(paramName, paramType, applicationContext);
-                }
-            }
-            return ReflectionHelper.invokeMethod(supplier.get(), method, params);
-        }
-        return ReflectionHelper.invokeMethod(supplier.get(), method);
-    }
+    }*/
 
     @Override
     public boolean isCreated() {
@@ -176,6 +143,7 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
 
     @Override
     public void destruct(ApplicationContext applicationContext) {
+        bean = null;
     }
 
     @Override

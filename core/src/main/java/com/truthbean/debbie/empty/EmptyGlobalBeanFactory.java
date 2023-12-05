@@ -1,7 +1,11 @@
 package com.truthbean.debbie.empty;
 
+import com.truthbean.debbie.bean.BeanInfo;
+import com.truthbean.debbie.bean.BeanInjection;
+import com.truthbean.debbie.bean.BeanSupplier;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -27,7 +31,17 @@ class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     }
 
     @Override
+    public <T> T factory(String serviceName, Class<T> type) {
+        return null;
+    }
+
+    @Override
     public <T> T factory(String serviceName, Class<T> type, boolean required) {
+        return null;
+    }
+
+    //@Override
+    public <T> T factoryConfiguration(String profile, String category, Class<T> beanType) {
         return null;
     }
 
@@ -67,7 +81,37 @@ class EmptyGlobalBeanFactory implements GlobalBeanFactory {
     }
 
     @Override
+    public <T> T factoryConfiguration(Class<T> type, String profile, String category) {
+        return null;
+    }
+
+    @Override
+    public <T> T factory(BeanInjection<T> injection) {
+        return null;
+    }
+
+    @Override
+    public <T> T factoryByRawBean(BeanInjection<T> injection, T rawBean) {
+        return null;
+    }
+
+    @Override
+    public <T> T factory(BeanInjection<T> injection, BeanSupplier<T> beanInfo) {
+        return null;
+    }
+
+    // @Override
+    public <T> T factory(BeanInjection<T> injection, BeanInfo<T> beanInfo) {
+        return null;
+    }
+
+    @Override
     public <Bean> Set<Bean> getBeanList(Class<Bean> superType) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> factories(Class<T> beanType) {
         return null;
     }
 

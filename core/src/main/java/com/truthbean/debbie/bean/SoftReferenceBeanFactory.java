@@ -42,8 +42,8 @@ public class SoftReferenceBeanFactory<T> implements BeanFactory<T> {
     }
 
     @Override
-    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
-        bean = new SoftReference<>(applicationContext.factory(beanType));
+    public T factoryBean(ApplicationContext applicationContext) {
+        bean = new SoftReference<>(applicationContext.getGlobalBeanFactory().factory(beanType));
         return bean.get();
     }
 

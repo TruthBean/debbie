@@ -1,8 +1,7 @@
 package com.truthbean.debbie.mvc.router;
 
-import com.truthbean.debbie.bean.BeanFactory;
+import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.BeanLifecycle;
-import com.truthbean.debbie.bean.SimpleBeanLifecycle;
 
 /**
  * @author TruthBean
@@ -23,7 +22,7 @@ public class RouterBeanLifecycle implements BeanLifecycle {
     }
 
     @Override
-    public boolean support(BeanFactory<?> beanFactory) {
+    public boolean support(BeanInfo<?> beanFactory) {
         return true;
     }
 

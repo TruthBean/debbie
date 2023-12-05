@@ -50,7 +50,7 @@ public class DebbieGraalvmApplication {
 
         ApplicationEntrypoint entrypoint = new ApplicationEntrypoint();
 
-        DebbieApplication factory = ApplicationFactory.newEmpty()
+        ApplicationFactory.newEmpty()
                 .preInit(DebbieGraalvmApplication.class, args)
                 .init()
                 .register(new SimpleBeanFactory<>(entrypoint, ApplicationEntrypoint.class, "applicationEntrypoint"))
@@ -63,9 +63,11 @@ public class DebbieGraalvmApplication {
                 .create()
                 .postCreate()
                 .build()
-                .factory();
-        testBean(factory.getApplicationContext(), entrypoint);
-        factory.start();
+                .factory()
+                .then(context -> {
+                    testBean(context, entrypoint);
+                })
+                .start();
         // testFactoryBean(factory.getApplicationContext());
         // while (true);
         // factory.exit();
@@ -73,20 +75,21 @@ public class DebbieGraalvmApplication {
     }
 
     static void testBean(final ApplicationContext applicationContext, final ApplicationEntrypoint entrypoint) {
-        TaskRegister taskRegister = applicationContext.factory(TaskRegister.class);
+        TaskRegister taskRegister = applicationContext.getGlobalBeanFactory().factory(TaskRegister.class);
         taskRegister.registerTask(new TaskInfo(context -> entrypoint.printId(), new DebbieTaskConfig()));
     }
 
     static void testFactoryBean(final ApplicationContext applicationContext) {
-        DemoBeanComponent demoBeanComponent = applicationContext.factory(DemoBeanComponent.class);
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        DemoBeanComponent demoBeanComponent = globalBeanFactory.factory(DemoBeanComponent.class);
         System.out.println(demoBeanComponent.getDemo1());
         System.out.println(demoBeanComponent.getDemo2());
         System.out.println(demoBeanComponent);
 
-        Abc abc = applicationContext.factory(AbcImpl.class);
+        Abc abc = globalBeanFactory.factory(AbcImpl.class);
         System.out.println(abc);
 
-        MixComponent mixComponent = applicationContext.factory(MixComponent.class);
+        MixComponent mixComponent = globalBeanFactory.factory(MixComponent.class);
         System.out.println(mixComponent);
     }
 

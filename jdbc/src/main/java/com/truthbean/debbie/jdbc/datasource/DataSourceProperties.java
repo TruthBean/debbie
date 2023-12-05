@@ -12,6 +12,7 @@ package com.truthbean.debbie.jdbc.datasource;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.environment.Environment;
+import com.truthbean.debbie.environment.NoCategoryConfigurationException;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.core.util.StringUtils;
@@ -54,6 +55,9 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
     //=================================================================================================================
 
     public DataSourceProperties(ApplicationContext applicationContext) {
+        if (getDefaultProfile() == null) {
+            setDefaultProfile(DEFAULT_PROFILE);
+        }
         Set<String> profiles = getProfiles();
         for (String profile : profiles) {
             applicationContext.getEnvironmentHolder()
@@ -244,6 +248,9 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
 
     @Override
     public DataSourceConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!configurationMap.containsKey(getDefaultProfile()) || !configurationMap.get(getDefaultProfile()).containsKey(DEFAULT_CATEGORY)) {
+            throw new NoCategoryConfigurationException("Profile " + getDefaultProfile() + " Environment has no category " + DEFAULT_CATEGORY + "!");
+        }
         return configurationMap.get(profile).get(category);
     }
 
@@ -253,6 +260,9 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
     }
 
     public DataSourceConfiguration getDefaultConfiguration() {
+        if (!configurationMap.containsKey(getDefaultProfile()) || !configurationMap.get(getDefaultProfile()).containsKey(DEFAULT_CATEGORY)) {
+            throw new NoCategoryConfigurationException("Profile " + getDefaultProfile() + " Environment has no category " + DEFAULT_CATEGORY + "!");
+        }
         return configurationMap.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
@@ -274,6 +284,9 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
 
     @Override
     public DataSourceConfiguration getConfiguration(ApplicationContext applicationContext) {
+        if (!configurationMap.containsKey(getDefaultProfile()) || !configurationMap.get(getDefaultProfile()).containsKey(DEFAULT_CATEGORY)) {
+            throw new NoCategoryConfigurationException("Profile " + getDefaultProfile() + " Environment has no category " + DEFAULT_CATEGORY + "!");
+        }
         return configurationMap.get(getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 

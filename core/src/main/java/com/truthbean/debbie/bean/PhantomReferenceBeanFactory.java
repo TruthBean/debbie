@@ -76,11 +76,6 @@ public class PhantomReferenceBeanFactory<T> implements BeanFactory<T> {
     }
 
     @Override
-    public T factoryNamedBean(String name, ApplicationContext applicationContext) {
-        return reference.get();
-    }
-
-    @Override
     public boolean isCreated() {
         return false;
     }

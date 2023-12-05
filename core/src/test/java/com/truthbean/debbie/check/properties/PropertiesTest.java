@@ -83,22 +83,23 @@ public class PropertiesTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplication.create(PropertiesTest.class, args);
-        ApplicationContext applicationContext = application.getApplicationContext();
-        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
-        BeanInfo<PropertiesConfigurationTest> beanInfo = beanInfoManager.getBeanInfo(null, PropertiesConfigurationTest.class, true);
-        if (beanInfo instanceof BeanFactory<PropertiesConfigurationTest> beanFactory) {
-            String profile = "test";
-            PropertiesConfigurationTest test = beanFactory.factory(profile, null, null, null, BeanType.SINGLETON, BeanProxyType.JDK, applicationContext);
-            System.out.println(test.getHehe().getName());
-            beanFactory.destruct(applicationContext);
-            profile = EnvironmentDepositoryHolder.ORIGIN_PROFILE;
-            test = beanFactory.factory(profile, null, null, null, BeanType.SINGLETON, BeanProxyType.JDK, applicationContext);
-            System.out.println(test.getHehe().getName());
-            beanFactory.destruct(applicationContext);
-            test = beanFactory.factory(profile, "a", null, null, BeanType.SINGLETON, BeanProxyType.JDK, applicationContext);
-            System.out.println(test.getHehe().getName());
-        }
+        /*DebbieApplication application = DebbieApplication.create(PropertiesTest.class, args)
+                .then(context -> {
+                    BeanInfoManager beanInfoManager = context.getBeanInfoManager();
+                    BeanInfo<PropertiesConfigurationTest> beanInfo = beanInfoManager.getBeanInfo(null, PropertiesConfigurationTest.class, true);
+                    if (beanInfo instanceof BeanFactory<PropertiesConfigurationTest> beanFactory) {
+                        String profile = "test";
+                        PropertiesConfigurationTest test = beanFactory.factory(profile, null, null, null, BeanType.SINGLETON, BeanProxyType.JDK, context);
+                        System.out.println(test.getHehe().getName());
+                        beanFactory.close();
+                        profile = EnvironmentDepositoryHolder.ORIGIN_PROFILE;
+                        test = beanFactory.factory(profile, null, null, null, BeanType.SINGLETON, BeanProxyType.JDK, context);
+                        System.out.println(test.getHehe().getName());
+                        beanFactory.close();
+                        test = beanFactory.factory(profile, "a", null, null, BeanType.SINGLETON, BeanProxyType.JDK, context);
+                        System.out.println(test.getHehe().getName());
+                    }
+                });*/
         // application.start();
     }
 }

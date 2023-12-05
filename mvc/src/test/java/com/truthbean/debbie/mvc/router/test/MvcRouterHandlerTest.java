@@ -35,7 +35,7 @@ class MvcRouterHandlerTest {
         BeanInfoManager initialization = applicationContext.getBeanInfoManager();
         initialization.register(RouterInvokerTest.class);
 
-        mvcConfiguration = applicationContext.factory(MvcConfiguration.class);
+        mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
 
         MvcRouterRegister.registerRouter(mvcConfiguration, applicationContext);
     }

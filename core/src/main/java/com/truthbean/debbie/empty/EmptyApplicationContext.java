@@ -70,15 +70,6 @@ class EmptyApplicationContext implements ApplicationContext {
     public <E extends AbstractDebbieEvent> void publishEvent(E event) {
     }
 
-    @Override
-    public <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names) {
-    }
-
-    @Override
-    public void registerBeanLifecycle(BeanLifecycle beanLifecycle) {
-        this.beanLifecycles.add(beanLifecycle);
-    }
-
     // @Override
     public void refreshBeans() {
 
@@ -86,26 +77,6 @@ class EmptyApplicationContext implements ApplicationContext {
 
     @Override
     public <O, T> T transform(O origin, Class<T> target) {
-        return null;
-    }
-
-    @Override
-    public <T> T factory(String beanName) {
-        return null;
-    }
-
-    @Override
-    public <T> T factory(Class<T> beanType) {
-        return null;
-    }
-
-    @Override
-    public <T> List<T> factories(Class<T> beanType) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public <T> T factory(String profile, String category, Class<T> beanType) {
         return null;
     }
 

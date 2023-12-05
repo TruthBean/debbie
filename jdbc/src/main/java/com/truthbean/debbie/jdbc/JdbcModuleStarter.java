@@ -71,7 +71,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     // @SuppressWarnings("unchecked")
     private void registerDataSourceFactory(ApplicationContext applicationContext) {
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
-        BeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = beanInfoManager.getFinalBeanFactory(null, DataSourceFactory.class, false);
+        BeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = beanInfoManager.getBeanFactory(null, DataSourceFactory.class, false);
         // Class<? extends DataSourceConfiguration> configurationClass = DataSourceConfiguration.class;
         /*try {
             configurationClass = (Class<? extends DataSourceConfiguration>) Class.forName("com.truthbean.debbie.hikari.HikariConfiguration");

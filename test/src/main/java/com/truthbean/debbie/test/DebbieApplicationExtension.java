@@ -109,6 +109,10 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         } else {
             result = globalBeanFactory.factory(name, type, require);
         }
+        /*var beanInjection = new BeanInjection<>(type, beanInject);
+        beanInjection.setBeanName(name);
+        beanInjection.setRequire(require);
+        Object result = globalBeanFactory.factory(beanInjection);*/
 
         if (type.isInstance(result)) {
             return result;

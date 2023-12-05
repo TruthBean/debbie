@@ -47,12 +47,12 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
 
     @Override
     @SuppressWarnings("unchecked")
-    public HttpClientBean factoryNamedBean(String name, ApplicationContext applicationContext) {
+    public HttpClientBean factoryBean(ApplicationContext applicationContext) {
         HttpClientRouter annotation = beanInfo.getClassAnnotation(HttpClientRouter.class);
         if (annotation != null) {
             Class<?> action = annotation.failureAction();
             if (httpClientBeanClass.isAssignableFrom(action)) {
-                HttpClientBean o = (HttpClientBean) ReflectionHelper.newInstance(action);
+                HttpClientBean o = (HttpClientBean) applicationContext.getGlobalBeanFactory().factoryByNoBean(action);
                 httpClientBean = httpClientFactory.factory(httpClientBeanClass, o);
             }
         } else {

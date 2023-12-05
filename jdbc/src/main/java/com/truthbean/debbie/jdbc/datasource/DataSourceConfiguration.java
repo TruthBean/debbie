@@ -191,7 +191,7 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
     public String toString() {
         return "{" +
                 "\"profile\":" + profile +
-                "\"category\":" + category +
+                ",\"category\":" + category +
                 ",\"driverName\":\"" + driverName +
                 "\",\"url\":\"" + url + '\"' +
                 ",\"user\":\"" + user + '\"' +

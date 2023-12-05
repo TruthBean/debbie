@@ -20,7 +20,7 @@ public class AccountServiceImpl implements AccountService, ApplicationContextAwa
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
-        accountRepository = applicationContext.factory(AccountRepository.class);
+        accountRepository = applicationContext.getGlobalBeanFactory().factory(AccountRepository.class);
     }
 
     @Override

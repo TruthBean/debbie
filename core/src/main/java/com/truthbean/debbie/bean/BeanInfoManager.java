@@ -90,6 +90,8 @@ public interface BeanInfoManager extends BeanAnnotationManager {
 
     Set<BeanInfo> getAllBeanInfo();
 
+    List<BeanInfo> getBeanInfoList(BeanInjection beanInjection);
+
     <Bean> List<BeanInfo<? extends Bean>> getBeanInfoList(Class<Bean> type, boolean require);
 
     <Bean> BeanInfo<Bean> getBeanInfo(String serviceName, Class<Bean> type, boolean require);

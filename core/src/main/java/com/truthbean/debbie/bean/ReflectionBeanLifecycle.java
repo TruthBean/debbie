@@ -69,7 +69,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
     private final Map<BeanFactory<?>, DebbieReflectionBeanFactory<?>> preparations = new LinkedHashMap<>();
 
     @Override
-    public boolean support(BeanFactory<?> beanFactory) {
+    public boolean support(BeanInfo<?> beanFactory) {
         return beanFactory instanceof DebbieReflectionBeanFactory;
     }
 
@@ -152,7 +152,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     final Object finalLocalBean = tempValue;
                     map.forEach((fieldInfo, beanInfo) -> {
                         if (beanInfo instanceof BeanFactory<?> fieldBeanFactory) {
-                            Object fieldValue = fieldBeanFactory.factoryProxiedBean(fieldInfo.getName(), fieldInfo.getType(), applicationContext);
+                            Object fieldValue = fieldBeanFactory.factoryBean(applicationContext);
                             if (finalLocalBean.getClass().getName().startsWith("jdk.proxy")) {
                                 Object obj = getRealValueFromJdkProxy(finalLocalBean);
                                 ReflectionHelper.setField(obj, fieldInfo.getField(), fieldValue);
@@ -202,15 +202,14 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
 
     @Override
     public void destruct(Object bean) {
-        if (bean instanceof AutoCloseable) {
+        if (bean instanceof BeanClosure) {
+            ((BeanClosure) bean).destruct(applicationContext);
+        } else if (bean instanceof AutoCloseable) {
             try {
                 ((AutoCloseable) bean).close();
             } catch (Exception e) {
                 LOGGER.error("bean(" + bean.getClass() + ") destruct error. ", e);
             }
-        }
-        if (bean instanceof BeanClosure) {
-            ((BeanClosure) bean).destruct(applicationContext);
         }
         preparations.clear();
         singletonBeanFactoryMap.clear();
@@ -336,7 +335,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     var beanFactory = singletonBeanFactoryMap.get(_beanFactory);
                     dependence.add(new BeanExecutableDependence(i, beanFactory, type, name));
                     if (beanFactory.isCreated()) {
-                        values[i] = beanFactory.factoryProxiedBean(name, type, applicationContext);
+                        values[i] = beanFactory.factoryBean(applicationContext);
                     }
                 } else {
                     if (_beanFactory.isCreated()) {
@@ -441,13 +440,13 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             if (debbieBeanInfo instanceof DebbieReflectionBeanFactory<?> mutableBeanFactory) {
                 if (!mutableBeanFactory.isPreparationCreated() || mutableBeanFactory.hasNoVirtualValue()) {
                     mutableBeanFactory.setVirtualValue(true);
-                    Object o = mutableBeanFactory.factoryProxiedBean(name, type, applicationContext);
+                    Object o = mutableBeanFactory.factoryBean(applicationContext);
                     dependence.setValue(o);
                 } else if (mutableBeanFactory.isCreated()) {
                     dependence.setValue(mutableBeanFactory.getCreatedBean(applicationContext));
                 }
             } else if (debbieBeanInfo instanceof BeanFactory<?> mutableBeanFactory) {
-                Object o = mutableBeanFactory.factoryProxiedBean(name, type, applicationContext);
+                Object o = mutableBeanFactory.factoryBean(applicationContext);
                 dependence.setValue(o);
             }
         }
@@ -479,7 +478,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             if (debbieBeanInfo instanceof DebbieReflectionBeanFactory<?> mutableBeanFactory) {
                 if (!mutableBeanFactory.isPreparationCreated() && mutableBeanFactory.hasNoVirtualValue()) {
                     mutableBeanFactory.setVirtualValue(true);
-                    Object o = mutableBeanFactory.factoryProxiedBean(name, type, applicationContext);
+                    Object o = mutableBeanFactory.factoryBean(applicationContext);
                     dependence.setValue(o);
                 } else if (mutableBeanFactory.isCreated()) {
                     dependence.setValue(mutableBeanFactory.getCreatedBean(applicationContext));
@@ -489,7 +488,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     mutableBeanFactory.setVirtualValue(true);
                 }
             } else if (debbieBeanInfo instanceof BeanFactory<?> mutableBeanFactory) {
-                Object o = mutableBeanFactory.factoryProxiedBean(name, type, applicationContext);
+                Object o = mutableBeanFactory.factoryBean(applicationContext);
                 dependence.setValue(o);
             }
         }
@@ -539,7 +538,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                             values[i] = localBeanFactory.getPreparedBean();
                         }
                     } else if (bean instanceof BeanFactory beanFactory) {
-                        Object beanValue = beanFactory.factoryProxiedBean(name, type, applicationContext);
+                        Object beanValue = beanFactory.factoryBean(applicationContext);
                         LOGGER.trace(() -> serviceName + " hashCode: " + beanValue.hashCode());
                         values[i] = beanValue;
                     }
@@ -598,7 +597,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                                 values[i] = localBeanFactory.getPreparedBean();
                             }
                         } else if (bean instanceof BeanFactory) {
-                            Object beanValue = ((BeanFactory<?>) bean).factoryProxiedBean(name, type, applicationContext);
+                            Object beanValue = ((BeanFactory<?>) bean).factoryBean(applicationContext);
                             if (required && beanValue == null) {
                                 throw new NoBeanException("bean " + serviceName + " value is null .");
                             }
@@ -641,7 +640,6 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
 
                 Field field = fieldInfo.getField();
                 Class<?> fieldType = field.getType();
-                String name = null;
 
                 Annotation[] annotations = field.getAnnotations();
                 if (annotations == null || annotations.length == 0) {
@@ -653,20 +651,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     continue;
                 }
 
-                BeanInject annotation = field.getAnnotation(BeanInject.class);
-                if (annotation != null) {
-                    name = annotation.name();
-                    if (name.isBlank()) {
-                        name = annotation.value();
-                    }
-                    if (name.isBlank()) {
-                        name = fieldType.getName();
-                    }
-                }
-
-                if (name == null || name.isBlank()) {
-                    name = field.getName();
-                }
+                String name = getFieldName(field);
                 var fieldValue = ReflectionHelper.getField(getRealValueFromJdkProxy(preparedBean), field);
                 if (fieldValue == null) {
                     var baseBeanFactory = beanInfoManager.getBeanFactory(name, fieldType, required, false);
@@ -694,6 +679,25 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             LOGGER.error("collect " + beanFactory.getBeanClass().getName() + "'s fields dependents error");
             BeanCreatedException.throwException(LOGGER, e);
         }
+    }
+
+    private static String getFieldName(Field field) {
+        String name = null;
+        BeanInject annotation = field.getAnnotation(BeanInject.class);
+        if (annotation != null) {
+            name = annotation.name();
+            if (name.isBlank()) {
+                name = annotation.value();
+            }
+            if (name.isBlank()) {
+                name = field.getName();
+            }
+        }
+
+        if (name == null || name.isBlank()) {
+            name = field.getName();
+        }
+        return name;
     }
 
     private <Bean> void resolveFieldValue(String profile, String category,DebbieReflectionBeanFactory<Bean> beanFactory, Bean preparedBean) {
@@ -786,7 +790,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     debbieReflectionBeanFactory.setVirtualValue(true);
                 }
             }
-            Object value = fieldBeanFactory.factoryProxiedBean(name, field.getType(), applicationContext);
+            Object value = fieldBeanFactory.factoryBean(applicationContext);
             if (required && value == null) {
                 if (!(fieldBeanFactory instanceof DebbieReflectionBeanFactory<?>)) {
                     LOGGER.error(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getAllName() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
