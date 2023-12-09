@@ -178,6 +178,7 @@ public class EntityResolver {
         return entityInfo;
     }
 
+    @SuppressWarnings("unchecked")
     public <E> EntityInfo<E> resolveEntityClass(Class<E> entityClass) {
         if (entityInfoMap.containsKey(entityClass)) {
             return (EntityInfo<E>) entityInfoMap.get(entityClass).copy();

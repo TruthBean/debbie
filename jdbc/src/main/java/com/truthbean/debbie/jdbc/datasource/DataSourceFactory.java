@@ -40,7 +40,7 @@ public interface DataSourceFactory extends BeanClosure {
      * @param configurationClass configurationClass
      * @return DataSourceFactory
      */
-    @SuppressWarnings("Unchecked")
+    @SuppressWarnings("unchecked")
     static <Configuration extends DataSourceConfiguration> Set<DataSourceFactory> factory(
             ApplicationContext applicationContext, Class<Configuration> configurationClass) {
 

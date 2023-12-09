@@ -34,11 +34,14 @@ public abstract class BaseServerProperties<C extends AbstractServerConfiguration
     private static final String SOCKET_PATH = "debbie.server.unix.socket";
     // ===========================================================================
     private static final String SERVER_PREFIX = "debbie.server.";
-    private static final String DOT_PORT = ".port";
-    private static final String DOT_HOST = ".host";
+    private static final String DOT_PORT = "port";
+    private static final String DOT_HOST = "host";
     private static final String DOT_SERVER_HEADER = ".server-header";
 
     public <P extends BaseServerProperties<C>> void loadAndSet(String category, P properties, C configuration) {
+        if (DEFAULT_CATEGORY.equals(category)) {
+            category = "";
+        }
         String name = properties.getStringValue(APPLICATION_NAME, UUID.randomUUID().toString());
         var portStr = properties.getValue(SERVER_PREFIX + category + DOT_PORT);
         int port;

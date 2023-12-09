@@ -74,7 +74,7 @@ class DebbieBootApplicationResolver {
         resolveApplicationBean(configuration, resourceResolver, applicationClass, beanInfoManager, applicationBeanFactory);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void resolverApplicationClass(Object application, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
         if (application == null) {

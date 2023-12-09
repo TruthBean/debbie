@@ -103,8 +103,17 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     @Override
     public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        waitUntilStarted();
         applicationBootContextConsumer.accept(this.applicationBootContext);
         return this;
+    }
+
+    private void waitUntilStarted() {
+        while (!(running.get() && !exited.get() && !applicationContext.isExiting())) {
+            logger.debug("application running: " + running.get());
+            logger.debug("application exiting: " + applicationContext.isExiting());
+            logger.debug("application exited: " + exited.get());
+        }
     }
 
     protected void setLogger(Logger logger) {

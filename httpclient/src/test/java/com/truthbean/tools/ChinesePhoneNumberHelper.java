@@ -126,7 +126,7 @@ public class ChinesePhoneNumberHelper {
     }
 
     public static void main(String[] args) {
-        var s = "18272163739";
+        var s = "13208003739";
         System.out.println(checkCellphone(s));
         s = getRandomPhoneNumber();
         System.out.println(checkCellphone(s));

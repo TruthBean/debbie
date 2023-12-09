@@ -58,11 +58,10 @@ public class EventListenerBeanRegister {
                                 LoggerFactory.getLogger(LogLevel.ERROR, t.getClass()).error("", e)), 5000L);
         DefaultEventListenerBeanManager eventPublisher = new DefaultEventListenerBeanManager(applicationContext, executor, globalBeanFactory);
         // 先注册系统相关的
-        // SingletonBeanRegister register = new SingletonBeanRegister(applicationContext);
-        // register.registerSingletonBean(eventPublisher, DebbieEventPublisher.class, "eventPublisher");
-        // register.registerSingletonBean(eventPublisher, EventMulticaster.class, "eventMulticaster");
-        var eventPublisherBeanFactory = new SimpleBeanFactory<>(eventPublisher, EventMulticaster.class, BeanProxyType.NO, "eventPublisher", "eventMulticaster", DebbieEventPublisher.class.getName(), EventMulticaster.class.getName());
-        beanInfoManager.registerBeanInfo(eventPublisherBeanFactory);
+        var eventMulticasterFactory = new SimpleBeanFactory<>(eventPublisher, EventMulticaster.class, BeanProxyType.NO, "eventMulticaster", EventMulticaster.class.getName());
+        beanInfoManager.registerBeanInfo(eventMulticasterFactory);
+        var eventPublisherFactory = new SimpleBeanFactory<>(eventPublisher, DebbieEventPublisher.class, BeanProxyType.NO, "eventPublisher", DebbieEventPublisher.class.getName());
+        beanInfoManager.registerBeanInfo(eventPublisherFactory);
         eventPublisher.addEventListener(new ApplicationExitEventListener());
         // 然后处理用户自定义的
         Set<BeanInfo> eventListenersBeans = beanInfoManager.getBeansByInterface(DebbieEventListener.class);

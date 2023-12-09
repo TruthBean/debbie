@@ -25,7 +25,7 @@ class EventBeanTest {
 
     @Test
     void testEventListener(@BeanInject DebbieEventPublisher debbieEventPublisher,
-                                  @BeanInject(value = "test", require = false) TestEvent testEvent) {
+                           @BeanInject(value = "test", require = false) TestEvent testEvent) {
         debbieEventPublisher.publishEvent(testEvent);
         debbieEventPublisher.publishEvent(new TestStartedEvent(this, null));
     }
@@ -40,9 +40,8 @@ class EventBeanTest {
         ApplicationContext context = factory.getApplicationContext();
         context.getBeanInfoManager().registerBeanInfo(beanInfo);
 
-        // todo
         GlobalBeanFactory globalBeanFactory = context.getGlobalBeanFactory();
-        DebbieEventPublisher eventPublisher = globalBeanFactory.factory("eventPublisher");
+        DebbieEventPublisher eventPublisher = globalBeanFactory.factory(DebbieEventPublisher.class);
         DebbieApplication application = factory.create().postCreate().factory();
         application.start();
         eventPublisher.publishEvent(new TestStartedEvent(test, null));

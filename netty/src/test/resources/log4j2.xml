@@ -11,7 +11,7 @@
 
     <Loggers>
 
-        <Root level="DEBUG" additivity="false">
+        <Root level="INFO" additivity="false">
             <appender-ref ref="Console"/>
         </Root>
 

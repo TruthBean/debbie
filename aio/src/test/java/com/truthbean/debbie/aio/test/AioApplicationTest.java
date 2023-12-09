@@ -27,15 +27,15 @@ import java.util.concurrent.Callable;
 public class AioApplicationTest {
 
     public static void main(String[] args) {
-        /*var application = DebbieApplication.create(args);
+        var application = DebbieApplication.create(args);
         application.start();
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }*/
+        }
         // application.exit();
-        DebbieApplication.run(AioApplicationTest.class, args);
+        // DebbieApplication.run(AioApplicationTest.class, args);
     }
 
     @Test

@@ -31,6 +31,7 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
         return super.insertMany(logger, transaction, list, withEntityPropertyNull);
     }
 
+    @SuppressWarnings("unchecked")
     public <S extends Entity, Entity, Id> S save(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
                                              Class<Entity> entityClass, S entity) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);

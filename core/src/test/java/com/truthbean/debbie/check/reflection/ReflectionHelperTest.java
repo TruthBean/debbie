@@ -73,7 +73,7 @@ public class ReflectionHelperTest {
 
     @Test
     public void getMethodActualTypes() throws ClassNotFoundException {
-        Class<?> clazz = ClassLoaderUtils.getDefaultClassLoader().loadClass("com.truthbean.debbie.reflection.TestParameterized");
+        Class<?> clazz = ClassLoaderUtils.getDefaultClassLoader().loadClass("com.truthbean.debbie.check.reflection.TestParameterized");
         Set<Method> declaredMethods = ReflectionHelper.getDeclaredMethods(clazz);
         // Method[] declaredMethods = clazz.getMethods();
         for (Method declaredMethod : declaredMethods) {

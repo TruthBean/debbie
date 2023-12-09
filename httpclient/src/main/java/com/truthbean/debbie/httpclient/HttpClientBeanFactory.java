@@ -54,6 +54,10 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
             if (httpClientBeanClass.isAssignableFrom(action)) {
                 HttpClientBean o = (HttpClientBean) applicationContext.getGlobalBeanFactory().factoryByNoBean(action);
                 httpClientBean = httpClientFactory.factory(httpClientBeanClass, o);
+            } else if (action == Void.class) {
+                httpClientBean = httpClientFactory.factory(httpClientBeanClass);
+            } else {
+                throw new HttpClientException("@HttpClientRouter.failureAction() is not " + httpClientBeanClass);
             }
         } else {
             httpClientBean = httpClientFactory.factory(httpClientBeanClass);

@@ -21,7 +21,7 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
 
     private boolean enable;
 
-    private String httpVersion;
+    private String httpVersion = "1.1";
 
     private String serverMessage;
 

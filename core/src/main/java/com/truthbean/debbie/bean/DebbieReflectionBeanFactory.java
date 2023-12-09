@@ -61,6 +61,11 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
     }
 
     @Override
+    public Supplier<Bean> supply(ApplicationContext context) {
+        return () -> getCreatedBean(context);
+    }
+
+    @Override
     public Bean factoryBean(ApplicationContext applicationContext) {
         if (created && isSingleton()) {
             return bean;

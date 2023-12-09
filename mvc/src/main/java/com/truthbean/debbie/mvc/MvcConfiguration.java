@@ -370,6 +370,7 @@ public class MvcConfiguration implements DebbieConfiguration {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public MvcConfiguration copy() {
         MvcConfiguration configuration = new MvcConfiguration();
         configuration.staticResourcesMappingLocation.putAll(staticResourcesMappingLocation);

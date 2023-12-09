@@ -1072,6 +1072,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
         return getBeanInfo(BeanFactory.class, serviceName, type, require, beanInfoSet, throwException, false);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <Info extends BeanInfo<Bean>, Bean extends I, I>
     Info getBeanInfo(Class<Info> infoClass, String serviceName, final Class<I> type, boolean require,
                      final Set<BeanInfo> beanInfoSet, boolean throwException, final boolean notCheckAssignable) {
@@ -1143,11 +1144,24 @@ final class DebbieBeanCenter implements BeanInfoManager {
                     }
                 }
             }*/
-            List<Info> copy = new ArrayList<>(list);
-            for (Info next : copy) {
-                if (next.getBeanClass() != type) {
-                    list.remove(next);
+            if (type != null) {
+                List<Info> copy = new ArrayList<>(list);
+                for (Info next : copy) {
+                    if (next.getBeanClass() != type) {
+                        list.remove(next);
+                    }
                 }
+                /*if (list.size() > 1 && (serviceName == null || serviceName.isBlank())) {
+                    String name = type.getName();
+                    list.removeIf(next -> next.getBeanClass() != type && !next.containName(name));
+                } else if (list.isEmpty()) {
+                    list = new ArrayList<>(copy);
+                    for (Info next : copy) {
+                        if (next.getBeanClass() != type && !next.containName(type.getName())) {
+                            list.remove(next);
+                        }
+                    }
+                }*/
             }
             if (list.size() > 1) {
                 throw new OneMoreBeanRegisteredException("bean(" + type + ", " + serviceName + ") must be only one");

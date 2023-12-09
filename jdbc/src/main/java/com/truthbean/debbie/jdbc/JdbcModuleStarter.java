@@ -18,6 +18,7 @@ import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.annotation.SqlRepositoryBeanRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactoryFactory;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolConfiguration;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties;
@@ -79,7 +80,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
             LOGGER.info("com.truthbean.debbie:debbie-hikari jar not be depended. ");
         }*/
         if (dataSourceFactoryBeanInfo == null) {
-            Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
+            /*Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
             for (DataSourceFactory dataSourceFactory : factories) {
                 String name = dataSourceFactory.getName();
                 SimpleBeanFactory<DataSourceFactory, DataSourceFactory> simpleBeanFactory;
@@ -89,7 +90,8 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
                     simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, DataSourceFactory.class.getName());
                 }
                 beanInfoManager.registerBeanInfo(simpleBeanFactory);
-            }
+            }*/
+            beanInfoManager.registerBeanInfo(new DataSourceFactoryFactory());
         } else {
             if (dataSourceFactoryBeanInfo instanceof MutableBeanFactory<DataSourceFactory> mutableBeanFactory) {
                 if (!mutableBeanFactory.isCreated()) {

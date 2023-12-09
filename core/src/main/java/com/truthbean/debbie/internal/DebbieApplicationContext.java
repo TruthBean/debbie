@@ -195,7 +195,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     @Override
-    public synchronized <T> T factory(String beanName) {
+    public <T> T factory(String beanName) {
         LOGGER.trace(() -> "factory bean with name " + beanName);
         return factory(beanName, null, false, true, true);
     }
@@ -213,6 +213,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T factoryConfiguration(Class<T> type, String profile, String category) {
         if (type != null && DebbieConfiguration.class.isAssignableFrom(type)) {
             BeanFactory<T> beanFactory = beanInfoManager.getBeanFactory(null, type, true, true);
@@ -224,6 +225,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T factory(BeanInjection<T> injection) {
         synchronized (beanInfoManager) {
             var beanInfoList = this.beanInfoManager.getBeanInfoList(injection);
@@ -235,7 +237,13 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
             }
             T bean = null;
             for (BeanInfo beanInfo : beanInfoList) {
-                bean = (T) beanInfo.supply(this).get();
+                if (beanInfo instanceof PropertiesConfigurationBeanFactory propertiesConfigurationBeanFactory) {
+                    bean = (T) propertiesConfigurationBeanFactory.factory(injection, this);
+                } else if (beanInfo instanceof BeanFactory<?> beanFactory) {
+                    bean = (T) beanFactory.factoryBean(this);
+                } else {
+                    bean = (T) beanInfo.supply(this).get();
+                }
                 if (bean != null) {
                     break;
                 }

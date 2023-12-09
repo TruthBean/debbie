@@ -44,6 +44,10 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
     //===============================================================================================================
 
     static {
+        init();
+    }
+
+    private static void init() {
         BeanScanConfiguration configuration = new BeanScanConfiguration();
         configuration.setProfile(DEFAULT_PROFILE);
         configuration.setCategory(DEFAULT_CATEGORY);
@@ -96,6 +100,9 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
     }
 
     public static BeanScanConfiguration toConfiguration(ClassLoader classLoader) {
+        if (configurationMap.isEmpty()) {
+            init();
+        }
         Map<String, BeanScanConfiguration> map = configurationMap.get(DEFAULT_PROFILE);
         BeanScanConfiguration configuration = map.get(DEFAULT_CATEGORY);
         if (configuration.getClassLoader() == null) {
@@ -106,11 +113,17 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
 
     @Override
     public Map<String, Map<String, BeanScanConfiguration>> getAllProfiledCategoryConfiguration(ApplicationContext applicationContext) {
-        return configurationMap;
+        if (configurationMap.isEmpty()) {
+            init();
+        }
+        return new HashMap<>(configurationMap);
     }
 
     @Override
     public Set<String> getCategories(String profile) {
+        if (configurationMap.isEmpty()) {
+            init();
+        }
         return configurationMap.get(profile).keySet();
     }
 
@@ -121,6 +134,9 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
         }
         if (!StringUtils.hasText(category)) {
             category = DEFAULT_CATEGORY;
+        }
+        if (configurationMap.isEmpty()) {
+            init();
         }
         Map<String, BeanScanConfiguration> map = configurationMap.get(profile);
         BeanScanConfiguration configuration = map.get(category);

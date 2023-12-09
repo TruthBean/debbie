@@ -23,8 +23,12 @@ public class NettyApplicationTest {
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplication.create(NettyApplicationTest.class, args);
-        application.start();
-        application.exit();
+        DebbieApplication.create(NettyApplicationTest.class, args)
+                .start()
+                .then(context -> {
+                    NettyApplicationTest test = context.factory(NettyApplicationTest.class);
+                    System.out.println(test);
+                })
+                .exit();
     }
 }
