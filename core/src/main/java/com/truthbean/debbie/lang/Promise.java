@@ -1,6 +1,8 @@
 package com.truthbean.debbie.lang;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author TruthBean
@@ -20,33 +22,43 @@ public class Promise {
     }
 
     public Promise(ResolveAndReject func) {
-        func.func(value::set, err -> this.err = err);
+        try {
+            func.func(value::lazySet, err -> this.err = err);
+        } catch (Throwable e) {
+            this.err = e;
+        }
     }
 
-    public static Promise all(Value... funcs) {
+    @SafeVarargs
+    public static Promise all(Function<Object, Object>... funcs) {
         Promise promise = new Promise();
-        if (funcs != null && funcs.length > 0) {
-            for (Value func : funcs) {
-                if (func != null) {
-                    promise.then(func);
+        try {
+            if (funcs != null) {
+                for (Function<Object, Object> func : funcs) {
+                    if (func != null) {
+                        promise.then(func);
+                    }
                 }
             }
+        } catch (Exception e) {
+            promise.err = e;
         }
         return promise;
     }
 
-    public Promise then(Value func) {
+    public Promise then(Function<Object, Object> func) {
         try {
-            value.set(func.func(value.get()));
+            value.setPlain(func.apply(value.getPlain()));
         } catch (Throwable e) {
             err = e;
         }
         return this;
     }
 
-    public Promise then(FinalValue func) {
+    public Promise then(Consumer<Object> func) {
         try {
-            func.func(value.get());
+            func.accept(value.getAcquire());
+            value.setRelease(null);
         } catch (Throwable e) {
             err = e;
         }
@@ -55,24 +67,27 @@ public class Promise {
 
     public Promise then(ValueAndError func) {
         try {
-            value.set(func.func(value.get()));
+            value.setOpaque(func.func(value.getOpaque()));
         } catch (Exception e) {
             err = e;
         }
         return this;
     }
 
-    public Promise then(Object resolve) {
+    public Promise then(ValueAndErrorConsumer func) {
         try {
-            value.set(resolve);
+            func.func(value.get(), err);
+            value.set(null);
+            err = null;
         } catch (Exception e) {
             err = e;
         }
         return this;
     }
 
-    public void catchError(Error err) {
-        err.func(this.err);
+    public void catchError(Consumer<Throwable> err) {
+        err.accept(this.err);
+        this.err = null;
     }
 
     @FunctionalInterface
@@ -85,18 +100,8 @@ public class Promise {
     }
 
     @FunctionalInterface
-    public interface Value {
-        Object func(Object val);
-    }
-
-    @FunctionalInterface
-    public interface FinalValue {
-        void func(Object val);
-    }
-
-    @FunctionalInterface
-    public interface Error {
-        void func(Throwable err);
+    public interface ValueAndErrorConsumer {
+        void func(Object val, Throwable err);
     }
 
     @FunctionalInterface

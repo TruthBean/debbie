@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2023 TruthBean(Rogar·Q)
+ * Copyright (c) 2024 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -271,7 +271,8 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
     }
 
     public static DataSourceConfiguration toConfiguration(ApplicationContext applicationContext) {
-        return new DataSourceProperties(applicationContext).configurationMap.get(DEFAULT_PROFILE).get(DEFAULT_CATEGORY);
+        var props = new DataSourceProperties(applicationContext);
+        return props.configurationMap.get(props.getDefaultProfile()).get(DEFAULT_CATEGORY);
     }
 
     public DataSourceConfiguration getConfiguration(String name, ApplicationContext applicationContext) {
