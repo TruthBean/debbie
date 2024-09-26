@@ -21,6 +21,7 @@ import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -116,6 +117,9 @@ public interface DataSourceFactory extends BeanClosure {
         try {
             DataSourceDriverName driverName = getDriverName();
             TransactionInfo transactionInfo = new TransactionInfo();
+            if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
+                getDataSource().setLogWriter(new PrintWriter(System.err));
+            }
             transactionInfo.setConnection(getDataSource().getConnection());
             transactionInfo.setDriverName(driverName);
             return transactionInfo;
@@ -127,6 +131,9 @@ public interface DataSourceFactory extends BeanClosure {
 
     default Connection getConnection() {
         try {
+            if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
+                getDataSource().setLogWriter(new PrintWriter(System.err));
+            }
             return getDataSource().getConnection();
         } catch (SQLException e) {
             getLogger().error("", e);

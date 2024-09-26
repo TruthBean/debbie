@@ -24,18 +24,6 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.truthbean.debbie.aio.AioServerProperties",
-    "methods": [
-      { "name": "<init>", "parameterTypes": [] }
-    ],
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "allDeclaredFields" : true,
-    "allPublicFields" : true
-  },
-  {
     "name": "java.net.UnixDomainSocketAddress",
     "methods": [
       { "name": "of", "parameterTypes": ["java.lang.String"] }

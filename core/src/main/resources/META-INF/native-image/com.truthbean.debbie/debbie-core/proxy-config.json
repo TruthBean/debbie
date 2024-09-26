@@ -11,5 +11,9 @@
   ["com.truthbean.debbie.event.GenericStartedEventListener"],
   ["com.truthbean.debbie.properties.DebbieConfiguration"],
   ["com.truthbean.debbie.properties.DebbieProperties"],
-  ["com.truthbean.debbie.proxy.MethodProxyHandler"]
+  ["com.truthbean.debbie.proxy.MethodProxyHandler"],
+  ["com.truthbean.debbie.environment.ResourceEnvironment"],
+  ["com.truthbean.logger.LogFactory"],
+  ["com.truthbean.logger.LoggerConfig"],
+  ["com.truthbean.logger.LoggerInitiation"]
 ]

@@ -25,7 +25,6 @@ dependencies {
     testImplementation(project(":debbie-jackson"))
     testImplementation(project(":debbie-mvc"))
     testImplementation(project(":debbie-netty"))
-    testImplementation(project(":debbie-rmi"))
     testImplementation(project(":debbie-server"))
     testImplementation("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {

@@ -36,7 +36,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.log.StandardLogger",
+    "name": "com.mysql.cj.log.StandardLogger",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String"] }
     ],
@@ -48,7 +48,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.log.Slf4JLogger",
+    "name": "com.mysql.cj.log.Slf4JLogger",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String"] }
     ],
@@ -60,7 +60,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.log.Jdk14Logger",
+    "name": "com.mysql.cj.log.Jdk14Logger",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String"] }
     ],
@@ -72,7 +72,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.log.NullLogger",
+    "name": "com.mysql.cj.log.NullLogger",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String"] }
     ],
@@ -84,7 +84,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.PerVmServerConfigCacheFactory",
+    "name": "com.mysql.cj.PerVmServerConfigCacheFactory",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -96,7 +96,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.ResultSetImpl",
+    "name": "com.mysql.cj.ResultSetImpl",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -108,7 +108,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.JDBC42ResultSet",
+    "name": "com.mysql.cj.JDBC42ResultSet",
     "methods": [
       { "name": "<init>", "parameterTypes": ["long", "long", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
     ],
@@ -120,7 +120,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.JDBC4ResultSet",
+    "name": "com.mysql.cj.JDBC4ResultSet",
     "methods": [
       { "name": "<init>", "parameterTypes": ["long", "long", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
     ],
@@ -132,7 +132,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.JDBC42UpdatableResultSet",
+    "name": "com.mysql.cj.JDBC42UpdatableResultSet",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String", "com.mysql.jdbc.Field[]", "com.mysql.jdbc.RowData", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
     ],
@@ -144,7 +144,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.JDBC4UpdatableResultSet",
+    "name": "com.mysql.cj.JDBC4UpdatableResultSet",
     "methods": [
       { "name": "<init>", "parameterTypes": ["java.lang.String", "com.mysql.jdbc.Field[]", "com.mysql.jdbc.RowData", "com.mysql.jdbc.MySQLConnection", "com.mysql.jdbc.StatementImpl"] }
     ],
@@ -168,7 +168,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.StandardSocketFactory",
+    "name": "com.mysql.cj.StandardSocketFactory",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -180,7 +180,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.PerConnectionLRUFactory",
+    "name": "com.mysql.cj.PerConnectionLRUFactory",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -192,7 +192,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.ConnectionPropertiesImpl",
+    "name": "com.mysql.cj.ConnectionPropertiesImpl",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -204,7 +204,7 @@
     "allPublicFields" : true
   },
   {
-    "name": "com.mysql.jdbc.ConnectionPropertiesImpl$ConnectionProperty",
+    "name": "com.mysql.cj.ConnectionPropertiesImpl$ConnectionProperty",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],
@@ -644,30 +644,6 @@
   },
   {
     "name": "com.truthbean.debbie.jdbc.domain.SortHandlerMethodArgumentResolver",
-    "methods": [
-      { "name": "<init>", "parameterTypes": [] }
-    ],
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "allDeclaredFields" : true,
-    "allPublicFields" : true
-  },
-  {
-    "name": "com.truthbean.debbie.jdbc.datasource.DataSourceProperties",
-    "methods": [
-      { "name": "<init>", "parameterTypes": [] }
-    ],
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "allDeclaredFields" : true,
-    "allPublicFields" : true
-  },
-  {
-    "name": "com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolProperties",
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ],

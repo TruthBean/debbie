@@ -110,6 +110,11 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     private void waitUntilStarted() {
         while (!(running.get() && !exited.get() && !applicationContext.isExiting())) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.warn("Waiting started happens wrong");
+            }
             logger.debug("application running: " + running.get());
             logger.debug("application exiting: " + applicationContext.isExiting());
             logger.debug("application exited: " + exited.get());

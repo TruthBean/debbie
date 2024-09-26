@@ -1,14 +1,5 @@
 [
   {
-    "name": "com.truthbean.debbie.properties.BaseProperties",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
     "name": "com.truthbean.debbie.properties.ClassesScanProperties",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
@@ -34,6 +25,21 @@
   },
   {
     "name": "com.truthbean.debbie.boot.DebbieLoggerConfig",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ],
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allPublicFields": true
+  },
+  {
+    "name": "com.truthbean.debbie.properties.PropertiesResourceEnvironment",
     "methods": [
       {
         "name": "<init>",

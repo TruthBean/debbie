@@ -7,6 +7,9 @@ import java.util.function.Consumer;
  * @since 0.5.5
  */
 public interface DebbieStartedApplication {
+    /**
+     * do after start and before exit
+     */
     DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer);
 
     DebbieExitedApplication exit();

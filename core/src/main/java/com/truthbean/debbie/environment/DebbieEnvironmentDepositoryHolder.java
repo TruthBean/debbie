@@ -16,6 +16,8 @@ public class DebbieEnvironmentDepositoryHolder implements EnvironmentDepositoryH
         EnvironmentDepository.init();
     }
 
+    // private static volatile boolean init = false;
+
     private static final Properties CACHE = new Properties();
     private static final EnvironmentDepository PROFILE = new EnvironmentDepository();
 
@@ -24,6 +26,10 @@ public class DebbieEnvironmentDepositoryHolder implements EnvironmentDepositoryH
     private Logger logger;
 
     public DebbieEnvironmentDepositoryHolder() {
+        /*if (!init) {
+            EnvironmentDepository.init();
+            init = true;
+        }*/
         if (!PROFILE.hasProfile(this.profile())) {
             PROFILE.addEnvironment(this.profile(), this);
         }
