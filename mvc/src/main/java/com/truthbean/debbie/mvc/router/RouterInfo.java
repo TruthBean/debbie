@@ -83,7 +83,11 @@ public class RouterInfo implements Copyable {
     }
 
     public List<HttpMethod> getRequestMethod() {
-        return Arrays.asList(this.annotationInfo.method());
+        if (this.annotationInfo != null) {
+            return Arrays.asList(this.annotationInfo.method());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public RouterResponse getResponse() {

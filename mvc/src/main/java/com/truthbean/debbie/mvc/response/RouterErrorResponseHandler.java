@@ -33,7 +33,7 @@ public final class RouterErrorResponseHandler {
         var value = new ErrorResponseData();
         value.setUri(routerRequest.getUrl());
         value.setTimestamp(System.currentTimeMillis());
-        value.setMethod(routerRequest.getMethod().name());
+        // value.setMethod(routerRequest.getMethod().name());
         data.setData(value);
 
         return error(routerRequest, data);

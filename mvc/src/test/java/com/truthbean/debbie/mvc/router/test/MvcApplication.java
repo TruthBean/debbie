@@ -12,6 +12,7 @@ package com.truthbean.debbie.mvc.router.test;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 
@@ -40,8 +41,7 @@ public class MvcApplication {
                     MvcConfiguration mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
                     MvcRouterRegister.getInstance(mvcConfiguration)
                             .get(new String[]{"/register/get/router"}, (request, response) -> {
-
-                                // response.setResponseType(MediaType.TEXT_ANY_UTF8);
+                                response.setResponseType(MediaType.TEXT_ANY_UTF8);
                                 response.setContent("hello router!");
                             });
                 }).start()

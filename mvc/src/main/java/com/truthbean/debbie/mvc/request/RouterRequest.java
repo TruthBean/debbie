@@ -12,7 +12,6 @@ package com.truthbean.debbie.mvc.request;
 import com.truthbean.debbie.io.MediaTypeInfo;
 import com.truthbean.debbie.mvc.RouterSession;
 import com.truthbean.transformer.DataTransformerCenter;
-import com.truthbean.transformer.TransformerFactory;
 
 import java.io.File;
 import java.io.InputStream;

@@ -15,6 +15,6 @@
 open module com.truthbean.debbie.aio.test {
     requires com.truthbean.debbie.test;
     requires com.truthbean.debbie.aio;
-    provides java.nio.file.spi.FileSystemProvider with
-            com.truthbean.debbie.file.test.MockFileSystemProvider;
+    /*provides java.nio.file.spi.FileSystemProvider with
+            com.truthbean.debbie.file.test.MockFileSystemProvider;*/
 }
