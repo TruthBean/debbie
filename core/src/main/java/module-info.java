@@ -8,8 +8,6 @@
  * See the Mulan PSL v2 for more details.
  */
 
-import com.truthbean.debbie.environment.EnvironmentContext;
-
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
@@ -63,7 +61,7 @@ module com.truthbean.debbie.core {
     uses com.truthbean.debbie.task.TaskAction;
     uses com.truthbean.debbie.environment.Environment;
     uses com.truthbean.debbie.environment.EnvironmentSpi;
-    uses EnvironmentContext;
+    // uses EnvironmentContext;
     uses com.truthbean.debbie.core.ApplicationFactory;
     uses com.truthbean.debbie.environment.ResourceEnvironment;
 
