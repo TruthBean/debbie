@@ -18,6 +18,8 @@ import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.logger.LoggerConfig;
 
+import java.util.function.Consumer;
+
 /**
  * @author TruthBean
  * @since 0.0.1
@@ -27,6 +29,8 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
     String SHUTDOWN_HOOK_THREAD_NAME = "DebbieApplicationShutdownHook";
 
     String DISABLE_DEBBIE = "com.truthbean.debbie.disable";
+
+    DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer);
 
     static boolean isDisable() {
         var bool = AbstractPropertiesUtils.isSysTrue(DISABLE_DEBBIE);

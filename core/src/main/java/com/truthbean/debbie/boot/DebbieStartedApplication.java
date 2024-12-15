@@ -10,7 +10,7 @@ public interface DebbieStartedApplication {
     /**
      * do after start and before exit
      */
-    DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer);
+    DebbieStartedApplication afterStarted(Consumer<ApplicationBootContext> applicationBootContextConsumer);
 
     DebbieExitedApplication exit();
 }

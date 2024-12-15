@@ -103,7 +103,13 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     @Override
     public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
-        // waitUntilStarted();
+        applicationBootContextConsumer.accept(this.applicationBootContext);
+        return this;
+    }
+
+    @Override
+    public DebbieStartedApplication afterStarted(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        waitUntilStarted();
         applicationBootContextConsumer.accept(this.applicationBootContext);
         return this;
     }

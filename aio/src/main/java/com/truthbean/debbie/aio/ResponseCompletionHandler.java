@@ -84,8 +84,7 @@ class ResponseCompletionHandler {
         logger.trace("response: " + resultStr);
 
         Future<Integer> future;
-        if (result instanceof byte[]) {
-            byte[] bytes = (byte[]) result;
+        if (result instanceof byte[] bytes) {
             //先把头部转换成byte[]
             var headerBuilder = new StringBuilder(statusLine)
                     .append(serverLine);
@@ -96,7 +95,7 @@ class ResponseCompletionHandler {
 
             var headerByteArray = header.getBytes();
             //然后合并
-            byte[] merge = new byte[headerByteArray.length + ((byte[]) result).length];
+            byte[] merge = new byte[headerByteArray.length + bytes.length];
             System.arraycopy(headerByteArray, 0, merge, 0, headerByteArray.length);
             System.arraycopy(bytes, 0, merge, headerByteArray.length, bytes.length);
             future = channel.write(ByteBuffer.wrap(merge));

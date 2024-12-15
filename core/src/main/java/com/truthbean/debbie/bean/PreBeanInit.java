@@ -13,7 +13,7 @@ import java.lang.annotation.*;
 
 /**
  * @author TruthBean
- * @since 0.0.2
+ * @since 0.5.6
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

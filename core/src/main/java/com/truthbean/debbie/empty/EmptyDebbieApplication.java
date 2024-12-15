@@ -25,6 +25,12 @@ public class EmptyDebbieApplication implements DebbieApplication {
     }
 
     @Override
+    public DebbieStartedApplication afterStarted(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        applicationBootContextConsumer.accept(applicationBootContext);
+        return this;
+    }
+
+    @Override
     public DebbieExitedApplication exit() {
         applicationContext.release();
         return this;

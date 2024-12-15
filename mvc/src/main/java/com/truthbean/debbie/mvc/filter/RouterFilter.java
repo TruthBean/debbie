@@ -36,7 +36,7 @@ public interface RouterFilter extends Serializable {
     }
 
     /**
-     * action after the router, if return true
+     * action after the router
      * if return true, change response content,
      * if return false, change response others but content
      * if return null, do nothing
