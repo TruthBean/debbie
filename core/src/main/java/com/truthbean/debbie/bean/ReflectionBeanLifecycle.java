@@ -607,7 +607,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                             }
                         }
                     } else if (required) {
-                        throw new NoBeanException("bean " + parameter.getType() + " value is null .");
+                        throw new NoBeanException(beanFactory.getBeanClass() +  " constructor parameter is null, bean " + parameter.getType() + " value is null .");
                     } else {
                         values[i] = ReflectionHelper.getDefaultValue(type);
                     }
@@ -876,6 +876,9 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             }
             String property = propertyInject.value();
             if (!property.isBlank()) {
+                if ((property.startsWith("${") || property.startsWith("#{")) && property.endsWith("}")) {
+                    property = property.substring(2, property.length() - 1);
+                }
                 if (StringUtils.hasText(category)) {
                     property = category + "." + property;
                 }
