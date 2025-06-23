@@ -47,9 +47,9 @@ val isReleaseBuild = projectVersion.endsWith("RELEASE")
 // 声明变量记录maven库地址，判断是发布到正式库,还是snapshots库
 val mavenRepositoryUrl =
         if (isReleaseBuild) {
-            "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
         } else {
-            "https://oss.sonatype.org/content/repositories/snapshots/"
+            "https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"
         }
 
 subprojects {
@@ -101,7 +101,7 @@ subprojects {
             options.isFork = true
         }
 
-        configure<JavaPluginConvention> {
+        configure<JavaPluginExtension> {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }

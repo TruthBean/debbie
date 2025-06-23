@@ -11,13 +11,10 @@ package com.truthbean.debbie.jdbc.datasource.pool;
 
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.environment.NoCategoryConfigurationException;
-import com.truthbean.debbie.environment.NoProfiledEnvironmentException;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
 import com.truthbean.debbie.jdbc.datasource.DataSourceProperties;
 import com.truthbean.debbie.properties.CategoriedProperties;
-import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,13 +76,7 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
                 configuration.setPingConnectionNotUsedFor(getIntegerValue(PING_CONNECTION_NOT_USED_FOR_KEY, 0));
                 configuration.setDataSourceFactoryClass(DefaultDataSourcePoolFactory.class);
             }
-            Map<String, DefaultDataSourcePoolConfiguration> map;
-            if (configurationMap.containsKey(getDefaultProfile())) {
-                map = configurationMap.get(getDefaultProfile());
-            } else {
-                map = new HashMap<>();
-            }
-            map.put(DEFAULT_CATEGORY, configuration);
+            configurationMap.computeIfAbsent(getDefaultProfile(), k -> new HashMap<>()).put(DEFAULT_CATEGORY, configuration);
         }
     }
 

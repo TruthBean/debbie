@@ -114,6 +114,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     public ApplicationFactory init(Class<?>... beanClasses) {
         this.applicationContext = new DebbieApplicationContext(applicationClass, ClassLoaderUtils.getClassLoader(applicationClass), applicationArgs, environmentDepositoryHolder, beanClasses);
         applicationContext.postConstructor();
+        ApplicationContextHolder.setApplicationContext(this.applicationContext);
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
     }
@@ -122,6 +123,7 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     public ApplicationFactory init(ClassLoader classLoader, Class<?>... beanClasses) {
         this.applicationContext = new DebbieApplicationContext(applicationClass, classLoader, applicationArgs, environmentDepositoryHolder, beanClasses);
         applicationContext.postConstructor();
+        ApplicationContextHolder.setApplicationContext(this.applicationContext);
         bootApplicationResolver = new DebbieBootApplicationResolver(applicationContext);
         return this;
     }

@@ -291,19 +291,19 @@ final class DebbieBeanCenter implements BeanInfoManager {
         Set<BeanInfo> set = BEAN_CLASSES.get(beanClass);
         if (set != null) {
             for (BeanInfo info : set) {
-                /*TODO if (info.containAllName(baseBeanInfo.getBeanNames())) {
-                    String message = "class " + beanClass.getName() + " with bean name " + baseBeanInfo.getBeanNames() + " has bean registered.";
+                if (info.containAllName(baseBeanInfo.getAllName())) {
+                    String message = "class " + beanClass.getName() + " with bean name " + baseBeanInfo.getAllName() + " has bean registered.";
                     if (info.getBeanClass() != baseBeanInfo.getBeanClass() || info.getBeanType() != baseBeanInfo.getBeanType()) {
-                        throw new BeanRegisterException(message + " class " + baseBeanInfo.getBeanClass() + " with bean name " + baseBeanInfo.getBeanNames() + " cannot register!");
+                        throw new BeanRegisterException(message + " class " + baseBeanInfo.getBeanClass() + " with bean name " + baseBeanInfo.getAllName() + " cannot register!");
                     }
                     LOGGER.warn(() -> message);
                     return false;
                 }
-                String s = info.containOneName(baseBeanInfo.getBeanNames());
+                String s = info.containOneName(baseBeanInfo.getAllName());
                 if (s != null) {
-                    LOGGER.warn(() -> "class " + beanClass.getName() + " with bean name " + baseBeanInfo.getBeanNames() + " conflict with registered bean " + s);
+                    LOGGER.warn(() -> "class " + beanClass.getName() + " with bean name " + baseBeanInfo.getAllName() + " conflict with registered bean " + s);
                     return false;
-                }*/
+                }
             }
             if (!set.contains(baseBeanInfo)) {
                 LOGGER.trace(() -> "register class " + beanClass.getName() + " with bean name " + baseBeanInfo.getName());

@@ -14,9 +14,10 @@ import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,7 +41,8 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
         this.httpClientFactory = httpClientFactory;
         this.beanInfo = beanInfo;
         Set<String> allName = this.beanInfo.getAllName();
-        for (String name : allName) {
+        List<String> copy = new ArrayList<>(allName);
+        for (String name : copy) {
             allName.add(name + "*factory");
         }
     }
