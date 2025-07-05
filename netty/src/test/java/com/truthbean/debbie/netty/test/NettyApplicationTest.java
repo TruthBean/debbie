@@ -25,7 +25,7 @@ public class NettyApplicationTest {
     public static void main(String[] args) {
         DebbieApplication.create(NettyApplicationTest.class, args)
                 .start()
-                .then(context -> {
+                .afterStarted(context -> {
                     NettyApplicationTest test = context.factory(NettyApplicationTest.class);
                     System.out.println(test);
                 })

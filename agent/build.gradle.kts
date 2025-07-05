@@ -10,3 +10,7 @@
 dependencies {
     api(project(":debbie-core"))
 }
+
+tasks.withType<Jar> {
+    manifest.attributes["Premain-Class"] = "com.truthbean.debbie.agent.PreMainTraceAgent"
+}

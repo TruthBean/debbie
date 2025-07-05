@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.security.MessageDigest
+
 /**
  * Copyright (c) 2024 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
@@ -51,6 +54,17 @@ val mavenRepositoryUrl =
         } else {
             "https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"
         }
+
+fun calculateHash(file: File, algorithm: String): String {
+    val digest = MessageDigest.getInstance(algorithm)
+    val bytes = Files.readAllBytes(file.toPath())
+    val hashBytes = digest.digest(bytes)
+    return bytesToHex(hashBytes)
+}
+
+fun bytesToHex(bytes: ByteArray): String {
+    return bytes.joinToString("") {"%02x".format(it)}
+}
 
 subprojects {
 
@@ -155,8 +169,10 @@ subprojects {
         }
 
         tasks.withType<Delete> {
+            delete(File("$rootDir/$originName/bin"))
             delete(File("$rootDir/$originName/out"))
             delete(File("$rootDir/$originName/build"))
+            delete(File("$rootDir/$originName/target"))
         }
 
         publishing {
@@ -227,6 +243,45 @@ subprojects {
                     }
                 }
             }
+
+            val collectBuildFileAfteruploadToMavenRepository by tasks.registering {
+                group = "truthbean"
+                description = "collectBuildFile"
+
+                dependsOn("publishUploadToMavenRepositoryPublicationToMavenLocal")
+
+                doLast {
+                    println("do copy task: $originName $version")
+                    val distDir = "$rootDir/target/upload/com/truthbean/debbie-$originName/$version"
+                    val dist = File(distDir)
+                    if (!dist.exists()) {
+                        dist.mkdirs()
+                    }
+                    println(dist.canonicalPath)
+                    val files = listOf(".jar", ".jar.asc", ".pom", ".pom.asc", "-javadoc.jar", "-javadoc.jar.asc", "-sources.jar", "-sources.jar.asc")
+                    copy {
+                        for (f in files) {
+                            from(File("$rootDir/$originName/build/libs/debbie-$originName-$version$f"))
+                            into(dist)
+                        }
+                    }
+                    File("$rootDir/$originName/build/publications/uploadToMavenRepository/pom-default.xml")
+                        .copyTo(File("$dist/debbie-$originName-$version.pom"))
+                    File("$rootDir/$originName/build/publications/uploadToMavenRepository/pom-default.xml.asc")
+                        .copyTo(File("$dist/debbie-$originName-$version.pom.asc"))
+                    for (f in files) {
+                        if (!f.endsWith(".asc")) {
+                            val file = File("$distDir/debbie-$originName-$version$f")
+                            val md5 = calculateHash(file, "MD5")
+                            val sha1 = calculateHash(file, "SHA-1")
+                            val md5File = File("$distDir/debbie-$originName-$version$f.md5")
+                            val sha1File = File("$distDir/debbie-$originName-$version$f.sha1")
+                            md5File.writeText(md5)
+                            sha1File.writeText(sha1)
+                        }
+                    }
+                }
+            }
         }
 
         // 进行数字签名
@@ -249,6 +304,58 @@ subprojects {
                 isDownloadSources = true
             }
         }
+
+        // collectBuildFile.finalizeBy("zipFiles")
+        // val build by tasks.getting
+        // build.finalizedBy("collectBuildFile")
     }
 
+    tasks.withType<Delete>() {
+        delete(File("$rootDir/target"))
+        delete(File("$rootDir/bin"))
+        delete(File("$rootDir/out"))
+        delete(File("$rootDir/build"))
+        delete(File("$rootDir/debbie.zip"))
+    }
+
+}
+
+tasks.register<Zip>("zipFiles") {
+    group = "truthbean"
+    description = "zipFiles"
+
+    println("zip files $rootDir/target")
+    // doLast {
+        from("$rootDir/target/upload")
+        archiveFileName.set("debbie.zip")
+        destinationDirectory.set(file("$rootDir/target"))
+    // }
+}
+
+// 添加新任务实现curl请求
+val uploadToCentralSonatype by tasks.registering(Exec::class) {
+    group = "upload"
+    description = "Upload central-bundle.zip to Central Sonatype"
+    val sonatypeBearer: String? by project
+    val uid = commandLine("curl", "--request", "POST", "--verbose", "--header",
+        "Authorization: Bearer $sonatypeBearer",
+        "--form", "bundle=@$rootDir/target.zip", "https://central.sonatype.com/api/v1/publisher/upload")
+    println(uid)
+    // curl --request POST \
+    //  --verbose \
+    //  --header 'Authorization: Bearer ZXhhbXBsZV91c2VybmFtZTpleGFtcGxlX3Bhca3N3b3JkCg==' \
+    //  'https://central.sonatype.com/api/v1/publisher/status?id=28570f16-da32-4c14-bd2e-c1acc0782365' \
+    //  | jq
+    val json = commandLine("curl", "--request", "POST", "--verbose", "--header",
+        "Authorization: Bearer $sonatypeBearer",
+        "https://central.sonatype.com/api/v1/publisher/status?id=$uid")
+    println(json)
+    // curl --request POST \
+    //  --verbose \
+    //  --header 'Authorization: Bearer ZXhhbXBsZV91c2VybmFtZTpleGFtcGxlX3Bhc3N3b3Jk' \
+    //  'https://central.sonatype.com/api/v1/publisher/deployment/28570f16-da32-4c14-bd2e-c1acc0782365
+    val res = commandLine("curl", "--request", "POST", "--verbose", "--header",
+        "Authorization: Bearer $sonatypeBearer",
+        "https://central.sonatype.com/api/v1/publisher/deployment/$uid")
+    println(res)
 }
