@@ -39,6 +39,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     private final Set<Class<?>> scannedClasses;
     private final Set<Class<? extends Annotation>> customInjectType;
 
+    private final Set<Class<?>> preRegisteredClasses;
+
     private volatile ClassLoader classLoader;
     private volatile Class<?> applicationClass;
 
@@ -51,6 +53,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
 
         this.scannedClasses = new HashSet<>();
         this.customInjectType = new HashSet<>();
+
+        this.preRegisteredClasses = new HashSet<>();
     }
 
     public BeanScanConfiguration(ClassLoader classLoader) {
@@ -64,6 +68,8 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         this.customInjectType = new HashSet<>();
 
         this.classLoader = classLoader;
+
+        this.preRegisteredClasses = new HashSet<>();
     }
 
     @Override
@@ -271,6 +277,16 @@ public class BeanScanConfiguration implements DebbieConfiguration {
     @SuppressWarnings("unused")
     public Set<Class<?>> getScannedClasses() {
         return Collections.unmodifiableSet(this.scannedClasses);
+    }
+
+    public void addPreRegisteredClasses(Class<?>... classes) {
+        if (classes != null && classes.length > 0) {
+            preRegisteredClasses.addAll(Arrays.asList(classes));
+        }
+    }
+
+    public Set<Class<?>> getPreRegisteredClasses() {
+        return Collections.unmodifiableSet(preRegisteredClasses);
     }
 
     @Override

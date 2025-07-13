@@ -10,7 +10,7 @@ import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
+import com.truthbean.debbie.proxy.DynamicProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
 import com.truthbean.debbie.reflection.ReflectionHelper;
@@ -485,7 +485,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
                 beanInterface = interfaces[0];
                 noInterface = false;
                 if (beanInterface.getPackageName().startsWith("java.")
-                        || beanInterface == JavaassistProxyBean.class
+                        || beanInterface == DynamicProxyBean.class
                         || beanInterface == DebbieProperties.class || beanInterface == DebbieConfiguration.class
                         || beanInterface == ApplicationContextAware.class || beanInterface == ClassLoaderAware.class
                         || beanInterface == GlobalBeanFactoryAware.class

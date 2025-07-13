@@ -103,7 +103,6 @@ public class EventListenerBeanRegister {
         if (beanInfoList != null && !beanInfoList.isEmpty()) {
             for (BeanInfo debbieBeanInfo : beanInfoList) {
                 Class<?> beanType = debbieBeanInfo.getBeanClass();
-                Object bean = globalBeanFactory.factory(beanType);
                 final Set<Method> methods = new HashSet<>();
                 if (debbieBeanInfo instanceof ClassInfo) {
                     methods.addAll(((ClassInfo<?>) debbieBeanInfo).getMethods());
@@ -116,7 +115,7 @@ public class EventListenerBeanRegister {
                             Parameter parameter = method.getParameters()[0];
                             Class<?> type = parameter.getType();
                             if (AbstractDebbieEvent.class.isAssignableFrom(type)) {
-                                var listener = new EventMethodListenerFactory(bean, type, method);
+                                var listener = new EventMethodListenerFactory(() -> globalBeanFactory.factory(beanType), type, method);
                                 listener.setAsync(annotation.async());
                                 listener.setAllowConcurrent(annotation.allowConcurrent());
 

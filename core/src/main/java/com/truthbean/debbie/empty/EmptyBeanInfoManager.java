@@ -247,6 +247,11 @@ public class EmptyBeanInfoManager implements BeanInfoManager {
     }
 
     @Override
+    public <T> boolean containsBean(Class<T> beanType, String beanName) {
+        return false;
+    }
+
+    @Override
     public void printGraalvmConfig(ApplicationContext context) {
     }
 

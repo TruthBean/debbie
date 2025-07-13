@@ -18,21 +18,9 @@ dependencies {
     // test =========================================================================================================
 
     testImplementation(project(":debbie-test"))
-    testImplementation(project(":debbie-aio"))
-    testImplementation(project(":debbie-jdbc"))
-    testImplementation(project(":debbie-asm"))
-    testImplementation(project(":debbie-httpclient"))
-    testImplementation(project(":debbie-jackson"))
-    testImplementation(project(":debbie-mvc"))
-    testImplementation(project(":debbie-netty"))
-    testImplementation(project(":debbie-server"))
-    testImplementation("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }
-
-    testImplementation("org.javassist:javassist")
-    testImplementation("cglib:cglib")
 
     testImplementation("jakarta.inject:jakarta.inject-api")
 

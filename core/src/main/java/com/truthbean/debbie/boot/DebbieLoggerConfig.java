@@ -85,6 +85,13 @@ public class DebbieLoggerConfig implements LoggerConfig {
                 return Optional.of(result);
             }
         }
+        if (levelMap.containsKey(LoggerConfig.U_ROOT)) {
+            LogLevel level = levelMap.get(LoggerConfig.U_ROOT);
+            return Optional.ofNullable(level);
+        } else if (levelMap.containsKey(LoggerConfig.L_ROOT)) {
+            LogLevel level = levelMap.get(LoggerConfig.L_ROOT);
+            return Optional.ofNullable(level);
+        }
         return Optional.empty();
     }
 

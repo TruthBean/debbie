@@ -73,14 +73,30 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         LOGGER.trace(() -> proxyClassName + " proxy " + targetClass.getName());
         Method targetMethod;
         Class<?>[] parameterClass = method.getParameterTypes();
+        var methodName = method.getName();
         try {
-            targetMethod = ReflectionHelper.getDeclaredMethod(targetClass, method.getName(), parameterClass);
+            targetMethod = ReflectionHelper.getDeclaredMethod(targetClass, methodName, parameterClass);
             if (targetMethod == null) {
-                LOGGER.warn(() -> targetClass + " has no method(" + method.getName() + "). ");
+                if ("toString".equals(methodName)) {
+                    return target.toString();
+                } else if ("getClass".equals(methodName)) {
+                    return target.getClass();
+                } else if ("hashCode".equals(methodName)) {
+                    return target.hashCode();
+                } else if ("equals".equals(methodName)) {
+                    return target.equals(args);
+                } else if ("notify".equals(methodName)) {
+                    target.notify();
+                } else if ("notifyAll".equals(methodName)) {
+                    target.notifyAll();
+                } else if ("wait".equals(methodName)) {
+                    target.wait();
+                }
+                LOGGER.warn(() -> targetClass + " has no method(" + methodName + "). ");
                 targetMethod = method;
             }
         } catch (Exception e) {
-            LOGGER.warn(() -> targetClass + " has no method(" + method.getName() + "). ");
+            LOGGER.warn(() -> targetClass + " has no method(" + methodName + "). ");
             targetMethod = method;
         }
         List<MethodProxyHandler<? extends Annotation>> methodInterceptors =
@@ -89,7 +105,6 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             methodInterceptors.sort(MethodProxyHandler::compareTo);
         }
         this.handler.setInterceptors(methodInterceptors);
-        var methodName = method.getName();
         return this.handler.proxy(methodName, () -> {
             if (!applicationContext.isExiting()) {
                 return method.invoke(target, args);

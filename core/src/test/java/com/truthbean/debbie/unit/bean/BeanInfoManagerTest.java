@@ -1,5 +1,6 @@
 package com.truthbean.debbie.unit.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.BeanInfoManager;
@@ -164,8 +165,12 @@ public class BeanInfoManagerTest {
                     BeanFactory<TestBeanInterface1> testFactory1 = beanInfoManager.getBeanFactory(null, TestBeanInterface1.class, true);
                     System.out.println(testFactory1);
                     // must error
-                    testSimpleBean1 = beanInfoManager.getBeanInfo(null, TestSimpleBean.class, true);
-                    System.out.println(testSimpleBean1);
+                    try {
+                        testSimpleBean1 = beanInfoManager.getBeanInfo(null, TestSimpleBean.class, true);
+                        System.out.println(testSimpleBean1);
+                    } catch (com.truthbean.debbie.bean.OneMoreBeanRegisteredException e) {
+                        Console.error(e.getMessage(), e);
+                    }
                 });
     }
 }

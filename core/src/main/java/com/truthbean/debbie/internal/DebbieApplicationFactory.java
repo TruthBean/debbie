@@ -233,7 +233,11 @@ public class DebbieApplicationFactory implements ApplicationFactory {
 
         if (reflectionConfigurer.isReflectEnable()) {
             LOGGER.debug(() -> "register scanned bean ...");
-            beanInfoManager.register(targetClasses);
+            if (applicationClass != null) {
+                beanInfoManager.register(targetClasses, Set.of(applicationClass));
+            } else {
+                beanInfoManager.register(targetClasses);
+            }
         }
 
         EventListenerBeanRegister eventListenerBeanRegister = new EventListenerBeanRegister(applicationContext);

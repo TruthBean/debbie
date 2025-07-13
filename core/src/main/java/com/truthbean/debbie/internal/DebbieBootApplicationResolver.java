@@ -63,6 +63,9 @@ class DebbieBootApplicationResolver {
 
     void resolverApplicationClass(Class<?> applicationClass, BeanScanConfiguration configuration,
                                   ResourceResolver resourceResolver) {
+        if (applicationClass == null) {
+            return;
+        }
         LOGGER.info(() -> "application entry class: " + applicationClass);
         if (notSupport(applicationClass)) {
             LOGGER.warn("application class(" + applicationClass + ") not support");

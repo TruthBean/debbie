@@ -21,7 +21,7 @@ import com.truthbean.debbie.event.DebbieEventPublisherAware;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.debbie.properties.PropertyInject;
-import com.truthbean.debbie.proxy.javaassist.JavaassistProxyBean;
+import com.truthbean.debbie.proxy.DynamicProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.TypeHelper;
 
@@ -58,7 +58,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
         this.ignoredInterfaces.add(DebbieConfiguration.class);
         this.ignoredInterfaces.add(ApplicationContextAware.class);
         this.ignoredInterfaces.add(ClassLoaderAware.class);
-        this.ignoredInterfaces.add(JavaassistProxyBean.class);
+        this.ignoredInterfaces.add(DynamicProxyBean.class);
         this.ignoredInterfaces.add(DebbieEventPublisherAware.class);
         this.ignoredInterfaces.add(GlobalBeanFactoryAware.class);
         this.ignoredInterfaces.add(EnvironmentAware.class);
@@ -98,7 +98,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 injectTypes.add(this.injectType);
             }
         } catch (ClassNotFoundException e) {
-            LOGGER.info("class " + inject + " not found");
+            LOGGER.debug("class " + inject + " not found");
         }
     }
 
@@ -485,7 +485,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                 return false;
             }
         }
-        return beanClass.getAnnotation(NonBean.class) == null && !JavaassistProxyBean.class.isAssignableFrom(beanClass);
+        return beanClass.getAnnotation(NonBean.class) == null && !DynamicProxyBean.class.isAssignableFrom(beanClass);
     }
 
     @Override
@@ -502,9 +502,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
             try {
                 ClassBeanInfo<?> beanInfo = new ClassBeanInfo<>(clazz, BEAN_ANNOTATION);
                 if (beanInfo.getBeanType() == null) {
-                    if (beanInfo.getBeanType() == null) {
-                        return;
-                    }
+                    return;
                 }
                 for (BeanRegister beanRegister : beanRegisters) {
                     if (beanRegister.support(beanInfo)) {
@@ -895,6 +893,13 @@ final class DebbieBeanCenter implements BeanInfoManager {
     public boolean containsBean(String beanName) {
         synchronized (this) {
             return getBeanInfo(beanName, null, false, false) != null;
+        }
+    }
+
+    @Override
+    public <T> boolean containsBean(Class<T> beanType, String beanName) {
+        synchronized (this) {
+            return getBeanInfo(beanName, beanType, false, false) != null;
         }
     }
 

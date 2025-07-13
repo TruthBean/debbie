@@ -61,6 +61,16 @@ public interface BeanInfoManager extends BeanAnnotationManager {
         }
     }
 
+    default void register(final Set<Class<?>> beanClasses, final Set<Class<?>> registeredClasses) {
+        if (beanClasses != null && !beanClasses.isEmpty()) {
+            for (Class<?> beanClass : beanClasses) {
+                if (!registeredClasses.contains(beanClass)) {
+                    register(beanClass);
+                }
+            }
+        }
+    }
+
     void registerBeanRegister(BeanRegister beanRegister);
 
     void registerReflectionBeanRegister(Class<? extends Annotation> annotationClass);
@@ -151,6 +161,8 @@ public interface BeanInfoManager extends BeanAnnotationManager {
     <T> boolean containsBean(Class<T> beanType);
 
     boolean containsBean(String beanName);
+
+    <T> boolean containsBean(Class<T> beanType, String beanName);
 
     void printGraalvmConfig(ApplicationContext context);
 

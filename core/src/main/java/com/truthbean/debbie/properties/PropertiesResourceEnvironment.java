@@ -11,6 +11,7 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.environment.*;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
@@ -20,6 +21,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author TruthBean
@@ -41,6 +43,10 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
     private final Map<String, ProfiledEnvironment> environmentMap = new HashMap<>();
 
     private final String profileKey = "debbie.profile.name";
+
+    private static final String load = "truthbean.debbie.properties.load";
+
+    private final AtomicInteger loadTime = new AtomicInteger(0);
 
     public PropertiesResourceEnvironment() {
     }
@@ -100,6 +106,12 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
      */
     @Override
     public Properties load(String resourceUri) {
+        /*String loadVal = System.getProperty(load);
+        if ("1".equals(loadVal) || StringUtils.isBlank(loadVal)) {
+            if (loadTime.getAndIncrement() >= 1) {
+                return null;
+            }
+        }*/
         if (resourceUri == null) {
             getLogger().warn(() -> "debbie.application.properties VALUE is null.");
         } else {
@@ -154,6 +166,13 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
 
     @Override
     public Map<String, ProfiledEnvironment> loadResources() {
+        String loadVal = System.getProperty(load);
+        if ("1".equals(loadVal) || StringUtils.isBlank(loadVal)) {
+            if (loadTime.getAndIncrement() >= 1) {
+                return environmentMap;
+            }
+        }
+
         Properties result = new Properties();
         var applicationUrl = System.getProperty(Constants.DEBBIE_APPLICATION_PROPERTIES, Constants.APPLICATION_PROPERTIES);
         if (applicationUrl.contains(";")) {

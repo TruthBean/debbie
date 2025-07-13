@@ -49,7 +49,7 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
         throws ParameterResolutionException {
-        logger.trace("supportsParameter....");
+        logger.trace("supportsParameter({})....", parameterContext);
         ApplicationContext applicationContext = getApplicationContext(extensionContext);
         if (applicationContext != null) {
             BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();

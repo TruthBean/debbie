@@ -43,14 +43,14 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
         return bool;
     }
 
-    static void run(Class<?> applicationClass, String... args) {
+    static DebbieStartedApplication run(Class<?> applicationClass, String... args) {
         ApplicationFactory applicationFactory;
         if (isDisable()) {
             applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         } else {
             applicationFactory = ApplicationFactory.newEmpty();
         }
-        applicationFactory
+        return applicationFactory
                 .preInit(applicationClass, args)
                 .init()
                 .config()
@@ -78,14 +78,14 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
                 .factory();
     }
 
-    static void run(Object application, String... args) {
+    static DebbieStartedApplication run(Object application, String... args) {
         ApplicationFactory applicationFactory;
         if (isDisable()) {
             applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         } else {
             applicationFactory = ApplicationFactory.newEmpty();
         }
-        applicationFactory
+        return applicationFactory
                 .preInit(application.getClass(), args)
                 .init(ClassLoaderUtils.getClassLoader(application.getClass()))
                 .config(application)
@@ -113,14 +113,14 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
                 .factory();
     }
 
-    static void run(String... args) {
+    static DebbieStartedApplication run(String... args) {
         ApplicationFactory applicationFactory;
         if (isDisable()) {
             applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
         } else {
             applicationFactory = ApplicationFactory.newEmpty();
         }
-        applicationFactory
+        return applicationFactory
                 .preInit(args)
                 .init()
                 .config()

@@ -87,9 +87,14 @@ public class RealAioServerRunner implements Runnable{
             // 异步通道管理器，会把服务端所用到的相关参数
             socketAddress = new InetSocketAddress(port);
         }
-        server = AsynchronousServerSocketChannel.open(asyncChannelGroup)
-                .setOption(StandardSocketOptions.SO_REUSEPORT, true)
-                .bind(socketAddress);
+        try {
+            server = AsynchronousServerSocketChannel.open(asyncChannelGroup)
+                    .setOption(StandardSocketOptions.SO_REUSEPORT, true)
+                    .bind(socketAddress);
+        } catch (UnsupportedOperationException e) {
+            server = AsynchronousServerSocketChannel.open(asyncChannelGroup)
+                    .bind(socketAddress);
+        }
     }
 
     void printMessage(Consumer<AioServerConfiguration> consumer) {

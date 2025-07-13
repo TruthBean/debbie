@@ -335,7 +335,11 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     var beanFactory = singletonBeanFactoryMap.get(_beanFactory);
                     dependence.add(new BeanExecutableDependence(i, beanFactory, type, name));
                     if (beanFactory.isCreated()) {
-                        values[i] = beanFactory.factoryBean(applicationContext);
+                        var bean = beanFactory.factoryBean(applicationContext);
+                        if (beanFactory.isProxiedBean()) {
+                            bean = getRealValueFromJdkProxy(bean);
+                        }
+                        values[i] = bean;
                     }
                 } else {
                     if (_beanFactory.isCreated()) {

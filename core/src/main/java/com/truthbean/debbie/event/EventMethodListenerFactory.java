@@ -12,6 +12,7 @@ package com.truthbean.debbie.event;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
+import java.util.function.Supplier;
 
 /**
  * @author truthbean/Rogar·Q
@@ -21,15 +22,15 @@ import java.lang.reflect.Method;
 public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> implements DebbieEventListener<EVENT> {
 
     private final Class<EVENT> eventType;
-    private final Object targetBean;
+    private final Supplier<Object> targetBeanSupplier;
     private final Method eventMethod;
 
     private boolean async = false;
     private boolean allowConcurrent = false;
 
-    public EventMethodListenerFactory(Object targetBean, Class<EVENT> eventType, Method eventMethod) {
+    public EventMethodListenerFactory(Supplier<Object> targetBeanSupplier, Class<EVENT> eventType, Method eventMethod) {
         this.eventType = eventType;
-        this.targetBean = targetBean;
+        this.targetBeanSupplier = targetBeanSupplier;
         this.eventMethod = eventMethod;
     }
 
@@ -63,6 +64,6 @@ public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> imple
 
     @Override
     public void onEvent(EVENT event) {
-        ReflectionHelper.invokeMethod(targetBean, eventMethod, event);
+        ReflectionHelper.invokeMethod(targetBeanSupplier.get(), eventMethod, event);
     }
 }
