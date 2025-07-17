@@ -53,10 +53,12 @@ public class DateTimeRepositoryTest {
     public void test(@BeanInject(name = "dataSourceConfiguration") DataSourceConfiguration configuration,
                      @BeanInject(category = "mariadb") DataSourceConfiguration mariadbConfiguration,
                      @BeanInject(category = "h2") DataSourceConfiguration h2Configuration,
+                     @BeanInject(category = "gauss") DataSourceConfiguration gaussConfiguration,
                      @BeanInject DdlRepository ddlRepository) {
         System.out.println(configuration);
         System.out.println(mariadbConfiguration);
         System.out.println(h2Configuration);
+        System.out.println(gaussConfiguration);
         TransactionManager.offer(new TransactionInfo());
         System.out.println(ddlRepository.getTransaction());
     }

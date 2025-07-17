@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
+import java.util.Objects;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
@@ -48,6 +50,7 @@ public enum DataSourceDriverName {
     pointbase("com.pointbase.jdbc.jdbcUniversalDriver"),
     edbc("ca.edbc.jdbc.EdbcDriver"),
     mimer("com.mimer.jdbc.Driver"),
+    zenithGauss("com.huawei.gauss.jdbc.inner.GaussDriver"),
     custom();
 
     private String driverName;
@@ -70,7 +73,7 @@ public enum DataSourceDriverName {
     public static DataSourceDriverName of(String driverName) {
         DataSourceDriverName[] values = values();
         for (DataSourceDriverName value : values) {
-            if (value.driverName.equals(driverName)) {
+            if (Objects.equals(value.driverName, driverName)) {
                 return value;
             }
         }

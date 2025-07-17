@@ -232,6 +232,8 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
             return DataSourceDriverName.edbc;
         } else if (url.startsWith("jdbc:mimer:multi1")) {
             return DataSourceDriverName.mimer;
+        } else if (url.startsWith("jdbc:zenith")) {
+            return DataSourceDriverName.zenithGauss;
         }
         return null;
     }
