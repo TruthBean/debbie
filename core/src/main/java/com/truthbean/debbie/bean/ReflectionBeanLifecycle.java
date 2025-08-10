@@ -153,6 +153,9 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     map.forEach((fieldInfo, beanInfo) -> {
                         if (beanInfo instanceof BeanFactory<?> fieldBeanFactory) {
                             Object fieldValue = fieldBeanFactory.factoryBean(applicationContext);
+                            if (fieldValue.getClass().getName().startsWith("jdk.proxy")) {
+                                fieldValue = getRealValueFromJdkProxy(fieldValue);
+                            }
                             if (finalLocalBean.getClass().getName().startsWith("jdk.proxy")) {
                                 Object obj = getRealValueFromJdkProxy(finalLocalBean);
                                 ReflectionHelper.setField(obj, fieldInfo.getField(), fieldValue);
@@ -794,14 +797,16 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     debbieReflectionBeanFactory.setVirtualValue(true);
                 }
             }
-            Object value = fieldBeanFactory.factoryBean(applicationContext);
-            if (required && value == null) {
-                if (!(fieldBeanFactory instanceof DebbieReflectionBeanFactory<?>)) {
-                    LOGGER.error(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getAllName() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
-                    throw new NoBeanException("no bean " + name + " found .");
+            if (fieldBeanFactory != null) {
+                Object value = fieldBeanFactory.factoryBean(applicationContext);
+                if (required && value == null) {
+                    if (!(fieldBeanFactory instanceof DebbieReflectionBeanFactory<?>)) {
+                        LOGGER.error(() -> "resolve bean(" + beanInfo.getBeanClass() + ", " + beanInfo.getAllName() + ") field dependent bean(" + field.getType() + ") by name : " + finalName);
+                        throw new NoBeanException("no bean " + name + " found .");
+                    }
+                } else {
+                    ReflectionHelper.setField(getRealValueFromJdkProxy(preparedBean), field, value);
                 }
-            } else {
-                ReflectionHelper.setField(getRealValueFromJdkProxy(preparedBean), field, value);
             }
         } else if (required) {
             throw new NoBeanException("no bean (" + name + ", " + field.getType() + ") found .");

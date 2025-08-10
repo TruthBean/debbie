@@ -89,12 +89,13 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, A
 
     @Override
     public void destroy() {
+        LOGGER.log(System.Logger.Level.TRACE, "ScheduledThreadPooledExecutor(" + this + ") is running: " + isRunning());
         if (isRunning()) {
             try {
                 executorService.shutdown();
                 while (!executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS)) {
                     // wait
-                    System.out.println("wait");
+                    LOGGER.log(System.Logger.Level.DEBUG, "Wait ScheduledThreadPooledExecutor(" + this + ") shutdown.");
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(System.Logger.Level.ERROR, "", e);

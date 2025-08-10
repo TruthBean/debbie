@@ -107,7 +107,8 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
         Set<String> categories = getRawCategories();
         for (String profile : profiles) {
             for (String category : categories) {
-                buildConfiguration(applicationContext, profile, category + ".");
+                var _category = category == null || category.isBlank() ? "" : category + ".";
+                buildConfiguration(applicationContext, profile, _category);
             }
             Map<String, AioServerConfiguration> map = configurationMap.get(profile);
             if (map != null && !map.isEmpty()) {

@@ -18,7 +18,7 @@ import com.truthbean.debbie.core.ApplicationContextAware;
  */
 public interface TaskAction extends ApplicationContextAware {
 
-   void prepare(TaskInfo taskInfo);
+   void prepare();
 
    void doTask();
 

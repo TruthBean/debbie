@@ -51,6 +51,7 @@ module com.truthbean.debbie.core {
 
     requires transitive com.truthbean.transformer;
     requires transitive com.truthbean.logger.core;
+    requires com.truthbean.core;
 
     exports com.truthbean.debbie.internal to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
     exports com.truthbean.debbie to com.truthbean.debbie.servlet, com.truthbean.debbie.tomcat;
@@ -76,4 +77,7 @@ module com.truthbean.debbie.core {
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.core.DebbieCoreModuleStarter;
+
+    provides com.truthbean.debbie.task.TaskAction
+            with com.truthbean.debbie.task.MethodTaskAction;
 }

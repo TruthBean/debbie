@@ -37,6 +37,8 @@ public class MethodTaskInfo extends TaskInfo {
         this.taskBean = taskBean;
         this.taskMethod = taskMethod;
         this.taskAnnotation = taskAnnotation;
+        super.setTaskGroup(taskBeanClass.getName());
+        super.setTaskName(taskMethod.getName());
     }
 
     public Method getTaskMethod() {

@@ -88,8 +88,12 @@ public interface ApplicationFactory {
         return DebbieApplicationFactory.newEmpty();
     }
 
+    static <T> ApplicationFactory initialize(Class<T> applicationClass, String... args) {
+        return newEmpty().preInit(applicationClass, args).init();
+    }
+
     static <T> ApplicationFactory configure(Class<T> applicationClass, String... args) {
-        return newEmpty().preInit(applicationClass, args).init().config();
+        return initialize(applicationClass, args).config();
     }
 
     static <T> ApplicationFactory configure(T application, String... args) {
@@ -97,7 +101,7 @@ public interface ApplicationFactory {
     }
 
     static <T> ApplicationFactory create(Class<T> applicationClass, String... args) {
-        return newEmpty().preInit(applicationClass, args).init().config().create().build();
+        return initialize(applicationClass, args).config().create().build();
     }
 
     static <T> ApplicationFactory create(T application, String... args) {
@@ -105,7 +109,7 @@ public interface ApplicationFactory {
     }
 
     static <T> DebbieApplication factory(Class<T> applicationClass, String... args) {
-        return newEmpty().preInit(applicationClass, args).init().config().create().postCreate().build().factory();
+        return initialize(applicationClass, args).config().create().postCreate().build().factory();
     }
 
     static <T> DebbieApplication factory(T application, String... args) {

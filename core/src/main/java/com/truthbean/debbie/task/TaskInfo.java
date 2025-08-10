@@ -22,6 +22,9 @@ import java.util.function.Consumer;
  * Created on 2020-12-21 11:26
  */
 public class TaskInfo {
+    private String taskGroup;
+    private String taskName;
+
     private DebbieTaskConfig taskConfig;
     private TaskRunnable taskRunnable;
 
@@ -35,6 +38,22 @@ public class TaskInfo {
     public TaskInfo(TaskRunnable taskRunnable, DebbieTaskConfig taskConfig) {
         this.taskRunnable = taskRunnable;
         this.taskConfig = taskConfig;
+    }
+
+    public String getTaskGroup() {
+        return taskGroup;
+    }
+
+    public void setTaskGroup(String taskGroup) {
+        this.taskGroup = taskGroup;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
     }
 
     public DebbieTaskConfig getTaskConfig() {

@@ -25,7 +25,7 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
 
     private String serverMessage;
 
-    private long connectionTimeout;
+    private long connectionTimeout = 5000;
 
     private boolean ignoreEncode;
 

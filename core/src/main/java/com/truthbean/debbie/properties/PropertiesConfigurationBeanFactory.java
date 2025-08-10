@@ -50,7 +50,7 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
 
     public Collection<Configuration> factoryBeans(ApplicationContext applicationContext) {
         Map<String, Map<String, Configuration>> configurationMap = property.getAllProfiledCategoryConfiguration(applicationContext);
-        Map<String, Configuration> map = configurationMap.get(EnvironmentDepositoryHolder.DEFAULT_PROFILE);
+        Map<String, Configuration> map = configurationMap.getOrDefault(EnvironmentDepositoryHolder.DEFAULT_PROFILE, new HashMap<>());
         return map.values();
     }
 

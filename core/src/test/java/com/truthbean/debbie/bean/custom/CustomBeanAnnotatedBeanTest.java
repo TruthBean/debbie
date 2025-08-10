@@ -41,9 +41,9 @@ class CustomBeanAnnotatedBeanTest {
     @Inject
     private CustomBeanAnnotatedBean customBeanAnnotatedBean;
 
-    @DebbieTask
+    @DebbieTask(fixedRate = 1000)
     public void task() {
-        System.out.println(customBeanAnnotatedBean.getA());
+        System.out.println("do task result: " + customBeanAnnotatedBean.getA());
     }
 
     public static void main(String[] args) {

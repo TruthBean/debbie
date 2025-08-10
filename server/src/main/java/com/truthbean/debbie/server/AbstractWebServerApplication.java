@@ -32,6 +32,7 @@ public abstract class AbstractWebServerApplication extends AbstractApplication {
         List<InetAddress> ipv4LocalAddress = NetWorkUtils.getAllIpv4LocalAddress();
         logger.info("application start with http://[::1]:" + port);
         logger.info("application start with http://127.0.0.1:" + port);
+        logger.info("application start with http://localhost:" + port);
         for (InetAddress localAddress : ipv4LocalAddress) {
             logger.info("application start with http://" + localAddress.getHostAddress() + ":" + port);
         }

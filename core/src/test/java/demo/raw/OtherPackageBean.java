@@ -20,12 +20,22 @@ import com.truthbean.debbie.task.DebbieTask;
 public class OtherPackageBean {
 
     @DebbieTask(fixedRate = 1000)
-    public void task() {
+    public void task1() {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 123");
+    }
+
+    @DebbieTask(initialDelay = 1000, fixedRate = 2000)
+    public void task2() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 456");
     }
 }

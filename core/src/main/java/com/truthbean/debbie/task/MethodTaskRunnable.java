@@ -9,9 +9,15 @@
  */
 package com.truthbean.debbie.task;
 
+import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.reflection.ExecutableArgument;
+import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
+import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,11 +29,15 @@ public class MethodTaskRunnable implements TaskRunnable {
     private final Method method;
     private final Class<?> taskBeanClass;
     private final Object taskBean;
+    private final Logger logger;
+
+    private volatile boolean running;
 
     public MethodTaskRunnable(Method method, Class<?> taskBeanClass, Object taskBean) {
         this.method = method;
         this.taskBeanClass = taskBeanClass;
         this.taskBean = taskBean;
+        this.logger = LoggerFactory.getLogger(taskBeanClass);
     }
 
     @Override
@@ -49,7 +59,26 @@ public class MethodTaskRunnable implements TaskRunnable {
 
     @Override
     public void run(ApplicationContext applicationContext) {
+        if (applicationContext.isExiting() || running) {
+            return;
+        }
+        List<ExecutableArgument> methodParams = ExecutableArgumentHandler.typeOf(method,
+                applicationContext.getGlobalBeanFactory(), applicationContext.getClassLoader());
+        Object[] params = new Object[methodParams.size()];
+        for (int i = 0; i < methodParams.size(); i++) {
+            params[i] = methodParams.get(i).getValue();
+        }
+        running = true;
+        try {
+            ReflectionHelper.invokeMethod(taskBean, method, params);
+        } catch (Exception e) {
+            logger.error("task(" + getName() + ") error");
+        }
+        running = false;
+    }
 
+    public boolean isRunning() {
+        return running;
     }
 
     @Override

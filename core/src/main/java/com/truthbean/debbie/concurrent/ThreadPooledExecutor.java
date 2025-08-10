@@ -127,15 +127,16 @@ public class ThreadPooledExecutor implements PooledExecutor {
 
     @Override
     public void destroy() {
+        LOGGER.trace("waiting for executorService[" + name + "] is running: " + isRunning());
         if (isRunning()) {
             try {
                 executorService.shutdown();
                 if (isRunning()) {
                     // wait
                     boolean termination = executorService.awaitTermination(awaitTerminationTime, TimeUnit.MILLISECONDS);
-                    LOGGER.info("waiting for executorService[" + name + "] termination");
+                    LOGGER.debug("waiting for executorService[" + name + "] termination");
                     if (!termination) {
-                        LOGGER.info("force shutdown " + name + " now");
+                        LOGGER.debug("force shutdown " + name + " now");
                         executorService.shutdownNow();
                         if (isRunning()) {
                             // Preserve interrupt status

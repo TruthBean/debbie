@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.repository;
 
+import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionCallable;
 import com.truthbean.debbie.jdbc.transaction.TransactionException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
@@ -71,6 +72,23 @@ public class RepositoryCallback {
                 transaction.close();
                 TransactionManager.remove(transaction);
             }
+        }
+        return result;
+    }
+
+    public <R> R actionWithReusedTransaction(DataSourceFactory dataSourceFactory, TransactionCallable<R> action) {
+        R result = null;
+        try {
+            TransactionInfo transactionInfo = TransactionManager.peek();
+            if (transactionInfo == null) {
+                transactionInfo = dataSourceFactory.getTransaction();
+                TransactionManager.offer(transactionInfo);
+            }
+            transactionInfo = action.getTransaction();
+            transactionInfo.setAutoCommit(true);
+            result = action.call(transactionInfo);
+        } catch (Exception e) {
+            LOGGER.error("action with reused transaction error ", e);
         }
         return result;
     }

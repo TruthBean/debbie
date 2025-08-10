@@ -39,13 +39,9 @@ public class DebbieTaskConfigurer {
         }
 
         var debbieTaskFactory = new TaskFactory();
-        // var register = new SingletonBeanRegister(applicationContext);
 
         debbieTaskFactory.setApplicationContext(applicationContext);
         BeanInfoManager infoManager = applicationContext.getBeanInfoManager();
-
-        // debbieTaskFactory.registerTask();
-        // register.registerSingletonBean(debbieTaskFactory, TaskFactory.class, "taskRegister", "taskFactory");
 
         var beanFactory = new SimpleBeanFactory<>(debbieTaskFactory, TaskFactory.class, BeanProxyType.JDK, "taskRegister", "taskFactory");
         infoManager.registerBeanInfo(beanFactory);

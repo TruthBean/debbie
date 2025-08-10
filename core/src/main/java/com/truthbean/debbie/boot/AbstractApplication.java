@@ -155,9 +155,9 @@ public abstract class AbstractApplication implements DebbieApplication {
     @Override
     public final DebbieStartedApplication start() {
         startupExecutor.execute(() -> {
-            logger.debug("application running: " + running.get());
-            logger.debug("application exiting: " + applicationContext.isExiting());
-            logger.debug("application exited: " + exited.get());
+            logger.trace("application running: " + running.get());
+            logger.trace("application exiting: " + applicationContext.isExiting());
+            logger.trace("application exited: " + exited.get());
             if (running.compareAndSet(false, true) && exited.get()) {
                 ApplicationArgs applicationArgs = applicationContext.getApplicationArgs();
                 registerShutdownHook();
@@ -170,6 +170,7 @@ public abstract class AbstractApplication implements DebbieApplication {
                     logger.error("Application start error: \n", e);
                     exit();
                 }
+                logger.trace("application exited: " + exited.get());
             }
         });
         return this;
@@ -277,12 +278,9 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     public final void doExit(ApplicationArgs args) {
-        // if (startupShutdownLock.tryLock()) {
         try {
             exit(beforeStartTime, args);
-            if (applicationFactory instanceof DebbieApplicationFactory) {
-                applicationFactory.release();
-            }
+            applicationFactory.release();
             // If we registered a JVM shutdown hook, we don't need it anymore now:
             // We've already explicitly closed the context.
             if (this.shutdownHook != null) {
@@ -297,10 +295,8 @@ public abstract class AbstractApplication implements DebbieApplication {
         } catch (Exception e) {
             logger.error("do application exiting error. ", e);
         } finally {
-            // startupShutdownLock.unlock();
             // call gc
             System.gc();
         }
-        // }
     }
 }

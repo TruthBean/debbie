@@ -60,10 +60,6 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
 
     @Override
     public void starter(ApplicationContext applicationContext) {
-        TaskFactory taskFactory = applicationContext.getGlobalBeanFactory().factory("taskFactory", TaskFactory.class, false);
-        if (taskFactory != null) {
-            taskFactory.registerTask();
-        }
     }
 
     @Override

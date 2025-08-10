@@ -12,11 +12,13 @@ package test.bean;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
-import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.event.DebbieEventPublisher;
 import com.truthbean.debbie.event.EventMulticaster;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.task.*;
+import com.truthbean.debbie.task.DebbieTaskConfig;
+import com.truthbean.debbie.task.TaskInfo;
+import com.truthbean.debbie.task.TaskRegister;
+import com.truthbean.debbie.task.TaskRunnable;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -26,11 +28,12 @@ import com.truthbean.debbie.task.*;
 @DebbieBootApplication(scan = @DebbieScan(basePackages = "demo.raw"))
 public class ChainBeanTest {
     static {
+        System.setProperty("logging.level.root", "TRACE");
         System.setProperty("logging.level.com.truthbean.debbie", "TRACE");
     }
 
     public static void main(String[] args) {
-        DebbieApplication application = DebbieApplication.create(ChainBeanTest.class, args)
+        DebbieApplication.create(ChainBeanTest.class, args)
                 .then(applicationContext -> {
                     BeanInfoManager beanInitialization = applicationContext.getBeanInfoManager();
                     String bean001Name = "bean001";
@@ -52,20 +55,26 @@ public class ChainBeanTest {
                     TaskRegister taskRegister = globalBeanFactory.factory(TaskRegister.class);
                     TaskInfo taskInfo = new TaskInfo();
                     TaskRunnable taskRunnable = (applicationContext1) -> {
-                        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 44567890");
+                        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " " + System.currentTimeMillis());
                     };
                     taskInfo.setTaskExecutor(taskRunnable);
                     DebbieTaskConfig taskConfig = new DebbieTaskConfig();
-                    taskConfig.setFixedRate(100);
+                    taskConfig.setFixedRate(1000);
                     taskInfo.setTaskConfig(taskConfig);
 
                     taskRegister.registerTask(taskInfo);
 
                     DebbieEventPublisher eventPublisher = applicationContext.getGlobalBeanFactory().factory(DebbieEventPublisher.class);
                     eventPublisher.publishEvent(new TestBeanEvent(new ChainBeanTest()));
-                });
-
-        application.start();
-        application.exit();
+                })
+                .start()
+                .afterStarted(applicationBootContext -> {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .exit();
     }
 }

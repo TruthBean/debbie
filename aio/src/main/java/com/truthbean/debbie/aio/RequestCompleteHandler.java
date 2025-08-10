@@ -49,7 +49,7 @@ class RequestCompleteHandler {
                 var read = channel.read(byteBuffer);
                 Integer size;
                 try {
-                    size = read.get(connectionTimeout, TimeUnit.MILLISECONDS);
+                    size = connectionTimeout <= 0 ? read.get() : read.get(connectionTimeout, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
                     size = 0;
                     if (LOG.isDebugEnabled()) {

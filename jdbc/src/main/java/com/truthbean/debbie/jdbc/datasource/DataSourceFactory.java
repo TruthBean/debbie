@@ -9,16 +9,15 @@
  */
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.Logger;
 import com.truthbean.debbie.bean.BeanClosure;
 import com.truthbean.debbie.bean.BeanFactory;
-import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.Logger;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -117,8 +116,12 @@ public interface DataSourceFactory extends BeanClosure {
         try {
             DataSourceDriverName driverName = getDriverName();
             TransactionInfo transactionInfo = new TransactionInfo();
-            if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
-                getDataSource().setLogWriter(new PrintWriter(System.err));
+            try {
+                if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
+                    getDataSource().setLogWriter(new PrintWriter(System.err));
+                }
+            } catch (Exception e) {
+                getLogger().debug("getLogWriter or setLogWriter error.", e);
             }
             transactionInfo.setConnection(getDataSource().getConnection());
             transactionInfo.setDriverName(driverName);
@@ -131,8 +134,12 @@ public interface DataSourceFactory extends BeanClosure {
 
     default Connection getConnection() {
         try {
-            if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
-                getDataSource().setLogWriter(new PrintWriter(System.err));
+            try {
+                if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
+                    getDataSource().setLogWriter(new PrintWriter(System.err));
+                }
+            } catch (Exception e) {
+                getLogger().debug("getLogWriter or setLogWriter error.", e);
             }
             return getDataSource().getConnection();
         } catch (SQLException e) {

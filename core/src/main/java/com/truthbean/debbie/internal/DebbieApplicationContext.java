@@ -63,6 +63,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
                                        ApplicationArgs applicationArgs, EnvironmentDepositoryHolder environmentDepositoryHolder,
                                        Class<?>... beanClasses) {
         exiting.set(false);
+        LOGGER.trace("init DebbieApplicationContext");
         synchronized (OBJECT) {
             this.applicationArgs = applicationArgs;
             this.environmentDepositoryHolder = environmentDepositoryHolder;

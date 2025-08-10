@@ -62,7 +62,7 @@ public class TransactionManager {
         getOrCreateIfAbsent().offerFirst(transactionInfo);
     }
 
-    public static synchronized TransactionInfo peek() {
+    public static TransactionInfo peek() {
         var deque = TRANSACTION_DEQUE.get();
         TransactionInfo transactionInfo = null;
         if (deque != null) {
@@ -78,7 +78,7 @@ public class TransactionManager {
         return transactionInfo;
     }
 
-    public static synchronized void remove() {
+    public static void remove() {
         var deque = TRANSACTION_DEQUE.get();
         if (deque != null) {
             TransactionInfo transactionInfo = deque.removeFirst();
@@ -91,7 +91,7 @@ public class TransactionManager {
         }
     }
 
-    public static synchronized void remove(TransactionInfo transactionInfo) {
+    public static void remove(TransactionInfo transactionInfo) {
         if (transactionInfo == null) {
             LOGGER.debug(() -> "remove transactionInfo null.");
             return;
@@ -109,7 +109,7 @@ public class TransactionManager {
         }
     }
 
-    public static synchronized void clear() {
+    public static void clear() {
         LOGGER.info("clean transactions.");
         var deque = TRANSACTION_DEQUE.get();
         if (deque != null) {

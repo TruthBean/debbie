@@ -14,6 +14,7 @@ import com.truthbean.LoggerFactory;
 import com.truthbean.core.util.AbstractPropertiesUtils;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.empty.EmptyApplicationFactory;
+import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.spi.SpiLoader;
 import com.truthbean.logger.LoggerConfig;
@@ -44,31 +45,12 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
     }
 
     static DebbieStartedApplication run(Class<?> applicationClass, String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
-                .preInit(applicationClass, args)
-                .init()
-                .config()
-                .create()
-                .postCreate()
-                .build()
-                .factory()
+        return create(applicationClass, args)
                 .start();
     }
 
     static DebbieApplication create(Class<?> applicationClass, String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
+        return ApplicationFactory.newEmpty()
                 .preInit(applicationClass, args)
                 .init()
                 .config()
@@ -79,13 +61,7 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
     }
 
     static DebbieStartedApplication run(Object application, String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
+        return ApplicationFactory.newEmpty()
                 .preInit(application.getClass(), args)
                 .init(ClassLoaderUtils.getClassLoader(application.getClass()))
                 .config(application)
@@ -97,13 +73,7 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
     }
 
     static DebbieApplication create(Object application, String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
+        return ApplicationFactory.newEmpty()
                 .preInit(application.getClass(), args)
                 .init()
                 .config(application)
@@ -114,31 +84,12 @@ public interface DebbieApplication extends DebbieStartedApplication, DebbieExite
     }
 
     static DebbieStartedApplication run(String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
-                .preInit(args)
-                .init()
-                .config()
-                .create()
-                .postCreate()
-                .build()
-                .factory()
+        return create(args)
                 .start();
     }
 
     static DebbieApplication create(String... args) {
-        ApplicationFactory applicationFactory;
-        if (isDisable()) {
-            applicationFactory = SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
-        } else {
-            applicationFactory = ApplicationFactory.newEmpty();
-        }
-        return applicationFactory
+        return ApplicationFactory.newEmpty()
                 .preInit(args)
                 .init()
                 .config()
