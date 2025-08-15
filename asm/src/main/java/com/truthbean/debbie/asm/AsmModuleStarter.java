@@ -3,6 +3,7 @@ package com.truthbean.debbie.asm;
 import com.truthbean.debbie.asm.proxy.AsmBeanProxyHandler;
 import com.truthbean.debbie.asm.proxy.AsmGenerated;
 import com.truthbean.debbie.bean.BeanInfoManager;
+import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
@@ -15,7 +16,7 @@ import com.truthbean.debbie.environment.Environment;
 public class AsmModuleStarter implements DebbieModuleStarter {
     @Override
     public boolean enable(Environment environment) {
-        return DebbieModuleStarter.super.enable(environment);
+        return DebbieModuleStarter.super.enable(environment) && environment.getBoolean("debbie.asm.enable", true);
     }
 
     @Override

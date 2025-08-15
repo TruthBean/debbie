@@ -28,7 +28,7 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
     public boolean enable(Environment environment) {
-        return environment.getBooleanValue(ENABLE_KEY, true);
+        return DebbieModuleStarter.super.enable(environment) && environment.getBooleanValue(ENABLE_KEY, true);
     }
 
     @Override

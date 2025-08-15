@@ -27,7 +27,7 @@ public class AioModuleStarter implements DebbieModuleStarter {
 
     @Override
     public boolean enable(Environment environment) {
-        return AioServerProperties.enableAio(environment);
+        return DebbieModuleStarter.super.enable(environment) && AioServerProperties.enableAio(environment);
     }
 
     @Override

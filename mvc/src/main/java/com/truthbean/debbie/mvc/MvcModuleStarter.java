@@ -12,6 +12,7 @@ package com.truthbean.debbie.mvc;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
 import com.truthbean.debbie.mvc.router.RouterBeanLifecycle;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
@@ -21,8 +22,10 @@ import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
  * @since 0.0.2
  */
 public class MvcModuleStarter implements DebbieModuleStarter {
+
     @Override
-    public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
+    public boolean enable(Environment environment) {
+        return DebbieModuleStarter.super.enable(environment) && environment.getBoolean("debbie.mvc.enable", true);
     }
 
     @Override

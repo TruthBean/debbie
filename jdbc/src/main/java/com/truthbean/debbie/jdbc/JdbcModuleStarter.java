@@ -14,6 +14,7 @@ import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.annotation.SqlRepositoryBeanRegister;
 import com.truthbean.debbie.jdbc.datasource.DataSourceConfiguration;
@@ -30,7 +31,6 @@ import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevelTransformer;
 import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
-import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.transformer.DataTransformerCenter;
 
 import java.util.Set;
@@ -40,6 +40,11 @@ import java.util.Set;
  * @since 0.0.2
  */
 public class JdbcModuleStarter implements DebbieModuleStarter {
+
+    @Override
+    public boolean enable(Environment environment) {
+        return DebbieModuleStarter.super.enable(environment) && environment.getBoolean("debbie.jdbc.enable", true);
+    }
 
     @Override
     public void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
