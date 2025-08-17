@@ -17,7 +17,6 @@ import com.truthbean.debbie.jdbc.transaction.TransactionIsolationLevel;
 import com.truthbean.debbie.properties.DebbieProperties;
 import com.truthbean.core.util.StringUtils;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 
@@ -246,6 +245,17 @@ public class DataSourceProperties extends DebbieEnvironmentDepositoryHolder impl
     @Override
     public Set<String> getCategories(String profile) {
         return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
     }
 
     @Override

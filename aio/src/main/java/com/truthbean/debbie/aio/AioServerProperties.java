@@ -72,6 +72,12 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     }
 
     @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        getConfiguration(profile, category, applicationContext);
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
+    }
+
+    @Override
     public AioServerConfiguration getConfiguration(final String profile, final String category,
                                                    final ApplicationContext applicationContext) {
         if (StringUtils.hasText(profile)) {

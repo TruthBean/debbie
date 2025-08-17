@@ -99,6 +99,17 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
     }
 
     @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
+    }
+
+    @Override
     public DefaultDataSourcePoolConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
         if (!StringUtils.hasText(profile)) {
             profile = getDefaultProfile();
@@ -106,9 +117,6 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
         if (!StringUtils.hasText(category)) {
             category = DEFAULT_CATEGORY;
         }
-        /*if (!configurationMap.containsKey(profile)) {
-            throw new NoProfiledEnvironmentException("No profile " + profile + "!");
-        }*/
         if (!configurationMap.containsKey(profile) || !configurationMap.get(profile).containsKey(category)) {
             throw new NoCategoryConfigurationException("Profile " + profile + " Environment has no category " + category + "!");
         }

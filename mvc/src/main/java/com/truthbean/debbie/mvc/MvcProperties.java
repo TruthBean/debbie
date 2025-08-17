@@ -81,6 +81,24 @@ public class MvcProperties extends DebbieEnvironmentDepositoryHolder implements 
     }
 
     @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        if (configurationCache.containsKey(profile)) {
+            Map<String, MvcConfiguration> map = configurationCache.get(profile);
+            if (map.containsKey(DEFAULT_CATEGORY)) {
+                return true;
+            }
+        }
+        buildConfiguration(applicationContext.getClassLoader());
+        return configurationCache.get(profile).containsKey(category);
+    }
+
+    @Override
     public MvcConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
         if (!StringUtils.hasText(profile)) {
             profile = getDefaultProfile();
@@ -88,8 +106,8 @@ public class MvcProperties extends DebbieEnvironmentDepositoryHolder implements 
         if (!StringUtils.hasText(category)) {
             category = DEFAULT_CATEGORY;
         }
-        if (configurationCache.containsKey(getDefaultProfile())) {
-            Map<String, MvcConfiguration> map = configurationCache.get(getDefaultProfile());
+        if (configurationCache.containsKey(profile)) {
+            Map<String, MvcConfiguration> map = configurationCache.get(profile);
             if (map.containsKey(DEFAULT_CATEGORY)) {
                 return map.get(DEFAULT_CATEGORY);
             }

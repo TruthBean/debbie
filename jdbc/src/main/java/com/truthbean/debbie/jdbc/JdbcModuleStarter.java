@@ -33,8 +33,6 @@ import com.truthbean.debbie.jdbc.transaction.TransactionManager;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
 import com.truthbean.transformer.DataTransformerCenter;
 
-import java.util.Set;
-
 /**
  * @author TruthBean
  * @since 0.0.2
@@ -43,7 +41,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public boolean enable(Environment environment) {
-        return DebbieModuleStarter.super.enable(environment) && environment.getBoolean("debbie.jdbc.enable", true);
+        return DebbieModuleStarter.super.enable(environment) && environment.getBooleanValue("debbie.jdbc.enable", true);
     }
 
     @Override
@@ -78,26 +76,9 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
     private void registerDataSourceFactory(ApplicationContext applicationContext) {
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
         BeanInfo<DataSourceFactory> dataSourceFactoryBeanInfo = beanInfoManager.getBeanFactory(null, DataSourceFactory.class, false);
-        // Class<? extends DataSourceConfiguration> configurationClass = DataSourceConfiguration.class;
-        /*try {
-            configurationClass = (Class<? extends DataSourceConfiguration>) Class.forName("com.truthbean.debbie.hikari.HikariConfiguration");
-        } catch (ClassNotFoundException e) {
-            LOGGER.info("com.truthbean.debbie:debbie-hikari jar not be depended. ");
-        }*/
         if (dataSourceFactoryBeanInfo == null) {
-            /*Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
-            for (DataSourceFactory dataSourceFactory : factories) {
-                String name = dataSourceFactory.getName();
-                SimpleBeanFactory<DataSourceFactory, DataSourceFactory> simpleBeanFactory;
-                if ("defaultDataSourceFactory".equals(name)) {
-                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, "dataSourceFactory", DataSourceFactory.class.getName());
-                } else {
-                    simpleBeanFactory = new SimpleBeanFactory<>(dataSourceFactory, DataSourceFactory.class, BeanProxyType.NO, name, DataSourceFactory.class.getName());
-                }
-                beanInfoManager.registerBeanInfo(simpleBeanFactory);
-            }*/
-            beanInfoManager.registerBeanInfo(new DataSourceFactoryFactory());
-        } else {
+            beanInfoManager.registerBeanInfo(new DataSourceFactoryFactory<>());
+        } /*else {
             if (dataSourceFactoryBeanInfo instanceof MutableBeanFactory<DataSourceFactory> mutableBeanFactory) {
                 if (!mutableBeanFactory.isCreated()) {
                     Set<DataSourceFactory> factories = DataSourceFactory.factory(applicationContext, DataSourceConfiguration.class);
@@ -112,15 +93,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void configure(ApplicationContext applicationContext) {
-    }
-
-    @Override
-    public void starter(ApplicationContext applicationContext) {
+        }*/
     }
 
     @Override

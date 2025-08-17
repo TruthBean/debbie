@@ -19,6 +19,7 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * @author TruthBean
@@ -26,7 +27,7 @@ import java.lang.reflect.Method;
  */
 public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcTransactional> {
 
-    private final TransactionInfo transactionInfo;
+    private final ThreadLocal<TransactionInfo> transaction = new ThreadLocal<>();
 
     private JdbcTransactional jdbcTransactional;
     private JdbcTransactional classJdbcTransactional;
@@ -36,8 +37,9 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
     private ApplicationContext applicationContext;
     private boolean autoCommit;
 
+    private Method method;
+
     public TransactionalMethodProxyHandler() {
-        this.transactionInfo = new TransactionInfo();
     }
 
     @Override
@@ -72,7 +74,7 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void setMethod(Method method) {
-        transactionInfo.bindMethod(method);
+        this.method = method;
     }
 
     @Override
@@ -80,7 +82,19 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         if (applicationContext.isExiting()) {
             return;
         }
-        LOGGER.debug(() -> "running before method (" + transactionInfo.getMethod() + ") invoke ..");
+        TransactionInfo transactionInfo;
+        if (transaction.get() == null) {
+            transactionInfo = TransactionManager.peek();
+            if (transactionInfo == null) {
+                transactionInfo = new TransactionInfo();
+                transactionInfo.bindMethod(method);
+            }
+            transaction.set(transactionInfo);
+        } else {
+            transactionInfo = transaction.get();
+        }
+        final TransactionInfo finalTransactionInfo = transactionInfo;
+        LOGGER.debug(() -> "running before method (" + finalTransactionInfo.getMethod() + ") invoke ..");
         GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
         DataSourceConfiguration configuration = globalBeanFactory.factory(DataSourceConfiguration.class);
 
@@ -88,30 +102,38 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
             throw new MethodNoJdbcTransactionalException();
         } else if (jdbcTransactional == null && !classJdbcTransactional.readonly()) {
             String databaseId = classJdbcTransactional.databaseId();
-            DataSourceFactory factory = globalBeanFactory.factory(databaseId + "DataSourceFactory", DataSourceFactory.class, true);
             transactionInfo.setDriverName(configuration.getDriverName());
-            transactionInfo.setConnection(factory.getConnection());
+            if (transactionInfo.isNoInstance()) {
+                DataSourceFactory factory = globalBeanFactory.factory(databaseId + "DataSourceFactory", DataSourceFactory.class, true);
+                transactionInfo.setConnection(factory.getConnection());
+            }
             transactionInfo.setAutoCommit(false);
             autoCommit = false;
             transactionInfo.setForceCommit(classJdbcTransactional.forceCommit());
             transactionInfo.setRollbackFor(classJdbcTransactional.rollbackFor());
         } else if (jdbcTransactional != null && !jdbcTransactional.readonly()) {
             String databaseId = jdbcTransactional.databaseId();
-            DataSourceFactory factory = globalBeanFactory.factory(databaseId + "DataSourceFactory", DataSourceFactory.class, true);
-            transactionInfo.setConnection(factory.getConnection());
+            if (transactionInfo.isNoInstance()) {
+                DataSourceFactory factory = globalBeanFactory.factory(databaseId + "DataSourceFactory", DataSourceFactory.class, true);
+                transactionInfo.setConnection(factory.getConnection());
+            }
             transactionInfo.setAutoCommit(false);
             autoCommit = false;
             transactionInfo.setForceCommit(jdbcTransactional.forceCommit());
             transactionInfo.setRollbackFor(jdbcTransactional.rollbackFor());
         } else {
-            DataSourceFactory factory = globalBeanFactory.factory( "defaultDataSourceFactory", DataSourceFactory.class, true);
-            transactionInfo.setConnection(factory.getConnection());
+            if (transactionInfo.isNoInstance()) {
+                DataSourceFactory factory = globalBeanFactory.factory(DataSourceFactory.class);
+                transactionInfo.setConnection(factory.getConnection());
+            }
             transactionInfo.setAutoCommit(true);
             transactionInfo.setForceCommit(false);
             transactionInfo.setRollbackFor(Exception.class);
             autoCommit = true;
         }
-        TransactionManager.offer(transactionInfo);
+        if (!Objects.equals(TransactionManager.peek(), transactionInfo)) {
+            TransactionManager.offer(transactionInfo);
+        }
     }
 
     @Override
@@ -119,6 +141,10 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
         if (applicationContext.isExiting()) {
             return;
         }
+        if (transaction.get() == null) {
+            return;
+        }
+        TransactionInfo transactionInfo = transaction.get();
         LOGGER.debug(() -> "running after method (" + transactionInfo.getMethod() + ") invoke ..");
         if (!autoCommit) {
             transactionInfo.commit();
@@ -127,6 +153,10 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void catchException(Throwable e) throws Throwable {
+        if (transaction.get() == null) {
+            return;
+        }
+        TransactionInfo transactionInfo = transaction.get();
         LOGGER.debug(() -> "running when method (" + transactionInfo.getMethod() + ") invoke throw exception and " +
                 "catched ..");
         if (!autoCommit) {
@@ -151,9 +181,17 @@ public class TransactionalMethodProxyHandler implements MethodProxyHandler<JdbcT
 
     @Override
     public void finallyRun() {
-        LOGGER.debug(() -> "running when method (" + transactionInfo.getMethod() + ") invoked and run to finally ..");
-        transactionInfo.close();
-        TransactionManager.remove(transactionInfo);
+        if (transaction.get() == null) {
+            return;
+        }
+        TransactionInfo transactionInfo = transaction.get();
+        LOGGER.debug(() -> "running when method (" + transactionInfo + ") invoked and run to finally ..");
+        // not need close
+        // transactionInfo.close();
+        if (transactionInfo.isNoInstance()) {
+            TransactionManager.remove(transactionInfo);
+            transaction.remove();
+        }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalMethodProxyHandler.class);

@@ -25,6 +25,11 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
     private String name;
 
     @Override
+    public <T extends DataSourceConfiguration> boolean support(T configuration) {
+        return configuration != null;
+    }
+
+    @Override
     public DataSourceFactory factory(DataSource dataSource) {
         this.dataSource = dataSource;
         this.name = "defaultDataSourceFactory";

@@ -417,7 +417,6 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
         return factory(beanName, type, true, require, true);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <Bean> Set<Bean> getBeanList(Class<Bean> superType) {
         synchronized (beanInfoManager) {

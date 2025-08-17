@@ -15,7 +15,6 @@ import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.event.DebbieStartedEvent;
 import com.truthbean.debbie.event.EventBeanListener;
 import com.truthbean.debbie.event.GenericStartedEventListener;
-import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.service.SurnameService;
 import com.truthbean.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class StartedListener implements GenericStartedEventListener<DebbieStarte
     }
 
     private void printStartInfo() {
-        LOGGER.debug(() -> "！！！！！！！！！！！！！！");
+        LOGGER.info(() -> "！！！！！！！！！！！！！！");
         List<Surname> surnames = surnameService.list();
         System.out.println(surnames);
         notingService.listAll();

@@ -64,6 +64,16 @@ public class PropertiesConfigurationBeanFactory<Configuration extends DebbieConf
         return property.getConfiguration(profile, category, applicationContext);
     }
 
+    public boolean contains(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = EnvironmentDepositoryHolder.DEFAULT_PROFILE;
+        }
+        if (!StringUtils.hasText(category)) {
+            category = EnvironmentDepositoryHolder.DEFAULT_CATEGORY;
+        }
+        return property.containConfiguration(profile, category, applicationContext);
+    }
+
     public Configuration factory(String profile, String category, ApplicationContext applicationContext) {
         if (!StringUtils.hasText(profile)) {
             profile = EnvironmentDepositoryHolder.DEFAULT_PROFILE;

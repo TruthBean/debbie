@@ -25,6 +25,12 @@ import javax.sql.DataSource;
 public class DefaultDataSourcePoolFactory implements DataSourceFactory {
     private PooledDataSource pooledDataSource;
     private DataSourceDriverName driverName;
+
+    @Override
+    public <T extends DataSourceConfiguration> boolean support(T configuration) {
+        return configuration instanceof DefaultDataSourcePoolConfiguration;
+    }
+
     @Override
     public DataSourceFactory factory(DataSource dataSource) {
         if (dataSource instanceof PooledDataSource) {

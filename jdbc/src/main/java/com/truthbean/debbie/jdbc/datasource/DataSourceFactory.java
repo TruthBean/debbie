@@ -83,6 +83,8 @@ public interface DataSourceFactory extends BeanClosure {
         return factory.factory(configuration);
     }
 
+    <T extends DataSourceConfiguration> boolean support(T configuration);
+
     /**
      * create DataSourceFactory by DataSource
      *
@@ -120,8 +122,7 @@ public interface DataSourceFactory extends BeanClosure {
                 if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
                     getDataSource().setLogWriter(new PrintWriter(System.err));
                 }
-            } catch (Exception e) {
-                getLogger().debug("getLogWriter or setLogWriter error.", e);
+            } catch (Exception ignore) {
             }
             transactionInfo.setConnection(getDataSource().getConnection());
             transactionInfo.setDriverName(driverName);
@@ -138,8 +139,7 @@ public interface DataSourceFactory extends BeanClosure {
                 if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
                     getDataSource().setLogWriter(new PrintWriter(System.err));
                 }
-            } catch (Exception e) {
-                getLogger().debug("getLogWriter or setLogWriter error.", e);
+            } catch (Exception ignore) {
             }
             return getDataSource().getConnection();
         } catch (SQLException e) {

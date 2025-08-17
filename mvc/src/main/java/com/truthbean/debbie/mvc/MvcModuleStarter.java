@@ -25,7 +25,7 @@ public class MvcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public boolean enable(Environment environment) {
-        return DebbieModuleStarter.super.enable(environment) && environment.getBoolean("debbie.mvc.enable", true);
+        return DebbieModuleStarter.super.enable(environment) && environment.getBooleanValue("debbie.mvc.enable", true);
     }
 
     @Override

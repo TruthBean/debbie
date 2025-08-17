@@ -128,6 +128,20 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
     }
 
     @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        if (configurationMap.isEmpty()) {
+            init();
+        }
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
+    }
+
+    @Override
     public BeanScanConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
         if (!StringUtils.hasText(profile)) {
             profile = getDefaultProfile();

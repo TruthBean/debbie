@@ -11,14 +11,11 @@ package com.truthbean.debbie.httpclient;
 
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.environment.DebbieEnvironmentDepositoryHolder;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.properties.CategoriedProperties;
-import com.truthbean.debbie.properties.DebbieProperties;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -150,6 +147,17 @@ public class HttpClientProperties extends CategoriedProperties<HttpClientConfigu
     @Override
     public Set<String> getCategories(String profile) {
         return configurationMap.get(profile).keySet();
+    }
+
+    @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
     }
 
     @Override

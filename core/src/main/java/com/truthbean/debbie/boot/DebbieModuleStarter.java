@@ -30,7 +30,7 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
      * @return is enabled using the module
      */
     default boolean enable(Environment environment) {
-        return !environment.getBoolean(DebbieApplication.DISABLE_DEBBIE, false);
+        return !environment.getBooleanValue(DebbieApplication.DISABLE_DEBBIE, false);
     }
 
     int getOrder();

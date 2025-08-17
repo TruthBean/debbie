@@ -46,6 +46,25 @@ public class NettyProperties extends BaseServerProperties<NettyConfiguration> {
     }
 
     @Override
+    public boolean containConfiguration(String profile, String category, ApplicationContext applicationContext) {
+        if (!StringUtils.hasText(profile)) {
+            profile = getDefaultProfile();
+        }
+        if (!StringUtils.hasText(category)) {
+            category = DEFAULT_CATEGORY;
+        }
+        if (configurationMap.isEmpty()) {
+            buildConfiguration(applicationContext);
+        }
+        if (configurationMap.isEmpty()) {
+            Map<String, NettyConfiguration> map = new HashMap<>();
+            map.put(DEFAULT_CATEGORY, new NettyConfiguration(applicationContext.getClassLoader()));
+            configurationMap.put(getDefaultProfile(), map);
+        }
+        return configurationMap.containsKey(profile) && configurationMap.get(profile).containsKey(category);
+    }
+
+    @Override
     public NettyConfiguration getConfiguration(String profile, String category, ApplicationContext applicationContext) {
         if (!StringUtils.hasText(profile)) {
             profile = getDefaultProfile();

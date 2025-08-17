@@ -45,12 +45,6 @@ public interface GlobalBeanFactory {
 
     <T> T factoryByNoBean(Class<T> noBeanType);
 
-    // <T, K extends T> K factory(BeanInfo<T> beanInfo);
-
-    // <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory);
-
-    // <T> T factoryBeanByDependenceProcessor(FactoryBeanInfo<T> beanInfo, boolean skipFactory, Object firstParamValue);
-
     <T> T factoryConfiguration(Class<T> type, String profile, String category);
 
     <T> T factory(BeanInjection<T> injection);
@@ -69,7 +63,4 @@ public interface GlobalBeanFactory {
 
     boolean containsBean(String beanName);
 
-    // <T> T getBeanByFactory(FactoryBeanInfo<T> beanInfo);
-
-    // <T> T getBeanByFactory(Class<T> beanClass, BeanFactory<T> beanFactory);
 }

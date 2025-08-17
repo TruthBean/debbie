@@ -153,8 +153,10 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     map.forEach((fieldInfo, beanInfo) -> {
                         if (beanInfo instanceof BeanFactory<?> fieldBeanFactory) {
                             Object fieldValue = fieldBeanFactory.factoryBean(applicationContext);
-                            if (fieldValue.getClass().getName().startsWith("jdk.proxy")) {
-                                fieldValue = getRealValueFromJdkProxy(fieldValue);
+                            if (!(fieldInfo.getField() != null && fieldInfo.getField().getType().isInstance(fieldValue))) {
+                                if (fieldValue.getClass().getName().startsWith("jdk.proxy")) {
+                                    fieldValue = getRealValueFromJdkProxy(fieldValue);
+                                }
                             }
                             if (finalLocalBean.getClass().getName().startsWith("jdk.proxy")) {
                                 Object obj = getRealValueFromJdkProxy(finalLocalBean);

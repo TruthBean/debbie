@@ -9,28 +9,22 @@
  */
 package com.truthbean.debbie.jdbc.transaction;
 
-import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 
 import java.io.Closeable;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
- * @author TruthBean
- * @since 0.0.1
+ * @author TruthBean/Rogar·Q
+ * @since 0.5.7
  */
-public class TransactionInfo implements Closeable {
-    private String id;
-    private volatile boolean using;
-
+public class TransactionHolder implements Closeable {
     private final String method = "(no method)";
 
     private DataSourceDriverName driverName;
-    private volatile Connection connection;
 
     private boolean forceCommit;
     private Class<? extends Throwable> rollbackFor;
@@ -38,28 +32,9 @@ public class TransactionInfo implements Closeable {
     private final Map<Object, Object> resources = new LinkedHashMap<>();
     private final List<ResourceHolder> resourceHolders = new LinkedList<>();
 
-    private volatile boolean closed;
+    private final ThreadLocal<TransactionInstance> transactionInstance = new ThreadLocal<>();
 
-    public TransactionInfo() {
-        this.id = UUID.randomUUID().toString();
-        this.using = false;
-        this.closed = false;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setUsing(boolean using) {
-        this.using = using;
-    }
-
-    public boolean isUsing() {
-        return using;
+    public TransactionHolder() {
     }
 
     public Method getMethod() {
@@ -70,14 +45,6 @@ public class TransactionInfo implements Closeable {
 
     private boolean hasMethod() {
         return this.resources.containsKey(this.method);
-    }
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
     }
 
     public DataSourceDriverName getDriverName() {
@@ -144,40 +111,8 @@ public class TransactionInfo implements Closeable {
         resourceHolders.clear();
     }
 
-    public Connection setAutoCommit(boolean autoCommit) {
-        if (connection == null || closed) {
-            return null;
-        }
-        try {
-            this.connection.setAutoCommit(autoCommit);
-        } catch (SQLException e) {
-            LOGGER.error("set autocommit error.", e);
-        }
-        return this.connection;
-    }
-
-    public Connection setTransactionIsolation(TransactionIsolationLevel transactionIsolationLevel) {
-        if (connection == null || closed) {
-            return null;
-        }
-        try {
-            this.connection.setTransactionIsolation(transactionIsolationLevel.getLevel());
-        } catch (SQLException e) {
-            LOGGER.error("set transaction isolation error.", e);
-        }
-        return this.connection;
-    }
-
-    public Connection setTransactionIsolation(int transactionIsolationLevel) {
-        if (connection == null || closed) {
-            return null;
-        }
-        try {
-            this.connection.setTransactionIsolation(transactionIsolationLevel);
-        } catch (SQLException e) {
-            LOGGER.error("set transaction isolation error.", e);
-        }
-        return this.connection;
+    public void setTransactionInstance(TransactionInstance transactionInstance) {
+        this.transactionInstance.set(transactionInstance);
     }
 
     public void prepare() {
@@ -197,21 +132,16 @@ public class TransactionInfo implements Closeable {
         beforeCommit();
 
         // commit
-        if (connection == null) {
+        if (transactionInstance.get() == null) {
+            LOGGER.error("method (" + method + ") invoked without transaction. ");
+            return;
+        }
+        if (transactionInstance.get().getConnection() == null) {
             LOGGER.error("method (" + method + ") not bind connection. ");
             return;
         }
 
-        try {
-            if (!connection.isReadOnly() && !connection.getAutoCommit()) {
-                LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " commit ...");
-                connection.commit();
-            } else {
-                LOGGER.warn(() -> "Connection(" + connection + ") " + connection.hashCode() + " is readonly or autocommited, cannot commit manually!");
-            }
-        } catch (SQLException e) {
-            LOGGER.error("commit error for " + e.getMessage());
-        }
+        transactionInstance.get().commit();
 
         // after
         afterCommit();
@@ -233,40 +163,19 @@ public class TransactionInfo implements Closeable {
         // before
         beforeRollback();
 
-        if (connection == null) {
+        if (transactionInstance.get() == null) {
+            LOGGER.error("method (" + method + ") invoked without transaction. ");
+            return;
+        }
+        if (transactionInstance.get().getConnection() == null) {
             LOGGER.error("method (" + method + ") not bind connection. ");
             return;
         }
 
-        try {
-            if (!connection.isReadOnly()) {
-                LOGGER.debug(() -> "Connection(" + connection + ") " + connection.hashCode() + " rollback ...");
-                connection.rollback();
-            } else {
-                LOGGER.warn(() -> "Connection(" + connection + ") " + connection.hashCode() + " is readonly, cannot rollback!");
-            }
-        } catch (SQLException e) {
-            LOGGER.error("rollback error for " + e.getMessage());
-        }
+        transactionInstance.get().rollback();
 
         // after
         afterRollback();
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void setClosed(boolean closed) {
-        this.closed = closed;
-    }
-
-    public boolean isNoInstance() {
-        try {
-            return connection == null || connection.isClosed();
-        } catch (SQLException ignored) {
-            return true;
-        }
     }
 
     private void afterRollback() {
@@ -276,7 +185,9 @@ public class TransactionInfo implements Closeable {
     }
 
     private void beforeClose() {
-        this.closed = true;
+        if (transactionInstance.get() != null) {
+            transactionInstance.get().setClosed(true);
+        }
         for (ResourceHolder resourceHolder : resourceHolders) {
             resourceHolder.beforeClose();
         }
@@ -285,34 +196,32 @@ public class TransactionInfo implements Closeable {
     @Override
     public void close() {
         synchronized (this) {
-            if (!isUsing()) {
+            if (transactionInstance.get() == null) {
+                LOGGER.error("method (" + method + ") invoked without transaction. ");
+                return;
+            }
+
+            if (!transactionInstance.get().isUsing()) {
                 beforeClose();
 
-                if (connection == null) {
+                if (transactionInstance.get().getConnection() == null) {
                     LOGGER.error("method (" + method + ") not bind connection. ");
                     return;
                 }
 
                 if (hasMethod())
-                    LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " by transactional method(" + getMethod() + ") and remove it. ");
-                else
-                    LOGGER.debug(() -> id + ": close connection(" + connection + ") " + connection.hashCode() + " and remove it. ");
-                try {
-                    if (!connection.isClosed()) {
-                        connection.close();
-                        connection = null;
-                    }
-                } catch (SQLException e) {
-                    LOGGER.error("close connection(" + connection + ") " + connection.hashCode() + " error \n", e);
-                }
+                    LOGGER.trace(() -> "Close connection by transactional method(" + getMethod() + ") and remove it. ");
+
+                transactionInstance.get().close();
 
                 afterClose();
 
                 // clear
                 resources.clear();
                 resourceHolders.clear();
+                transactionInstance.remove();
             } else {
-                LOGGER.warn(() -> id + ": connection(" + connection + ") " + connection.hashCode() + " is using, cannot remove it! ");
+                LOGGER.warn(() -> transactionInstance.get().getId() + ": connection(" + transactionInstance.get().getConnection() + ") " + transactionInstance.get().getConnection().hashCode() + " is using, cannot remove it! ");
             }
         }
     }
@@ -325,16 +234,15 @@ public class TransactionInfo implements Closeable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof TransactionInfo that))
-            return false;
-        return Objects.equals(getId(), that.getId());
+        if (!(o instanceof TransactionHolder that)) return false;
+        return driverName == that.driverName &&
+                forceCommit == that.forceCommit && Objects.equals(rollbackFor, that.rollbackFor)
+                && Objects.equals(resources, that.resources) && Objects.equals(resourceHolders, that.resourceHolders);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(method, driverName, forceCommit, rollbackFor, resources, resourceHolders);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionInfo.class);

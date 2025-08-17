@@ -15,8 +15,14 @@ import java.util.Map;
 public class DefaultMultiDataSourceFactory implements MultiDataSourceFactory {
 
     private final Map<String, DataSource> dataSourceMap = new HashMap<>();
+    private final Map<String, DataSourceFactory> dataSourceFactoryMap = new HashMap<>();
 
     public DefaultMultiDataSourceFactory() {
+    }
+
+    @Override
+    public <T extends DataSourceConfiguration> boolean support(T configuration) {
+        return configuration != null;
     }
 
     @Override

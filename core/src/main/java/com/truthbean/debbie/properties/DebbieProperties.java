@@ -38,6 +38,8 @@ public interface DebbieProperties<C extends DebbieConfiguration> extends AutoClo
         return getCategories(DEFAULT_PROFILE);
     }
 
+    boolean containConfiguration(final String profile, final String category, final ApplicationContext applicationContext);
+
     C getConfiguration(final String profile, final String category, final ApplicationContext applicationContext);
 
     default C getProfiledConfiguration(final String profile, final ApplicationContext applicationContext) {
