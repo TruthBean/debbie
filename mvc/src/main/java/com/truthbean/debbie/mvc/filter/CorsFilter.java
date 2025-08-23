@@ -72,7 +72,7 @@ public class CorsFilter implements RouterFilter, Closeable {
                 response.addHeader(PRAGMA, "no-cache");
             }
             return false;
-        } else if(!this.configuration.isEnableCors() && isRequestOriginEqualRequestHost(request)) {
+        } else if(!this.configuration.isEnableCors() && !isRequestOriginEqualRequestHost(request)) {
             LOGGER.info("cors forbidden");
             response.setStatus(HttpStatus.NOT_ACCEPTABLE);
             response.setContent("cors rejected!");
@@ -102,10 +102,9 @@ public class CorsFilter implements RouterFilter, Closeable {
         final HttpHeader header = request.getHeader();
         if (header != null) {
             String origin = header.getHeader(HttpHeader.HttpHeaderNames.ORIGIN);
+            if (origin == null) return true;
             String host = header.getHeader(HttpHeader.HttpHeaderNames.HOST);
-            if (origin == null && host == null) return true;
-            return origin != null && (origin.equalsIgnoreCase(host)
-                    || ("http://" + host).equalsIgnoreCase(origin) || ("https://" + host).equalsIgnoreCase(origin));
+            return origin.equalsIgnoreCase(host) || ("http://" + host).equalsIgnoreCase(origin) || ("https://" + host).equalsIgnoreCase(origin);
         }
         return false;
     }

@@ -21,9 +21,16 @@ import org.junit.jupiter.api.Test;
 @DebbieApplicationTest
 public class TransactionTest {
     public static void main(String[] args) {
-        var application = DebbieApplication.create(TransactionTest.class, args);
-        application.start();
-        application.exit();
+        DebbieApplication.create(TransactionTest.class, args)
+                .start()
+                .afterStarted(applicationBootContext -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .exit();
     }
 
     @Test
