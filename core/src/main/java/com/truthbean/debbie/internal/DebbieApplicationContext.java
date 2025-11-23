@@ -21,7 +21,7 @@ import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.event.*;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.io.ResourcesHandler;
-import com.truthbean.debbie.lang.Nullable;
+import com.truthbean.core.lang.Nullable;
 import com.truthbean.debbie.properties.ClassesScanProperties;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;

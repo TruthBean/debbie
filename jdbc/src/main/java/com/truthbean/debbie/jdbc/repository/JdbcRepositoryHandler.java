@@ -38,7 +38,11 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
         entityInfo.resolve(entity);
 
         ColumnInfo primaryKey = entityInfo.getPrimaryKey();
-        if (primaryKey.getValue() != null) {
+        var value = primaryKey.getValue();
+        if (value == null && primaryKey.getPropertyGetter() != null) {
+            value = primaryKey.getPropertyGetter().get(entity);
+        }
+        if (value != null) {
             var bool = update(logger, transaction, entityInfo, true);
             if (bool) {
                 List<ColumnInfo> list = selectOne(logger, transaction, entityInfo, false);
@@ -146,7 +150,7 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
                              String selectSql, Class<T> clazz, Object... args) {
         List<List<ColumnInfo>> list = super.query(logger, transaction, selectSql, args);
         if (list.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         List<T> result = new ArrayList<>();
         for (List<ColumnInfo> infos : list) {

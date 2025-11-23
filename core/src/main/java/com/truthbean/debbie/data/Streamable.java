@@ -1,6 +1,6 @@
 package com.truthbean.debbie.data;
 
-import com.truthbean.debbie.util.Assert;
+import com.truthbean.core.lang.Assert;
 
 import java.util.Arrays;
 import java.util.Collections;

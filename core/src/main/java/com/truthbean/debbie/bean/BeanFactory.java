@@ -12,8 +12,8 @@ package com.truthbean.debbie.bean;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 
-import java.lang.reflect.Proxy;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -29,16 +29,11 @@ public interface BeanFactory<Bean> extends RegistrableBeanInfo<Bean>, BeanClosur
 
     // Bean factory(BeanInjection<Bean> beanInjection, ApplicationContext applicationContext);
 
-    /**
-     * is bean proxied
-     *
-     * @return boolean or null. if not created return null
-     */
-    default Boolean isProxiedBean() {
-        if (isCreated()) {
-            return getCreatedBean() instanceof Proxy;
+    default Object getRealValueFromJdkProxy(Object proxy) {
+        while (proxy.getClass().getName().startsWith("jdk.proxy")) {
+            proxy = JdkDynamicProxy.getRealValue(proxy);
         }
-        return null;
+        return proxy;
     }
 
     @Override

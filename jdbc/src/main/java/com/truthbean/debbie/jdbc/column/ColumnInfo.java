@@ -14,7 +14,6 @@ import com.truthbean.debbie.jdbc.entity.EntityPropertySetter;
 import com.truthbean.debbie.lang.Copyable;
 
 import java.sql.JDBCType;
-import java.util.function.Consumer;
 
 /**
  * @author TruthBean
@@ -149,10 +148,22 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
+    public Object getValue(Object entity) {
+        if (value != null) {
+            return value;
+        }
+        if (entity != null && propertyGetter != null) {
+            return propertyGetter.get(entity);
+        }
+        return null;
+    }
+
     public void setValue(Object value) {
         this.value = value;
     }
 
+    @SuppressWarnings("unchecked")
     public <E, P> EntityPropertyGetter<E, P> getPropertyGetter() {
         return propertyGetter;
     }
@@ -161,10 +172,14 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         this.propertyGetter = propertyGetter;
     }
 
+    @SuppressWarnings("unchecked")
     public void getPropertyValue(Object entity) {
-        this.value = propertyGetter.get(entity);
+        if (propertyGetter != null) {
+            this.value = propertyGetter.get(entity);
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public <E, P> EntityPropertySetter<E, P> getPropertySetter() {
         return propertySetter;
     }
@@ -173,8 +188,11 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         this.propertySetter = propertySetter;
     }
 
+    @SuppressWarnings("unchecked")
     public <E, P> void setPropertyValue(E entity, P value) {
-        this.propertySetter.set(entity, value);
+        if (propertySetter != null) {
+            this.propertySetter.set(entity, value);
+        }
     }
 
     public Class<?> getJavaClass() {
@@ -233,6 +251,8 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
     public ColumnInfo copy() {
         ColumnInfo info = new ColumnInfo();
         info.property = property;
+        info.propertyGetter = propertyGetter;
+        info.propertySetter = propertySetter;
         info.column = column;
         info.columnDefaultValue = columnDefaultValue;
         info.dataType = dataType;

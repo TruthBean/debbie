@@ -357,8 +357,10 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
                     }
                 }
             }
+            return false;
+        } else {
+            return true;
         }
-        return false;
     }
 
     public Map<FieldInfo, BeanInfo<?>> getHasVirtualValueFieldBeanDependencies() {

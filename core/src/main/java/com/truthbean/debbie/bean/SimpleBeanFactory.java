@@ -28,6 +28,7 @@ public class SimpleBeanFactory<Bean extends I, I> implements BeanFactory<Bean> {
     private final Class<I> beanClass;
     protected BeanType beanType;
     protected BeanProxyType beanProxyType;
+    protected boolean lazyCreate = true;
     protected final Set<String> beanNames;
     private final Set<BeanCondition> conditions = new HashSet<>();
 
@@ -197,7 +198,12 @@ public class SimpleBeanFactory<Bean extends I, I> implements BeanFactory<Bean> {
 
     @Override
     public boolean isLazyCreate() {
-        return false;
+        return lazyCreate;
+    }
+
+    public SimpleBeanFactory<Bean, I> setLazyCreate(boolean lazyCreate) {
+        this.lazyCreate = lazyCreate;
+        return this;
     }
 
     @Override

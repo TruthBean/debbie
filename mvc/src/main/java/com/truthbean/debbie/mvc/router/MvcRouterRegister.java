@@ -152,6 +152,10 @@ public class MvcRouterRegister {
         return this.router(new HttpMethod[]{HttpMethod.TRACE}, new String[]{urlPattern}, router);
     }
 
+    public MvcRouterRegister all(String urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.ALL}, new String[]{urlPattern}, router);
+    }
+
     public MvcRouterRegister get(String[] urlPattern, MvcRouter router) {
         return this.router(new HttpMethod[]{HttpMethod.GET}, urlPattern, router);
     }
@@ -186,6 +190,10 @@ public class MvcRouterRegister {
 
     public MvcRouterRegister trace(String[] urlPattern, MvcRouter router) {
         return this.router(new HttpMethod[]{HttpMethod.TRACE}, urlPattern, router);
+    }
+
+    public MvcRouterRegister all(String[] urlPattern, MvcRouter router) {
+        return this.router(new HttpMethod[]{HttpMethod.ALL}, urlPattern, router);
     }
 
     public static void registerRouter(RouterInfo routerInfo) {

@@ -24,7 +24,7 @@ public class SqlRepositoryBeanRegister implements BeanRegister {
         Class<?> beanClass = beanInfo.getBeanClass();
         List<Type> actualTypes = beanInfo.getActualTypes();
         return JdbcRepository.class.isAssignableFrom(beanClass)
-                && actualTypes.size() == 2 && actualTypes.get(0) != Object.class
+                // && actualTypes.size() == 2 && actualTypes.get(0) != Object.class
                 && support(beanInfo, SqlRepository.class);
     }
 

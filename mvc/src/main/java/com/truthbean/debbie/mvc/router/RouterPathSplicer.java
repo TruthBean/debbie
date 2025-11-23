@@ -11,7 +11,7 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.debbie.lang.Nullable;
+import com.truthbean.core.lang.Nullable;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
 import com.truthbean.debbie.net.uri.UriPathFragment;
 import com.truthbean.debbie.net.uri.UriPathVariable;

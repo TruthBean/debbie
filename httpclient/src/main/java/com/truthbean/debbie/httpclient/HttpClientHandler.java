@@ -12,9 +12,7 @@ package com.truthbean.debbie.httpclient;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.core.util.StringUtils;
-import com.truthbean.debbie.io.MediaType;
-import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.lang.NonNull;
+import com.truthbean.core.lang.NonNull;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 
 import java.net.HttpCookie;

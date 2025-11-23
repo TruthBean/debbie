@@ -10,7 +10,7 @@
 package com.truthbean.debbie.net.uri;
 
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
-import com.truthbean.debbie.util.Assert;
+import com.truthbean.core.lang.Assert;
 import com.truthbean.debbie.util.Constants;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;

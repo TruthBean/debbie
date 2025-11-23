@@ -27,10 +27,12 @@ import com.truthbean.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -52,7 +54,8 @@ class ResponseCompletionHandler {
         this.routerRequest = routerRequest;
     }
 
-    private void writeChannel(AsynchronousSocketChannel channel, RouterResponse routerResponse, Object result) {
+    private void writeChannel(AsynchronousSocketChannel channel, RouterResponse routerResponse, Object result,
+                              Runnable closeRunnable) {
         logger.trace("response content: " + result);
         var lf = OsUtils.getLf();
         // 响应头的参数
@@ -83,7 +86,9 @@ class ResponseCompletionHandler {
 
         logger.trace("response: " + resultStr);
 
-        Future<Integer> future;
+        int responseSize = 0;
+        // Future<Integer> future;
+        ByteBuffer responseBuffer;
         if (result instanceof byte[] bytes) {
             //先把头部转换成byte[]
             var headerBuilder = new StringBuilder(statusLine)
@@ -98,17 +103,49 @@ class ResponseCompletionHandler {
             byte[] merge = new byte[headerByteArray.length + bytes.length];
             System.arraycopy(headerByteArray, 0, merge, 0, headerByteArray.length);
             System.arraycopy(bytes, 0, merge, headerByteArray.length, bytes.length);
-            future = channel.write(ByteBuffer.wrap(merge));
+            responseSize = merge.length;
+            responseBuffer = ByteBuffer.wrap(merge);
+            // future = channel.write(responseBuffer);
         } else {
-            future = channel.write(ByteBuffer.wrap(resultStr.getBytes()));
+            responseSize = resultStr.getBytes().length;
+            responseBuffer = ByteBuffer.wrap(resultStr.getBytes());
+            // future = channel.write(responseBuffer);
         }
 
-        try {
+        channel.write(responseBuffer, configuration.getConnectionTimeout(), TimeUnit.MILLISECONDS, responseBuffer,
+                new CompletionHandler<>() {
+                    @Override
+                    public void completed(Integer result, ByteBuffer attachment) {
+                        logger.trace("write size: " + result);
+                        if (attachment.hasRemaining()) {
+                            channel.write(attachment, attachment, this);
+                        } else {
+                            closeRunnable.run();
+                        }
+                    }
+
+                    @Override
+                    public void failed(Throwable exc, ByteBuffer attachment) {
+                        logger.error("write response failed", exc);
+                        closeRunnable.run();
+                    }
+                });
+
+        /*try {
+            int writeSize = 0;
             Integer integer = future.get();
-            logger.trace("future get: " + integer);
+            logger.trace("write size: " + integer);
+            while (true) {
+                writeSize += integer;
+                if (writeSize >= responseSize) {
+                    break;
+                }
+                integer = future.get();
+                logger.trace("write size: " + integer);
+            }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("", e);
-        }
+        }*/
 
     }
 
@@ -132,7 +169,7 @@ class ResponseCompletionHandler {
         }
     }
 
-    void handle(AsynchronousSocketChannel channel) {
+    void handle(AsynchronousSocketChannel channel, Runnable closeRunnable) {
         logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         logger.trace(routerRequest.toString());
         logger.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -141,7 +178,8 @@ class ResponseCompletionHandler {
             // static
             byte[] bytes = MvcRouterHandler.handleStaticResources(routerRequest, mvcConfiguration.getStaticResourcesMapping());
             if (bytes != null) {
-                writeChannel(channel, routerResponse, bytes);
+                routerResponse.setResponseType(routerRequest.getResponseType());
+                writeChannel(channel, routerResponse, bytes, closeRunnable);
             } else {
                 RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, mvcConfiguration);
                 logger.debug("--> handle response");
@@ -152,10 +190,10 @@ class ResponseCompletionHandler {
                     responseType = matchedRouter.getDefaultResponseType();
                 }
                 afterResponse.setResponseType(responseType);
-                writeChannel(channel, afterResponse, afterResponse.getContent());
+                writeChannel(channel, afterResponse, afterResponse.getContent(), closeRunnable);
             }
         } else {
-            writeChannel(channel, routerResponse, routerResponse.getContent());
+            writeChannel(channel, routerResponse, routerResponse.getContent(), closeRunnable);
         }
     }
 

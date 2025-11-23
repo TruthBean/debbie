@@ -10,7 +10,7 @@
 package com.truthbean.debbie.jdbc.domain;
 
 import com.truthbean.debbie.data.Streamable;
-import com.truthbean.debbie.util.Assert;
+import com.truthbean.core.lang.Assert;
 
 import java.util.Collection;
 import java.util.Iterator;

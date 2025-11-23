@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.util;
 
+import com.truthbean.core.lang.Assert;
+
 public class NamedThreadLocal<T> extends ThreadLocal<T> {
 
     private final String name;

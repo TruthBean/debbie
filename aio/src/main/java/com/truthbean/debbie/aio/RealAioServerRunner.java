@@ -16,9 +16,11 @@ import com.truthbean.debbie.server.session.SimpleSessionManager;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.SocketOption;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -70,9 +72,9 @@ public class RealAioServerRunner implements Runnable{
         // 创建线程池
         var threadFactory = new NamedThreadFactory("AioServerThreadPool").setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
         int core = Runtime.getRuntime().availableProcessors();
-        var executor = new ThreadPoolExecutor(core, core * 10,
-                0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(1024), threadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
+        var executor = new ThreadPoolExecutor(configuration.getThreadPoolConfig().getCoreSize(), configuration.getThreadPoolConfig().getMaximumPoolSize(),
+                0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(configuration.getThreadPoolConfig().getQueueSize()),
+                threadFactory, new ThreadPoolExecutor.AbortPolicy());
         // 用于资源共享的异步通道管理器
         var asyncChannelGroup = AsynchronousChannelGroup.withThreadPool(executor);
         SocketAddress socketAddress;
@@ -83,18 +85,27 @@ public class RealAioServerRunner implements Runnable{
             socketAddress = (SocketAddress) o;
         } else {
             // todo 区分 tcp/udp/unix/ssl socket
-            // 创建 用在服务端的异步Socket.以下简称服务器socket。
-            // 异步通道管理器，会把服务端所用到的相关参数
             socketAddress = new InetSocketAddress(port);
         }
-        try {
-            server = AsynchronousServerSocketChannel.open(asyncChannelGroup)
-                    .setOption(StandardSocketOptions.SO_REUSEPORT, true)
-                    .bind(socketAddress);
-        } catch (UnsupportedOperationException e) {
-            server = AsynchronousServerSocketChannel.open(asyncChannelGroup)
-                    .bind(socketAddress);
+        AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open(asyncChannelGroup);
+        Set<SocketOption<?>> socketOptions = server.supportedOptions();
+        if (socketOptions.contains(StandardSocketOptions.SO_REUSEPORT)) {
+            server.setOption(StandardSocketOptions.SO_REUSEPORT, true);
         }
+        if (socketOptions.contains(StandardSocketOptions.SO_REUSEADDR)) {
+            server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+        }
+        if (socketOptions.contains(StandardSocketOptions.SO_RCVBUF)) {
+            server.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+        }
+        if (socketOptions.contains(StandardSocketOptions.SO_SNDBUF)) {
+            server.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
+        }
+        if (socketOptions.contains(StandardSocketOptions.SO_KEEPALIVE)) {
+            server.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
+        }
+        server.bind(socketAddress);
+        this.server = server;
     }
 
     void printMessage(Consumer<AioServerConfiguration> consumer) {
@@ -105,11 +116,7 @@ public class RealAioServerRunner implements Runnable{
     public void run() {
         try {
             LOGGER.debug(() -> "running .... ");
-            // 为服务端socket指定接收操作对象.accept原型是：
-            // accept(A attachment, CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
-            // 也就是这里的CompletionHandler的A型参数是实际调用accept方法的第一个参数
-            // 即是listener。另一个参数V，就是原型中的客户端socket
-            var mvcCompletionHandler = new ServerCompletionHandler(configuration, mvcConfiguration, sessionManager, applicationContext);
+            var mvcCompletionHandler = new ServerCompletionHandler(configuration, mvcConfiguration, sessionManager, applicationContext, server);
             server.accept(server, mvcCompletionHandler);
         } catch (Exception e) {
             LOGGER.error("", e);

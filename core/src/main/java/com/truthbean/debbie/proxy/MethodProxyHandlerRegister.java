@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.lang.NonNull;
+import com.truthbean.core.lang.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;

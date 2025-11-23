@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.debbie.concurrent.ThreadPoolConfiguration;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.server.AbstractServerConfiguration;
 
@@ -28,6 +29,8 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
     private long connectionTimeout = 5000;
 
     private boolean ignoreEncode;
+
+    private ThreadPoolConfiguration threadPoolConfig = new ThreadPoolConfiguration();
 
     protected AioServerConfiguration(ClassLoader classLoader) {
     }
@@ -107,5 +110,13 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         if (connectionTimeout == 0L && defaultConfiguration.connectionTimeout != 0L) {
             connectionTimeout = defaultConfiguration.connectionTimeout;
         }
+    }
+
+    public ThreadPoolConfiguration getThreadPoolConfig() {
+        return threadPoolConfig;
+    }
+
+    public void setThreadPoolConfig(ThreadPoolConfiguration threadPoolConfig) {
+        this.threadPoolConfig = threadPoolConfig;
     }
 }

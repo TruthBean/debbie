@@ -11,7 +11,7 @@ package com.truthbean.debbie.reflection;
 
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
-import com.truthbean.debbie.lang.NonNull;
+import com.truthbean.core.lang.NonNull;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;

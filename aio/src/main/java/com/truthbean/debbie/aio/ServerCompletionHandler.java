@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.function.Consumer;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -32,30 +33,31 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
     private final AioServerConfiguration configuration;
     private final MvcConfiguration mvcConfiguration;
     private final SessionManager sessionManager;
+    private final AsynchronousServerSocketChannel server;
 
     ServerCompletionHandler(AioServerConfiguration configuration, MvcConfiguration mvcConfiguration,
-                            SessionManager sessionManager, final ApplicationContext applicationContext) {
+                            SessionManager sessionManager, final ApplicationContext applicationContext,
+                            AsynchronousServerSocketChannel server) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
         this.mvcConfiguration = mvcConfiguration;
         this.sessionManager = sessionManager;
+        this.server = server;
     }
 
     @Override
     public void completed(AsynchronousSocketChannel channel, AsynchronousServerSocketChannel attachment) {
-        /*if (attachment != null && !attachment.isOpen()) {
-            // accept the next connection
-            listener.accept(attachment, this);
-        } else {
-            listener.accept(null, this);
-        }*/
-
+        long begin = System.currentTimeMillis();
         // handle this connection
-        RouterRequest routerRequest = handleRequest(channel);
-        handleResponse(routerRequest, channel, attachment);
+        handleRequest(channel, routerRequest -> handleResponse(routerRequest, channel, attachment), begin);
+        // handle next connection
+        if (attachment != null) {
+            attachment.accept(attachment, ServerCompletionHandler.this);
+        }
     }
 
-    private RouterRequest handleRequest(AsynchronousSocketChannel channel) {
+    private void handleRequest(AsynchronousSocketChannel channel, Consumer<RouterRequest> routerRequestConsumer,
+                               long beginTime) {
         try {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("remote address: " + channel.getRemoteAddress().toString());
@@ -65,32 +67,29 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
         }
 
         //获取客户端发送的请求
-        var requestCompleteHandler = new RequestCompleteHandler();
-        return requestCompleteHandler.handle(configuration.getConnectionTimeout(), configuration.isIgnoreEncode(), channel, this.sessionManager);
+        var requestCompleteHandler = RequestCompleteHandler.getInstance();
+        requestCompleteHandler.handle(configuration.getConnectionTimeout(), configuration.isIgnoreEncode(), channel,
+                this.sessionManager, routerRequestConsumer, beginTime);
     }
 
     private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,
-                                             AsynchronousServerSocketChannel attachment) {
+                                AsynchronousServerSocketChannel attachment) {
         if (routerRequest != null) {
             var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration, mvcConfiguration);
-            responseCompletionHandler.handle(channel);
-        }
+            responseCompletionHandler.handle(channel, () -> {
+                try {
+                    channel.shutdownOutput();
+                    channel.shutdownInput();
+                } catch (IOException e) {
+                    LOGGER.error("", e);
+                }
 
-        try {
-            channel.shutdownOutput();
-            channel.shutdownInput();
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-
-        try {
-            channel.close();
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-
-        if (attachment != null) {
-            attachment.accept(attachment, this);
+                try {
+                    channel.close();
+                } catch (IOException e) {
+                    LOGGER.error("", e);
+                }
+            });
         }
     }
 

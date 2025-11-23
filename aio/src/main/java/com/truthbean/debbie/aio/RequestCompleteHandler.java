@@ -9,26 +9,22 @@
  */
 package com.truthbean.debbie.aio;
 
-import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.Logger;
-import com.truthbean.debbie.server.session.SessionManager;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.mvc.request.RouterRequest;
+import com.truthbean.debbie.server.session.SessionManager;
 
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * CompletionHandler&lt;V,A&gt;
- *     V-IO操作的结果，这里是read操作成功读取的字节数
- *     A-IO操作附件，由于ConnectCompleteHandler中调用asyncSocketChannel.read方法时
- *     传入了ByteBuffer，所以这里为ByteBuffer
  *
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
@@ -37,31 +33,57 @@ import java.util.stream.Collectors;
 class RequestCompleteHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestCompleteHandler.class);
 
-    RouterRequest handle(final long connectionTimeout, final boolean ignoreEncode,
-                         final AsynchronousSocketChannel channel, final SessionManager sessionManager) {
+    // 单例模式
+    private static final RequestCompleteHandler INSTANCE = new RequestCompleteHandler();
+
+    private RequestCompleteHandler() {
+    }
+
+    static RequestCompleteHandler getInstance() {
+        return INSTANCE;
+    }
+
+    void handle(final long connectionTimeout, final boolean ignoreEncode,
+                final AsynchronousSocketChannel channel, final SessionManager sessionManager,
+                final Consumer<RouterRequest> routerRequestConsumer, final long beginTime) {
         try {
             // 请求内容
             StringBuilder stringBuilder = new StringBuilder();
 
             // ByteBuffer是非线程安全的，如果要在多个线程间共享同一个ByteBuffer，需要考虑线程安全性问题
-            var byteBuffer = ByteBuffer.allocate(128);
-            while (true) {
-                var read = channel.read(byteBuffer);
-                Integer size;
-                try {
-                    size = connectionTimeout <= 0 ? read.get() : read.get(connectionTimeout, TimeUnit.MILLISECONDS);
-                } catch (TimeoutException e) {
-                    size = 0;
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("remote client message is null, it could be a options request.", e);
-                    } else {
-                        LOG.debug("remote client message is null, it could be a options request.");
-                    }
-                }
-                if (size <= 0) {
-                    break;
-                }
+            try {
+                readRequest(connectionTimeout, channel, stringBuilder);
+            } catch (Exception e) {
+                LOG.error("Read request failed. ", e);
+                closeChannel(channel);
+                return;
+            }
 
+            SocketAddress remoteAddress = channel.getRemoteAddress();
+
+            var request = stringBuilder.toString();
+            LOG.debug("client message: " + request);
+            List<String> lines = request.lines().collect(Collectors.toList());
+            if (lines.size() > 1) {
+                routerRequestConsumer.accept(new RawRequestWrapper(lines, remoteAddress, sessionManager, ignoreEncode));
+                long end = System.currentTimeMillis();
+                LOG.debug("Request processed in {} ms", end - beginTime);
+            }
+        } catch (Exception e) {
+            LOG.error("Read failed. ", e);
+            closeChannel(channel);
+        }
+    }
+
+    private void readRequest(long connectionTimeout, AsynchronousSocketChannel channel, StringBuilder stringBuilder) {
+        final int bufferSize = 8192;
+        var byteBuffer = ByteBuffer.allocateDirect(bufferSize);
+        channel.read(byteBuffer, connectionTimeout, TimeUnit.MILLISECONDS, byteBuffer, new CompletionHandler<>() {
+            @Override
+            public void completed(Integer result, ByteBuffer attachment) {
+                if (result <= 0) {
+                    return;
+                }
                 // 重置 position和mark
                 byteBuffer.flip();
                 var remaining = byteBuffer.remaining();
@@ -71,47 +93,34 @@ class RequestCompleteHandler {
 
                 var part = new String(reqBytes);
                 stringBuilder.append(part);
-            }
-            SocketAddress remoteAddress = channel.getRemoteAddress();
-            // return completed(read.get(), readByteBuffer, remoteAddress, sessionManager);
 
-            var request = stringBuilder.toString();
-            LOG.debug("client message: " + request);
-            List<String> lines = request.lines().collect(Collectors.toList());
-            if (lines.isEmpty() || lines.size() == 1) {
-                return null;
+                if (result < bufferSize) {
+                    return;
+                }
+                try {
+                    // 继续读，防止请求内容被截断
+                    readRequest(connectionTimeout, channel, stringBuilder);
+                } catch (Exception e) {
+                    LOG.error("Read next request part failed. ", e);
+                }
             }
 
-            return new RawRequestWrapper(lines, remoteAddress, sessionManager, ignoreEncode);
-        } catch (InterruptedException | ExecutionException | IOException e) {
-            LOG.error("", e);
-        }
-        return null;
+            @Override
+            public void failed(Throwable exc, ByteBuffer attachment) {
+                LOG.error("Read failed. ", exc);
+                closeChannel(channel);
+            }
+        });
     }
 
-    private RouterRequest completed(int result, final ByteBuffer readByteBuffer, final SocketAddress remoteAddress,
-                                    final SessionManager sessionManager) {
-        LOG.info("Deal thread of [RequestCompleteHandler] : " + Thread.currentThread().getName());
-        LOG.info("Read bytes : " + result);
-        if (result == -1) {
-            LOG.warn("httpRequest from client error!");
-            return null;
-        } else {
-            // 重置 position和mark
-            readByteBuffer.flip();
-            var remaining = readByteBuffer.remaining();
-            var reqBytes = new byte[remaining];
-            readByteBuffer.get(reqBytes);
-
-            var originRequest = new String(reqBytes);
-            LOG.trace("raw request: " + originRequest);
-
-            List<String> lines = originRequest.lines().collect(Collectors.toList());
-            if (lines.isEmpty() || lines.size() == 1) {
-                return null;
+    private void closeChannel(AsynchronousSocketChannel channel) {
+        try {
+            if (channel != null && channel.isOpen()) {
+                channel.close();
+                LOG.debug("Channel closed: " + channel);
             }
-
-            return new RawRequestWrapper(lines, remoteAddress, sessionManager, false);
+        } catch (IOException e) {
+            LOG.error("Channel closed error. ", e);
         }
     }
 }

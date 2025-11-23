@@ -12,7 +12,7 @@ package com.truthbean.debbie.jdbc.domain;
 import com.truthbean.debbie.data.validate.DataValidateFactory;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentResolver;
-import com.truthbean.debbie.util.Assert;
+import com.truthbean.core.lang.Assert;
 import com.truthbean.core.util.StringUtils;
 
 import java.util.*;

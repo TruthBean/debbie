@@ -153,14 +153,6 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
         return localBean;
     }*/
 
-    @Override
-    public Boolean isProxiedBean() {
-        if (created) {
-            return bean instanceof Proxy;
-        }
-        return null;
-    }
-
     private void createBean(String profile, String category, ApplicationContext applicationContext) {
         Bean localBean = null;
         Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();
@@ -206,7 +198,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
                     if (hasVirtualConstruct && ReflectionConfigurer.isReflectEnable(environment, defaultEnvironment)) {
                         localBean = beanLifecycle.construct(preparedBean, this);
                     }
-                    if (hasVirtualFields && localBean != null) {
+                    if (localBean != null) {
                         localBean = beanLifecycle.postConstruct(localBean, this, false, profile, category);
                         localBean = beanLifecycle.doPreCreated(this, localBean, getClazz(), getBeanProxyType());
                         localBean = beanLifecycle.getCreatedBean(localBean, this);

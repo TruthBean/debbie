@@ -10,6 +10,7 @@
 package com.truthbean.debbie.aio;
 
 import com.truthbean.core.util.StringUtils;
+import com.truthbean.debbie.concurrent.ThreadPoolConfiguration;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.server.BaseServerProperties;
@@ -30,6 +31,10 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private static final String SERVER_MESSAGE = "message";
     private static final String CONNECTION_TIMEOUT = "connection.timeout";
     private static final String URL_ENCODED = "url.encoded";
+
+    private static final String THREAD_POOL_CORE_SIZE = "thread-pool.core-size";
+    private static final String THREAD_POOL_MAX_POOL_SIZE = "thread-pool.max-pool-size";
+    private static final String THREAD_POOL_QUEUE_SIZE = "thread-pool.queue-size";
 
     // ===========================================================================
     static final String ENABLE_KEY = "debbie.server.aio.enable";
@@ -164,6 +169,33 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
                 AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
                 boolean encoded = getBoolean(v, true);
                 configuration.setIgnoreEncode(!encoded);
+            }
+            key = AIO_SERVER_PREFIX + category + THREAD_POOL_CORE_SIZE;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                int coreSize = getInteger(v, Runtime.getRuntime().availableProcessors());
+                if (configuration.getThreadPoolConfig() == null) {
+                    configuration.setThreadPoolConfig(new ThreadPoolConfiguration());
+                }
+                configuration.getThreadPoolConfig().setCoreSize(coreSize);
+            }
+            key = AIO_SERVER_PREFIX + category + THREAD_POOL_MAX_POOL_SIZE;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                int maxPoolSize = getInteger(v, Runtime.getRuntime().availableProcessors() * 10);
+                if (configuration.getThreadPoolConfig() == null) {
+                    configuration.setThreadPoolConfig(new ThreadPoolConfiguration());
+                }
+                configuration.getThreadPoolConfig().setMaximumPoolSize(maxPoolSize);
+            }
+            key = AIO_SERVER_PREFIX + category + THREAD_POOL_QUEUE_SIZE;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                int queueSize = getInteger(v, 1024);
+                if (configuration.getThreadPoolConfig() == null) {
+                    configuration.setThreadPoolConfig(new ThreadPoolConfiguration());
+                }
+                configuration.getThreadPoolConfig().setQueueSize(queueSize);
             }
         });
     }

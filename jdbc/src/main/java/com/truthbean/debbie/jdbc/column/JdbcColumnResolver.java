@@ -75,7 +75,7 @@ public class JdbcColumnResolver {
                     String type = ColumnTypeHandler.getType(columnTypeName, precision, scale);
 
                     columnInfo = new ColumnInfo();
-                    if (columnLabel != null && !"".equals(columnLabel.trim())) {
+                    if (columnLabel != null && !columnLabel.trim().isEmpty()) {
                         columnInfo.setProperty(columnNameTransformer.columnNameToPropertyName(columnLabel));
                         columnInfo.setColumn(columnLabel);
                     } else {
@@ -150,33 +150,28 @@ public class JdbcColumnResolver {
         var columnInfo = new ColumnInfo();
         SqlColumn sqlColumn = field.getAnnotation(SqlColumn.class);
         if (sqlColumn != null) {
+            var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
+            columnInfo.setColumn(columnName);
+            if (!sqlColumn.comment().isBlank()) {
+                columnInfo.setComment(sqlColumn.comment());
+            }
             if (sqlColumn.id()) {
-                var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
-                columnInfo.setColumn(columnName);
-
                 columnInfo.setNullable(false);
                 if (field.getType() == UUID.class) {
                     columnInfo.setCharMaxLength(64);
+                } else {
+                    columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
                 }
-                if (!sqlColumn.comment().isBlank()) {
-                    columnInfo.setComment(sqlColumn.comment());
-                }
+
                 columnInfo.setPrimaryKey(true);
                 columnInfo.setPrimaryKeyType(sqlColumn.primaryKey());
             } else {
-                var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
-                columnInfo.setColumn(columnName);
-
                 columnInfo.setNullable(sqlColumn.nullable());
                 columnInfo.setUnique(sqlColumn.unique());
                 columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
                 if (!sqlColumn.defaultValue().isBlank()) {
                     columnInfo.setColumnDefaultValue(sqlColumn.defaultValue());
                 }
-                if (!sqlColumn.comment().isBlank()) {
-                    columnInfo.setComment(sqlColumn.comment());
-                }
-                columnInfo.setCharMaxLength(sqlColumn.charMaxLength());
             }
 
         } else {
@@ -189,6 +184,8 @@ public class JdbcColumnResolver {
             columnInfo.setCharMaxLength(64);
         }
         columnInfo.setProperty(field.getName());
+        columnInfo.setPropertyGetter(o -> ReflectionHelper.getField(o, field));
+        columnInfo.setPropertySetter((entity, property) -> ReflectionHelper.setField(entity, field, property));
         columnInfo.setJavaClass(field.getType());
         return columnInfo;
     }

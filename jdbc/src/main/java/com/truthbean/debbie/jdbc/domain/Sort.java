@@ -10,7 +10,7 @@
 package com.truthbean.debbie.jdbc.domain;
 
 import com.truthbean.debbie.data.Streamable;
-import com.truthbean.debbie.util.Assert;
+import com.truthbean.core.lang.Assert;
 import com.truthbean.core.util.StringUtils;
 
 import java.io.Serializable;
@@ -629,16 +629,13 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
          */
         @Override
         public boolean equals(Object obj) {
-
             if (this == obj) {
                 return true;
             }
 
-            if (!(obj instanceof Order)) {
+            if (!(obj instanceof Order that)) {
                 return false;
             }
-
-            Order that = (Order) obj;
 
             return this.direction.equals(that.direction) && this.property.equals(that.property)
                     && this.ignoreCase == that.ignoreCase && this.nullHandling.equals(that.nullHandling);
@@ -650,8 +647,7 @@ public class Sort implements Streamable<Sort.Order>, Serializable {
          */
         @Override
         public String toString() {
-
-            String result = String.format("%s: %s", property, direction);
+            String result = property + " " + direction;
 
             if (!NullHandling.NATIVE.equals(nullHandling)) {
                 result += ", " + nullHandling;
