@@ -2,6 +2,7 @@ package com.truthbean.debbie.boot;
 
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.debbie.task.TaskInfo;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public interface ApplicationBootContext extends ApplicationContext {
     void registerBeanLifecycle(BeanLifecycle beanLifecycle);
 
     // void refreshBeans();
+
+    void registerTask(TaskInfo taskInfo);
 
     <O, T> T transform(final O origin, final Class<T> target);
 

@@ -118,11 +118,7 @@ class DebbieBootApplicationResolver {
                 configuration.addScanBasePackages(packageName);
             }
 
-            var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
-            beanInfoManager.registerBeanInfo(beanFactory);
-            var bean = beanFactory.factoryBean(applicationContext);
-            configuration.copyFrom(bean);
-            configuration.setApplicationClass(applicationClass);
+            registerApplicationClass(configuration, applicationClass, beanInfoManager);
             return;
         }
 
@@ -168,12 +164,24 @@ class DebbieBootApplicationResolver {
                         }
                     }
                     if (!hasDebbieBootApplication) {
-                        throw new DebbieApplicationException(applicationClass + " has no @DebbieBootApplication or no annotated " +
-                                "by Annotation annotated By @DebbieBootApplication");
+                        var error = "application class(" + applicationClass + ") has no @DebbieBootApplication or no annotated " +
+                                "by Annotation annotated By @DebbieBootApplication";
+                        LOGGER.warn(error);
+                        registerApplicationClass(configuration, applicationClass, beanInfoManager);
+                        // throw new DebbieApplicationException(error);
                     }
                 }
             }
         }
+    }
+
+    private void registerApplicationClass(BeanScanConfiguration configuration, Class<?> applicationClass,
+                                          BeanInfoManager beanInfoManager) {
+        var beanFactory = new PropertiesConfigurationBeanFactory<>(new ClassesScanProperties(), BeanScanConfiguration.class);
+        beanInfoManager.registerBeanInfo(beanFactory);
+        var bean = beanFactory.factoryBean(applicationContext);
+        configuration.copyFrom(bean);
+        configuration.setApplicationClass(applicationClass);
     }
 
     private void resolveDebbieScan(BeanScanConfiguration configuration, DebbieScan scan) {

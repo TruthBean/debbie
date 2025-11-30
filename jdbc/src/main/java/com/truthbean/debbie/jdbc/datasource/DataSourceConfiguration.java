@@ -176,6 +176,7 @@ public class DataSourceConfiguration implements Copyable<DataSourceConfiguration
                 defaultTransactionIsolationLevel, driverProperties, dataSourceFactoryClass);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public DataSourceConfiguration copy() {
         DataSourceConfiguration clone;

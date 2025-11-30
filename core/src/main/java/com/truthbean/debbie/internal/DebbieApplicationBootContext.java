@@ -9,6 +9,8 @@ import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.event.AbstractDebbieEvent;
 import com.truthbean.debbie.io.ResourceResolver;
 import com.truthbean.debbie.proxy.BeanProxyType;
+import com.truthbean.debbie.task.TaskInfo;
+import com.truthbean.debbie.task.TaskRegister;
 
 import java.util.List;
 import java.util.Set;
@@ -78,6 +80,14 @@ public class DebbieApplicationBootContext implements ApplicationBootContext {
     @Override
     public void registerBeanLifecycle(BeanLifecycle beanLifecycle) {
         applicationContext.getBeanInfoManager().registerBeanLifecycle(beanLifecycle);
+    }
+
+    @Override
+    public void registerTask(TaskInfo taskInfo) {
+        TaskRegister taskRegister = applicationContext.getGlobalBeanFactory().factoryIfPresent(TaskRegister.class);
+        if (taskRegister != null) {
+            taskRegister.registerTask(taskInfo);
+        }
     }
 
     @Override

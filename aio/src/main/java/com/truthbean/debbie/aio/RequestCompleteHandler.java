@@ -20,7 +20,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -52,7 +54,7 @@ class RequestCompleteHandler {
 
             // ByteBuffer是非线程安全的，如果要在多个线程间共享同一个ByteBuffer，需要考虑线程安全性问题
             try {
-                readRequest(connectionTimeout, channel, stringBuilder);
+                readRequestSync(connectionTimeout, channel, stringBuilder);
             } catch (Exception e) {
                 LOG.error("Read request failed. ", e);
                 closeChannel(channel);
@@ -111,6 +113,49 @@ class RequestCompleteHandler {
                 closeChannel(channel);
             }
         });
+    }
+
+    private void readRequestSync(long connectionTimeout, AsynchronousSocketChannel channel, StringBuilder stringBuilder) {
+        final int bufferSize = 8192;
+        try {
+            // 请求内容
+
+            // ByteBuffer是非线程安全的，如果要在多个线程间共享同一个ByteBuffer，需要考虑线程安全性问题
+            var byteBuffer = ByteBuffer.allocateDirect(bufferSize);
+            while (true) {
+                var read = channel.read(byteBuffer);
+                Integer size;
+                try {
+                    size = connectionTimeout <= 0 ? read.get() : read.get(connectionTimeout, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    size = 0;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("remote client message is null, it could be a options request.", e);
+                    } else {
+                        LOG.debug("remote client message is null, it could be a options request.");
+                    }
+                }
+                if (size <= 0) {
+                    break;
+                }
+
+                // 重置 position和mark
+                byteBuffer.flip();
+                var remaining = byteBuffer.remaining();
+                var reqBytes = new byte[remaining];
+                byteBuffer.get(reqBytes);
+                byteBuffer.clear();
+
+                var part = new String(reqBytes);
+                stringBuilder.append(part);
+
+                if (size < bufferSize) {
+                    break;
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("", e);
+        }
     }
 
     private void closeChannel(AsynchronousSocketChannel channel) {

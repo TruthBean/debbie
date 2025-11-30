@@ -26,10 +26,14 @@ public class ResultMap<E> extends EntityInfo<E> {
 
     public void addResult(Collection<ColumnInfo> columnInfos) {
         List<ColumnInfo> columnInfoList = super.getColumnInfoList();
+        ColumnInfo primaryKey = getPrimaryKey();
         for (ColumnInfo columnInfo : columnInfoList) {
             for (ColumnInfo info : columnInfos) {
                 if (columnInfo.getColumn().equals(info.getColumn())) {
                     columnInfo.setValue(info.getValue());
+                }
+                if (primaryKey != null && primaryKey.getColumn().equals(info.getColumn())) {
+                    primaryKey.setValue(info.getValue());
                 }
             }
         }
@@ -39,13 +43,17 @@ public class ResultMap<E> extends EntityInfo<E> {
         E e = initSupplier.get();
         List<ColumnInfo> list = getColumnInfoList();
         for (ColumnInfo columnInfo : list) {
-            columnInfo.getPropertySetter().set(e, columnInfo.getValue());
+            columnInfo.setPropertyValue(e, columnInfo.getValue());
+        }
+        ColumnInfo primaryKey = getPrimaryKey();
+        if (primaryKey != null) {
+            primaryKey.setPropertyValue(e, primaryKey.getValue());
         }
         return e;
     }
 
     @Override
     public ResultMap<E> copy() {
-        return new ResultMap<E>(this);
+        return new ResultMap<>(this);
     }
 }

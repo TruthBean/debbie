@@ -333,12 +333,7 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         DataSourceDriverName driverName = transaction.getDriverName();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
-
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
 
@@ -351,16 +346,30 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         }
     }
 
+    private <E> List<String> getColumnNames(EntityInfo<E> entityInfo) {
+        List<ColumnInfo> columnInfoList = new ArrayList<>();
+        var columns = entityInfo.getColumnInfoList();
+        if (columns != null && !columns.isEmpty()) {
+            columnInfoList.addAll(columns);
+        }
+        ColumnInfo primaryKey = entityInfo.getPrimaryKey();
+        if (primaryKey != null) {
+            columnInfoList.add(primaryKey);
+        }
+
+        List<String> columnNames = new LinkedList<>();
+        for (ColumnInfo column : columnInfoList) {
+            columnNames.add(column.getColumn());
+        }
+        return columnNames;
+    }
+
     public <E> List<ColumnInfo> selectOne(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, String whereSql, Object... args) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
 
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table);
         if (whereSql != null && !whereSql.isBlank()) {
@@ -379,12 +388,8 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         if (entityInfo != null) {
 
             var table = entityInfo.getTable();
-            var columns = entityInfo.getColumnInfoList();
 
-            List<String> columnNames = new LinkedList<>();
-            for (ColumnInfo column : columns) {
-                columnNames.add(column.getColumn());
-            }
+            List<String> columnNames = getColumnNames(entityInfo);
 
             return DynamicRepository.sql(entityInfo.getDriverName()).select(columnNames).from(table);
         }
@@ -396,12 +401,8 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
 
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
         Object[] args = null;
@@ -427,12 +428,8 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         var entityClass = entityInfo.getJavaType();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
 
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sqlBuilder = DynamicRepository.sql(driverName).select(columnNames).from(table);
         if (whereSql != null && !whereSql.isBlank()) {
@@ -540,13 +537,9 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         DataSourceDriverName driverName = transaction.getDriverName();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
         var primaryKey = entityInfo.getPrimaryKey();
 
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
             .where().eq(primaryKey.getColumn(), "?").builder();
@@ -557,13 +550,9 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         DataSourceDriverName driverName = transaction.getDriverName();
 
         var table = entityInfo.getTable();
-        var columns = entityInfo.getColumnInfoList();
         var primaryKey = entityInfo.getPrimaryKey();
 
-        List<String> columnNames = new LinkedList<>();
-        for (ColumnInfo column : columns) {
-            columnNames.add(column.getColumn());
-        }
+        List<String> columnNames = getColumnNames(entityInfo);
 
         var sql = DynamicRepository.sql(driverName).select(columnNames).from(table)
                 .where().in(primaryKey.getColumn(), id.size()).builder();

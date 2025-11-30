@@ -13,6 +13,7 @@ import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.PrimaryKeyType;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.lang.Copyable;
+import com.truthbean.transformer.DataTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,21 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
         columnInfo.setColumn(name);
         columnInfo.setPropertyGetter(getter);
         columnInfo.setPropertySetter(setter);
+        this.columnInfoList.add(columnInfo);
+        return this;
+    }
+
+    public <P> EntityInfo<E> addColumn(String name, EntityPropertyGetter<E, P> getter, EntityPropertySetter<E, P> setter,
+                                       DataTransformer<?, P> transformer) {
+        if (this.columnInfoList == null) {
+            this.columnInfoList = new ArrayList<>();
+        }
+        ColumnInfo columnInfo = new ColumnInfo();
+        columnInfo.setPrimaryKey(false);
+        columnInfo.setColumn(name);
+        columnInfo.setPropertyGetter(getter);
+        columnInfo.setPropertySetter(setter);
+        columnInfo.setValueTransformer(transformer);
         this.columnInfoList.add(columnInfo);
         return this;
     }

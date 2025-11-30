@@ -12,6 +12,7 @@ package com.truthbean.debbie.jdbc.column;
 import com.truthbean.debbie.jdbc.entity.EntityPropertyGetter;
 import com.truthbean.debbie.jdbc.entity.EntityPropertySetter;
 import com.truthbean.debbie.lang.Copyable;
+import com.truthbean.transformer.DataTransformer;
 
 import java.sql.JDBCType;
 
@@ -48,8 +49,12 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
     private Class<?> javaClass;
 
     private Object value;
+    @SuppressWarnings("rawtypes")
     private EntityPropertyGetter propertyGetter;
+    @SuppressWarnings("rawtypes")
     private EntityPropertySetter propertySetter;
+    @SuppressWarnings("rawtypes")
+    private DataTransformer valueTransformer;
 
     private boolean isPrimaryKey;
     private PrimaryKeyType primaryKeyType;
@@ -191,8 +196,20 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
     @SuppressWarnings("unchecked")
     public <E, P> void setPropertyValue(E entity, P value) {
         if (propertySetter != null) {
+            if (valueTransformer != null) {
+                value = (P) valueTransformer.transform(value);
+            }
             this.propertySetter.set(entity, value);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <S, T> DataTransformer<S, T> getValueTransformer() {
+        return valueTransformer;
+    }
+
+    public <S, T> void setValueTransformer(DataTransformer<S, T> valueTransformer) {
+        this.valueTransformer = valueTransformer;
     }
 
     public Class<?> getJavaClass() {
