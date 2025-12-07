@@ -59,6 +59,10 @@ public class BaseRouterResponse {
         this.status = status;
     }
 
+    public void setStatus(int status) {
+        this.status = HttpStatus.valueOf(status);
+    }
+
     public void copyFrom(BaseRouterResponse response) {
         this.headers.putAll(response.headers);
 

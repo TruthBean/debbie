@@ -83,7 +83,7 @@ public class EntityResolver {
                 List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
                 return transformer(row, declaredFields, clazz);
             });
-        } else {
+        } else if (row.size() > 1) {
             ResultMap<T> resultMap = this.getResultMap(clazz);
             if (resultMap != null) {
                 resultMap.addResult(row);
@@ -92,7 +92,7 @@ public class EntityResolver {
             List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
             return transformer(row, declaredFields, clazz);
         }
-
+        return null;
     }
 
     @SuppressWarnings("unchecked")
