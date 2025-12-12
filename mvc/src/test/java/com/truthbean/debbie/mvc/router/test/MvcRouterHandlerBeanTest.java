@@ -16,6 +16,7 @@ import com.truthbean.debbie.mvc.router.RouterInfo;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ class MvcRouterHandlerBeanTest {
     @Test
     void test() {
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        Set<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
+        Collection<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
         for (RouterInfo routerInfo : routerInfoSet) {
             System.out.println(routerInfo.getPaths());
         }

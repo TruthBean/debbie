@@ -20,6 +20,7 @@ import com.truthbean.debbie.net.uri.UriUtils;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author TruthBean
@@ -28,7 +29,8 @@ import java.util.regex.Pattern;
 public class RouterPathSplicer {
 
     private static final String VARIABLE_REGEX = "\\{[^/]+?\\}";
-    private static final Pattern BLACK_PATTERN = Pattern.compile("[A-Za-z0-9_.]+");
+    private static final String BLACK_PATTERN_STR = "[A-Za-z0-9_.\\u4e00-\\u9fa5]+";
+    private static final Pattern BLACK_PATTERN = Pattern.compile(BLACK_PATTERN_STR);
     private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
 
     private static List<String> resolvePath(RouterAnnotationInfo router) {
@@ -82,13 +84,9 @@ public class RouterPathSplicer {
     }
 
     private static List<String> trimPaths(String[] paths) {
-        List<String> copy = Arrays.asList(paths);
-        for (String path : paths) {
-            if (path == null || path.isBlank()) {
-                copy.remove(path);
-            }
-        }
-        return copy;
+        return Arrays.stream(paths)
+                .filter(path -> path != null && !path.isBlank())
+                .collect(Collectors.toList());
     }
 
     public static List<String> splicePaths(String dispatcherMapping, @Nullable HttpRouterInfo prefixRouter,
@@ -201,9 +199,11 @@ public class RouterPathSplicer {
         Map<String, List<String>> result = new HashMap<>();
         var routerPath = pathFragment.getFragment();
         String[] split = routerPath.split(VARIABLE_REGEX);
-        List<UriPathVariable> uriPathVariableNames = pathFragment.getUriPathVariableNames();
         if (split.length == 0) {
             var name = routerPath.substring(1, routerPath.length() - 1);
+            if (name.contains(":")) {
+                name = name.split(":")[0];
+            }
             var uriPathVariableName = pathFragment.getUriPathVariable(name);
             if (uriPathVariableName != null) {
                 Pattern pattern = uriPathVariableName.getPattern();
@@ -213,6 +213,7 @@ public class RouterPathSplicer {
                 }
             }
         } else {
+            List<UriPathVariable> uriPathVariableNames = pathFragment.getUriPathVariableNames();
             for (String s : split) {
                 if ("".equals(s)) continue;
                 String[] values = targetUrl.split(s);
@@ -223,7 +224,7 @@ public class RouterPathSplicer {
                         list.add(value);
                     }
                 }
-                for (int i = 0; i < list.size(); i++) {
+                for (int i = 0; i < list.size() && i < uriPathVariableNames.size(); i++) {
                     var uriPathVariableName = uriPathVariableNames.get(i);
                     if (uriPathVariableName == null) continue;
                     var value = list.get(i);
@@ -278,7 +279,7 @@ public class RouterPathSplicer {
                     } else {
                         uriPathVariable.setName(group.substring(1, group.length() - 1));
                         uriPathVariable.setPattern(BLACK_PATTERN);
-                        regex = regex.replace(group, "[A-Za-z0-9_.]+");
+                        regex = regex.replace(group, BLACK_PATTERN_STR);
                     }
                     pathFragment.addPathVariable(uriPathVariable, new ArrayList<>());
                 }

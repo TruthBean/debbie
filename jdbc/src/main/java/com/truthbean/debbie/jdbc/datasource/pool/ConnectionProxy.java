@@ -27,10 +27,10 @@ class ConnectionProxy implements InvocationHandler {
     private final Connection realConnection;
     private final Connection proxyConnection;
     private long checkoutTimestamp;
-    private long createdTimestamp;
-    private long lastUsedTimestamp;
-    private int connectionTypeCode;
-    private boolean valid;
+    private volatile long createdTimestamp;
+    private volatile long lastUsedTimestamp;
+    private volatile int connectionTypeCode;
+    private volatile boolean valid;
 
     private final DefaultConnectionPool defaultConnectionPool;
 
@@ -62,8 +62,8 @@ class ConnectionProxy implements InvocationHandler {
      *
      * @return True if the connection is usable
      */
-    public boolean isValid() {
-        return valid && realConnection != null && defaultConnectionPool.pingConnection(this);
+    public boolean isValid() throws SQLException {
+        return valid && realConnection != null && !realConnection.isClosed() && defaultConnectionPool.pingConnection(this);
     }
 
     /**

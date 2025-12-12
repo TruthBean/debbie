@@ -168,7 +168,7 @@ public class MvcRouterHandler {
         }
     }*/
 
-    public static Set<RouterInfo> matchRouterPath(String url, Set<RouterInfo> routerInfos, RouterRequest routerRequest) {
+    public static Set<RouterInfo> matchRouterPath(String url, Collection<RouterInfo> routerInfos, RouterRequest routerRequest) {
         Set<RouterInfo> result = new HashSet<>();
 
         // if no path variable and no matrix

@@ -153,7 +153,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
                 configuration.setHttpVersion(httpVersion);
             }
             key = AIO_SERVER_PREFIX + category + SERVER_MESSAGE;
-            if (k.endsWith(key)) {
+            if (k.equals(key)) {
                 AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
                 String serverMessage = getStringValue(v, "A Simple Java Aio WebServer by Debbie Framework");
                 configuration.setServerMessage(serverMessage);

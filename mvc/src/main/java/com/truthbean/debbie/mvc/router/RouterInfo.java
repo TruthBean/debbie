@@ -82,12 +82,34 @@ public class RouterInfo implements Copyable {
         this.paths = paths;
     }
 
+    public String getPath() {
+        StringBuilder sb = new StringBuilder();
+        if (this.paths != null && !this.paths.isEmpty()) {
+            for (RouterPathFragments path : this.paths) {
+                sb.append(path.getRawPath());
+            }
+        }
+        return sb.toString();
+    }
+
     public List<HttpMethod> getRequestMethod() {
         if (this.annotationInfo != null) {
             return Arrays.asList(this.annotationInfo.method());
         } else {
             return new ArrayList<>();
         }
+    }
+
+    private String getSortMethod() {
+        StringBuilder sb = new StringBuilder();
+        getRequestMethod().stream()
+                .sorted(Comparator.comparing(HttpMethod::name))
+                .forEach(e -> sb.append(e.name()));
+        return sb.toString();
+    }
+
+    public String getSortKey() {
+        return getPath() + getSortMethod();
     }
 
     public RouterResponse getResponse() {

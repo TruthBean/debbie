@@ -18,6 +18,7 @@ import com.truthbean.debbie.mvc.router.RouterInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Set;
 
 public class MvcRouterRegisterTest {
@@ -45,7 +46,7 @@ public class MvcRouterRegisterTest {
         MvcRouterRegister.registerRouter(mvcConfiguration, context);
 
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        Set<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
+        Collection<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
         for (RouterInfo routerInfo : routerInfoSet) {
             System.out.println(routerInfo.getPaths());
         }

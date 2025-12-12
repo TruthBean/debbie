@@ -33,6 +33,7 @@ import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author TruthBean
@@ -326,8 +327,8 @@ public class MvcRouterRegister {
         }
     }
 
-    public static Set<RouterInfo> getRouterInfoSet() {
-        return Collections.unmodifiableSet(instance.routerInfoSet);
+    public static Collection<RouterInfo> getRouterInfoSet() {
+        return instance.routerInfoSet.stream().sorted(Comparator.comparing(RouterInfo::getSortKey)).collect(Collectors.toList());
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MvcRouterRegister.class);

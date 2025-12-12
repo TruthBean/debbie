@@ -30,14 +30,14 @@ public class DefaultConnectionPool {
 
     private final List<ConnectionProxy> idleConnections = new ArrayList<>();
     private final List<ConnectionProxy> activeConnections = new ArrayList<>();
-    private long requestCount = 0;
-    private long accumulatedRequestTime = 0;
-    private long accumulatedCheckoutTime = 0;
-    private long claimedOverdueConnectionCount = 0;
-    private long accumulatedCheckoutTimeOfOverdueConnections = 0;
-    private long accumulatedWaitTime = 0;
-    private long hadToWaitCount = 0;
-    private long badConnectionCount = 0;
+    private volatile long requestCount = 0;
+    private volatile long accumulatedRequestTime = 0;
+    private volatile long accumulatedCheckoutTime = 0;
+    private volatile long claimedOverdueConnectionCount = 0;
+    private volatile long accumulatedCheckoutTimeOfOverdueConnections = 0;
+    private volatile long accumulatedWaitTime = 0;
+    private volatile long hadToWaitCount = 0;
+    private volatile long badConnectionCount = 0;
 
     private int expectedConnectionTypeCode;
 
@@ -253,7 +253,11 @@ public class DefaultConnectionPool {
                     // ping to server and check the connection is valid or not
                     if (conn.isValid()) {
                         if (!conn.getRealConnection().getAutoCommit()) {
-                            conn.getRealConnection().rollback();
+                            try {
+                                conn.getRealConnection().rollback();
+                            } catch (SQLException e) {
+                                log.debug("Bad connection. Could not roll back");
+                            }
                         }
                         conn.setConnectionTypeCode(assembleConnectionTypeCode(configuration.getUrl(), username, password));
                         conn.setCheckoutTimestamp(System.currentTimeMillis());
