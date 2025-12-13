@@ -9,12 +9,16 @@
  */
 package com.truthbean.debbie.jdbc.column;
 
+import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.entity.EntityPropertyGetter;
 import com.truthbean.debbie.jdbc.entity.EntityPropertySetter;
 import com.truthbean.debbie.lang.Copyable;
 import com.truthbean.transformer.DataTransformer;
 
+import java.sql.Date;
 import java.sql.JDBCType;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 /**
  * @author TruthBean
@@ -196,10 +200,31 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
     @SuppressWarnings("unchecked")
     public <E, P> void setPropertyValue(E entity, P value) {
         if (propertySetter != null) {
-            if (valueTransformer != null) {
+            if (valueTransformer != null && valueTransformer != DataTransformer.NO) {
                 value = (P) valueTransformer.transform(value);
             }
-            this.propertySetter.set(entity, value);
+            if (javaClass != null) {
+                if (value instanceof Date) {
+                    Object val = ColumnTypeHandler.transformDate((Date) value, javaClass);
+                    if (val != null) {
+                        this.propertySetter.set(entity, val);
+                    }
+                } else if (value instanceof Time) {
+                    Object val = ColumnTypeHandler.transformTime((Time) value, javaClass);
+                    if (val != null) {
+                        this.propertySetter.set(entity, val);
+                    }
+                } else if (value instanceof Timestamp) {
+                    Object val = ColumnTypeHandler.transformTimestamp((Timestamp) value, javaClass);
+                    if (val != null) {
+                        this.propertySetter.set(entity, val);
+                    }
+                } else {
+                    this.propertySetter.set(entity, value);
+                }
+            } else {
+                this.propertySetter.set(entity, value);
+            }
         }
     }
 

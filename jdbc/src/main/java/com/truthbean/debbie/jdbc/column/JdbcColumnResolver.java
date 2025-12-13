@@ -19,11 +19,14 @@ import com.truthbean.debbie.jdbc.util.JdbcUtils;
 import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.transformer.DataTransformer;
+import com.truthbean.transformer.DataTransformerCenter;
 
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -173,7 +176,17 @@ public class JdbcColumnResolver {
                     columnInfo.setColumnDefaultValue(sqlColumn.defaultValue());
                 }
             }
-
+            try {
+                Class<? extends DataTransformer<?, ?>> transformer = sqlColumn.transformer();
+                if (transformer == DataTransformer.NoDataTransformer.class
+                        || Objects.equals(transformer, DataTransformer.class)) {
+                    columnInfo.setValueTransformer(DataTransformer.NO);
+                } else {
+                    columnInfo.setValueTransformer(DataTransformerCenter.getTransformer(transformer));
+                }
+            } catch (Exception e) {
+                LOGGER.error(() -> "transformer class " + sqlColumn.transformer() + " instance error", e);
+            }
         } else {
             columnInfo.setColumn(field.getName());
         }

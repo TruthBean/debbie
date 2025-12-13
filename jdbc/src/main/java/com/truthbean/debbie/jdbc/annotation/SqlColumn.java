@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.annotation;
 
 import com.truthbean.debbie.jdbc.column.PrimaryKeyType;
+import com.truthbean.transformer.DataTransformer;
 
 import java.lang.annotation.*;
 
@@ -54,4 +55,10 @@ public @interface SqlColumn {
      * @return column definition
      */
     String columnDefinition() default "";
+
+    /**
+     * @return transformer class
+     */
+    @SuppressWarnings("rawtypes")
+    Class<? extends DataTransformer<?, ?>> transformer() default DataTransformer.NoDataTransformer.class;
 }

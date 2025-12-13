@@ -96,19 +96,19 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
     }
 
     public <P> EntityInfo<E> addColumn(String name, EntityPropertyGetter<E, P> getter, EntityPropertySetter<E, P> setter) {
-        if (this.columnInfoList == null) {
-            this.columnInfoList = new ArrayList<>();
-        }
-        ColumnInfo columnInfo = new ColumnInfo();
-        columnInfo.setPrimaryKey(false);
-        columnInfo.setColumn(name);
-        columnInfo.setPropertyGetter(getter);
-        columnInfo.setPropertySetter(setter);
-        this.columnInfoList.add(columnInfo);
-        return this;
+        return addColumn(name, null, getter, setter, null);
+    }
+
+    public <P> EntityInfo<E> addColumn(String name, Class<P> javaClass, EntityPropertyGetter<E, P> getter, EntityPropertySetter<E, P> setter) {
+        return addColumn(name, javaClass, getter, setter, null);
     }
 
     public <P> EntityInfo<E> addColumn(String name, EntityPropertyGetter<E, P> getter, EntityPropertySetter<E, P> setter,
+                                       DataTransformer<?, P> transformer) {
+        return addColumn(name, null, getter, setter, transformer);
+    }
+
+    private <P> EntityInfo<E> addColumn(String name, Class<P> javaClass, EntityPropertyGetter<E, P> getter, EntityPropertySetter<E, P> setter,
                                        DataTransformer<?, P> transformer) {
         if (this.columnInfoList == null) {
             this.columnInfoList = new ArrayList<>();
@@ -118,6 +118,7 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
         columnInfo.setColumn(name);
         columnInfo.setPropertyGetter(getter);
         columnInfo.setPropertySetter(setter);
+        columnInfo.setJavaClass(javaClass);
         columnInfo.setValueTransformer(transformer);
         this.columnInfoList.add(columnInfo);
         return this;

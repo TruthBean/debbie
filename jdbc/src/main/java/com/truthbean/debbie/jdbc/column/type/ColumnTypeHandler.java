@@ -17,6 +17,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.time.*;
+import java.util.Calendar;
 
 /**
  * @author 璩诗斌
@@ -93,6 +95,110 @@ public class ColumnTypeHandler {
             case JdbcTypeConstants.URL -> columnClass.cast(resultSet.getURL(index));
             default -> columnClass.cast(resultSet.getObject(index));
         };
+    }
+
+    public static <T> T transformTime(Time time, Class<T> targetClass) {
+        if (time == null) {
+            return null;
+        }
+        if (targetClass == java.util.Date.class) {
+            return targetClass.cast(time);
+        }
+        if (targetClass == LocalTime.class) {
+            return targetClass.cast(LocalTime.ofInstant(Instant.ofEpochMilli(time.getTime()), ZoneId.systemDefault()));
+        }
+        if (targetClass == Time.class) {
+            return targetClass.cast(time);
+        }
+        if (targetClass == String.class) {
+            return targetClass.cast(time.toString());
+        }
+        return null;
+    }
+
+    public static <T> T transformDate(Date date, Class<T> targetClass) {
+        if (date == null) {
+            return null;
+        }
+        if (targetClass == Date.class) {
+            return targetClass.cast(date);
+        }
+        if (targetClass == java.util.Date.class) {
+            return targetClass.cast(date);
+        }
+        if (targetClass == LocalDateTime.class) {
+            return targetClass.cast(new Timestamp(date.getTime()).toLocalDateTime());
+        }
+        if (targetClass == Timestamp.class) {
+            return targetClass.cast(new Timestamp(date.getTime()));
+        }
+        if (targetClass == LocalDate.class) {
+            return targetClass.cast(date.toLocalDate());
+        }
+        if (targetClass == LocalTime.class) {
+            return targetClass.cast(LocalTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneId.systemDefault()));
+        }
+        if (targetClass == Time.class) {
+            return targetClass.cast(new Time(date.getTime()));
+        }
+        if (targetClass == Instant.class) {
+            return targetClass.cast(Instant.ofEpochMilli(date.getTime()));
+        }
+        if (targetClass == Calendar.class) {
+            return targetClass.cast(new Calendar.Builder().setInstant(date).build());
+        }
+        if (targetClass == ZonedDateTime.class) {
+            return targetClass.cast(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
+        }
+        if (targetClass == String.class) {
+            return targetClass.cast(date.toString());
+        }
+        return null;
+    }
+
+    private static <T> T getTimestamp(ResultSet resultSet, int index, Class<T> columnClass) throws SQLException {
+        Timestamp timestamp = resultSet.getTimestamp(index);
+        return transformTimestamp(timestamp, columnClass);
+    }
+
+    public static <T> T transformTimestamp(Timestamp timestamp, Class<T> targetClass) {
+        if (timestamp == null) {
+            return null;
+        }
+        if (targetClass == Date.class) {
+            return targetClass.cast(new Date(timestamp.getTime()));
+        }
+        if (targetClass == java.util.Date.class) {
+            return targetClass.cast(new java.util.Date(timestamp.getTime()));
+        }
+        if (targetClass == LocalDateTime.class) {
+            return targetClass.cast(timestamp.toLocalDateTime());
+        }
+        if (targetClass == Timestamp.class) {
+            return targetClass.cast(timestamp);
+        }
+        if (targetClass == LocalDate.class) {
+            return targetClass.cast(timestamp.toLocalDateTime().toLocalDate());
+        }
+        if (targetClass == LocalTime.class) {
+            return targetClass.cast(timestamp.toLocalDateTime().toLocalTime());
+        }
+        if (targetClass == Time.class) {
+            return targetClass.cast(new Time(timestamp.getTime()));
+        }
+        if (targetClass == Instant.class) {
+            return targetClass.cast(timestamp.toInstant());
+        }
+        if (targetClass == Calendar.class) {
+            return targetClass.cast(new Calendar.Builder().setInstant(timestamp).build());
+        }
+        if (targetClass == ZonedDateTime.class) {
+            return targetClass.cast(timestamp.toInstant().atZone(ZoneId.systemDefault()));
+        }
+        if (targetClass == String.class) {
+            return targetClass.cast(timestamp.toString());
+        }
+        return null;
     }
 
     public static <T> T getColumnValue(ResultSet resultSet, int index, String columnClassName)
