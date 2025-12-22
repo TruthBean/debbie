@@ -21,6 +21,7 @@ import java.sql.SQLException;
 class ConnectionProxy implements InvocationHandler {
 
     private static final String CLOSE = "close";
+    private static final String IS_CLOSED = "isClosed";
     private static final Class<?>[] IFACES = new Class<?>[]{Connection.class};
 
     private final int hashCode;
@@ -228,7 +229,10 @@ class ConnectionProxy implements InvocationHandler {
         if (CLOSE.hashCode() == methodName.hashCode() && CLOSE.equals(methodName)) {
             defaultConnectionPool.pushConnection(this);
             return null;
+        } else if (IS_CLOSED.hashCode() == methodName.hashCode() && IS_CLOSED.equals(methodName)) {
+            return !isValid();
         }
+
         if (!Object.class.equals(method.getDeclaringClass())) {
             // issue #579 toString() should never fail
             // throw an SQLException instead of a Runtime

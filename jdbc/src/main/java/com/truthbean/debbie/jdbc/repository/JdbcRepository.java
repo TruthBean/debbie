@@ -104,9 +104,9 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.update(transaction, entity, withEntityPropertyNull);
     }
 
-    public int update(Entity entity, boolean withEntityPropertyNull, String whereSql, Object... args) {
+    public int update(Entity entity, boolean withEntityPropertyNull, String extraSql, Object... args) {
         var transaction = getTransaction();
-        return jdbcTransactionRepository.update(transaction, entity, withEntityPropertyNull, whereSql, args);
+        return jdbcTransactionRepository.update(transaction, entity, withEntityPropertyNull, extraSql, args);
     }
 
     public <S extends Entity> S save(S entity) {
@@ -137,9 +137,9 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.findOne(transaction, condition, withConditionNull);
     }
 
-    public Entity findOne(String whereSql, Object... args) {
+    public Entity findOne(String extraSql, Object... args) {
         var transaction = getTransaction();
-        return jdbcTransactionRepository.findOne(transaction, whereSql, args);
+        return jdbcTransactionRepository.findOne(transaction, extraSql, args);
     }
 
     public Optional<Entity> findOptional(Entity condition, boolean withConditionNull) {
@@ -147,9 +147,9 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.findOptional(transaction, condition, withConditionNull);
     }
 
-    public Optional<Entity> findOptional(String whereSql, Object... args) {
+    public Optional<Entity> findOptional(String extraSql, Object... args) {
         var transaction = getTransaction();
-        return jdbcTransactionRepository.findOptional(transaction, whereSql, args);
+        return jdbcTransactionRepository.findOptional(transaction, extraSql, args);
     }
 
     public List<Entity> findList(Entity condition, boolean withConditionNull) {
@@ -157,9 +157,9 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.findList(transaction, condition, withConditionNull);
     }
 
-    public List<Entity> findList(String whereSql, Object... args) {
+    public List<Entity> findList(String extraSql, Object... args) {
         var transaction = getTransaction();
-        return jdbcTransactionRepository.findList(transaction, whereSql, args);
+        return jdbcTransactionRepository.findList(transaction, extraSql, args);
     }
 
     public Page<Entity> findPaged(Entity condition, boolean withConditionNull, PageRequest pageable) {
@@ -167,9 +167,9 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.findPaged(transaction, condition, withConditionNull, pageable);
     }
 
-    public Page<Entity> findPaged(PageRequest pageable, String whereSql, Object... args) {
+    public Page<Entity> findPaged(PageRequest pageable, String extraSql, Object... args) {
         var transaction = getTransaction();
-        return jdbcTransactionRepository.findPaged(transaction, pageable, whereSql, args);
+        return jdbcTransactionRepository.findPaged(transaction, pageable, extraSql, args);
     }
 
     public Page<Entity> findPaged(PageRequest pageable) {

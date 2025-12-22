@@ -33,6 +33,8 @@ public @interface JdbcTransactional {
 
     String databaseId() default "default";
 
+    String trackId() default "";
+
     boolean readonly() default true;
 
     boolean forceCommit() default false;

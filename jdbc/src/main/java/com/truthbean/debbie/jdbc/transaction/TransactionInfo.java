@@ -25,7 +25,16 @@ import java.util.*;
  */
 public class TransactionInfo implements Closeable {
     private String id;
+
+    /**
+     * Track ID for multi transaction,
+     * eg: multi transaction commit together, rollback together.
+     */
+    private String trackId;
+
     private volatile boolean using;
+
+    private boolean session;
 
     private final String method = "(no method)";
 
@@ -54,12 +63,36 @@ public class TransactionInfo implements Closeable {
         this.id = id;
     }
 
+    public String getTrackId() {
+        return trackId;
+    }
+
+    public void setTrackId(String trackId) {
+        this.trackId = trackId;
+    }
+
     public void setUsing(boolean using) {
         this.using = using;
     }
 
     public boolean isUsing() {
         return using;
+    }
+
+    public void startSession() {
+        session = true;
+    }
+
+    public void endSession() {
+        session = false;
+    }
+
+    public boolean inSession() {
+        return session;
+    }
+
+    public boolean notSession() {
+        return !session;
     }
 
     public Method getMethod() {

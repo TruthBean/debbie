@@ -22,10 +22,10 @@ class DynamicRepositoryTest {
     void test(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
         var driver = factory.getDriverName();
         var transaction = factory.getTransaction();
-        String sql = DynamicRepository.sql(driver)
+        String sql = DynamicRepository.sqlBuilder(driver)
                 .select("id", "name").from("railway.seat").orderBy("id").desc()
-                .builder();
-        RepositoryHandler repositoryHandler = new RepositoryHandler();
+                .build();
+        RepositoryHandler repositoryHandler = RepositoryHandler.INSTANCE;
         // repositoryHandler.setDriverName(driver);
         List<List<ColumnInfo>> query = repositoryHandler.query(LOGGER, transaction, sql);
         System.out.println(query);
@@ -35,13 +35,15 @@ class DynamicRepositoryTest {
     void testDynamicRepository(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
         var transaction = factory.getTransaction();
         List<Map<String, Object>> result = DynamicRepository.query(transaction)
+                .sqlBuilder()
                 .select("s.id", "s.name")
                 .from("railway.seat s")
                 .left().join("railway.carriage c").on().eq("c.id = s.carriageId")
                 .where().eq("s.id", 142)
                 .and().eq("s.name", "10F")
                 .orderBy("s.id").desc()
-                .toMap(LOGGER, DmlRepositoryHandler.getInstance());
+                .repository()
+                .toMap(LOGGER);
         System.out.println("-------------------------------");
         System.out.println(result);
     }

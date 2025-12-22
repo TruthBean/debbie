@@ -31,15 +31,20 @@ import java.util.List;
  */
 public class DdlRepositoryHandler extends RepositoryHandler {
 
+    public static final DdlRepositoryHandler INSTANCE = new DdlRepositoryHandler();
+
+    protected DdlRepositoryHandler() {
+    }
+
     public int createDatabase(Logger logger, TransactionInfo transaction, String database) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        String sql = DynamicRepository.sql(driverName).create().database(database).builder();
+        String sql = DynamicRepository.sqlBuilder(driverName).create().database(database).build();
         return super.update(logger, transaction, sql);
     }
 
     public List<String> showDatabases(Logger logger, TransactionInfo transaction) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        String sql = DynamicRepository.sql(driverName).show().databases().builder();
+        String sql = DynamicRepository.sqlBuilder(driverName).show().databases().build();
         return getStrings(logger, transaction, sql);
     }
 
@@ -56,17 +61,17 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public int dropDatabase(Logger logger, TransactionInfo transaction, String database) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        String sql = DynamicRepository.sql(driverName).drop().database(database).builder();
+        String sql = DynamicRepository.sqlBuilder(driverName).drop().database(database).build();
         return super.update(logger, transaction, sql);
     }
 
     public int useDatabase(Logger logger, TransactionInfo transaction, String database) {
-        return DynamicRepository.modify(transaction).use(database).execute(logger, this);
+        return DynamicRepository.modify(transaction).sqlBuilder().use(database).ddlRepository().execute(logger);
     }
 
     public List<String> showTables(Logger logger, TransactionInfo transaction) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        String sql = DynamicRepository.sql(driverName).show().tables().builder();
+        String sql = DynamicRepository.sqlBuilder(driverName).show().tables().build();
         return getStrings(logger, transaction, sql);
     }
 
@@ -87,37 +92,38 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public <E> void createTable(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo) {
         var columns = entityInfo.getColumnInfoList();
-        DynamicRepository repository = DynamicRepository.modify(transaction).create()
-                .tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
+        DynamicRepository.SqlBuilder sqlBuilder = DynamicRepository.modify(transaction)
+                .sqlBuilder()
+                .create().tableIfNotExists(entityInfo.getTable(), true).leftParenthesis();
         if (columns != null && !columns.isEmpty()) {
             int size = columns.size();
             for (int i = 0; i < size - 1; i++) {
                 var iColumn = columns.get(i);
                 if (iColumn != null) {
-                    buildCreateTableColumns(repository, iColumn);
-                    repository.$(", ");
+                    buildCreateTableColumns(sqlBuilder, iColumn);
+                    sqlBuilder.$(", ");
                 }
             }
             var iColumn = columns.get(size - 1);
             if (iColumn != null) {
-                buildCreateTableColumns(repository, iColumn);
+                buildCreateTableColumns(sqlBuilder, iColumn);
             }
         }
-        repository.rightParenthesis();
+        sqlBuilder.rightParenthesis();
 
         var engine = entityInfo.getEngine();
         if (!engine.isBlank()) {
-            repository.engine(engine);
+            sqlBuilder.engine(engine);
         }
 
         var charset = entityInfo.getCharset();
         if (!charset.isBlank()) {
-            repository.defaultCharset(charset);
+            sqlBuilder.defaultCharset(charset);
         }
-        repository.execute(logger, this);
+        sqlBuilder.ddlRepository().execute(logger);
     }
 
-    private void buildCreateTableColumns(DynamicRepository sqlBuilder, ColumnInfo iColumn) {
+    private void buildCreateTableColumns(DynamicRepository.SqlBuilder sqlBuilder, ColumnInfo iColumn) {
         var type = iColumn.getJdbcType().getName();
         if (iColumn.getJdbcType().equals(JDBCType.VARCHAR)) {
             type = SqlKeywords.VARCHAR.value() + "(" + iColumn.getCharMaxLength() + ")";
@@ -162,7 +168,7 @@ public class DdlRepositoryHandler extends RepositoryHandler {
 
     public void dropTable(Logger logger, TransactionInfo transaction, String table) {
         DataSourceDriverName driverName = transaction.getDriverName();
-        String sql = DynamicRepository.sql(driverName).drop().tableIfExists(table, true).builder();
+        String sql = DynamicRepository.sqlBuilder(driverName).drop().tableIfExists(table, true).build();
         super.update(logger, transaction, sql);
     }
 

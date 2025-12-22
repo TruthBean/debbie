@@ -50,6 +50,7 @@ class SurnameJdbcRepositoryTest {
 
     @Test
     void selectById() {
+
     }
 
     @Test
@@ -69,8 +70,10 @@ class SurnameJdbcRepositoryTest {
     @Test
     void count() {
         Optional<Integer> count = DynamicRepository.queryTransactional()
+                .sqlBuilder()
                 .select().count().from("surname")
-                .single(LOGGER, new JdbcRepositoryHandler(), EntityResolver.getInstance(), int.class);
+                .repository()
+                .single(LOGGER, EntityResolver.getInstance(), int.class);
         System.out.println(count);
     }
 

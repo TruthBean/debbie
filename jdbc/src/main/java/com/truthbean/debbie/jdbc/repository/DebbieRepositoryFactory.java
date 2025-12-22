@@ -27,11 +27,11 @@ public class DebbieRepositoryFactory<R extends JdbcRepository<E, I>, E, I> imple
 
     private final Object reference = new Object();
 
-    private DataSourceConfiguration configuration;
+    private volatile DataSourceConfiguration configuration;
 
     private volatile R bean;
 
-    private DebbieReflectionBeanFactory<R> beanFactory;
+    private volatile DebbieReflectionBeanFactory<R> beanFactory;
 
     private final ClassBeanInfo<R> beanInfo;
     private final JdbcTransactionRepository<E, I> repositoryHandler;

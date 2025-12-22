@@ -128,7 +128,7 @@ public class JdbcColumnResolver {
         try {
             Connection connection = driverConnection.getConnection();
             DataSourceDriverName driverName = driverConnection.getDriverName();
-            var sql = DynamicRepository.sql(driverName).selectAll().from(tableName).builder();
+            var sql = DynamicRepository.sqlBuilder(driverName).selectAll().from(tableName).build();
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
 

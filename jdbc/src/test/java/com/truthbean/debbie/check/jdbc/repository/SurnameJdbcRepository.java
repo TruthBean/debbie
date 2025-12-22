@@ -14,13 +14,14 @@ import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
+import com.truthbean.debbie.jdbc.repository.DebbieApplicationRepository;
 import com.truthbean.debbie.jdbc.repository.DebbieRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @SqlRepository
-public class SurnameJdbcRepository extends DebbieRepository<Surname, Long> {
+public class SurnameJdbcRepository extends DebbieApplicationRepository<Surname, Long> {
 
     public SurnameJdbcRepository(@BeanInject TmpRepository tmpRepository) {
         System.out.println(tmpRepository);

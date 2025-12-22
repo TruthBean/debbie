@@ -20,6 +20,22 @@ import java.util.*;
  */
 public class JdbcRepositoryHandler extends DmlRepositoryHandler {
 
+    private static volatile DmlRepositoryHandler repositoryHandler;
+
+    protected JdbcRepositoryHandler() {
+    }
+
+    public static DmlRepositoryHandler getInstance() {
+        if (repositoryHandler == null) {
+            synchronized (DmlRepositoryHandler.class) {
+                if (repositoryHandler == null) {
+                    repositoryHandler = new DmlRepositoryHandler();
+                }
+            }
+        }
+        return repositoryHandler;
+    }
+
     public <Entity> int insert(Logger logger, TransactionInfo transaction, EntityResolver entityResolver, Class<Entity> entityClass,
                                Collection<Entity> entities, boolean withEntityPropertyNull) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
@@ -109,24 +125,24 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
 
     public <Entity> Entity findOne(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
                                    Class<Entity> entityClass,
-                                   String whereSql, Object... args) {
+                                   String extraSql, Object... args) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, whereSql, args);
+        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, extraSql, args);
         return entityResolver.resolve(entityClass, list);
     }
 
     public <Entity> Entity findByColumn(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
                                         Class<Entity> entityClass, String columnName, Object value) {
-        String whereSql = columnName + " = ?";
+        String extraSql = "where " + columnName + " = ?";
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, whereSql, value);
+        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, extraSql, value);
         return entityResolver.resolve(entityClass, list);
     }
 
     public <Entity> List<Entity> findListByColumn(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
                                                   Class<Entity> entityClass, String columnName, Object value) {
-        String whereSql = columnName + " = ?";
-        return findList(logger, transaction, entityResolver, entityClass, whereSql, value);
+        String extraSql = "where " + columnName + " = ?";
+        return findList(logger, transaction, entityResolver, entityClass, extraSql, value);
     }
 
     public <Entity> List<Entity> findListByColumnIn(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
@@ -142,13 +158,13 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
             objects[i++] = value;
         }
         String s = StringUtils.joining(c, ",");
-        String whereSql = columnName + " in (" + s + ")";
-        return findList(logger, transaction, entityResolver, entityClass, whereSql, objects);
+        String extraSql = "where " + columnName + " in (" + s + ")";
+        return findList(logger, transaction, entityResolver, entityClass, extraSql, objects);
     }
 
     public <T> List<T> query(Logger logger, final TransactionInfo transaction, EntityResolver entityResolver,
-                             String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> list = super.query(logger, transaction, selectSql, args);
+                             String sql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> list = super.query(logger, transaction, sql, args);
         if (list.isEmpty()) {
             return Collections.emptyList();
         }
@@ -160,8 +176,8 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
     }
 
     public <T> T queryOne(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
-                          String selectSql, Class<T> clazz, Object... args) {
-        List<List<ColumnInfo>> list = super.query(logger, transaction, selectSql, args);
+                          String sql, Class<T> clazz, Object... args) {
+        List<List<ColumnInfo>> list = super.query(logger, transaction, sql, args);
         if (list.isEmpty()) {
             return null;
         }
@@ -185,9 +201,9 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
     }
 
     public <Entity> Optional<Entity> findOptional(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
-                                                  Class<Entity> entityClass, String whereSql, Object... args) {
+                                                  Class<Entity> entityClass, String extraSql, Object... args) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, whereSql, args);
+        List<ColumnInfo> list = super.selectOne(logger, transaction, entityInfo, extraSql, args);
         if (list == null || list.isEmpty()) {
             return Optional.empty();
         } else {
@@ -196,8 +212,7 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
     }
 
     public <Entity> List<Entity> findList(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
-                                          Class<Entity> entityClass,
-                                          Entity condition, boolean withConditionNull) {
+                                          Class<Entity> entityClass, Entity condition, boolean withConditionNull) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
         List<List<ColumnInfo>> list = super.selectList(logger, transaction, entityInfo, condition, withConditionNull);
 
@@ -209,9 +224,9 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
     }
 
     public <Entity> List<Entity> findList(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
-                                          Class<Entity> entityClass, String whereSql, Object... args) {
+                                          Class<Entity> entityClass, String extraSql, Object... args) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        List<List<ColumnInfo>> list = super.selectList(logger, transaction, entityInfo, whereSql, args);
+        List<List<ColumnInfo>> list = super.selectList(logger, transaction, entityInfo, extraSql, args);
 
         List<Entity> result = new ArrayList<>();
         for (List<ColumnInfo> infoList : list) {
@@ -238,7 +253,7 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
 
         SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, condition, withNull);
 
-        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
+        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).build();
 
         var count = count(logger, transaction, entityInfo, condition, withNull);
         return selectPaged(logger, transaction, entityResolver, entityInfo, pageable, sqlAndArgs, sql, count);
@@ -246,12 +261,12 @@ public class JdbcRepositoryHandler extends DmlRepositoryHandler {
 
     public <E> Page<E> selectPaged(Logger logger, TransactionInfo transaction, EntityResolver entityResolver,
                                    EntityInfo<E> entityInfo,
-                                   PageRequest pageable, String whereSql, Object... args) {
+                                   PageRequest pageable, String extraSql, Object... args) {
         DataSourceDriverName driverName = transaction.getDriverName();
 
-        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, whereSql, args);
+        SqlAndArgs<E> sqlAndArgs = preSelect(driverName, entityInfo, extraSql, args);
 
-        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).builder();
+        var sql = sqlAndArgs.sqlBuilder.limit(pageable.getOffset(), pageable.getPageSize()).build();
 
         var count = count(logger, transaction, entityInfo);
         return selectPaged(logger, transaction, entityResolver, entityInfo, pageable, sqlAndArgs, sql, count);

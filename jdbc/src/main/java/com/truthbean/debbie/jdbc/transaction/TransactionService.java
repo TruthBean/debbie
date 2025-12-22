@@ -22,4 +22,14 @@ public interface TransactionService {
         }
         return transactionInfo;
     }
+
+    default TransactionInfo startTransaction() {
+        TransactionInfo transactionInfo = getTransaction();
+        transactionInfo.startSession();
+        return transactionInfo;
+    }
+
+    default void endTransaction(TransactionInfo transactionInfo) {
+        transactionInfo.endSession();
+    }
 }

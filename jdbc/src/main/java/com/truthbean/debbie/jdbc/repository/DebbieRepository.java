@@ -10,7 +10,6 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.Logger;
-import com.truthbean.debbie.jdbc.annotation.JdbcTransactional;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.domain.Sort;
@@ -44,13 +43,41 @@ public class DebbieRepository<Domain, ID> extends CustomRepository<Domain, ID> {
      * @return a list of domains
      */
     public List<Domain> findAllByIdIn(Collection<ID> ids, Sort sort) {
-        String whereSql = "id in (?) order by " + sort.toString();
+        String whereSql = "where id in (?) order by " + sort.toString();
         return super.findList(whereSql, StringUtils.joining(ids, ","));
-
     }
 
+    /**
+     * Finds all domain by id list and order by desc.
+     *
+     * @param column column name must not be null
+     * @return a list of domains
+     */
+    public List<Domain> findListOrderByDesc(String column) {
+        String whereSql = "order by " + column + " desc";
+        return super.findList(whereSql);
+    }
+
+    /**
+     * Finds all domain by id list and order by asc.
+     *
+     * @param column column name must not be null
+     * @return a list of domains
+     */
+    public List<Domain> findListOrderByAsc(String column) {
+        String whereSql = "order by " + column + " asc";
+        return super.findList(whereSql);
+    }
+
+    /**
+     * Finds all domain by id list and the specified pageable.
+     *
+     * @param ids      id list of domain must not be null
+     * @param pageable the specified pageable must not be null
+     * @return a list of domains
+     */
     public Page<Domain> findAllByIdIn(Collection<ID> ids, PageRequest pageable) {
-        String whereSql = "id in (?)";
+        String whereSql = "where id in (?)";
         return super.findPaged(pageable, whereSql, StringUtils.joining(ids, ","));
     }
 
@@ -60,17 +87,27 @@ public class DebbieRepository<Domain, ID> extends CustomRepository<Domain, ID> {
      * @param ids id list of domain must not be null
      * @return number of rows affected
      */
-    @JdbcTransactional(readonly = false)
     public long deleteByIdIn(Iterable<ID> ids) {
         log.debug("Customized deleteByIdIn method was invoked");
         var ref = new Object() {
             long l = 0L;
         };
-        ids.forEach(id -> {
-            if (super.deleteById(id)) {
-                ref.l++;
-            }
-        });
+        var transactionInfo = getTransaction();
+        transactionInfo.setAutoCommit(false);
+        transactionInfo.startSession();
+        try {
+            ids.forEach(id -> {
+                if (super.deleteById(id)) {
+                    ref.l++;
+                }
+            });
+        } catch (Exception e) {
+            transactionInfo.rollback();
+            throw e;
+        }
+        transactionInfo.commit();
+        transactionInfo.endSession();
+
         return ref.l;
     }
 }

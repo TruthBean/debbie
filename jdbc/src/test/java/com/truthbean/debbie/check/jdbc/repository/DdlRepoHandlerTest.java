@@ -31,7 +31,7 @@ class DdlRepoHandlerTest {
     void testCreateDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                    @BeanInject DataSourceConfiguration configuration)
         throws ExecutionException, InterruptedException {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         /*var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction, () -> {
             var connection = transaction.getDriverConnection();
@@ -40,7 +40,7 @@ class DdlRepoHandlerTest {
         System.out.println(r.get());*/
 
         // CREATE DATABASE IF NOT EXISTS hello DEFAULT_PROFILE CHARACTER SET 'utf8' DEFAULT_PROFILE COLLATE 'utf8_general_ci';
-        String sql = DynamicRepository.modify(factory.getTransaction())
+        String sql = DynamicRepository.modify(factory.getTransaction()).sqlBuilder()
                 .create().database().ifNotExists().$("hello").defaultCharacterSet("utf8").defaultCollate("utf8_general_ci")
                 .toSql();
         System.out.println(sql);
@@ -50,7 +50,7 @@ class DdlRepoHandlerTest {
     @Test
     void testShowDatabases(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                   @BeanInject DataSourceConfiguration configuration) {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.action(transaction, () -> {
             return ddlRepositoryHandler.showDatabases(LOGGER, transaction);
@@ -61,7 +61,7 @@ class DdlRepoHandlerTest {
     @Test
     void testDropDatabase(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                  @BeanInject DataSourceConfiguration configuration) {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             return ddlRepositoryHandler.dropDatabase(LOGGER, transaction, "hello");
@@ -72,7 +72,7 @@ class DdlRepoHandlerTest {
     @Test
     void testShowTables(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                @BeanInject DataSourceConfiguration configuration) {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             ddlRepositoryHandler.useDatabase(LOGGER, transaction, "mysql");
@@ -84,7 +84,7 @@ class DdlRepoHandlerTest {
     @Test
     void testCreateTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                                 @BeanInject DataSourceConfiguration configuration) {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             ddlRepositoryHandler.useDatabase(LOGGER, transaction, "test");
@@ -101,18 +101,22 @@ class DdlRepoHandlerTest {
         var transaction = factory.getTransaction();
         // use table
         DynamicRepository.query(transaction)
+                .sqlBuilder()
                 .use("hello")
-                .execute(LOGGER, new RepositoryHandler());
+                .repository()
+                .execute(LOGGER);
         // ALTER TABLE `surname` ADD COLUMN `test` INT NULL AFTER `name`;
         DynamicRepository.modify(transaction)
+                .sqlBuilder()
                 .alter().table("`surname`").add().column("`test1`").intDeFaultNull().after("`name`")
-                .execute(LOGGER, new RepositoryHandler());
+                .repository()
+                .execute(LOGGER);
     }
 
     @Test
     void dropTable(@BeanInject("dataSourceFactory") DataSourceFactory factory,
                           @BeanInject DataSourceConfiguration configuration) {
-        var ddlRepositoryHandler = new DdlRepositoryHandler();
+        var ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             ddlRepositoryHandler.useDatabase(LOGGER, transaction, "test");
@@ -125,7 +129,10 @@ class DdlRepoHandlerTest {
     @Test
     void truncateTable(@BeanInject("dataSourceFactory") DataSourceFactory factory) {
         DynamicRepository.modify(factory.getTransaction())
-                .truncate().table("surname").execute(LOGGER, new RepositoryHandler());
+                .sqlBuilder()
+                .truncate().table("surname")
+                .repository()
+                .execute(LOGGER);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepoHandlerTest.class);

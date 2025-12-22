@@ -61,15 +61,20 @@ public class DmlRepoHandlerTest {
     }
 
     @Test
-    public void testUpdate(@BeanInject("surnameRepository") SurnameRepository surnameRepository)
-            throws MalformedURLException {
+    public void testUpdate(@BeanInject("surnameRepository") SurnameRepository surnameRepository) {
         Optional<Surname> surnameOptional = surnameRepository.findById(1L);
-        Surname surname = surnameOptional.get();
-        System.out.println(surname);
-        surname.setWebsite(new URL("https://qu.org"));
-        var b = surnameRepository.update(surname);
-        System.out.println(b);
-        System.out.println(surname);
+        surnameOptional.ifPresent(surname -> {
+            System.out.println(surname);
+            try {
+                surname.setWebsite(new URL("https://qu.org"));
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            var b = surnameRepository.update(surname);
+            System.out.println(b);
+            System.out.println(surname);
+        });
+
     }
 
     @Test

@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Clinton Begin
@@ -43,49 +45,50 @@ public class DefaultConnectionPool {
 
     private final DefaultDataSourcePoolConfiguration configuration;
 
+    private final Lock lock = new ReentrantLock();
+
     public DefaultConnectionPool(DefaultDataSourcePoolConfiguration configuration) {
         this.configuration = configuration;
         this.dataSource = new DefaultDataSource(configuration);
     }
 
-    public synchronized long getRequestCount() {
+    public long getRequestCount() {
         return requestCount;
     }
 
-    public synchronized long getAverageRequestTime() {
+    public long getAverageRequestTime() {
         return requestCount == 0 ? 0 : accumulatedRequestTime / requestCount;
     }
 
-    public synchronized long getAverageWaitTime() {
+    public long getAverageWaitTime() {
         return hadToWaitCount == 0 ? 0 : accumulatedWaitTime / hadToWaitCount;
     }
 
-    public synchronized long getHadToWaitCount() {
+    public long getHadToWaitCount() {
         return hadToWaitCount;
     }
 
-    public synchronized long getBadConnectionCount() {
+    public long getBadConnectionCount() {
         return badConnectionCount;
     }
 
-    public synchronized long getClaimedOverdueConnectionCount() {
+    public long getClaimedOverdueConnectionCount() {
         return claimedOverdueConnectionCount;
     }
 
-    public synchronized long getAverageOverdueCheckoutTime() {
+    public long getAverageOverdueCheckoutTime() {
         return claimedOverdueConnectionCount == 0 ? 0 : accumulatedCheckoutTimeOfOverdueConnections / claimedOverdueConnectionCount;
     }
 
-    public synchronized long getAverageCheckoutTime() {
+    public long getAverageCheckoutTime() {
         return requestCount == 0 ? 0 : accumulatedCheckoutTime / requestCount;
     }
 
-
-    public synchronized int getIdleConnectionCount() {
+    public int getIdleConnectionCount() {
         return idleConnections.size();
     }
 
-    public synchronized int getActiveConnectionCount() {
+    public int getActiveConnectionCount() {
         return activeConnections.size();
     }
 
@@ -93,7 +96,8 @@ public class DefaultConnectionPool {
      * Closes all active and idle connections in the pool
      */
     public void forceCloseAll() {
-        synchronized (DefaultConnectionPool.class) {
+        lock.lock();
+        try {
             expectedConnectionTypeCode = assembleConnectionTypeCode(configuration.getUrl(), configuration.getUser(), configuration.getPassword());
             for (int i = this.activeConnections.size(); i > 0; i--) {
                 try {
@@ -123,6 +127,8 @@ public class DefaultConnectionPool {
                     // ignore
                 }
             }
+        } finally {
+            lock.unlock();
         }
         if (log.isDebugEnabled()) {
             log.debug("PooledDataSource forcefully closed/removed all connections.");
@@ -138,7 +144,8 @@ public class DefaultConnectionPool {
     }
 
     protected void pushConnection(ConnectionProxy conn) throws SQLException {
-        synchronized (DefaultConnectionPool.class) {
+        lock.lock();
+        try {
             this.activeConnections.remove(conn);
             if (conn.isValid()) {
                 if (this.idleConnections.size() < configuration.getMaxIdleConnection() && conn.getConnectionTypeCode() == expectedConnectionTypeCode) {
@@ -172,6 +179,8 @@ public class DefaultConnectionPool {
                 }
                 this.badConnectionCount++;
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -182,7 +191,8 @@ public class DefaultConnectionPool {
         int localBadConnectionCount = 0;
 
         while (conn == null) {
-            synchronized (DefaultConnectionPool.class) {
+            lock.lock();
+            try {
                 if (!this.idleConnections.isEmpty()) {
                     // Pool has available connection
                     conn = this.idleConnections.remove(0);
@@ -280,6 +290,8 @@ public class DefaultConnectionPool {
                         }
                     }
                 }
+            } finally {
+                lock.unlock();
             }
 
         }

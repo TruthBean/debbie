@@ -155,10 +155,10 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
         return super.update(logger, transaction, entityInfo, withEntityPropertyNull);
     }
 
-    public int update(TransactionInfo transaction, Entity entity, boolean withEntityPropertyNull, String whereSql, Object... args) {
+    public int update(TransactionInfo transaction, Entity entity, boolean withEntityPropertyNull, String extraSql, Object... args) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
         entityInfo.resolve(entity);
-        return super.update(logger, transaction, entityInfo, withEntityPropertyNull, whereSql, args);
+        return super.update(logger, transaction, entityInfo, withEntityPropertyNull, extraSql, args);
     }
 
     public <S extends Entity> S save(TransactionInfo transaction, S entity) {
@@ -181,8 +181,8 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
         return super.findOne(logger, transaction, entityResolver, entityClass, condition, withConditionNull);
     }
 
-    public Entity findOne(TransactionInfo transaction, String whereSql, Object... args) {
-        return super.findOne(logger, transaction, entityResolver, entityClass, whereSql, args);
+    public Entity findOne(TransactionInfo transaction, String extraSql, Object... args) {
+        return super.findOne(logger, transaction, entityResolver, entityClass, extraSql, args);
     }
 
     public <T> T queryOne(TransactionInfo transaction, String selectSql, Class<T> clazz, Object... args) {
@@ -193,16 +193,16 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
         return super.findOptional(logger, transaction, entityResolver, entityClass, condition, withConditionNull);
     }
 
-    public Optional<Entity> findOptional(TransactionInfo transaction, String whereSql, Object... args) {
-        return super.findOptional(logger, transaction, entityResolver, entityClass, whereSql, args);
+    public Optional<Entity> findOptional(TransactionInfo transaction, String extraSql, Object... args) {
+        return super.findOptional(logger, transaction, entityResolver, entityClass, extraSql, args);
     }
 
     public List<Entity> findList(TransactionInfo transaction, Entity condition, boolean withConditionNull) {
         return super.findList(logger, transaction, entityResolver, entityClass, condition, withConditionNull);
     }
 
-    public List<Entity> findList(TransactionInfo transaction, String whereSql, Object... args) {
-        return super.findList(logger, transaction, entityResolver, entityClass, whereSql, args);
+    public List<Entity> findList(TransactionInfo transaction, String extraSql, Object... args) {
+        return super.findList(logger, transaction, entityResolver, entityClass, extraSql, args);
     }
 
     public <T> List<T> query(final TransactionInfo transaction, String selectSql, Class<T> clazz, Object... args) {
@@ -215,8 +215,8 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
     }
 
     public <E> Page<E> selectPaged(TransactionInfo transaction, EntityInfo<E> entityInfo,
-                                   PageRequest pageable, String whereSql, Object... args) {
-        return super.selectPaged(logger, transaction, entityResolver, entityInfo, pageable, whereSql, args);
+                                   PageRequest pageable, String extraSql, Object... args) {
+        return super.selectPaged(logger, transaction, entityResolver, entityInfo, pageable, extraSql, args);
     }
 
     public <E> Page<E> selectPaged(TransactionInfo transaction, EntityInfo<E> entityInfo, PageRequest pageable) {
@@ -232,9 +232,9 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
         return selectPaged(transaction, entityInfo, condition, withConditionNull, pageable);
     }
 
-    public Page<Entity> findPaged(TransactionInfo transaction, PageRequest pageable, String whereSql, Object... args) {
+    public Page<Entity> findPaged(TransactionInfo transaction, PageRequest pageable, String extraSql, Object... args) {
         EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        return selectPaged(transaction, entityInfo, pageable, whereSql, args);
+        return selectPaged(transaction, entityInfo, pageable, extraSql, args);
     }
 
     public Page<Entity> findPaged(TransactionInfo transaction, PageRequest pageable) {
@@ -265,13 +265,15 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
     }
 
     public boolean existsById(TransactionInfo transaction, Id id) {
-        EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        return super.existsById(logger, transaction, entityInfo, id);
+        return super.existsById(logger, transaction, getEntityInfo(), id);
     }
 
     public Optional<Entity> queryOptionalById(TransactionInfo transaction, Id id) {
-        EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
-        return selectOptionalById(transaction, entityInfo, id);
+        return selectOptionalById(transaction, getEntityInfo(), id);
+    }
+
+    protected EntityInfo<Entity> getEntityInfo() {
+        return entityResolver.resolveEntityClass(entityClass);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTransactionRepository.class);
