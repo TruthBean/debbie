@@ -17,6 +17,7 @@ import com.truthbean.debbie.internal.DebbieApplicationFactory;
 import com.truthbean.debbie.spi.SpiLoader;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * @author TruthBean
@@ -56,6 +57,8 @@ public interface ApplicationFactory {
     ApplicationFactory register(BeanFactory<?> beanFactory);
 
     ApplicationFactory register(Collection<BeanInfo<?>> beanInfos);
+
+    ApplicationFactory register(Function<ApplicationContext, Collection<BeanInfo<?>>> beanInfoFunction);
 
     ApplicationFactory register(BeanLifecycle beanLifecycle);
 

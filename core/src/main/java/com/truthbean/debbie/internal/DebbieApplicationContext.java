@@ -228,7 +228,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T factory(BeanInjection<T> injection) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             var beanInfoList = this.beanInfoManager.getBeanInfoList(injection);
             if (!injection.isRequire() && (beanInfoList == null || beanInfoList.isEmpty())) {
                 return null;
@@ -253,7 +253,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
                 throw new BeanCreatedException("create bean " + injection.getBeanClass() + " with name [" + injection.getBeanName() + "]) error");
             }
             return bean;
-        }
+        // }
     }
 
     @Override
@@ -334,16 +334,16 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
 
     @Override
     public <T> T factoryByNoBean(Class<T> noBeanType) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             var beanInfo = this.beanInfoManager.getBeanFactory(null, noBeanType, false, false);
             var beanFactory = Objects.requireNonNullElseGet(beanInfo, () -> new DebbieReflectionBeanFactory<>(noBeanType));
             return beanFactory.factoryBean(this);
-        }
+        // }
     }
 
     // @SuppressWarnings("unchecked")
     protected <T> T factory(String beanName, Class<T> type, boolean proxy, boolean require, boolean throwException) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             var beanInfo = this.beanInfoManager.getBeanInfo(beanName, type, require);
             if (!require && beanInfo == null) {
                 return null;
@@ -367,7 +367,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
                 throw new BeanCreatedException("create bean " + type + " with name [" + beanName + "]) error");
             }
             return bean;
-        }
+        // }
     }
 
     /**
@@ -419,7 +419,7 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
 
     @Override
     public <Bean> Set<Bean> getBeanList(Class<Bean> superType) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             Set<Bean> result = new HashSet<>();
             LOGGER.trace(() -> "factory bean with type " + superType.getName());
             List<BeanInfo<? extends Bean>> beanInfoList = this.beanInfoManager.getBeanInfoList(superType, false);
@@ -433,21 +433,21 @@ class DebbieApplicationContext implements ApplicationContext, GlobalBeanFactory 
                 }
             }
             return result;
-        }
+        // }
     }
 
     @Override
     public <T> boolean containsBean(Class<T> beanType) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             return this.beanInfoManager.getBeanInfoList(beanType, false) != null;
-        }
+        // }
     }
 
     @Override
     public boolean containsBean(String beanName) {
-        synchronized (beanInfoManager) {
+        // synchronized (beanInfoManager) {
             return this.beanInfoManager.getBeanInfo(beanName, null, false, false) != null;
-        }
+        // }
     }
 
     @Override

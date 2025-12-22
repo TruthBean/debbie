@@ -7,6 +7,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * @author TruthBean
@@ -44,6 +45,11 @@ public class EmptyApplicationFactory implements ApplicationFactory {
 
     @Override
     public ApplicationFactory register(Collection<BeanInfo<?>> beanInfos) {
+        return this;
+    }
+
+    @Override
+    public ApplicationFactory register(Function<ApplicationContext, Collection<BeanInfo<?>>> beanInfoFunction) {
         return this;
     }
 

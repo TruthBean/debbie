@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface ApplicationBootContext extends ApplicationContext {
 
-    <T> void registerBean(BeanFactory<T> beanFactory);
+    <T, F extends BeanInfo<T>> void registerBean(F beanFactory);
 
     <T extends I, I> void registerSingleBean(Class<I> beanClass, T bean, String... names);
 

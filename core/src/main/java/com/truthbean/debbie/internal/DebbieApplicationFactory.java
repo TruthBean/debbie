@@ -33,6 +33,7 @@ import java.lang.management.ManagementFactory;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author TruthBean
@@ -149,6 +150,12 @@ public class DebbieApplicationFactory implements ApplicationFactory {
             beanInfoManager.registerBeanInfo(beanInfo);
         }
         return this;
+    }
+
+    @Override
+    public ApplicationFactory register(Function<ApplicationContext, Collection<BeanInfo<?>>> beanInfoFunction) {
+        var beanInfos = beanInfoFunction.apply(applicationContext);
+        return register(beanInfos);
     }
 
     @Override

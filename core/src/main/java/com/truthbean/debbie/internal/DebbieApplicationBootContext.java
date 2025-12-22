@@ -68,7 +68,7 @@ public class DebbieApplicationBootContext implements ApplicationBootContext {
     }
 
     @Override
-    public <T> void registerBean(BeanFactory<T> beanFactory) {
+    public <T, F extends BeanInfo<T>> void registerBean(F beanFactory) {
         applicationContext.getBeanInfoManager().registerBeanInfo(beanFactory);
     }
 
