@@ -14,7 +14,7 @@ public class ThreadPoolConfiguration {
     }
 
     public void setCoreSize(int coreSize) {
-        this.coreSize = coreSize;
+        this.coreSize = coreSize <= 0 ? Runtime.getRuntime().availableProcessors() : coreSize;
     }
 
     public int getMaximumPoolSize() {
@@ -22,7 +22,7 @@ public class ThreadPoolConfiguration {
     }
 
     public void setMaximumPoolSize(int maximumPoolSize) {
-        this.maximumPoolSize = maximumPoolSize;
+        this.maximumPoolSize = maximumPoolSize <= 0 ? Runtime.getRuntime().availableProcessors() * 10 : maximumPoolSize;
     }
 
     public int getQueueSize() {
@@ -30,7 +30,7 @@ public class ThreadPoolConfiguration {
     }
 
     public void setQueueSize(int queueSize) {
-        this.queueSize = queueSize;
+        this.queueSize = queueSize <= 0 ? 1024 : queueSize;
     }
 
     @Override

@@ -28,24 +28,4 @@ public class AsmModuleStarter implements DebbieModuleStarter {
         beanInfoManager.addIgnoreAnnotation(AsmGenerated.class);
         beanInfoManager.registerBeanLifecycle(new AsmBeanLifecycle(new AsmBeanProxyHandler(applicationContext)));
     }
-
-    @Override
-    public void configure(ApplicationContext applicationContext) {
-        DebbieModuleStarter.super.configure(applicationContext);
-    }
-
-    @Override
-    public void starter(ApplicationContext applicationContext) {
-        DebbieModuleStarter.super.starter(applicationContext);
-    }
-
-    @Override
-    public void postStarter(ApplicationContext applicationContext) {
-        DebbieModuleStarter.super.postStarter(applicationContext);
-    }
-
-    @Override
-    public void release(ApplicationContext applicationContext) {
-        DebbieModuleStarter.super.release(applicationContext);
-    }
 }

@@ -13,6 +13,9 @@ import com.truthbean.debbie.concurrent.ThreadPoolConfiguration;
 import com.truthbean.debbie.properties.DebbieConfiguration;
 import com.truthbean.debbie.server.AbstractServerConfiguration;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
@@ -25,6 +28,8 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
     private String httpVersion = "1.1";
 
     private String serverMessage;
+
+    private Charset charset = StandardCharsets.UTF_8;
 
     private long connectionTimeout = 5000;
 
@@ -84,6 +89,14 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         this.serverMessage = serverMessage;
     }
 
+    public Charset getCharset() {
+        return charset;
+    }
+
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
     public long getConnectionTimeout() {
         return connectionTimeout;
     }
@@ -106,6 +119,9 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         }
         if (serverMessage == null && defaultConfiguration.serverMessage != null) {
             serverMessage = defaultConfiguration.serverMessage;
+        }
+        if (charset == null && defaultConfiguration.charset != null) {
+            charset = defaultConfiguration.charset;
         }
         if (connectionTimeout == 0L && defaultConfiguration.connectionTimeout != 0L) {
             connectionTimeout = defaultConfiguration.connectionTimeout;

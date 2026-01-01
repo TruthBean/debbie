@@ -25,6 +25,10 @@ public class BaseRouterResponse {
 
     private HttpStatus status;
 
+    public void setHeader(String name, String value) {
+        headers.put(name, value);
+    }
+
     public void addHeader(String name, String value) {
         headers.put(name, value);
     }
@@ -33,6 +37,10 @@ public class BaseRouterResponse {
         if (headers != null && !headers.isEmpty()) {
             this.headers.putAll(headers);
         }
+    }
+
+    public void setHeader(HttpHeader.HttpHeaderName headerName, String value) {
+        headers.put(headerName.getName(), value);
     }
 
     public void addHeader(HttpHeader.HttpHeaderName headerName, String value) {

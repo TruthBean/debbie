@@ -33,28 +33,57 @@ public interface DebbieModuleStarter extends Comparable<DebbieModuleStarter> {
         return !environment.getBooleanValue(DebbieApplication.DISABLE_DEBBIE, false);
     }
 
+    /**
+     * get the order of the module, the lower the order, the higher the priority
+     * @return the order of the module
+     */
     int getOrder();
 
+    /**
+     * custom the component annotation, such as @Mapper, etc.
+     * @return the component annotation of the module
+     */
     default Map<Class<? extends Annotation>, BeanComponentParser> getComponentAnnotation() {
         return new HashMap<>();
     }
 
+    /**
+     * register the bean by the module
+     * @param applicationContext the application context
+     * @param beanInfoManager the bean info manager
+     */
     default void registerBean(ApplicationContext applicationContext, BeanInfoManager beanInfoManager) {
         // do nothing
     }
 
+     /**
+     * configure by module
+     * @param applicationContext the application context
+     */
     default void configure(ApplicationContext applicationContext) {
         // do nothing
     }
 
+    /**
+     * the module starter, start module
+     * @param applicationContext the application context
+     */
     default void starter(ApplicationContext applicationContext) {
         // do nothing
     }
 
+    /**
+     * post starter, after module starter
+     * @param applicationContext the application context
+     */
     default void postStarter(ApplicationContext applicationContext) {
         // do nothing
     }
 
+    /**
+     * release the module resources before application exit
+     * @param applicationContext the application context
+     */
     default void release(ApplicationContext applicationContext) {
         // do nothing
     }

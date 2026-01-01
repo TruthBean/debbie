@@ -49,22 +49,52 @@ public class HttpHeader {
         return null;
     }
 
-    public void addHeaders(Map<String, List<String>> headers) {
+    public void setHeaders(Map<String, List<String>> headers) {
         this.headers.putAll(headers);
     }
 
-    public void addHeader(String name, List<String> value) {
+    public void setHeader(String name, List<String> value) {
+        if (name == null || name.isBlank()) return;
+
         this.headers.put(name, value);
     }
 
-    public void addHeader(String name, String value) {
+    public void setHeader(String name, String... value) {
+        if (name == null || name.isBlank()) return;
+
+        List<String> valueList = new ArrayList<>();
+        Collections.addAll(valueList, value);
+
+        this.headers.put(name, valueList);
+    }
+
+    public void addHeaders(Map<String, List<String>> headers) {
+        headers.forEach(this::addHeader);
+    }
+
+    public void addHeader(String name, List<String> value) {
         if (name == null || name.isBlank()) return;
 
         var values = headers.get(name);
         if (values == null || values.isEmpty()) {
             values = new ArrayList<>();
         }
-        values.add(value);
+        values.addAll(value);
+        this.headers.put(name, values);
+    }
+
+    public void addHeader(HttpHeaderName headerName, String... value) {
+        addHeader(headerName.getName(), value);
+    }
+
+    public void addHeader(String name, String... value) {
+        if (name == null || name.isBlank()) return;
+
+        var values = headers.get(name);
+        if (values == null || values.isEmpty()) {
+            values = new ArrayList<>();
+        }
+        Collections.addAll(values, value);
         this.headers.put(name, values);
     }
 

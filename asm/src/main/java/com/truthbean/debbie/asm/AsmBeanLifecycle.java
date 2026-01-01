@@ -29,8 +29,8 @@ public class AsmBeanLifecycle implements BeanLifecycle {
     }
 
     @Override
-    public boolean support(BeanInfo<?> beanFactory) {
-        return beanFactory.getBeanProxyType() == BeanProxyType.ASM;
+    public boolean support(BeanInfo<?> beanInfo) {
+        return beanInfo.getBeanProxyType() == BeanProxyType.ASM;
     }
 
     @Override

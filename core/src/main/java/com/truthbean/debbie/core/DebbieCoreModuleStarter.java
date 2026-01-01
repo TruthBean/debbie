@@ -59,10 +59,6 @@ public class DebbieCoreModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void starter(ApplicationContext applicationContext) {
-    }
-
-    @Override
     public void postStarter(ApplicationContext applicationContext) {
         Environment environment = applicationContext.getDefaultEnvironment();
         boolean value = environment.getBooleanValue("debbie.task.enable", true);

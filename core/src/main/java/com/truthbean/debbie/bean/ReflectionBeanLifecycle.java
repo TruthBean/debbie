@@ -69,8 +69,8 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
     private final Map<BeanFactory<?>, DebbieReflectionBeanFactory<?>> preparations = new LinkedHashMap<>();
 
     @Override
-    public boolean support(BeanInfo<?> beanFactory) {
-        return beanFactory instanceof DebbieReflectionBeanFactory;
+    public boolean support(BeanInfo<?> beanInfo) {
+        return beanInfo instanceof DebbieReflectionBeanFactory;
     }
 
     @Override

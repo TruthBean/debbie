@@ -54,11 +54,6 @@ public class EmptyApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory register(BeanFactory<?> beanFactory) {
-        return this;
-    }
-
-    @Override
     public ApplicationFactory register(BeanInfo<?> beanInfo) {
         return this;
     }

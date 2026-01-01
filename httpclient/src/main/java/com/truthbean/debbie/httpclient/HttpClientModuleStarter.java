@@ -44,10 +44,6 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(ApplicationContext applicationContext) {
-    }
-
-    @Override
     public int getOrder() {
         return 21;
     }

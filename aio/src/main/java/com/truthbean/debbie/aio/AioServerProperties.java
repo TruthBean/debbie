@@ -15,6 +15,7 @@ import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.server.BaseServerProperties;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -29,6 +30,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private static final String AIO_SERVER_PREFIX = "debbie.server.aio.";
     private static final String HTTP_VERSION = "http.version";
     private static final String SERVER_MESSAGE = "message";
+    private static final String CHARSET = "charset";
     private static final String CONNECTION_TIMEOUT = "connection.timeout";
     private static final String URL_ENCODED = "url.encoded";
 
@@ -40,6 +42,7 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     static final String ENABLE_KEY = "debbie.server.aio.enable";
     private static final String HTTP_VERSION_KEY = "debbie.server.aio.http.version";
     private static final String SERVER_MESSAGE_KEY = "debbie.server.aio.message";
+    private static final String CHARSET_KEY = "debbie.server.aio.charset";
     private static final String CONNECTION_TIMEOUT_KEY = "debbie.server.aio.connection.timeout";
     private static final String URL_ENCODED_KEY = "debbie.server.aio.url.encoded";
     // ===========================================================================
@@ -149,19 +152,25 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
             key = AIO_SERVER_PREFIX + category + HTTP_VERSION;
             if (k.equals(key)) {
                 AioServerConfiguration configuration = getConfiguration(profile, category, classLoader);
-                String httpVersion = getStringValue(v, "1.1");
+                String httpVersion = getText(v, "1.1");
                 configuration.setHttpVersion(httpVersion);
             }
             key = AIO_SERVER_PREFIX + category + SERVER_MESSAGE;
             if (k.equals(key)) {
                 AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                String serverMessage = getStringValue(v, "A Simple Java Aio WebServer by Debbie Framework");
+                String serverMessage = getText(v, "A Simple Java Aio WebServer by Debbie Framework");
                 configuration.setServerMessage(serverMessage);
+            }
+            key = AIO_SERVER_PREFIX + category + CHARSET;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                String charset = getText(v, "utf-8");
+                configuration.setCharset(Charset.forName(charset));
             }
             key = AIO_SERVER_PREFIX + category + CONNECTION_TIMEOUT;
             if (k.equals(key)) {
                 AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
-                long connectionTimeout = getLongValue(v, 5000L);
+                long connectionTimeout = getLong(v, 5000L);
                 configuration.setConnectionTimeout(connectionTimeout);
             }
             key = AIO_SERVER_PREFIX + category + URL_ENCODED;

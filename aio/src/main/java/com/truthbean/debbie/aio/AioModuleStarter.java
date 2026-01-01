@@ -37,10 +37,6 @@ public class AioModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(ApplicationContext applicationContext) {
-    }
-
-    @Override
     public int getOrder() {
         return 35;
     }

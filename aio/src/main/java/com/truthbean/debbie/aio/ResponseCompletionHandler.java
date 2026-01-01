@@ -70,7 +70,7 @@ class ResponseCompletionHandler {
         var contentLength = 1024;
         if (result instanceof String) {
             // 中文编码问题，不能直接通过String的length()方法获取
-            contentLength = ((String) result).getBytes().length;
+            contentLength = ((String) result).getBytes(configuration.getCharset()).length;
         } else if (result instanceof byte[]) {
             contentLength = ((byte[]) result).length;
         }
@@ -107,8 +107,8 @@ class ResponseCompletionHandler {
             responseBuffer = ByteBuffer.wrap(merge);
             // future = channel.write(responseBuffer);
         } else {
-            responseSize = resultStr.getBytes().length;
-            responseBuffer = ByteBuffer.wrap(resultStr.getBytes());
+            responseSize = resultStr.getBytes(configuration.getCharset()).length;
+            responseBuffer = ByteBuffer.wrap(resultStr.getBytes(configuration.getCharset()));
             // future = channel.write(responseBuffer);
         }
 

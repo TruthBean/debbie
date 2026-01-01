@@ -215,6 +215,11 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.queryOptionalById(transaction, id);
     }
 
+    public Optional<Entity> queryOptionalByColumn(String columnName, Object value) {
+        var transaction = getTransaction();
+        return jdbcTransactionRepository.findOptional(transaction, "where " + columnName + " = ?", value);
+    }
+
     protected Logger getLog() {
         return LoggerFactory.getLogger(this.getClass());
     }

@@ -33,10 +33,6 @@ public class NettyModuleStarter implements DebbieModuleStarter {
     }
 
     @Override
-    public void configure(ApplicationContext applicationContext) {
-    }
-
-    @Override
     public int getOrder() {
         return 33;
     }

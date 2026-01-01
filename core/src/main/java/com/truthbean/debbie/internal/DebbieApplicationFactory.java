@@ -137,13 +137,6 @@ public class DebbieApplicationFactory implements ApplicationFactory {
     }
 
     @Override
-    public ApplicationFactory register(BeanFactory<?> beanFactory) {
-        var beanInfoManager = applicationContext.getBeanInfoManager();
-        beanInfoManager.registerBeanInfo(beanFactory);
-        return this;
-    }
-
-    @Override
     public ApplicationFactory register(Collection<BeanInfo<?>> collection) {
         var beanInfoManager = applicationContext.getBeanInfoManager();
         for (BeanInfo<?> beanInfo : collection) {

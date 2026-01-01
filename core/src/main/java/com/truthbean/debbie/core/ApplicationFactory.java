@@ -18,6 +18,7 @@ import com.truthbean.debbie.spi.SpiLoader;
 
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author TruthBean
@@ -50,36 +51,120 @@ public interface ApplicationFactory {
      */
     ApplicationFactory init(Class<?>... beanClasses);
 
+    /**
+     * init application factory with class loader and into bean class
+     * @param classLoader class loader
+     * @param beanClasses into bean class
+     * @return this instance
+     */
     ApplicationFactory init(ClassLoader classLoader, Class<?>... beanClasses);
 
-    ApplicationFactory register(BeanInfo<?> beanInfo);
-
-    ApplicationFactory register(BeanFactory<?> beanFactory);
-
-    ApplicationFactory register(Collection<BeanInfo<?>> beanInfos);
-
-    ApplicationFactory register(Function<ApplicationContext, Collection<BeanInfo<?>>> beanInfoFunction);
-
-    ApplicationFactory register(BeanLifecycle beanLifecycle);
-
+    /**
+     * register custom bean register before bean info register
+     * @param beanRegister custom bean register
+     * @return this instance
+     */
     ApplicationFactory register(BeanRegister beanRegister);
 
+    /**
+     * register bean info
+     * @param beanInfo bean info
+     * @return this instance
+     */
+    ApplicationFactory register(BeanInfo<?> beanInfo);
+
+    /**
+     * register bean infos
+     * @param beanInfos bean infos
+     * @return this instance
+     */
+    ApplicationFactory register(Collection<BeanInfo<?>> beanInfos);
+
+    /**
+     * register bean infos by function
+     * @param beanInfoFunction bean info function
+     * @return this instance
+     */
+    ApplicationFactory register(Function<ApplicationContext, Collection<BeanInfo<?>>> beanInfoFunction);
+
+    /**
+     * register bean lifecycle before bean create
+     * @param beanLifecycle bean lifecycle
+     * @return this instance
+     */
+    ApplicationFactory register(BeanLifecycle beanLifecycle);
+
+    /**
+     * Configure application factory. <br/>
+     * Do some configuration before application factory create, <br/>
+     * such as register scanned beans, do getComponentAnnotation、registerBean、configure by DebbieModuleStarter, register event listeners etc.
+     * @return this instance
+     */
     ApplicationFactory config();
 
+    /**
+     * Configure application factory with Into Class instance. <br/>
+     * Do some configuration before application factory create, <br/>
+     * such as register scanned beans, do getComponentAnnotation、registerBean、configure by DebbieModuleStarter, register event listeners etc.
+     * @param application Into Class instance
+     * @return this instance
+     */
     <T> ApplicationFactory config(T application);
 
+    /**
+     * Configure application factory with Into Class instance supplier. <br/>
+     * Do some configuration before application factory create, <br/>
+     * such as register scanned beans, do getComponentAnnotation、registerBean、configure by DebbieModuleStarter, register event listeners etc.
+     * @param application Into Class instance supplier
+     * @return this instance
+     */
+    default <T> ApplicationFactory config(Supplier<T> application) {
+        return config(application.get());
+    }
+
+     /**
+     * Configure application factory with bean scan configuration. <br/>
+     * Do some configuration before application factory create, <br/>
+     * such as register scanned beans, do getComponentAnnotation、registerBean、configure by DebbieModuleStarter, register event listeners etc.
+     * @param configuration bean scan configuration
+     * @return this instance
+     */
     ApplicationFactory config(BeanScanConfiguration configuration);
 
+    /**
+     * Create application factory. <br/>
+     * Do some configuration after application factory create, such as invoke custom module starter etc.
+     * @return this instance
+     */
     ApplicationFactory create();
 
+    /**
+     * Do some configuration after application factory create
+     * @return this instance
+     */
     ApplicationFactory postCreate();
 
+    /**
+     * build framework application factory.
+     * @return this instance
+     */
     ApplicationFactory build();
 
+    /**
+     * get application context
+     * @return application context
+     */
     ApplicationContext getApplicationContext();
 
+     /**
+     * factory framework application
+     * @return framework application instance
+     */
     DebbieApplication factory();
 
+     /**
+     * release all resources, such as bean info, application context etc.
+     */
     void release();
 
     // ============================================================================================================

@@ -71,7 +71,6 @@ public class RealAioServerRunner implements Runnable{
 
         // 创建线程池
         var threadFactory = new NamedThreadFactory("AioServerThreadPool").setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler());
-        int core = Runtime.getRuntime().availableProcessors();
         var executor = new ThreadPoolExecutor(configuration.getThreadPoolConfig().getCoreSize(), configuration.getThreadPoolConfig().getMaximumPoolSize(),
                 0L, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(configuration.getThreadPoolConfig().getQueueSize()),
                 threadFactory, new ThreadPoolExecutor.AbortPolicy());

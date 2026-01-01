@@ -22,7 +22,7 @@ public class RouterBeanLifecycle implements BeanLifecycle {
     }
 
     @Override
-    public boolean support(BeanInfo<?> beanFactory) {
+    public boolean support(BeanInfo<?> beanInfo) {
         return true;
     }
 

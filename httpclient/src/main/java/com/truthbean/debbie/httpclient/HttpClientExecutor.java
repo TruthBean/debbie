@@ -188,13 +188,13 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                             headerName = requestParameter.name();
                         }
                         if (arg instanceof String) {
-                            header.addHeader(headerName, List.of((String) arg));
+                            header.setHeader(headerName, (String) arg);
                         } else if (arg instanceof List) {
-                            header.addHeader(headerName, (List<String>) arg);
+                            header.setHeader(headerName, (List<String>) arg);
                         } else if (arg instanceof Map) {
-                            header.addHeaders((Map<String, List<String>>) arg);
+                            header.setHeaders((Map<String, List<String>>) arg);
                         } else {
-                            header.addHeader(headerName, List.of(arg.toString()));
+                            header.setHeader(headerName, arg.toString());
                         }
                     } else if (type == RequestParameterType.COOKIE) {
                         var cookieName = requestParameter.value();

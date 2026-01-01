@@ -132,7 +132,7 @@ public class DefaultRouterRequest implements RouterRequest {
     }
 
     public void setHeaders(Map<String, List<String>> headers) {
-        this.header.addHeaders(headers);
+        this.header.setHeaders(headers);
     }
 
     public void addHeader(String key, String value) {
