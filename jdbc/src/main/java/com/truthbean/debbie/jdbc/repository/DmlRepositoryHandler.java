@@ -525,6 +525,22 @@ public class DmlRepositoryHandler extends RepositoryHandler {
         return 0L;
     }
 
+    public <T> Long countByColumn(Logger logger, TransactionInfo transaction, String table, String columnName, T value) {
+        DataSourceDriverName driverName = transaction.getDriverName();
+
+        var sql = DynamicRepository.sqlBuilder(driverName).select().count().from(table).where().eq(columnName, "?").build();
+        ColumnInfo list = super.querySingleOne(logger, transaction, sql, value);
+        Object val = list.getValue();
+        if (val instanceof Long) {
+            return (Long) val;
+        } else if (val instanceof String) {
+            return Long.valueOf((String) val);
+        } else if (val instanceof Integer) {
+            return ((Integer) val).longValue();
+        }
+        return 0L;
+    }
+
     public <E, ID> List<ColumnInfo> selectById(Logger logger, TransactionInfo transaction, EntityInfo<E> entityInfo, ID id) {
         DataSourceDriverName driverName = transaction.getDriverName();
 

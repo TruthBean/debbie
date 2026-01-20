@@ -200,6 +200,11 @@ public class JdbcRepository<Entity, Id> implements TransactionService {
         return jdbcTransactionRepository.count(transaction);
     }
 
+    public Long countByColumn(String columnName, Object value) {
+        var transaction = getTransaction();
+        return jdbcTransactionRepository.countByColumn(transaction, columnName, value);
+    }
+
     public Entity findById(Id id) {
         var transaction = getTransaction();
         return jdbcTransactionRepository.findById(transaction, id);

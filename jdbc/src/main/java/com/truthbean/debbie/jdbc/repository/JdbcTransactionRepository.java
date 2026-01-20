@@ -260,6 +260,11 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
         return super.count(logger, transaction, entityInfo);
     }
 
+    public <T> Long countByColumn(TransactionInfo transaction, String columnName, T value) {
+        EntityInfo<Entity> entityInfo = entityResolver.resolveEntityClass(entityClass);
+        return super.countByColumn(logger, transaction, entityInfo.getTable(), columnName, value);
+    }
+
     public Entity findById(TransactionInfo transaction, Id id) {
         return super.findById(logger, transaction, entityResolver, entityClass, id);
     }
