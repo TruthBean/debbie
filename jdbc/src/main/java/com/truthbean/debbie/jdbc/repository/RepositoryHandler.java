@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 TruthBean(Rogar·Q)
+ * Copyright (c) 2026 TruthBean(Rogar·Q)
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -64,6 +64,9 @@ public class RepositoryHandler {
             }
             //执行sql操作集
             rows = preparedStatement.executeBatch();
+            if (logger.isDebugEnabled()) {
+                logger.debug("batch execute lines >>> " + Arrays.toString(rows));
+            }
         } catch (SQLException ex) {
             LOGGER.error("", ex);
             throw new TransactionException(ex);
@@ -155,7 +158,9 @@ public class RepositoryHandler {
                 }
             }
             int row = preparedStatement.executeUpdate();
-            LOGGER.debug(row + " row data has been inserted");
+            if (logger.isDebugEnabled()) {
+                logger.debug("insert lines >>> " + row);
+            }
             if (generatedKeys && keyClass != null) {
                 resultSet = preparedStatement.getGeneratedKeys();
                 if (resultSet.next()) {
@@ -189,6 +194,9 @@ public class RepositoryHandler {
                 ColumnTypeHandler.setSqlArgValue(driverName, preparedStatement, i + 1, args[i]);
             }
             rows = preparedStatement.executeUpdate();
+            if (logger.isDebugEnabled()) {
+                logger.debug("update lines >>> " + rows);
+            }
         } catch (SQLException ex) {
             LOGGER.error("", ex);
             throw new TransactionException(ex);
@@ -228,6 +236,7 @@ public class RepositoryHandler {
             if (!tmp.isEmpty()) {
                 list.addAll(tmp);
             }
+            loggerSqlResult(logger, list);
         } catch (SQLException e) {
             LOGGER.error("", e);
             throw new TransactionException(e);
@@ -266,6 +275,16 @@ public class RepositoryHandler {
             var tmp = JdbcColumnResolver.resolveResultSetValue(resultSet, new FStartColumnNameTransformer());
             if (!tmp.isEmpty()) {
                 list.addAll(tmp.get(0));
+            }
+            if (logger.isDebugEnabled()) {
+                if (!list.isEmpty()) {
+                    logger.debug("lines >>> 1");
+                } else {
+                    logger.debug("lines >>> 0");
+                }
+            }
+            if (logger.isTraceEnabled()) {
+                logger.trace("result >>> " + list);
             }
         } catch (SQLException e) {
             LOGGER.error("", e);
@@ -326,6 +345,15 @@ public class RepositoryHandler {
         if (logger.isDebugEnabled()) {
             logger.debug("Preparing >>> " + sql);
             logger.debug("Parameters >>> " + ObjectStringUtils.getParameterValueString(args));
+        }
+    }
+
+    private void loggerSqlResult(Logger logger, List<List<ColumnInfo>> result) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("lines >>> " + result.size());
+        }
+        if (logger.isTraceEnabled()) {
+            logger.trace("result >>> " + result);
         }
     }
 }
