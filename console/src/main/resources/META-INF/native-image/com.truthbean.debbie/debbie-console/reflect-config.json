@@ -1,0 +1,32 @@
+[
+  {
+    "name": "com.truthbean.debbie.console.DebbieConsoleStarter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ],
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allPublicFields": true
+  },
+  {
+    "name": "com.truthbean.debbie.console.DebbieConsoleApplication",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ],
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allPublicFields": true
+  }
+]

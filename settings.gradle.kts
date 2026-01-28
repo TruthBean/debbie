@@ -15,7 +15,7 @@ val modules =
                 "httpclient",
                 "server",
                 "netty", "aio",
-                "agent",
+                "agent", "console",
                 "test"
         )
 
