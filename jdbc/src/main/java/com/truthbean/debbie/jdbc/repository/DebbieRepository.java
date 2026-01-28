@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.Logger;
+import com.truthbean.core.lang.NonNull;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
 import com.truthbean.debbie.jdbc.domain.Sort;
@@ -53,9 +54,9 @@ public class DebbieRepository<Domain, ID> extends CustomRepository<Domain, ID> {
      * @param column column name must not be null
      * @return a list of domains
      */
-    public List<Domain> findListOrderByDesc(String column) {
-        String whereSql = "order by " + column + " desc";
-        return super.findList(whereSql);
+    public List<Domain> findListOrderByDesc(@NonNull String column) {
+        String orderSql = "order by " + column + " desc";
+        return super.findList(orderSql);
     }
 
     /**
@@ -64,9 +65,23 @@ public class DebbieRepository<Domain, ID> extends CustomRepository<Domain, ID> {
      * @param column column name must not be null
      * @return a list of domains
      */
-    public List<Domain> findListOrderByAsc(String column) {
-        String whereSql = "order by " + column + " asc";
-        return super.findList(whereSql);
+    public List<Domain> findListOrderByAsc(@NonNull String column) {
+        String orderSql = "order by " + column + " asc";
+        return super.findList(orderSql);
+    }
+
+    /**
+     * Finds column data from table.
+     *
+     * @param tableName table name must not be null
+     * @param columnName column name must not be null
+     * @param type type of column must not be null
+     * @return a list of column data
+     * @param <T>
+     */
+    public <T> List<T> findColumn(@NonNull String tableName, @NonNull String columnName, @NonNull Class<T> type) {
+        String sql = "select " + columnName + " from " + tableName;
+        return super.select(sql, type);
     }
 
     /**
@@ -101,13 +116,41 @@ public class DebbieRepository<Domain, ID> extends CustomRepository<Domain, ID> {
                     ref.l++;
                 }
             });
+            transactionInfo.commit();
         } catch (Exception e) {
             transactionInfo.rollback();
             throw e;
+        } finally {
+            transactionInfo.endSession();
         }
-        transactionInfo.commit();
-        transactionInfo.endSession();
 
         return ref.l;
+    }
+
+    /**
+     * Deletes by column name.
+     *
+     * @param columnName column name must not be null
+     * @return number of rows affected
+     */
+    public long deleteTableByColumn(@NonNull String tableName, @NonNull String columnName, Object columnValue) {
+        log.debug("Customized deleteTableByColumn method was invoked");
+        var transactionInfo = getTransaction();
+        transactionInfo.setAutoCommit(false);
+        transactionInfo.startSession();
+        long result = 0L;
+        try {
+            var sql = "delete from " + tableName + " where " + columnName + " = ?";
+            result = delete(sql, columnValue);
+            transactionInfo.commit();
+        } catch (Exception e) {
+            transactionInfo.rollback();
+            throw e;
+        } finally {
+            transactionInfo.setAutoCommit(true);
+            transactionInfo.endSession();
+        }
+
+        return result;
     }
 }
