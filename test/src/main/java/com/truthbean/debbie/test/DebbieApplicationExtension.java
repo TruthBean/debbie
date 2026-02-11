@@ -16,6 +16,7 @@ import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.proxy.jdk.JdkDynamicProxy;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
+import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.extension.*;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
@@ -23,6 +24,8 @@ import com.truthbean.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -159,17 +162,48 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         logger.debug("beforeAll ...");
         Optional<Class<?>> testClass = context.getTestClass();
         Class<?> applicationClass = ApplicationFactory.class;
+        Map<String, String> map = new HashMap<>();
         if (testClass.isPresent()) {
             applicationClass = testClass.get();
+            handleDebbieApplicationTest(applicationClass, map);
         }
         ApplicationFactory applicationFactory = ApplicationFactory.configure(applicationClass);
         if (applicationFactory != null) {
             DebbieApplication debbieApplication = applicationFactory.create().postCreate().build().factory();
             debbieApplication.start();
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
+            if (!map.isEmpty()) {
+                map.forEach((key, val) -> {
+                    applicationContext.getEnvironmentHolder().addProperty(key, val);
+                });
+            }
             ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
             store.put(ApplicationContext.class, applicationContext);
             store.put(DebbieApplication.class, debbieApplication);
+        }
+    }
+
+    private void handleDebbieApplicationTest(Class<?> applicationClass, Map<String, String> map) {
+        DebbieApplicationTest annotation = applicationClass.getAnnotation(DebbieApplicationTest.class);
+        if (annotation == null) {
+            return;
+        }
+        String[] properties = annotation.properties();
+        if (properties == null) {
+            return;
+        }
+        for (String property : properties) {
+            if (property == null) {
+                continue;
+            }
+            String[] split = property.split("=");
+            if (split.length == 1) {
+                System.setProperty(split[0], "");
+                map.put(split[0], "");
+            } else if (split.length == 2) {
+                System.setProperty(split[0], split[1]);
+                map.put(split[0], split[1]);
+            }
         }
     }
 

@@ -10,11 +10,11 @@
 package com.truthbean.debbie.mvc.response;
 
 import com.truthbean.Logger;
+import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.jackson.util.JacksonUtils;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.router.RouterInfo;
-import com.truthbean.LoggerFactory;
 
 import java.util.Objects;
 
@@ -91,15 +91,15 @@ public final class RouterErrorResponseHandler {
             Object data = response.getContent();
 
             if (callback == null) {
-                    response.setStatus(HttpStatus.OK);
-                    if (request.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
-                        String xmlValue = JacksonUtils.toXml(data);
-                        response.setResponseType(request.getResponseType());
-                        response.setContent(xmlValue);
-                    } else {
-                        response.setResponseType(MediaType.APPLICATION_JSON_UTF8);
-                        response.setContent(JacksonUtils.toJson(data));
-                    }
+                response.setStatus(HttpStatus.OK);
+                if (request.getResponseType().isSameMediaType(MediaType.APPLICATION_XML)) {
+                    String xmlValue = JacksonUtils.toXml(data);
+                    response.setResponseType(request.getResponseType());
+                    response.setContent(xmlValue);
+                } else {
+                    response.setResponseType(MediaType.APPLICATION_JSON_UTF8);
+                    response.setContent(JacksonUtils.toJson(data));
+                }
             } else
                 callback.callback(response);
         } catch (Throwable e) {

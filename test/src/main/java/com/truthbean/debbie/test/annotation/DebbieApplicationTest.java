@@ -3,14 +3,16 @@
  * Debbie is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *         http://license.coscl.org.cn/MulanPSL2
+ * http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
 package com.truthbean.debbie.test.annotation;
 
 import com.truthbean.debbie.annotation.AliasFor;
-import com.truthbean.debbie.bean.*;
+import com.truthbean.debbie.bean.BeanComponent;
+import com.truthbean.debbie.bean.BeanType;
+import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.test.DebbieApplicationExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +45,9 @@ public @interface DebbieApplicationTest {
     @AliasFor(attribute = "name", annotation = BeanComponent.class)
     String name() default "";
 
-     Class<? extends Annotation>[] customInjectType() default {};
+    Class<? extends Annotation>[] customInjectType() default {};
 
-     DebbieScan scan() default @DebbieScan();
+    DebbieScan scan() default @DebbieScan();
+
+    String[] properties() default {};
 }

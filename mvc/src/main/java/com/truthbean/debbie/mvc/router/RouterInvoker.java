@@ -57,10 +57,9 @@ public class RouterInvoker {
             return;
         }
 
-        Object any = null;
+        Object any;
         var executor = routerInfo.getExecutor();
-        if (executor instanceof MethodRouterExecutor) {
-            MethodRouterExecutor methodRouterExecutor = (MethodRouterExecutor) executor;
+        if (executor instanceof MethodRouterExecutor methodRouterExecutor) {
             var parameters = new RouterRequestValues(httpRequest, httpResponse);
 
             var handler = new RouterMethodArgumentHandler(classLoader);
@@ -75,17 +74,15 @@ public class RouterInvoker {
                 instance = beanFactory.factory(type);
                 methodRouterExecutor.setRouterInstance(instance);
             }
-
-            any = executor.execute(values);
+            any = methodRouterExecutor.execute(values);
 
             for (ExecutableArgument methodParam : methodRouterExecutor.getMethodParams()) {
                 methodParam.setValue(null);
             }
-        } else if (executor instanceof SimpleRouterExecutor){
-            SimpleRouterExecutor simpleRouterExecutor = (SimpleRouterExecutor) executor;
+        } else if (executor instanceof SimpleRouterExecutor simpleRouterExecutor){
             simpleRouterExecutor.setRequest(httpRequest);
             simpleRouterExecutor.setResponse(httpResponse);
-            any = executor.execute();
+            any = simpleRouterExecutor.execute();
         } else {
             any = executor.execute();
         }

@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 // @ExtendWith({DebbieApplicationExtension.class})
 // @DebbieBootApplication(customInjectType = Autowired.class)
-@DebbieApplicationTest(customInjectType = Autowired.class)
+@DebbieApplicationTest(customInjectType = Autowired.class, properties = {"test.test.test=hahahahaha"})
 class DebbieTestSuitApplicationTest {
+
+    @PropertyInject("test.test.test")
+    private String test;
 
     private TestSuitService testSuitService;
 
@@ -26,6 +29,8 @@ class DebbieTestSuitApplicationTest {
     @BeforeEach
     void beforeEach() {
         System.out.println("before each ...");
+        System.out.println(System.getProperty("test.test.test"));
+        System.out.println("${test.test.test}: " + test);
     }
 
     @Test
