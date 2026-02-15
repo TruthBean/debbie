@@ -308,7 +308,7 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         info.classType = classType;
         info.optionType = optionType;
         info.javaClass = javaClass;
-        info.value = value;
+        info.value = null;
         info.isPrimaryKey = isPrimaryKey;
         info.primaryKeyType = primaryKeyType;
         info.unique = unique;

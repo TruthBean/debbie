@@ -43,8 +43,13 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
         this.javaType = entityInfo.javaType;
         this.driverName = entityInfo.driverName;
         this.table = entityInfo.table;
-        this.primaryKey = entityInfo.primaryKey;
-        this.columnInfoList = entityInfo.columnInfoList;
+        this.primaryKey = entityInfo.primaryKey.copy();
+        this.columnInfoList = new ArrayList<>();
+        if (entityInfo.columnInfoList != null) {
+            for (ColumnInfo columnInfo : entityInfo.columnInfoList) {
+                this.columnInfoList.add(columnInfo.copy());
+            }
+        }
         this.charset = entityInfo.charset;
         this.engine = entityInfo.engine;
     }
@@ -161,7 +166,7 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
         info.javaType = javaType;
         info.driverName = driverName;
         info.table = table;
-        info.primaryKey = primaryKey;
+        info.primaryKey = primaryKey.copy();
         info.charset = charset;
         info.engine = engine;
         List<ColumnInfo> list = new ArrayList<>();

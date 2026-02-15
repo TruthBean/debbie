@@ -50,7 +50,7 @@ public class EntityResolver {
     }
 
     public void addEntityInfo(EntityInfo<?> entityInfo) {
-        entityInfoMap.put(entityInfo.getJavaType(), entityInfo);
+        entityInfoMap.put(entityInfo.getJavaType(), entityInfo.copy());
     }
 
     public void addResultMap(ResultMap<?> resultMap) {
@@ -157,8 +157,8 @@ public class EntityResolver {
     public <E> EntityInfo<E> resolveEntity(DataSourceDriverName driverName, E entity) {
         Class<E> entityClass = (Class<E>) entity.getClass();
         if (entityInfoMap.containsKey(entityClass)) {
-            EntityInfo<E> entityInfo = (EntityInfo<E>) entityInfoMap.get(entityClass);
-            entityInfo.copy().resolve(entity);
+            EntityInfo<E> entityInfo = (EntityInfo<E>) entityInfoMap.get(entityClass).copy();
+            entityInfo.resolve(entity);
             return entityInfo;
         }
         ClassInfo<E> classInfo = new ClassInfo<>(entityClass);
@@ -174,7 +174,7 @@ public class EntityResolver {
                 break;
             }
         }
-        entityInfoMap.put(entityClass, entityInfo);
+        entityInfoMap.put(entityClass, entityInfo.copy());
         return entityInfo;
     }
 
