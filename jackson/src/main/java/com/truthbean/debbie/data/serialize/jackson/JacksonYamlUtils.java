@@ -46,7 +46,7 @@ public class JacksonYamlUtils implements TextSerializable {
             YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             YAML_MAPPER.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
             YAML_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
-            YAML_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            YAML_MAPPER.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
         }
 
     }
@@ -188,7 +188,7 @@ public class JacksonYamlUtils implements TextSerializable {
                         if (key.length() > 0) {
                             key.append(DOT);
                         }
-                        key.append(parser.getCurrentName());
+                        key.append(parser.currentName());
 
                         token = parser.nextToken();
                         if (JsonToken.START_OBJECT.equals(token)) {

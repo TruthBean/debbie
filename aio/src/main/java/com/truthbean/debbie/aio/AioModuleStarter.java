@@ -22,6 +22,9 @@ import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
  */
 public class AioModuleStarter implements DebbieModuleStarter {
 
+    /**
+     * aio module
+     */
     public AioModuleStarter() {
     }
 

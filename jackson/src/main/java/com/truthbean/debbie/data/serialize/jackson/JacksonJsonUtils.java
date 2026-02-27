@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.data.serialize.TextSerializable;
@@ -49,6 +50,8 @@ public class JacksonJsonUtils implements TextSerializable {
             OBJECT_MAPPER.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
 
             OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+            OBJECT_MAPPER.registerModule(new JavaTimeModule());
         }
     }
 
@@ -212,7 +215,7 @@ public class JacksonJsonUtils implements TextSerializable {
      */
     public static String toJsonExcludeNullValue(Object obj) {
         var mapper = OBJECT_MAPPER.copy();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
         try {
             return mapper.writeValueAsString(obj);
         } catch (IOException e) {

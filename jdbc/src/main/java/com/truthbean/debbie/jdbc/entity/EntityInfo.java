@@ -155,6 +155,9 @@ public class EntityInfo<E> implements Copyable<EntityInfo<E>> {
     }
 
     public void resolve(E entity) {
+        if (primaryKey != null) {
+            primaryKey.setValue(primaryKey.getPropertyGetter().get(entity));
+        }
         for (ColumnInfo columnInfo : columnInfoList) {
             columnInfo.getPropertyValue(entity);
         }
