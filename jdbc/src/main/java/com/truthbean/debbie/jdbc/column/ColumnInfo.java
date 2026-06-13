@@ -19,6 +19,7 @@ import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * @author TruthBean
@@ -219,6 +220,12 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
                     if (val != null) {
                         this.propertySetter.set(entity, val);
                     }
+                } else if (value instanceof String && javaClass == LocalDateTime.class) {
+                    this.propertySetter.set(entity, LocalDateTime.parse((String) value));
+                } else if (value instanceof Integer && javaClass == Long.class) {
+                    this.propertySetter.set(entity, ((Integer) value).longValue());
+                } else if (value instanceof Long && javaClass == Integer.class) {
+                    this.propertySetter.set(entity, ((Long) value).intValue());
                 } else {
                     this.propertySetter.set(entity, value);
                 }
