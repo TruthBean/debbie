@@ -34,7 +34,7 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 [0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
 
-latest version: 0.5.5-RELEASE
+latest version: 0.6.1-RELEASE
 
 ```xml
 <dependency>
@@ -74,6 +74,6 @@ latest version: 0.5.5-RELEASE
 
 ~~14. 适配graalvm，尽量减少反射的使用~~
 
-15. 迁移到java17
+15. 迁移到java25
 
 16. 待续...
