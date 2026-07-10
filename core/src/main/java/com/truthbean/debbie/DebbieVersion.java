@@ -30,7 +30,7 @@ public final class DebbieVersion {
     public static String getVersion() {
         String version = determineDebbieVersion();
         return version != null && !"null".equalsIgnoreCase(version)
-                ? version : "0.5.5-RELEASE";
+                ? version : "0.6.1-RELEASE";
     }
 
     private static String determineDebbieVersion() {
