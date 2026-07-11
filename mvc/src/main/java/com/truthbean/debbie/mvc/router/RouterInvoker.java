@@ -124,7 +124,7 @@ public class RouterInvoker {
             var provider = ResponseContentHandlerProviderEnum.getByResponseType(routerInfo.getResponse().getResponseType().toMediaType());
             var filter = provider.transform(methodResult);
             if (filter == null) {
-                throw new ResponseTypeException(methodResult.toString() + " to " + responseType.getValue() + " error");
+                throw new ResponseTypeException(methodResult + " to " + responseType.getValue() + " error");
             }
             LOGGER.debug(filter::toString);
             routerResponse.setContent(filter);
