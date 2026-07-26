@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.column;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
@@ -16,7 +17,6 @@ import com.truthbean.debbie.jdbc.datasource.DriverConnection;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.repository.DynamicRepository;
 import com.truthbean.debbie.jdbc.util.JdbcUtils;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.transformer.DataTransformer;
@@ -144,7 +144,7 @@ public class JdbcColumnResolver {
 
     public static <E> ColumnInfo resolveFieldAndValue(Field field, E entity) {
         ColumnInfo columnInfo = resolveField(field);
-        var value = ReflectionHelper.invokeGetMethod(entity, field.getName());
+        var value = ReflectionUtils.invokeGetMethod(entity, field.getName());
         columnInfo.setValue(value);
         return columnInfo;
     }
@@ -197,8 +197,8 @@ public class JdbcColumnResolver {
             columnInfo.setCharMaxLength(64);
         }
         columnInfo.setProperty(field.getName());
-        columnInfo.setPropertyGetter(o -> ReflectionHelper.getField(o, field));
-        columnInfo.setPropertySetter((entity, property) -> ReflectionHelper.setField(entity, field, property));
+        columnInfo.setPropertyGetter(o -> ReflectionUtils.getField(o, field));
+        columnInfo.setPropertySetter((entity, property) -> ReflectionUtils.setField(entity, field, property));
         columnInfo.setJavaClass(field.getType());
         return columnInfo;
     }

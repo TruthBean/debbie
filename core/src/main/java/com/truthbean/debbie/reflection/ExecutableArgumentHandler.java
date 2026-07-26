@@ -10,6 +10,7 @@
 package com.truthbean.debbie.reflection;
 
 import com.truthbean.Logger;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.data.JsonHelper;
@@ -122,7 +123,7 @@ public class ExecutableArgumentHandler {
                 handleObjectParam(map, invokedParameter, ignoreCase);
                 if (invokedParameter.getValue() != null) {
                     //set value to filed
-                    ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
+                    ReflectionUtils.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
                             invokedParameter.getRawType());
                 }
             }
@@ -143,7 +144,7 @@ public class ExecutableArgumentHandler {
                 handleParam(map, invokedParameter, ignoreCase);
                 if (invokedParameter.getValue() != null) {
                     //set value to filed
-                    ReflectionHelper.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
+                    ReflectionUtils.invokeSetMethod(newInstance, field.getName(), invokedParameter.getValue(),
                             invokedParameter.getRawType());
                 }
             }
@@ -297,11 +298,11 @@ public class ExecutableArgumentHandler {
                     try {
                         value = xmlHelper.xmlStreamToBean(stream, clazz);
                         if (value == null) {
-                            value = ReflectionHelper.newInstance(clazz);
+                            value = ReflectionUtils.newInstance(clazz);
                         }
                     } catch (Exception e) {
                         LOGGER.error("", e);
-                        value = ReflectionHelper.newInstance(clazz);
+                        value = ReflectionUtils.newInstance(clazz);
                     }
                 }
                 break;
@@ -333,11 +334,11 @@ public class ExecutableArgumentHandler {
                     try {
                         value = jsonHelper.jsonStreamToBean(stream, clazz);
                         if (value == null) {
-                            value = ReflectionHelper.newInstance(clazz);
+                            value = ReflectionUtils.newInstance(clazz);
                         }
                     } catch (Exception e) {
                         LOGGER.error("", e);
-                        value = ReflectionHelper.newInstance(clazz);
+                        value = ReflectionUtils.newInstance(clazz);
                     }
                 }
                 break;

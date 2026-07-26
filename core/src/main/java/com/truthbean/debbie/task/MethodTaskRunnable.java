@@ -11,10 +11,10 @@ package com.truthbean.debbie.task;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -70,7 +70,7 @@ public class MethodTaskRunnable implements TaskRunnable {
         }
         running = true;
         try {
-            ReflectionHelper.invokeMethod(taskBean, method, params);
+            ReflectionUtils.invokeMethod(taskBean, method, params);
         } catch (Exception e) {
             logger.error("task(" + getName() + ") error");
         }

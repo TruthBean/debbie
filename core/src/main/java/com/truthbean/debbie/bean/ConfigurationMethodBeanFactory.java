@@ -11,10 +11,9 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
-import com.truthbean.core.util.StringUtils;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -73,9 +72,9 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
                     params[i] = applicationContext.getGlobalBeanFactory().factory(beanInjection);
                 }
             }
-            bean = ReflectionHelper.invokeMethod(supplier.get(), method, params);
+            bean = ReflectionUtils.invokeMethod(supplier.get(), method, params);
         } else {
-            bean = ReflectionHelper.invokeMethod(supplier.get(), method);
+            bean = ReflectionUtils.invokeMethod(supplier.get(), method);
         }
         return bean;
     }
@@ -97,9 +96,9 @@ public class ConfigurationMethodBeanFactory<Configuration, Bean> implements Bean
                     params[i] = applicationContext.getGlobalBeanFactory().factory(beanInjection);
                 }
             }
-            return ReflectionHelper.invokeMethod(supplier.get(), method, params);
+            return ReflectionUtils.invokeMethod(supplier.get(), method, params);
         }
-        return ReflectionHelper.invokeMethod(supplier.get(), method);
+        return ReflectionUtils.invokeMethod(supplier.get(), method);
     }*/
 
     @Override

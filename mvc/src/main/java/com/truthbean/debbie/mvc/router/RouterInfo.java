@@ -11,18 +11,12 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
-import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.lang.Copyable;
 import com.truthbean.debbie.mvc.request.HttpMethod;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 import com.truthbean.debbie.mvc.response.RouterResponse;
 import com.truthbean.debbie.mvc.url.RouterPathFragments;
-import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.reflection.ReflectionHelper;
-import com.truthbean.debbie.reflection.TypeHelper;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**

@@ -2,6 +2,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -13,7 +14,6 @@ import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.proxy.DynamicProxyBean;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -184,7 +184,7 @@ public class ClassBeanInfo<Bean> extends ClassInfo<Bean> implements RegistrableB
                 } else if (conditionClass == ReflectionEnableCondition.class) {
                     conditions.add(ReflectionEnableCondition.INSTANCE);
                 } else {
-                    BeanCondition beanCondition = ReflectionHelper.newInstance(conditionClass);
+                    BeanCondition beanCondition = ReflectionUtils.newInstance(conditionClass);
                     this.conditions.add(beanCondition);
                 }
             }

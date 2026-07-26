@@ -11,11 +11,11 @@ package com.truthbean.debbie.task;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.ExecutableArgument;
 import com.truthbean.debbie.reflection.ExecutableArgumentHandler;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -64,7 +64,7 @@ public class MethodTaskAction extends AbstractTaskAction {
             }
             taskInfo.setRunning(true);
             try {
-                ReflectionHelper.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
+                ReflectionUtils.invokeMethod(methodTaskInfo.getTaskBean(), methodTaskInfo.getTaskMethod(), params);
             } catch (Exception e) {
                 LOGGER.error("task(" + taskInfo);
             }

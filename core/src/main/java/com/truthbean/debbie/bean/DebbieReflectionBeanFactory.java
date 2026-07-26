@@ -2,16 +2,14 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
-import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ReflectionConfigurer;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -286,7 +284,7 @@ public class DebbieReflectionBeanFactory<Bean> extends ClassBeanInfo<Bean> imple
         Set<BeanLifecycle> beanLifecycles = applicationContext.getBeanLifecycle();
         Method destroyMethod = getDestroyMethod();
         if (destroyMethod != null) {
-            ReflectionHelper.invokeMethod(bean, destroyMethod);
+            ReflectionUtils.invokeMethod(bean, destroyMethod);
         }
         for (BeanLifecycle beanLifecycle : beanLifecycles) {
             if (beanLifecycle.support(getBeanClass()) && beanLifecycle.support(this)) {

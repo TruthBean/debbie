@@ -9,9 +9,9 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.io.MultipartFile;
 import com.truthbean.debbie.reflection.ExecutableArgument;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.reflect.Field;
@@ -42,7 +42,7 @@ public class MethodRouterExecutor implements RouterExecutor {
             if (TypeHelper.isBaseType(param.getType()) || param.getType() == MultipartFile.class) {
                 baseTypeMethodParams.add(param);
             } else {
-                List<Field> fields = ReflectionHelper.getDeclaredFields(param.getRawType());
+                List<Field> fields = ReflectionUtils.getDeclaredFields(param.getRawType());
                 int i = 0;
                 while (i < fields.size()) {
                     baseTypeMethodParams.add(handler.typeOf(fields.get(i), i++));
@@ -75,7 +75,7 @@ public class MethodRouterExecutor implements RouterExecutor {
 
     @Override
     public Object execute(Object... params) throws Throwable {
-        return ReflectionHelper.invokeMethod(true, routerInstance, method, params);
+        return ReflectionUtils.invokeMethod(true, routerInstance, method, params);
     }
 
     @Override

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.boot.exception.DebbieApplicationException;
@@ -203,9 +204,9 @@ class DebbieBootApplicationResolver {
                                                         DebbieBootApplication debbieBootApplication,
                                                         BeanScanConfiguration configuration) {
         try {
-            Method customInjectType = ReflectionHelper.getMethod(annotation.annotationType(), "customInjectType", new Class[0]);
+            Method customInjectType = ReflectionUtils.getMethod(annotation.annotationType(), "customInjectType", new Class[0]);
             if (customInjectType != null) {
-                var injectTypes = (Class<? extends Annotation>[]) ReflectionHelper.invokeMethod(annotation, customInjectType);
+                var injectTypes = (Class<? extends Annotation>[]) ReflectionUtils.invokeMethod(annotation, customInjectType);
                 if (injectTypes != null && injectTypes.length > 0) {
                     configuration.addCustomInjectType(injectTypes);
                 }
@@ -215,9 +216,9 @@ class DebbieBootApplicationResolver {
         } catch (Exception ignored) {
         }
         try {
-            Method scanMethod = ReflectionHelper.getMethod(annotation.annotationType(), "scan", new Class[0]);
+            Method scanMethod = ReflectionUtils.getMethod(annotation.annotationType(), "scan", new Class[0]);
             if (scanMethod != null) {
-                var scan = (DebbieScan) ReflectionHelper.invokeMethod(annotation, scanMethod);
+                var scan = (DebbieScan) ReflectionUtils.invokeMethod(annotation, scanMethod);
                 if (scan != null) {
                     resolveDebbieScan(configuration, scan);
                 }

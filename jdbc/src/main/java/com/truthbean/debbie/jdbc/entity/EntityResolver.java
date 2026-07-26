@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.entity;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
@@ -18,7 +19,6 @@ import com.truthbean.debbie.jdbc.annotation.SqlEntity;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
-import com.truthbean.debbie.jdbc.repository.MoreRowException;
 import com.truthbean.debbie.lang.Callback;
 import com.truthbean.debbie.reflection.ClassInfo;
 import com.truthbean.debbie.reflection.FieldInfo;
@@ -80,7 +80,7 @@ public class EntityResolver {
         if (row.size() == 1) {
             ColumnInfo data = row.get(0);
             return transform(data, clazz, arg -> {
-                List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
+                List<Field> declaredFields = ReflectionUtils.getDeclaredFields(clazz);
                 return transformer(row, declaredFields, clazz);
             });
         } else if (row.size() > 1) {
@@ -89,7 +89,7 @@ public class EntityResolver {
                 resultMap.addResult(row);
                 return resultMap.toEntity();
             }
-            List<Field> declaredFields = ReflectionHelper.getDeclaredFields(clazz);
+            List<Field> declaredFields = ReflectionUtils.getDeclaredFields(clazz);
             return transformer(row, declaredFields, clazz);
         }
         return null;
@@ -119,7 +119,7 @@ public class EntityResolver {
     }
 
     private <T> T transformer(List<ColumnInfo> map, List<Field> declaredFields, Class<T> clazz) {
-        T instance = ReflectionHelper.newInstance(clazz);
+        T instance = ReflectionUtils.newInstance(clazz);
         if (instance == null) {
             throw new NullPointerException("Class(" + clazz + ") reflect to new instance null");
         }

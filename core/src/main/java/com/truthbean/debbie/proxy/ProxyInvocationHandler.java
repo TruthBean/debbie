@@ -1,9 +1,9 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.Logger;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.DebbieReflectionBeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -31,7 +31,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
 
     public ProxyInvocationHandler(Class<Target> targetClass, ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        var target = ReflectionHelper.newInstance(targetClass);
+        var target = ReflectionUtils.newInstance(targetClass);
         classInfo = new DebbieReflectionBeanFactory<>(targetClass);
         if (target == null) {
             LOGGER.error("new instance by default constructor error");
@@ -66,7 +66,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (applicationContext.isExiting()) {
-            return ReflectionHelper.getDefaultValue(method.getReturnType());
+            return ReflectionUtils.getDefaultValue(method.getReturnType());
         }
         var proxyClassName = proxy.getClass().getName();
         Class<?> targetClass = target.getClass();
@@ -75,7 +75,7 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
         Class<?>[] parameterClass = method.getParameterTypes();
         var methodName = method.getName();
         try {
-            targetMethod = ReflectionHelper.getDeclaredMethod(targetClass, methodName, parameterClass);
+            targetMethod = ReflectionUtils.getDeclaredMethod(targetClass, methodName, parameterClass);
             if (targetMethod == null) {
                 if ("toString".equals(methodName)) {
                     return target.toString();
@@ -109,12 +109,12 @@ public class ProxyInvocationHandler<Target> implements InvocationHandler {
             if (!applicationContext.isExiting()) {
                 return method.invoke(target, args);
             }
-            return ReflectionHelper.getDefaultValue(method.getReturnType());
+            return ReflectionUtils.getDefaultValue(method.getReturnType());
         }, () -> {
             if (!applicationContext.isExiting()) {
                 return method.invoke(target, args);
             }
-            return ReflectionHelper.getDefaultValue(method.getReturnType());
+            return ReflectionUtils.getDefaultValue(method.getReturnType());
         });
     }
 

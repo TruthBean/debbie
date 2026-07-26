@@ -10,7 +10,7 @@
 package com.truthbean.debbie.annotation;
 
 import com.truthbean.core.util.ClassHelper;
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.reflection.TypeHelper;
 
 import java.lang.annotation.Annotation;
@@ -34,7 +34,7 @@ public class AnnotationParser {
             AnnotationMethodInfo methodInfo = new AnnotationMethodInfo();
             methodInfo.setMethod(declaredMethod);
             methodInfo.setMethodName(declaredMethod.getName());
-            var value = ReflectionHelper.invokeMethod(annotation, declaredMethod);
+            var value = ReflectionUtils.invokeMethod(annotation, declaredMethod);
             methodInfo.setValue(value);
             AliasFor aliasFor = declaredMethod.getAnnotation(AliasFor.class);
             if (aliasFor != null) {
@@ -55,14 +55,14 @@ public class AnnotationParser {
     }
 
     public static Map<Class<? extends Annotation>, AnnotationInfo> parseClassAnnotation(Class<?> clazz) {
-        Set<Annotation> annotations = ReflectionHelper.getClassAnnotations(clazz);
+        Set<Annotation> annotations = ReflectionUtils.getClassAnnotations(clazz);
 
         Set<Annotation> classAnnotations = new HashSet<>();
         Map<Class<? extends Annotation>, AnnotationInfo> map = new HashMap<>();
 
         if (!annotations.isEmpty()) {
             for (Annotation annotation : annotations) {
-                Set<Annotation> annotationInAnnotation = ReflectionHelper.getClassAnnotations(annotation.annotationType());
+                Set<Annotation> annotationInAnnotation = ReflectionUtils.getClassAnnotations(annotation.annotationType());
                 if (!annotationInAnnotation.isEmpty()) {
                     for (Annotation ann : annotationInAnnotation) {
                         Class<? extends Annotation> annotationType = ann.annotationType();
@@ -93,7 +93,7 @@ public class AnnotationParser {
         info.properties().forEach((name, methodInfo) -> {
             Method declaredMethod = methodInfo.getMethod();
             String methodName = methodInfo.getMethodName();
-            var value = ReflectionHelper.invokeMethod(info.getOrigin(), declaredMethod);
+            var value = ReflectionUtils.invokeMethod(info.getOrigin(), declaredMethod);
             if (methodName.equals(attributeName)) {
                 methodInfo.setValue(attributeValue);
                 value = attributeValue;

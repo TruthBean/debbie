@@ -10,6 +10,7 @@
 package com.truthbean.debbie.jdbc.datasource;
 
 import com.truthbean.Logger;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.BeanClosure;
 import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -17,7 +18,6 @@ import com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -78,7 +78,7 @@ public interface DataSourceFactory extends BeanClosure {
         } else if (DefaultMultiDataSourceFactory.class.equals(factoryClass)) {
             factory = new DefaultMultiDataSourceFactory();
         } else {
-            factory = ReflectionHelper.newInstance(factoryClass);
+            factory = ReflectionUtils.newInstance(factoryClass);
         }
         return factory.factory(configuration);
     }

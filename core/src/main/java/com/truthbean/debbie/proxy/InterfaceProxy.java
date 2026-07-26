@@ -10,8 +10,8 @@
 package com.truthbean.debbie.proxy;
 
 import com.truthbean.Logger;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.reflection.ReflectionExceptionUtils;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
@@ -67,7 +67,7 @@ public class InterfaceProxy<T> implements InvocationHandler {
                 execute = interfaceMethod.execute(object, returnType, args);
             } catch (Exception e) {
                 logger.warn("", e);
-                execute = ReflectionHelper.invokeMethod(failureAction, method, args);
+                execute = ReflectionUtils.invokeMethod(failureAction, method, args);
             }
             return execute;
         } else {

@@ -9,11 +9,11 @@
  */
 package com.truthbean.debbie.internal;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.proxy.BeanProxyType;
 import com.truthbean.debbie.reflection.ClassInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -63,7 +63,7 @@ class ConfigurationBeanRegister implements BeanRegister {
                     } else if (ReflectionEnableCondition.class.isAssignableFrom(condition)) {
                         conditionSet.add(ReflectionEnableCondition.INSTANCE);
                     } else {
-                        conditionSet.add(ReflectionHelper.newInstance(condition));
+                        conditionSet.add(ReflectionUtils.newInstance(condition));
                     }
                 }
                 if (conditionSet.isEmpty()) {

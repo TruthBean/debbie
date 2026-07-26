@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.data.validate.DefaultDataValidateFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MultipartFile;
@@ -123,7 +124,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                 // handleBody(body, invokedParameter);
             }
         } else {
-            List<Field> fields = ReflectionHelper.getDeclaredFields(newInstance.getClass());
+            List<Field> fields = ReflectionUtils.getDeclaredFields(newInstance.getClass());
             int i = 0;
             while (i < fields.size()) {
                 ExecutableArgument parameter = typeOf(fields.get(i), i);
@@ -219,8 +220,8 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
 
     public void handleFields(RouterRequestValues parameters, ExecutableArgument invokedParameter, MediaType requestType) {
         Class<?> parameterType = invokedParameter.getRawType();
-        Object instance = ReflectionHelper.newInstance(parameterType);
-        List<Field> fields = ReflectionHelper.getDeclaredFields(parameterType);
+        Object instance = ReflectionUtils.newInstance(parameterType);
+        List<Field> fields = ReflectionUtils.getDeclaredFields(parameterType);
         int i = 0;
         while (i < fields.size()) {
             ExecutableArgument parameter = typeOf(fields.get(i), i);
@@ -229,7 +230,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
                     !TypeHelper.isAbstractOrInterface(type) && TypeHelper.hasDefaultConstructor(type)
                     && !type.getName().equals(parameterType.getName())) {
                 try {
-                    Object newInstance = ReflectionHelper.newInstance(type);
+                    Object newInstance = ReflectionUtils.newInstance(type);
                     handleInstance(parameters, newInstance, parameter);
                     assert instance != null;
                     ReflectionHelper.invokeSetMethod(instance, fields.get(i), newInstance);
@@ -326,7 +327,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
         List<ExecutableArgument> result = new ArrayList<>();
 
         Parameter[] parameters = method.getParameters();
-        Type[] parameterTypes = ReflectionHelper.getMethodActualTypes(method, declaringClass);
+        Type[] parameterTypes = ReflectionUtils.getMethodActualTypes(method, declaringClass);
 
         ExecutableArgument invokedParameter;
         for (int i = 0; i < parameters.length; i++) {

@@ -30,7 +30,7 @@ import java.util.*;
  * @since 0.0.1
  * Created on 2019/3/23 11:23.
  */
-public class ReflectionHelper extends ReflectionUtils {
+public class ReflectionHelper {
 
     private ReflectionHelper() {
     }

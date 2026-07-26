@@ -10,7 +10,7 @@
 package com.truthbean.debbie.proxy;
 
 
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
@@ -60,9 +60,9 @@ public class MethodCallBack<T> implements Callable<T> {
     @SuppressWarnings("unchecked")
     public T call() {
         if (method != null) {
-            return ReflectionHelper.invokeMethod(target, method, parameters);
+            return ReflectionUtils.invokeMethod(target, method, parameters);
         }
         else
-            return (T) ReflectionHelper.invokeMethod(target, methodName, parameters, parameterTypes);
+            return (T) ReflectionUtils.invokeMethod(target, methodName, parameters, parameterTypes);
     }
 }

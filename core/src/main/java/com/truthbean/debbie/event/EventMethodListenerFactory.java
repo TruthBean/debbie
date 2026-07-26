@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
@@ -64,6 +64,6 @@ public class EventMethodListenerFactory<EVENT extends AbstractDebbieEvent> imple
 
     @Override
     public void onEvent(EVENT event) {
-        ReflectionHelper.invokeMethod(targetBeanSupplier.get(), eventMethod, event);
+        ReflectionUtils.invokeMethod(targetBeanSupplier.get(), eventMethod, event);
     }
 }

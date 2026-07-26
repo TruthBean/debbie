@@ -11,6 +11,7 @@ package com.truthbean.debbie.bean;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
@@ -160,9 +161,9 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                             }
                             if (finalLocalBean.getClass().getName().startsWith("jdk.proxy")) {
                                 Object obj = getRealValueFromJdkProxy(finalLocalBean);
-                                ReflectionHelper.setField(obj, fieldInfo.getField(), fieldValue);
+                                ReflectionUtils.setField(obj, fieldInfo.getField(), fieldValue);
                             } else {
-                                ReflectionHelper.setField(finalLocalBean, fieldInfo.getField(), fieldValue);
+                                ReflectionUtils.setField(finalLocalBean, fieldInfo.getField(), fieldValue);
                             }
                         }
                     });
@@ -271,7 +272,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
         if (Modifier.isStatic(initMethod.getModifiers())) {
             Parameter[] parameters = initMethod.getParameters();
             if (parameters == null || parameters.length == 0) {
-                Bean tempValue = (Bean) ReflectionHelper.invokeStaticMethod(initMethod);
+                Bean tempValue = (Bean) ReflectionUtils.invokeStaticMethod(initMethod);
                 beanFactory.setPreparedBean(tempValue);
             } else {
                 int parameterCount = initMethod.getParameterCount();
@@ -283,7 +284,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                 boolean allParamsHasValue = createPreparationByExecutable(parameters,
                         parameterCount, values, initMethodBeanDependence, initMethodInjectRequired);
                 if (allParamsHasValue) {
-                    Bean tempValue = (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+                    Bean tempValue = (Bean) ReflectionUtils.invokeStaticMethod(initMethod, values);
                     beanFactory.setPreparedBean(tempValue);
                 } else {
                     beanFactory.setInitMethodBeanDependencies(initMethodBeanDependence);
@@ -577,12 +578,12 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                         values[i] = beanValue;
                     }
                 } else {
-                    values[i] = ReflectionHelper.getDefaultValue(type);
+                    values[i] = ReflectionUtils.getDefaultValue(type);
                 }
             }
         }
         try {
-            return (Bean) ReflectionHelper.invokeStaticMethod(initMethod, values);
+            return (Bean) ReflectionUtils.invokeStaticMethod(initMethod, values);
         } catch (Exception e) {
             LOGGER.error(() -> "new instance (" + reflectionBeanFactory.getClazz().getName() + ") " +
                     "by initMethod(" + initMethod.getName() + ") error \n");
@@ -651,7 +652,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     } else if (required) {
                         throw new NoBeanException(beanFactory.getBeanClass() +  " constructor parameter is null, bean " + parameter.getType() + " value is null .");
                     } else {
-                        values[i] = ReflectionHelper.getDefaultValue(type);
+                        values[i] = ReflectionUtils.getDefaultValue(type);
                     }
                 }
             }
@@ -694,7 +695,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                 }
 
                 String name = getFieldName(field);
-                var fieldValue = ReflectionHelper.getField(getRealValueFromJdkProxy(preparedBean), field);
+                var fieldValue = ReflectionUtils.getField(getRealValueFromJdkProxy(preparedBean), field);
                 if (fieldValue == null) {
                     var baseBeanFactory = beanInfoManager.getBeanFactory(name, fieldType, required, false);
                     if (required && baseBeanFactory == null) {
@@ -779,7 +780,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             } else {
                 newKeyPrefix = keyPrefix + "." + name;
             }
-            var b = ReflectionHelper.getField(preparedBean, field.getField());
+            var b = ReflectionUtils.getField(preparedBean, field.getField());
             Field[] fields = field.getType().getDeclaredFields();
             for (Field f : fields) {
                 // 2. 递归获取@NestedPropertiesConfiguration的field的bean
@@ -843,7 +844,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     if (!field.getType().isInstance(value)) {
                         value = getRealValueFromJdkProxy(value);
                     }
-                    ReflectionHelper.setField(getRealValueFromJdkProxy(preparedBean), field, value);
+                    ReflectionUtils.setField(getRealValueFromJdkProxy(preparedBean), field, value);
                 }
             }
         } else if (required) {
@@ -870,7 +871,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
             Field[] fields = field.getType().getDeclaredFields();
             for (Field f : fields) {
                 // 2. 递归获取@NestedPropertiesConfiguration的field的bean
-                resolvePropertyFieldValue(profile, category, ReflectionHelper.getField(configuration, f), f, newKeyPrefix);
+                resolvePropertyFieldValue(profile, category, ReflectionUtils.getField(configuration, f), f, newKeyPrefix);
             }
         } else {
             // 1. 拼接 prefix
@@ -971,11 +972,11 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     DataTransformer<?, String> dataTransformer = dataTransformers[0];
                     transform = dataTransformer.reverse(value);
                 } else {
-                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformerClass);
+                    DataTransformer<?, String> dataTransformer = ReflectionUtils.newInstance(transformerClass);
                     if (dataTransformer != null) {
                         transform = dataTransformer.reverse(value);
                     } else {
-                        dataTransformer = (DataTransformer<?, String>) ReflectionHelper.invokeStaticMethod("getInstance", transformerClass);
+                        dataTransformer = (DataTransformer<?, String>) ReflectionUtils.invokeStaticMethod("getInstance", transformerClass);
                         if (dataTransformer != null) {
                             transform = dataTransformer.reverse(value);
                         }
@@ -1035,11 +1036,11 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
                     DataTransformer<?, String> dataTransformer = dataTransformers[0];
                     transform = dataTransformer.reverse(value);
                 } else {
-                    DataTransformer<?, String> dataTransformer = ReflectionHelper.newInstance(transformerClass);
+                    DataTransformer<?, String> dataTransformer = ReflectionUtils.newInstance(transformerClass);
                     if (dataTransformer != null) {
                         transform = dataTransformer.reverse(value);
                     } else {
-                        dataTransformer = (DataTransformer<?, String>) ReflectionHelper.invokeStaticMethod("getInstance", transformerClass);
+                        dataTransformer = (DataTransformer<?, String>) ReflectionUtils.invokeStaticMethod("getInstance", transformerClass);
                         if (dataTransformer != null) {
                             transform = dataTransformer.reverse(value);
                         }
@@ -1074,7 +1075,7 @@ public class ReflectionBeanLifecycle extends AbstractBeanLifecycle {
         boolean required = beanInfoManager.isRequired(method, false);
         Object o = globalBeanFactory.factory(name, beanClass, required);
         if (o != null) {
-            ReflectionHelper.invokeMethod(object, method, o);
+            ReflectionUtils.invokeMethod(object, method, o);
         }
     }
 

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.reflection;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
 import com.truthbean.core.lang.NonNull;
@@ -64,13 +65,13 @@ public class ClassInfo<C> implements Serializable {
     private void getClassInfo() {
 
         fields = new ArrayList<>();
-        ReflectionHelper.getDeclaredFields(clazz).forEach(field -> fields.add(new FieldInfo(field)));
+        ReflectionUtils.getDeclaredFields(clazz).forEach(field -> fields.add(new FieldInfo(field)));
 
         this.constructors = (Constructor<C>[]) clazz.getDeclaredConstructors();
-        this.methods = ReflectionHelper.getDeclaredMethods(clazz);
+        this.methods = ReflectionUtils.getDeclaredMethods(clazz);
         getMethodAnnotationMap();
 
-        Type[] classActualTypes = ReflectionHelper.getActualTypes(clazz);
+        Type[] classActualTypes = ReflectionUtils.getActualTypes(clazz);
         if (classActualTypes != null && classActualTypes.length > 0) {
             this.actualTypes = Arrays.asList(classActualTypes);
         }
@@ -78,7 +79,7 @@ public class ClassInfo<C> implements Serializable {
 
     private void getMethodAnnotationMap() {
         for (Method method : this.methods) {
-            Set<Annotation> methodAnnotations = ReflectionHelper.getMethodAnnotations(method);
+            Set<Annotation> methodAnnotations = ReflectionUtils.getMethodAnnotations(method);
             if (methodAnnotations.isEmpty()) {
                 continue;
             }

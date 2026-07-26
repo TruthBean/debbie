@@ -1,5 +1,6 @@
 package com.truthbean.debbie.jdbc.datasource;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.BeanFactory;
 import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.BeanInfoManager;
@@ -8,7 +9,6 @@ import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.jdbc.datasource.multi.DefaultMultiDataSourceFactory;
 import com.truthbean.debbie.jdbc.datasource.pool.DefaultDataSourcePoolFactory;
 import com.truthbean.debbie.properties.PropertiesConfigurationBeanFactory;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -51,7 +51,7 @@ public class DataSourceFactoryFactory<T extends DataSourceFactory> implements Be
                     } else if (DefaultMultiDataSourceFactory.class.equals(factoryClass)) {
                         factory = new DefaultMultiDataSourceFactory();
                     } else {
-                        factory = ReflectionHelper.newInstance(factoryClass);
+                        factory = ReflectionUtils.newInstance(factoryClass);
                     }
                     if (factory.support(configuration)) {
                         dataSourceFactory = (T) factory.factory(configuration);

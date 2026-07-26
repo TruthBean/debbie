@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.asm.reflect;
 
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.reflection.TypeHelper;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Type;
@@ -142,7 +142,7 @@ public class AsmConstructorInfo implements Comparable<AsmConstructorInfo> {
     }
 
     public Object[] makeConstructorDefaultValue() {
-        return ReflectionHelper.makeDefaultValue(this.parameterTypes);
+        return ReflectionUtils.makeDefaultValue(this.parameterTypes);
     }
 
     @Override

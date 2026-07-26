@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.proxy;
 
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 
@@ -22,7 +22,7 @@ public class MethodExecutorFactory {
     public static <T> AbstractMethodExecutor factory(Class<? extends AbstractMethodExecutor> executorClass,
                                                         Class<T> interfaceType, Method method, ClassLoader classLoader,
                                                      Object configuration) {
-        return ReflectionHelper.newInstance(executorClass,
+        return ReflectionUtils.newInstance(executorClass,
                 new Class[]{Class.class, Method.class, ClassLoader.class, Object.class},
                 new Object[]{interfaceType, method, classLoader, configuration});
     }

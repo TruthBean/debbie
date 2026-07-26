@@ -9,12 +9,12 @@
  */
 package com.truthbean.debbie.bean;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.annotation.AliasFor;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.annotation.AnnotationMethodInfo;
 import com.truthbean.debbie.annotation.AnnotationParser;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.core.util.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -99,10 +99,10 @@ public interface BeanComponentParser {
             if (valueMethod != null || nameMethod != null) {
                 String beanName = null;
                 if (valueMethod != null) {
-                    beanName = ReflectionHelper.invokeMethod(value, valueMethod);
+                    beanName = ReflectionUtils.invokeMethod(value, valueMethod);
                 }
                 if (!StringUtils.hasText(beanName) && nameMethod != null) {
-                    beanName = ReflectionHelper.invokeMethod(value, nameMethod);
+                    beanName = ReflectionUtils.invokeMethod(value, nameMethod);
                 }
                 if (!StringUtils.hasText(beanName)) {
                     beanName = annotation.name();
@@ -111,19 +111,19 @@ public interface BeanComponentParser {
                 info.setName(beanName);
 
                 if (typeMethod != null) {
-                    info.setType(ReflectionHelper.invokeMethod(value, typeMethod));
+                    info.setType(ReflectionUtils.invokeMethod(value, typeMethod));
                 } else {
                     info.setType(annotation.type());
                 }
 
                 if (proxyMethod != null) {
-                    info.setProxy(ReflectionHelper.invokeMethod(value, proxyMethod));
+                    info.setProxy(ReflectionUtils.invokeMethod(value, proxyMethod));
                 } else {
                     info.setProxy(annotation.proxy());
                 }
 
                 if (lazyMethod != null) {
-                    Boolean lazy = ReflectionHelper.invokeMethod(value, lazyMethod);
+                    Boolean lazy = ReflectionUtils.invokeMethod(value, lazyMethod);
                     if (lazy != null) {
                         info.setLazy(lazy);
                     }
@@ -132,13 +132,13 @@ public interface BeanComponentParser {
                 }
 
                 if (proxyMethod != null) {
-                    info.setProxy(ReflectionHelper.invokeMethod(value, proxyMethod));
+                    info.setProxy(ReflectionUtils.invokeMethod(value, proxyMethod));
                 } else {
                     info.setProxy(annotation.proxy());
                 }
 
                 if (conditionsMethod != null) {
-                    info.setCondition(ReflectionHelper.invokeMethod(value, conditionsMethod));
+                    info.setCondition(ReflectionUtils.invokeMethod(value, conditionsMethod));
                 } else {
                     info.setCondition(annotation.conditions());
                 }

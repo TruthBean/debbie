@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.event;
 
-import com.truthbean.debbie.reflection.ReflectionHelper;
+import com.truthbean.core.util.ReflectionUtils;
 
 import java.util.EventListener;
 
@@ -52,7 +52,7 @@ public interface DebbieEventListener<E extends AbstractDebbieEvent> extends Even
 
     @SuppressWarnings({"unchecked"})
     default Class<? extends AbstractDebbieEvent> getEventType() {
-        var types = ReflectionHelper.getActualTypes(getClass());
+        var types = ReflectionUtils.getActualTypes(getClass());
         if (types != null && types.length > 0) {
             return (Class<? extends AbstractDebbieEvent>) types[0];
         }

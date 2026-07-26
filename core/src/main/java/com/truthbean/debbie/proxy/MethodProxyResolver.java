@@ -9,10 +9,10 @@
  */
 package com.truthbean.debbie.proxy;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.reflection.ClassInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -39,13 +39,13 @@ public class MethodProxyResolver {
         List<MethodProxyHandler<? extends Annotation>> methodProxyHandlers = new ArrayList<>();
         Annotation[] methodAnnotations = method.getAnnotations();
         Map<Class<? extends Annotation>, Annotation> methodAnnotationMap =
-                ReflectionHelper.getAnnotatedAnnotationOrAnnotation(Arrays.asList(methodAnnotations), MethodProxy.class);
+                ReflectionUtils.getAnnotatedAnnotationOrAnnotation(Arrays.asList(methodAnnotations), MethodProxy.class);
         if (methodAnnotationMap.isEmpty() && (classAnnotation == null || classAnnotation.isEmpty())) {
             return methodProxyHandlers;
         }
         if (classAnnotation != null && !classAnnotation.isEmpty()) {
             Map<Class<? extends Annotation>, Annotation> annotations =
-                    ReflectionHelper.getAnnotatedAnnotationOrAnnotation(classAnnotation, MethodProxy.class);
+                    ReflectionUtils.getAnnotatedAnnotationOrAnnotation(classAnnotation, MethodProxy.class);
             methodAnnotationMap.putAll(annotations);
         }
         // MethodProxyHandlerRegister methodProxyHandlerRegister = applicationContext.getMethodProxyHandlerRegister();
@@ -79,7 +79,7 @@ public class MethodProxyResolver {
     public <A extends Annotation> MethodProxyHandler<? extends Annotation> getMethodProxyHandler(Method method, MethodProxy methodProxy,
                                                                           A origin) {
         var proxyHandler = methodProxy.proxyHandler();
-        MethodProxyHandler<A> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
+        MethodProxyHandler<A> methodProxyHandler = ReflectionUtils.newInstance(proxyHandler);
         methodProxyHandler.setMethodAnnotation(origin);
         methodProxyHandler.setMethod(method);
         methodProxyHandler.setOrder(methodProxy.order());
@@ -108,7 +108,7 @@ public class MethodProxyResolver {
         }
         List<MethodProxyHandler<? extends Annotation>> tmp = new ArrayList<>();
         for (var proxyHandler : proxyHandlers) {
-            MethodProxyHandler handler = ReflectionHelper.newInstance(proxyHandler);
+            MethodProxyHandler handler = ReflectionUtils.newInstance(proxyHandler);
             handler.setOrder(methodProxy.order());
             handler.setClassAnnotation(annotation);
             handler.setApplicationContext(this.applicationContext);
@@ -160,7 +160,7 @@ public class MethodProxyResolver {
                     }
                     var proxyHandler = methodProxy.proxyHandler();
                     @SuppressWarnings("unchecked")
-                    MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionHelper.newInstance(proxyHandler);
+                    MethodProxyHandler<MethodProxy> methodProxyHandler = ReflectionUtils.newInstance(proxyHandler);
                     methodProxyHandler.setOrder(methodProxy.order());
                     methodProxyHandler.setClassAnnotation(methodProxy);
                     methodProxyHandler.setMethod(method);
@@ -205,7 +205,7 @@ public class MethodProxyResolver {
         MethodProxy methodProxy = annotationType.getAnnotation(MethodProxy.class);
         if (methodProxy != null) {
             var proxyHandler = methodProxy.proxyHandler();
-            MethodProxyHandler<Annotation> handler = ReflectionHelper.newInstance(proxyHandler);
+            MethodProxyHandler<Annotation> handler = ReflectionUtils.newInstance(proxyHandler);
             handler.setOrder(methodProxy.order());
             handler.setClassAnnotation(value);
             handler.setApplicationContext(this.applicationContext);

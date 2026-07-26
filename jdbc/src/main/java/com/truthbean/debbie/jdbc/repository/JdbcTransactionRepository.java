@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.repository;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
@@ -18,7 +19,6 @@ import com.truthbean.debbie.jdbc.entity.EntityInfo;
 import com.truthbean.debbie.jdbc.entity.EntityResolver;
 import com.truthbean.debbie.jdbc.entity.SqlEntityNullException;
 import com.truthbean.debbie.jdbc.transaction.TransactionInfo;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 import java.util.*;
 
@@ -64,7 +64,7 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
                 if (clazz == null) {
                     clazz = getClass();
                 }
-                var types = ReflectionHelper.getActualTypes(clazz);
+                var types = ReflectionUtils.getActualTypes(clazz);
                 if (types != null && types.length == 2) {
                     entityClass = (Class<Entity>) types[0];
                 }
@@ -86,7 +86,7 @@ public class JdbcTransactionRepository<Entity, Id> extends JdbcRepositoryHandler
                 if (clazz == null) {
                     clazz = getClass();
                 }
-                var types = ReflectionHelper.getActualTypes(clazz);
+                var types = ReflectionUtils.getActualTypes(clazz);
                 if (types != null && types.length == 2) {
                     idClass = (Class<Id>) types[1];
                 }

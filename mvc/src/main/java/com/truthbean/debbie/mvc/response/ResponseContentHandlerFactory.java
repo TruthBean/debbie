@@ -9,8 +9,8 @@
  */
 package com.truthbean.debbie.mvc.response;
 
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.core.ApplicationContext;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 
 /**
  * @author TruthBean
@@ -25,7 +25,7 @@ public class ResponseContentHandlerFactory {
     }
 
     public <H extends AbstractResponseContentHandler<?, ?>> H factory(Class<H> handlerClass) {
-        H handler = ReflectionHelper.newInstance(handlerClass);
+        H handler = ReflectionUtils.newInstance(handlerClass);
         handler.setApplicationContext(applicationContext);
         return handler;
     }

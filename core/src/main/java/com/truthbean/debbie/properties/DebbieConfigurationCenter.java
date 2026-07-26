@@ -10,12 +10,12 @@
 package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
+import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationContextAware;
 import com.truthbean.debbie.environment.Environment;
 import com.truthbean.debbie.proxy.BeanProxyType;
-import com.truthbean.debbie.reflection.ReflectionHelper;
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.LoggerFactory;
 
@@ -68,7 +68,7 @@ public class DebbieConfigurationCenter implements ApplicationContextAware {
     public <P extends DebbieProperties<S>, C extends DebbieConfiguration, S extends C>
     void register(Class<P> propertiesClass, Class<C> configurationClass) {
         // TODO 不用反射的形式....
-        DebbieProperties<S> properties = ReflectionHelper.newInstance(propertiesClass);
+        DebbieProperties<S> properties = ReflectionUtils.newInstance(propertiesClass);
         C configuration = properties.getConfiguration(applicationContext);
         Set<DebbieConfiguration> list;
         if (configurations.containsKey(propertiesClass)) {
