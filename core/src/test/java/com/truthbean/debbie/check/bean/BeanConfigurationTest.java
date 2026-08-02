@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanConfiguration;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieBean;
@@ -30,7 +31,7 @@ public class BeanConfigurationTest {
         }
         return new Inner() {
             public void hello() {
-                System.out.println("匿名内部类...");
+                Console.println("匿名内部类...");
             }
         };
     }
@@ -49,19 +50,19 @@ public class BeanConfigurationTest {
     public Inner 狄青() {
         return new Inner() {
             public void haha() {
-                System.out.println("匿名内部类...");
+                Console.println("匿名内部类...");
             }
         };
     }
 
     @DebbieBean
     public 幽灵 幽灵() {
-        return () -> System.out.println("匿名内部类...");
+        return () -> Console.println("匿名内部类...");
     }
 
     private class Inner {
         public void hello() {
-            System.out.println("匿名内部类...");
+            Console.println("匿名内部类...");
         }
     }
 

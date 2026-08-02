@@ -1,5 +1,6 @@
 package com.truthbean.debbie.bean.custom;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -42,8 +43,13 @@ class CustomBeanAnnotatedBeanTest {
     private CustomBeanAnnotatedBean customBeanAnnotatedBean;
 
     @DebbieTask(fixedRate = 1000)
-    public void task() {
-        System.out.println("do task result: " + customBeanAnnotatedBean.getA());
+    public void fixedRateTask() {
+        Console.println("do task result: " + customBeanAnnotatedBean.getA());
+    }
+
+    @DebbieTask(cron = "0/2 * * * * ?")
+    public void cronTask() {
+        Console.info("do task result: " + customBeanAnnotatedBean.getA());
     }
 
     public static void main(String[] args) {
@@ -52,7 +58,13 @@ class CustomBeanAnnotatedBeanTest {
         ApplicationContext applicationContext = applicationFactory.getApplicationContext();
         BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
         beanInfoManager.registerReflectionBeanRegister(CustomBeanAnnotation.class);
-        applicationFactory.create().postCreate().build().factory().start();
+        applicationFactory.create().postCreate().build().factory().start().afterStarted(e -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        }).exit().start().forceExit(e -> Console.info("Ready Exit...."));
     }
 
     @Test

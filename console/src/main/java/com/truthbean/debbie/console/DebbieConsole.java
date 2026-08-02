@@ -21,7 +21,7 @@ public class DebbieConsole {
         consoleLineHandlers.add(handler);
     }
 
-    public void consoleListener(DebbieConsoleConfig config) {
+    public void consoleListener(DebbieConsoleConfig config, DebbieConsoleApplication application) {
         final Scanner scanner = new Scanner(System.in);
         Console.writeLine(ColorHelper.GREEN, ColorHelper.BOLD, config.getPrompt() + " Welcome to use Debbie Console.");
         while (true) {
@@ -39,14 +39,22 @@ public class DebbieConsole {
                     continue;
                 }
                 if ("exit".equalsIgnoreCase(args[0])) {
+                    Console.writeLine(ColorHelper.RED, ColorHelper.BOLD, config.getPrompt() + " Close resources ......");
+                    application.forceExit();
                     Console.writeLine(ColorHelper.RED, ColorHelper.BOLD, config.getPrompt() + " Bye.");
+                    System.exit(6);
                     break;
                 }
+                boolean noSupport = true;
                 for (DebbieConsoleLineHandler handler : consoleLineHandlers) {
                     if (handler.support(line)) {
                         Console.writeLine(ColorHelper.BLUE, ColorHelper.BOLD, handler.handle(line));
+                        noSupport = false;
                         break;
                     }
+                }
+                if (noSupport) {
+                    Console.writeLine(ColorHelper.YELLOW, ColorHelper.BOLD, config.getPrompt() + " not found!");
                 }
             } catch (Exception e) {
                 LOGGER.error("console listener error.", e);

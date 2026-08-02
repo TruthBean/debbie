@@ -344,7 +344,8 @@ public class RouterPathSplicer {
         }
         if (dispatcherMapping != null)
             return dispatcherMapping.replace("**", path);
-        return path;
+        if (path.startsWith("/")) return path;
+        return "/" + path;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterPathSplicer.class);

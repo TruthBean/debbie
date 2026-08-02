@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInject;
@@ -64,7 +65,7 @@ class SurnameJdbcRepositoryTest {
     @Test
     void findAll() {
         List<Surname> all = repository.findAll();
-        System.out.println(all);
+        Console.println(all);
     }
 
     @Test
@@ -74,7 +75,7 @@ class SurnameJdbcRepositoryTest {
                 .select().count().from("surname")
                 .repository()
                 .single(LOGGER, EntityResolver.getInstance(), int.class);
-        System.out.println(count);
+        Console.println(count);
     }
 
     @Test

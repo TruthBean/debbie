@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.transaction;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.jdbc.transaction.ResourceHolder;
 
 public class Print2ResourceHolder implements ResourceHolder {
@@ -19,36 +20,36 @@ public class Print2ResourceHolder implements ResourceHolder {
 
     @Override
     public void prepare() {
-        System.out.println("0. prepare2.....");
+        Console.println("0. prepare2.....");
     }
 
     @Override
     public void beforeCommit() {
-        System.out.println("1. beforeCommit2.....");
+        Console.println("1. beforeCommit2.....");
     }
 
     @Override
     public void afterCommit() {
-        System.out.println("2. afterCommit2.....");
+        Console.println("2. afterCommit2.....");
     }
 
     @Override
     public void beforeRollback() {
-        System.out.println("3. beforeRollback2.....");
+        Console.println("3. beforeRollback2.....");
     }
 
     @Override
     public void afterRollback() {
-        System.out.println("4. afterRollback2.....");
+        Console.println("4. afterRollback2.....");
     }
 
     @Override
     public void beforeClose() {
-        System.out.println("5. beforeClose2.....");
+        Console.println("5. beforeClose2.....");
     }
 
     @Override
     public void afterClose() {
-        System.out.println("6. afterClose2.....");
+        Console.println("6. afterClose2.....");
     }
 }

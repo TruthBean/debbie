@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.boot;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.core.concurrent.NamedThreadFactory;
@@ -43,12 +44,6 @@ public abstract class AbstractApplication implements DebbieApplication {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean exited = new AtomicBoolean(true);
-
-    /**
-     * Synchronization monitor for the "refresh" and "destroy".
-     */
-    private final Object startupShutdownMonitor = new Object();
-    // private final Lock startupShutdownLock = new ReentrantLock(true);
 
     /**
      * Reference to the JVM shutdown hook, if registered.
@@ -226,6 +221,13 @@ public abstract class AbstractApplication implements DebbieApplication {
     }
 
     @Override
+    public DebbieExitedApplication exit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        waitUntilStarted();
+        applicationBootContextConsumer.accept(this.applicationBootContext);
+        return exit();
+    }
+
+    @Override
     public final DebbieExitedApplication exit() {
         logger.debug("application running: " + running.get());
         logger.debug("application exiting: " + applicationContext.isExiting());
@@ -250,6 +252,32 @@ public abstract class AbstractApplication implements DebbieApplication {
         }
         LoggerFactory.destroy();
         return this;
+    }
+
+    @Override
+    public void forceExit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        try {
+            applicationBootContextConsumer.accept(this.applicationBootContext);
+        } catch (Throwable e) {
+            logger.error("do action error before force exit.", e);
+        }
+        forceExit();
+    }
+
+    @Override
+    public void forceExit() {
+        try {
+            logger.debug("application is exiting...");
+            beforeExit(applicationContext);
+            doExit(applicationContext.getApplicationArgs());
+            logger.info("DebbieApplication-Startup thread will close...");
+            startupExecutor.destroy();
+            logger.info("DebbieApplication-ShutDown thread will close...");
+            shutdownExecutor.destroy();
+            exited.set(true);
+        } catch (Throwable e) {
+            logger.error("", e);
+        }
     }
 
     /**

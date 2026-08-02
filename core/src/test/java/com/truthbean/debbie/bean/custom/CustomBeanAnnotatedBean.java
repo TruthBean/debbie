@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.custom;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 
@@ -23,7 +24,7 @@ public class CustomBeanAnnotatedBean {
 
     private final int a;
     public CustomBeanAnnotatedBean() {
-        System.out.println("customBeanAnnotatedBean constructor...");
+        Console.println("customBeanAnnotatedBean constructor...");
         a = 666;
     }
 

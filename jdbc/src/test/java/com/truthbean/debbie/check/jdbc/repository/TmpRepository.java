@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 
@@ -21,7 +22,7 @@ public class TmpRepository {
 
     public TmpRepository() {
         tmp = UUID.randomUUID().toString();
-        System.out.println(tmp);
+        Console.println(tmp);
     }
 
     public String getTmp() {

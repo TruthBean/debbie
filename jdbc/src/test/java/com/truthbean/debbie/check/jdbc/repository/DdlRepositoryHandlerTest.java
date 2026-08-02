@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.check.jdbc.datasource.DataSourceConfigurationTest;
@@ -39,7 +40,7 @@ class DdlRepositoryHandlerTest {
         factory = new DefaultDataSourceFactory();
         factory.factory(config);
 
-        ddlRepositoryHandler = new DdlRepositoryHandler();
+        ddlRepositoryHandler = DdlRepositoryHandler.INSTANCE;
     }
 
     @AfterAll
@@ -52,7 +53,7 @@ class DdlRepositoryHandlerTest {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.asyncActionTransactional(transaction,
                 () -> ddlRepositoryHandler.createDatabase(LOGGER, transaction, "hello"));
-        System.out.println(r.get());
+        Console.println(r.get());
     }
 
     @Test
@@ -60,7 +61,7 @@ class DdlRepositoryHandlerTest {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.action(transaction,
                 () -> ddlRepositoryHandler.showDatabases(LOGGER, transaction));
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -68,7 +69,7 @@ class DdlRepositoryHandlerTest {
         var transaction = factory.getTransaction();
         var r = RepositoryCallback.actionTransactional(transaction,
                 () -> ddlRepositoryHandler.dropDatabase(LOGGER, transaction, "hello"));
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -78,7 +79,7 @@ class DdlRepositoryHandlerTest {
             ddlRepositoryHandler.useDatabase(LOGGER, transaction, "mysql");
             return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -91,7 +92,7 @@ class DdlRepositoryHandlerTest {
             ddlRepositoryHandler.createTable(LOGGER, transaction, Surname.class);
             return ""; // ddlRepositoryHandler.showTables(transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -102,7 +103,7 @@ class DdlRepositoryHandlerTest {
             ddlRepositoryHandler.dropTable(LOGGER, transaction, "surname");
             return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DdlRepositoryHandlerTest.class);

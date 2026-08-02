@@ -1,5 +1,7 @@
 package com.truthbean.debbie.jdbc.empty;
 
+import com.truthbean.Console;
+
 import java.sql.*;
 
 /**
@@ -14,7 +16,7 @@ public class EmptyTest {
         PreparedStatement statement = connection.prepareStatement("select * from test");
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
-            System.out.println(resultSet.getString(0));
+            Console.println(resultSet.getString(0));
         }
     }
 }

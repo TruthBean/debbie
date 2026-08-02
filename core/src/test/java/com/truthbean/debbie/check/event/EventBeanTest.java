@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.event;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -20,7 +21,7 @@ class EventBeanTest {
         Test2Event testEvent1 = new Test2Event(this, 44444);
         eventPublisher.publishEvent(testEvent1);
         long end = System.currentTimeMillis();
-        System.out.println(end - start1);
+        Console.println(end - start1);
     }
 
     @Test
@@ -46,6 +47,6 @@ class EventBeanTest {
         application.start();
         eventPublisher.publishEvent(new TestStartedEvent(test, null));
 
-        application.exit();
+        application.forceExit();
     }
 }

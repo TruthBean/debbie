@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.jdbc.repository.SqlKeywords;
 import org.junit.jupiter.api.Test;
 
@@ -11,8 +12,8 @@ class SqlKeywordsTest {
     void values() {
         SqlKeywords[] values = SqlKeywords.values();
         for (SqlKeywords value : values) {
-            System.out.println(value.value());
+            Console.println(value.value());
         }
-        System.out.println(SqlKeywords.of("testtestsatedast"));
+        Console.println(SqlKeywords.of("testtestsatedast"));
     }
 }

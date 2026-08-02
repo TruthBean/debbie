@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInject;
@@ -28,7 +29,7 @@ class DynamicRepositoryTest {
         RepositoryHandler repositoryHandler = RepositoryHandler.INSTANCE;
         // repositoryHandler.setDriverName(driver);
         List<List<ColumnInfo>> query = repositoryHandler.query(LOGGER, transaction, sql);
-        System.out.println(query);
+        Console.println(query);
     }
 
     @Test
@@ -44,8 +45,8 @@ class DynamicRepositoryTest {
                 .orderBy("s.id").desc()
                 .repository()
                 .toMap(LOGGER);
-        System.out.println("-------------------------------");
-        System.out.println(result);
+        Console.println("-------------------------------");
+        Console.println(result);
     }
 
     @Test

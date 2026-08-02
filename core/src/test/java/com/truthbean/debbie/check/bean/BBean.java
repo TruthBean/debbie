@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.*;
 
 import java.util.UUID;
@@ -21,19 +22,19 @@ public class BBean implements ConstructPost, CreatePost {
         this.cBean = cBean;
 
         b = "b --- " + UUID.randomUUID();
-        System.out.println("b construct");
+        Console.println("b construct");
     }
 
     @Override
     public void postConstruct() {
-        System.out.println("b postConstruct");
-        System.out.println(this);
+        Console.println("b postConstruct");
+        Console.println(this);
     }
 
     @Override
     public void postCreate() {
-        System.out.println("b postCreate");
-        System.out.println(this);
+        Console.println("b postCreate");
+        Console.println(this);
     }
 
     @Override

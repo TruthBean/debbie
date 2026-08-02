@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationFactory;
 import com.truthbean.debbie.io.MediaType;
@@ -45,10 +46,10 @@ public class MvcRouterRegisterTest {
 
         MvcRouterRegister.registerRouter(mvcConfiguration, context);
 
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Console.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         Collection<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
         for (RouterInfo routerInfo : routerInfoSet) {
-            System.out.println(routerInfo.getPaths());
+            Console.println(routerInfo.getPaths());
         }
     }
 }

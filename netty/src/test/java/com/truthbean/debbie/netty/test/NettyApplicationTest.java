@@ -1,5 +1,6 @@
 package com.truthbean.debbie.netty.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.request.BodyParameter;
@@ -14,7 +15,7 @@ public class NettyApplicationTest {
 
     @Test
     void content() {
-        System.out.println("nothing");
+        Console.println("nothing");
     }
 
     @GetRouter(value = "/hello", responseType = MediaType.TEXT_ANY_UTF8)
@@ -27,7 +28,7 @@ public class NettyApplicationTest {
                 .start()
                 .afterStarted(context -> {
                     NettyApplicationTest test = context.factory(NettyApplicationTest.class);
-                    System.out.println(test);
+                    Console.println(test);
                 })
                 .exit();
     }

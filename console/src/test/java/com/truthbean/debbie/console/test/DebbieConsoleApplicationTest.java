@@ -8,6 +8,10 @@ import com.truthbean.debbie.boot.DebbieApplication;
  */
 public class DebbieConsoleApplicationTest {
 
+    static {
+        System.setProperty("truthbean.log.disable", "true");
+    }
+
     public static void main(String[] args) {
         DebbieApplication.run(DebbieConsoleApplicationTest.class, args);
     }

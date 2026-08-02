@@ -11,10 +11,13 @@ package com.truthbean.debbie.properties;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.core.util.AbstractPropertiesUtils;
 import com.truthbean.core.util.StringUtils;
 import com.truthbean.debbie.environment.*;
 import com.truthbean.debbie.reflection.ClassLoaderUtils;
 import com.truthbean.debbie.util.Constants;
+import com.truthbean.logger.LogLevel;
+import com.truthbean.logger.LoggerConfig;
 import com.truthbean.logger.SystemOutLogger;
 
 import java.io.*;
@@ -96,7 +99,12 @@ public class PropertiesResourceEnvironment implements ResourceEnvironment {
     @Override
     public Logger getLogger() {
         if (this.logger == null) {
-            this.logger = SystemOutLogger.getLogger(PropertiesResourceEnvironment.class);
+            boolean disable = AbstractPropertiesUtils.isSysTrue(LoggerConfig.DISABLE_LOGGER);
+            if (disable) {
+                this.logger = new SystemOutLogger().setClass(PropertiesResourceEnvironment.class).setDefaultLevel(LogLevel.OFF);
+            } else {
+                this.logger =SystemOutLogger.getLogger(PropertiesResourceEnvironment.class);
+            }
         }
         return logger;
     }

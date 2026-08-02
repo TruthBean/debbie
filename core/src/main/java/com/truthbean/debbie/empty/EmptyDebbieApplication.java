@@ -37,6 +37,24 @@ public class EmptyDebbieApplication implements DebbieApplication {
     }
 
     @Override
+    public DebbieExitedApplication exit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        applicationBootContextConsumer.accept(applicationBootContext);
+        applicationContext.release();
+        return this;
+    }
+
+    @Override
+    public void forceExit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
+        applicationBootContextConsumer.accept(applicationBootContext);
+        applicationContext.release();
+    }
+
+    @Override
+    public void forceExit() {
+        applicationContext.release();
+    }
+
+    @Override
     public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
         applicationBootContextConsumer.accept(applicationBootContext);
         return this;

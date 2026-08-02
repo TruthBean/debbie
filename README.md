@@ -34,7 +34,9 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 [0.0.2-RELEASE package](./versions/0.0.2-RELEASE.md)
 
-latest version: 0.6.1-RELEASE
+[0.6.2-RELEASE package](./versions/0.6.2-RELEASE.md)
+
+latest version: 0.6.2-RELEASE
 
 ```xml
 <dependency>

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.service;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
@@ -30,8 +31,8 @@ class SurnameServiceBeanTest {
         q.setWebsite(new URL("https://www.qu.org"));
         q.setName("屈");
         var b = surnameService.save(q);
-        System.out.println(b);
-        System.out.println(q);
+        Console.println(b);
+        Console.println(q);
 
         var z = new Surname();
         z.setBegin(new Timestamp(System.currentTimeMillis() - 24 * 60 * 60 * 1000));
@@ -39,19 +40,19 @@ class SurnameServiceBeanTest {
         z.setWebsite(new URL("https://www.zhao.org"));
         z.setName("赵");
         var bz = surnameService.save(z);
-        System.out.println(bz);
-        System.out.println(z);
+        Console.println(bz);
+        Console.println(z);
     }
 
     @Test
     void selectById(@BeanInject("surnameService") SurnameService surnameService) {
-        System.out.println(surnameService.selectById(2L));
+        Console.println(surnameService.selectById(2L));
     }
 
     @Test
     void selectAll(@BeanInject("surnameService") SurnameService surnameService) {
-        System.out.println("---------------------");
-        System.out.println(surnameService.selectById(1L));
+        Console.println("---------------------");
+        Console.println(surnameService.selectById(1L));
     }
 
     @Test
@@ -61,7 +62,7 @@ class SurnameServiceBeanTest {
 
     @Test
     void select(@BeanInject ApiService apiService) {
-        System.out.println(apiService.selectAll());
+        Console.println(apiService.selectAll());
     }
 
 }

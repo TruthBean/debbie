@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanScanConfiguration;
 import com.truthbean.debbie.bean.DebbieScan;
@@ -29,26 +30,26 @@ class BeanConfigRegisterTest {
         B b = new BImpl(c);
         A a = new AImpl(b, c);
         Abc abc = new AbcImpl(a, b, c);
-        System.out.println(abc);
+        Console.println(abc);
 
         CBean cBean = new CBean();
         ABean aBean = new ABean(cBean);
         BBean bBean = new BBean(aBean, cBean);
         cBean.setABean(bBean);
         cBean.setBBean(aBean);
-        System.out.println(bBean);
+        Console.println(bBean);
     }
 
     @Test
     public void testParams(@BeanInject(name = "我是谁") Object 我是谁) {
-        System.out.println(我是谁);
+        Console.println(我是谁);
     }
 
     @Test
     void testCycle(@BeanInject ABean aBean, @BeanInject BBean bBean, @BeanInject CBean cBean) {
-        System.out.println(cBean);
-        System.out.println(aBean);
-        System.out.println(bBean);
+        Console.println(cBean);
+        Console.println(aBean);
+        Console.println(bBean);
     }
 
     @Test
@@ -64,63 +65,63 @@ class BeanConfigRegisterTest {
                   @BeanInject A a, @BeanInject B b, @BeanInject C c,
                   @BeanInject Abc abc,
                   @BeanInject DemoBeanComponent demoBeanComponent) {
-        System.out.println(dataTransformer.reverse('a'));
-        System.out.println(hehe);
-        System.out.println(狄青);
-        System.out.println(幽灵);
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        // optional.ifPresent(test -> System.out.println(test.getHehe()));
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(bBean);
-        System.out.println(aBean);
-        System.out.println(cBean);
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(abcBean);
-        System.out.println(abcBean.getaBean());
-        System.out.println(abcBean.getbBean());
-        System.out.println(abcBean.getcBean());
-        System.out.println("===============================================================================");
-        System.out.println("===============================================================================");
-        System.out.println(a);
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(b);
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(c);
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(abc);
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(abc.getaBean());
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(abc.getbBean());
-        System.out.println("------------------------------------------------------------------------------");
-        System.out.println(abc.getcBean());
-        System.out.println("------------------------------------------------------------------------------");
+        Console.println(dataTransformer.reverse('a'));
+        Console.println(hehe);
+        Console.println(狄青);
+        Console.println(幽灵);
+        Console.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        // optional.ifPresent(test -> Console.println(test.getHehe()));
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(bBean);
+        Console.println(aBean);
+        Console.println(cBean);
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(abcBean);
+        Console.println(abcBean.getaBean());
+        Console.println(abcBean.getbBean());
+        Console.println(abcBean.getcBean());
+        Console.println("===============================================================================");
+        Console.println("===============================================================================");
+        Console.println(a);
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(b);
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(c);
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(abc);
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(abc.getaBean());
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(abc.getbBean());
+        Console.println("------------------------------------------------------------------------------");
+        Console.println(abc.getcBean());
+        Console.println("------------------------------------------------------------------------------");
 
-        System.out.println(demoBeanComponent.getUuid());
-        System.out.println(demoBeanComponent.getDemo1().getUuid());
-        System.out.println(demoBeanComponent.getDemo2().getUuid());
+        Console.println(demoBeanComponent.getUuid());
+        Console.println(demoBeanComponent.getDemo1().getUuid());
+        Console.println(demoBeanComponent.getDemo2().getUuid());
     }
 
     @Test
     void demo(@BeanInject DemoBeanComponent demoBeanComponent) {
-        System.out.println(demoBeanComponent.getUuid());
+        Console.println(demoBeanComponent.getUuid());
         DemoBeanComponent.Demo2 demo1 = demoBeanComponent.getDemo1();
         demo1.setId((byte) 1, "111");
-        System.out.println(demo1.getUuid());
+        Console.println(demo1.getUuid());
 
         DemoBeanComponent.Demo2 demo2 = demoBeanComponent.getDemo2();
         demo2.setId((byte) 2, "222");
-        System.out.println(demo2.getUuid());
+        Console.println(demo2.getUuid());
     }
 
     @Test
     void lifecycle(@BeanInject LifecycleBeanTest test, @BeanInject InjectTest injectTest) {
-        System.out.println(injectTest);
+        Console.println(injectTest);
     }
 
     @Test
     void getConfiguration(@BeanInject BeanScanConfiguration configuration) {
-        System.out.println(configuration);
+        Console.println(configuration);
     }
 
 }

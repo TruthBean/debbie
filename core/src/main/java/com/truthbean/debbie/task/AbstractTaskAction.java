@@ -17,7 +17,9 @@ import com.truthbean.debbie.concurrent.ScheduledPooledExecutor;
 import com.truthbean.debbie.concurrent.ScheduledThreadPooledExecutor;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
+import com.truthbean.logger.util.DateTimeHelper;
 
+import java.time.ZonedDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
@@ -99,10 +101,41 @@ public abstract class AbstractTaskAction implements TaskAction {
                 }, finalDelay);
             });
         } else if (StringUtils.hasText(cron)) {
-            // todo cron
+            // 如果使用quartz的方式，则不用CronExpression的实现
+            boolean enable = applicationContext.getDefaultEnvironment().getBooleanValue("debbie.quartz.enable", false);
+            if (!enable) {
+                var cronExpression = new CronExpression(cron);
+                scheduleCronTask(taskInfo, cronExpression);
+            }
         } else {
             taskInfo.accept();
         }
+    }
+
+    private void scheduleCronTask(TaskInfo taskInfo, CronExpression cronExpression) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime nextTime = cronExpression.nextTimeAfter(now);
+        if (nextTime == null) {
+            getLogger().warn("No next execution time found for cron expression: " + cronExpression);
+            return;
+        }
+        long delay = nextTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli();
+        final long finalDelay = Math.max(delay, 0);
+        getLogger().trace(() -> "Schedule cron task '" + taskInfo.getTaskName()
+                + "' next execution at " + nextTime.format(DateTimeHelper.LONG_FORMATTER) + " (delay " + finalDelay + "ms)");
+        scheduledPooledExecutor.schedule(() -> {
+            if (!applicationContext.isExiting()) {
+                taskInfo.getTaskRunnableIfPresent(getLogger(), timerTask -> {
+                    try {
+                        timerTask.run(applicationContext);
+                    } catch (Throwable ex) {
+                        getLogger().error("cron task(" + taskInfo.getTaskName() + ") error", ex);
+                    }
+                });
+                // Schedule the next execution after this one completes
+                scheduleCronTask(taskInfo, cronExpression);
+            }
+        }, finalDelay);
     }
 
     @Override

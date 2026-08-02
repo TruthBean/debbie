@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.mvc.request.DefaultRouterRequest;
 import com.truthbean.debbie.mvc.router.MvcRouterHandler;
 import com.truthbean.debbie.mvc.router.MvcRouterRegister;
@@ -25,10 +26,10 @@ class MvcRouterHandlerBeanTest {
 
     @Test
     void test() {
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Console.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         Collection<RouterInfo> routerInfoSet = MvcRouterRegister.getRouterInfoSet();
         for (RouterInfo routerInfo : routerInfoSet) {
-            System.out.println(routerInfo.getPaths());
+            Console.println(routerInfo.getPaths());
         }
     }
 
@@ -44,14 +45,14 @@ class MvcRouterHandlerBeanTest {
         routerRequest.setPathAttributes(new HashMap<>());
         var set = MvcRouterRegister.getRouterInfoSet();
         Set<RouterInfo> routerInfos = MvcRouterHandler.matchRouterPath(url, set, routerRequest);
-        System.out.println("----------------------------------------------------------------------");
+        Console.println("----------------------------------------------------------------------");
         for (RouterInfo routerInfo : routerInfos) {
-            System.out.println();
-            System.out.println(routerInfo);
+            Console.println("----- router info:");
+            Console.println(routerInfo);
             routerInfo.getRequest().getPathAttributes().forEach((key, value) -> {
-                System.out.println(key + ":");
-                System.out.println(value);
-                System.out.println("----------");
+                Console.println(key + ":");
+                Console.println(value);
+                Console.println("----------");
             });
         }
     }

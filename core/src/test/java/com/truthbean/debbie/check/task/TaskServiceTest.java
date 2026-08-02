@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.task;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.check.event.TestBean;
@@ -27,8 +28,8 @@ public class TaskServiceTest {
 
     @Test
     void context() {
-        System.out.println("context");
-        System.out.println(bean.toString());
+        Console.println("context");
+        Console.println(bean.toString());
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
@@ -39,16 +40,16 @@ public class TaskServiceTest {
     @Test
     void task() {
         threadPooledExecutor.execute(() -> {
-            System.out.println("66666");
+            Console.println("66666");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("66666 done");
+            Console.println("66666 done");
         });
         Future<String> submit = threadPooledExecutor.submit((args) -> {
-            System.out.println("1 .....................");
+            Console.println("1 .....................");
             try {
                 Thread.sleep(6000);
             } catch (InterruptedException e) {
@@ -58,15 +59,15 @@ public class TaskServiceTest {
         });
         try {
             String s = submit.get(5000, TimeUnit.MILLISECONDS);
-            System.out.println("2. " + s);
+            Console.println("2. " + s);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
-        System.out.println("3 ...................");
+        Console.println("3 ...................");
         while (!submit.isDone()) {
             try {
                 String s = submit.get();
-                System.out.println("4. " + s);
+                Console.println("4. " + s);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {

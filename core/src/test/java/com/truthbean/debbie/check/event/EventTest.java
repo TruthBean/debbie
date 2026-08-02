@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.event;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.concurrent.ThreadPooledExecutor;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -26,8 +27,8 @@ class EventTest {
         Test2Event testEvent = new Test2Event(this, 2333);
         eventMulticaster.multicastEvent(testEvent);
         long end = System.currentTimeMillis();
-        System.out.println(end - start1);
-        System.out.println(end - start);
+        Console.println(end - start1);
+        Console.println(end - start);
     }
 
     @Test
@@ -47,8 +48,8 @@ class EventTest {
             Test2Event testEvent1 = new Test2Event(this, 44444 + i);
             eventPublisher.publishEvent(testEvent1);
             long end = System.currentTimeMillis();
-            System.out.println(end - start1);
-            System.out.println(end - start);
+            Console.println(end - start1);
+            Console.println(end - start);
         }
     }
 
@@ -56,6 +57,6 @@ class EventTest {
     void test() {
         LocalDateTime dateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0);
         long milli = dateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-        System.out.println(milli);
+        Console.println(milli);
     }
 }

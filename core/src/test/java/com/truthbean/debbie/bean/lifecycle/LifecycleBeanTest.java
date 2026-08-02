@@ -1,5 +1,6 @@
 package com.truthbean.debbie.bean.lifecycle;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanDestroy;
 import com.truthbean.debbie.bean.BeanInit;
@@ -14,12 +15,12 @@ public class LifecycleBeanTest {
 
     @BeanInit
     public static LifecycleBeanTest init() {
-        System.out.println("init");
+        Console.println("init");
         return new LifecycleBeanTest();
     }
 
     @BeanDestroy
     public static void destroy() {
-        System.out.println("destroy");
+        Console.println("destroy");
     }
 }

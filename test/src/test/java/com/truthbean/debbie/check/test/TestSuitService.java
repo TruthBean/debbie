@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,7 +15,7 @@ public class TestSuitService {
     }
 
     public String getId() {
-        System.out.println("TestSuitService");
+        Console.println("TestSuitService");
         return testComponent.getId();
     }
 }

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.factory;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInfo;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.bean.BeanInjection;
@@ -58,22 +59,22 @@ public class BeanFactoryTest1 {
     }
 
     private static void factory(GlobalBeanFactory globalBeanFactory) {
-        System.out.println("1---------------------------------------------");
+        Console.println("1---------------------------------------------");
         TestSimpleBean testSimpleBean1 = globalBeanFactory.factory("testSimpleBean1");
-        System.out.println(testSimpleBean1);
-        System.out.println("2---------------------------------------------");
+        Console.println(testSimpleBean1);
+        Console.println("2---------------------------------------------");
         TestSimpleBean testSimpleBean2 = globalBeanFactory.factory(TestSimpleBean.class);
-        System.out.println(testSimpleBean2);
-        System.out.println("3---------------------------------------------");
+        Console.println(testSimpleBean2);
+        Console.println("3---------------------------------------------");
         BeanInjection<TestSimpleBean> beanInjection = new BeanInjection<>(TestSimpleBean.class);
         TestSimpleBean testSimpleBean3 = globalBeanFactory.factory(beanInjection);
-        System.out.println(testSimpleBean3);
-        System.out.println("4---------------------------------------------");
+        Console.println(testSimpleBean3);
+        Console.println("4---------------------------------------------");
         TestSimpleBean testSimpleBean4 = globalBeanFactory.factoryWithoutProxy(TestSimpleBean.class);
-        System.out.println(testSimpleBean4);
-        System.out.println("5---------------------------------------------");
+        Console.println(testSimpleBean4);
+        Console.println("5---------------------------------------------");
         TestSimpleBean testSimpleBean5 = globalBeanFactory.factory("testSimpleBean1", TestSimpleBean.class);
-        System.out.println(testSimpleBean5);
-        System.out.println("---------------------------------------------");
+        Console.println(testSimpleBean5);
+        Console.println("---------------------------------------------");
     }
 }

@@ -39,6 +39,7 @@ public class MvcApplication {
         DebbieApplication.create(MvcApplication.class, args)
                 .then(applicationContext -> {
                     MvcConfiguration mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
+                    // TODO MvcRouterRegister.getInstance这里需要优化，应该直接从applicationContext.getRegister(MvcRouterRegister.class)获取
                     MvcRouterRegister.getInstance(mvcConfiguration)
                             .get(new String[]{"/register/get/router"}, (request, response) -> {
                                 response.setResponseType(MediaType.TEXT_ANY_UTF8);

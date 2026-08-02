@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.transaction;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.jdbc.datasource.DataSourceFactory;
 import com.truthbean.debbie.jdbc.repository.RepositoryCallback;
@@ -29,7 +30,7 @@ class ResourceHolderTest {
             var connection = transaction.getConnection();
             return connection.getClientInfo();
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -47,6 +48,6 @@ class ResourceHolderTest {
             }
             return null;
         });
-        System.out.println(r);
+        Console.println(r);
     }
 }

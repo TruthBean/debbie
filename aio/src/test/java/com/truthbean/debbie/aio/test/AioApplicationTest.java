@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.aio.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,6 @@ public class AioApplicationTest {
 
     @Test
     void content() {
-        System.out.println("hello aio");
+        Console.println("hello aio");
     }
 }

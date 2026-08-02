@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanInject;
@@ -37,14 +38,14 @@ class DdlRepoHandlerTest {
             var connection = transaction.getDriverConnection();
             return ddlRepositoryHandler.createDatabase(connection, "hello0");
         });
-        System.out.println(r.get());*/
+        Console.println(r.get());*/
 
         // CREATE DATABASE IF NOT EXISTS hello DEFAULT_PROFILE CHARACTER SET 'utf8' DEFAULT_PROFILE COLLATE 'utf8_general_ci';
         String sql = DynamicRepository.modify(factory.getTransaction()).sqlBuilder()
                 .create().database().ifNotExists().$("hello").defaultCharacterSet("utf8").defaultCollate("utf8_general_ci")
                 .toSql();
-        System.out.println(sql);
-        System.out.println("=========================================================");
+        Console.println(sql);
+        Console.println("=========================================================");
     }
 
     @Test
@@ -55,7 +56,7 @@ class DdlRepoHandlerTest {
         var r = RepositoryCallback.action(transaction, () -> {
             return ddlRepositoryHandler.showDatabases(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -66,7 +67,7 @@ class DdlRepoHandlerTest {
         var r = RepositoryCallback.actionTransactional(transaction, () -> {
             return ddlRepositoryHandler.dropDatabase(LOGGER, transaction, "hello");
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -78,7 +79,7 @@ class DdlRepoHandlerTest {
             ddlRepositoryHandler.useDatabase(LOGGER, transaction, "mysql");
             return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -93,7 +94,7 @@ class DdlRepoHandlerTest {
             ddlRepositoryHandler.createTable(LOGGER, transaction, Surname.class);
             return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test
@@ -123,7 +124,7 @@ class DdlRepoHandlerTest {
             ddlRepositoryHandler.dropTable(LOGGER, transaction, "surname");
             return ddlRepositoryHandler.showTables(LOGGER, transaction);
         });
-        System.out.println(r);
+        Console.println(r);
     }
 
     @Test

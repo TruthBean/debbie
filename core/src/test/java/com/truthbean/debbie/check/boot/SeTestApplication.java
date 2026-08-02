@@ -1,6 +1,7 @@
 package com.truthbean.debbie.check.boot;
 
 
+import com.truthbean.Console;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 
@@ -12,7 +13,7 @@ import com.truthbean.debbie.boot.DebbieBootApplication;
 public class SeTestApplication {
 
     public SeTestApplication() {
-        System.out.println(".......");
+        Console.println(".......");
     }
 
     public static void main(String[] args) {
@@ -22,7 +23,7 @@ public class SeTestApplication {
 
         Package pkg = SeTestApplication.class.getPackage();
         String result = pkg != null ? pkg.getImplementationVersion() : null;
-        System.out.println(result);
+        Console.println(result);
 
         new Thread(application::start).start();
         application.start();

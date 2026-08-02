@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.debbie.bean.*;
 import com.truthbean.debbie.bean.inter.Abc;
@@ -20,30 +21,30 @@ public class InjectedBeanFactoryTest {
         for (int i = 0; i < 2; i++) {
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             applicationFactory.release();
-            System.out.println("-------------------------------------------------------------");
+            Console.println("-------------------------------------------------------------");
         }
     }
 
     @Test
     void factory() {
         for (int i = 0; i < 10; i++) {
-            System.out.println(i);
+            Console.println(i);
             ApplicationFactory applicationFactory = ApplicationFactory.configure(BeanConfigurationRegisterTest.class);
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
             BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
             GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
 
             BeanFactory<Abc> beanInfo = beanInfoManager.getBeanFactory("abc", Abc.class, true);
-            System.out.println("------------------------------------------------------------------------------");
+            Console.println("------------------------------------------------------------------------------");
             Abc factory = globalBeanFactory.factory(Abc.class);
-            System.out.println(factory.toString());
-            System.out.println("------------------------------------------------------------------------------");
+            Console.println(factory.toString());
+            Console.println("------------------------------------------------------------------------------");
 
             factory = beanInfo.factoryBean(applicationContext);
-            System.out.println(factory.toString());
+            Console.println(factory.toString());
 
             Abc abc = globalBeanFactory.factory(Abc.class);
-            System.out.println(abc.toString());
+            Console.println(abc.toString());
             applicationFactory.release();
         }
     }

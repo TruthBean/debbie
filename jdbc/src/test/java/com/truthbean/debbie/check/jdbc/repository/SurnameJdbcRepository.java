@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.annotation.SqlRepository;
@@ -24,7 +25,7 @@ import java.util.Optional;
 public class SurnameJdbcRepository extends DebbieApplicationRepository<Surname, Long> {
 
     public SurnameJdbcRepository(@BeanInject TmpRepository tmpRepository) {
-        System.out.println(tmpRepository);
+        Console.println(tmpRepository);
     }
 
     public boolean insert(Surname surname) {
@@ -39,7 +40,7 @@ public class SurnameJdbcRepository extends DebbieApplicationRepository<Surname, 
     public List<Surname> saveAndDelete(Surname surname, Long deleteId) {
         Long insert = super.insert(surname, false);
         surname.setId(insert);
-        System.out.println(1/0);
+        Console.println(1/0);
         super.deleteById(deleteId);
         return super.findAll();
     }

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.inter;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
@@ -32,7 +33,7 @@ public class AImpl implements A {
         this.cBean = cBean;
 
         a = "A --- " + UUID.randomUUID().toString();
-        System.out.println("a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ");
+        Console.println("a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ");
     }
 
     @Override

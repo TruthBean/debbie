@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.console;
 
+import com.truthbean.debbie.bean.BeanInfoManager;
+import com.truthbean.debbie.bean.SimpleBeanFactory;
 import com.truthbean.debbie.boot.DebbieModuleStarter;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.environment.Environment;
@@ -42,12 +44,14 @@ public class DebbieConsoleModuleStarter implements DebbieModuleStarter {
         consoleConfig.setPrompt(applicationContext.getDefaultEnvironment().getStringValue("debbie.console.prompt", "console@truthbean [" + LocalDateTime.now() + "] :> "));
         // add console line consumer
         debbieConsole.addConsoleLineHandler(new DebbieConsoleHelpLineHandler());
+        BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
+        beanInfoManager.registerBeanInfo(new SimpleBeanFactory<>(consoleConfig, DebbieConsoleConfig.class));
+        beanInfoManager.registerBeanInfo(new SimpleBeanFactory<>(debbieConsole, DebbieConsole.class));
     }
 
     @Override
     public void postStarter(ApplicationContext applicationContext) {
         DebbieModuleStarter.super.postStarter(applicationContext);
-        debbieConsole.consoleListener(consoleConfig);
     }
 
     @Override

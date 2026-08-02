@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.properties.PropertyInject;
 import com.truthbean.debbie.test.annotation.DebbieApplicationTest;
@@ -23,37 +24,37 @@ class DebbieTestSuitApplicationTest {
 
     // @BeforeAll
     static void beforeAll() {
-        System.out.println("..................");
+        Console.println("..................");
     }
 
     @BeforeEach
     void beforeEach() {
-        System.out.println("before each ...");
-        System.out.println(System.getProperty("test.test.test"));
-        System.out.println("${test.test.test}: " + test);
+        Console.println("before each ...");
+        Console.println(System.getProperty("test.test.test"));
+        Console.println("${test.test.test}: " + test);
     }
 
     @Test
     void content() {
-        System.out.println("hello junit5");
-        System.out.println(testSuitService.getId());
+        Console.println("hello junit5");
+        Console.println(testSuitService.getId());
     }
 
     @Test
     void testSuitService(@BeanInject TestSuitService testSuitService, @PropertyInject("hello.test") String hello,
                          @Autowired TestSuitService service) {
-        System.out.println(testSuitService.getId());
-        System.out.println(hello);
-        System.out.println(service);
+        Console.println(testSuitService.getId());
+        Console.println(hello);
+        Console.println(service);
     }
 
     @AfterEach
     void afterEach() {
-        System.out.println("after each ...");
+        Console.println("after each ...");
     }
 
     // @AfterAll
     static void afterAll() {
-        System.out.println("-------------------");
+        Console.println("-------------------");
     }
 }

@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 
 import java.util.UUID;
@@ -8,7 +9,7 @@ import java.util.UUID;
 public class TestComponent {
 
     public String getId() {
-        System.out.println("TestComponent");
+        Console.println("TestComponent");
         return UUID.randomUUID().toString();
     }
 }

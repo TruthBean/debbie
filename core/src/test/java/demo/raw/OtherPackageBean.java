@@ -9,6 +9,7 @@
  */
 package demo.raw;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.task.DebbieTask;
 
@@ -26,7 +27,7 @@ public class OtherPackageBean {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 123");
+        Console.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 123");
     }
 
     @DebbieTask(initialDelay = 1000, fixedRate = 2000)
@@ -36,6 +37,6 @@ public class OtherPackageBean {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 456");
+        Console.println(Thread.currentThread().getName() + " " + Thread.currentThread().getId() + " 456");
     }
 }

@@ -297,6 +297,7 @@ final class DebbieBeanCenter implements BeanInfoManager {
                         throw new BeanRegisterException(message + " class " + baseBeanInfo.getBeanClass() + " with bean name " + baseBeanInfo.getAllName() + " cannot register!");
                     }
                     LOGGER.warn(() -> message);
+                    handledBeanInfoSet.putIfAbsent(baseBeanInfo, VALUE);
                     return false;
                 }
                 String s = info.containOneName(baseBeanInfo.getAllName());
@@ -1196,12 +1197,10 @@ final class DebbieBeanCenter implements BeanInfoManager {
     }
 
     private void releaseBeans(ApplicationContext applicationContext) {
-        synchronized (DebbieBeanCenter.class) {
-            destroyBeans(applicationContext, handledBeanInfoSet.keySet());
+        destroyBeans(applicationContext, handledBeanInfoSet.keySet());
 
-            handledBeanInfoSet.clear();
-            beanLifecycles.clear();
-        }
+        handledBeanInfoSet.clear();
+        beanLifecycles.clear();
     }
 
     @SuppressWarnings({"rawtypes"})

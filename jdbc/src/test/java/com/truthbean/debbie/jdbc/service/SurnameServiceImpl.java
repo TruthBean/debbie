@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.service;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
@@ -44,14 +45,14 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
         boolean result;
 
         var all = surnameJdbcRepository.findAll();
-        System.out.println(all);
+        Console.println(all);
         Surname byId = surnameJdbcRepository.findById(surname.getId());
         if (byId != null) {
             result = surnameJdbcRepository.update(surname);
         } else {
             result = surnameJdbcRepository.insert(surname);
         }
-        System.out.println(surname.getId() / 0L);
+        Console.println(surname.getId() / 0L);
         return result;
     }
 
@@ -69,7 +70,7 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Optional<List<Surname>> getOptional() {
-        System.out.println("1");
+        Console.println("1");
         return Optional.empty();
     }
 
@@ -78,9 +79,9 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Map<String, List<Surname>> getMap() {
-        System.out.println("3");
+        Console.println("3");
         return emptyMap().orElseGet(() -> {
-            System.out.println("4");
+            Console.println("4");
             Map<String, List<Surname>> map = new HashMap<>();
             map.put("test", listAll());
             return map;
@@ -89,13 +90,13 @@ public class SurnameServiceImpl extends AbstractEmptyService<Surname, Long> impl
     }
 
     public Optional<List<Surname>> getByKey(String key) {
-        System.out.println("2");
+        Console.println("2");
         return Optional.ofNullable(getMap().get(key));
     }
 
 
     @Override
     public void doNothing() {
-        System.out.println("none ...");
+        Console.println("none ...");
     }
 }

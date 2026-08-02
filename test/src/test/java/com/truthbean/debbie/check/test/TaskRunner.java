@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanType;
 import com.truthbean.debbie.task.DebbieTask;
@@ -16,7 +17,7 @@ public class TaskRunner {
         var thread = new Thread(() -> {
             try {
                 Thread.sleep(10000L);
-                System.out.println("000000000000000000000");
+                Console.println("000000000000000000000");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

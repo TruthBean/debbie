@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.inter;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
@@ -30,7 +31,7 @@ public class BImpl implements B {
         this.cBean = cBean;
 
         b = "B --- " + UUID.randomUUID().toString();
-        System.out.println("b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b ");
+        Console.println("b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b ");
     }
 
     @Override

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.inter;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInit;
 import com.truthbean.debbie.bean.BeanInject;
@@ -41,7 +42,7 @@ public class CImpl implements C {
 
     public CImpl() {
         c = "C --- " + UUID.randomUUID().toString();
-        System.out.println("c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c ");
+        Console.println("c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c ");
     }
 
     @Override

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 import com.truthbean.debbie.bean.BeanComponent;
@@ -62,7 +63,7 @@ public class SurnameRepository {
         return RepositoryCallback.actionTransactional(transaction, () -> {
             Long insert = repositoryHandler.insert(transaction, surname, false);
             surname.setId(insert);
-            System.out.println(1 / 0);
+            Console.println(1 / 0);
             repositoryHandler.deleteById(transaction, deleteId);
             return repositoryHandler.findAll(transaction);
         });

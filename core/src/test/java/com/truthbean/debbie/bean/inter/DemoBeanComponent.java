@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.inter;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanType;
@@ -59,9 +60,9 @@ public class DemoBeanComponent {
         @MethodProxy(order = 32)
         public void setId(byte id, String name) {
             this.id = id;
-            System.out.println("---------------------------------------------------");
-            System.out.println(name);
-            System.out.println("---------------------------------------------------");
+            Console.println("---------------------------------------------------");
+            Console.println(name);
+            Console.println("---------------------------------------------------");
         }
 
         @Override

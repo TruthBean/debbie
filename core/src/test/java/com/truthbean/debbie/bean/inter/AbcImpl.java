@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.bean.inter;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanComponent;
 import com.truthbean.debbie.bean.BeanInit;
 import com.truthbean.debbie.bean.BeanInject;
@@ -40,7 +41,7 @@ public class AbcImpl implements Abc {
         this.cBean = cBean;
 
         a = "ABC --- " + UUID.randomUUID().toString();
-        System.out.println("abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc ");
+        Console.println("abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc ");
     }
 
     public A getaBean() {

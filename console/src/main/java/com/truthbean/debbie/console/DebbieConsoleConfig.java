@@ -1,6 +1,8 @@
 package com.truthbean.debbie.console;
 
-import java.time.LocalDateTime;
+import com.truthbean.logger.util.DateTimeHelper;
+
+import java.util.Locale;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
 public class DebbieConsoleConfig {
     private boolean enable = true;
 
-    private String prompt = "console@truthbean [" + LocalDateTime.now() + "] :> ";
+    private String prompt = "console@truthbean [%s] :> ";
 
     public boolean isEnable() {
         return enable;
@@ -20,7 +22,8 @@ public class DebbieConsoleConfig {
     }
 
     public String getPrompt() {
-        return prompt;
+        String now = DateTimeHelper.nowStr();
+        return String.format(Locale.ROOT, prompt, now);
     }
 
     public void setPrompt(String prompt) {

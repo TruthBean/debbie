@@ -9,6 +9,7 @@
  */
 package test.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.event.DebbieEventListener;
 
 /**
@@ -34,7 +35,7 @@ public class TestBeanEventListener implements DebbieEventListener<TestBeanEvent>
 
     @Override
     public void onEvent(TestBeanEvent event) {
-        System.out.println(event.toString());
+        Console.println(event.toString());
     }
 
     @Override

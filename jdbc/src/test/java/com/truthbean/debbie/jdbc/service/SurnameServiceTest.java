@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.jdbc.service;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.check.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -42,21 +43,21 @@ class SurnameServiceTest {
         q.setWebsite(new URL("https://www.zhu.org"));
         q.setName("zhu");
         var b = surnameService.save(q);
-        System.out.println(b);
-        System.out.println(q);
+        Console.println(b);
+        Console.println(q);
     }
 
     @Test
     void selectById() {
-        System.out.println(surnameService.selectById(2L));
+        Console.println(surnameService.selectById(2L));
     }
 
     @Test
     void selectAll() {
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
-                System.out.println(surnameService.list());
-                System.out.println("--------------------------------------");
+                Console.println(surnameService.list());
+                Console.println("--------------------------------------");
             }).start();
         }
     }

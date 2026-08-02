@@ -135,39 +135,39 @@ public class BeanInfoManagerTest {
 
                     BeanInfoManager beanInfoManager = context.getBeanInfoManager();
                     BeanInfo<TestSimpleBean> testSimpleBean1 = beanInfoManager.getBeanInfo("testSimpleBean1", null, true);
-                    System.out.println(testSimpleBean1);
+                    Console.println(testSimpleBean1);
                     testSimpleBean1 = beanInfoManager.getBeanInfo(TestSimpleBean.class.getName(), TestSimpleBean.class, true);
-                    System.out.println(testSimpleBean1);
+                    Console.println(testSimpleBean1);
                     BeanFactory<TestSimpleBean> beanFactory = beanInfoManager.getBeanFactory("TestSimpleBean", null, true);
-                    System.out.println(beanFactory);
+                    Console.println(beanFactory);
                     beanFactory = beanInfoManager.getBeanFactory("TestSimpleBean2", TestSimpleBean.class, true);
-                    System.out.println(beanFactory);
-                    System.out.println("--------------------------------");
+                    Console.println(beanFactory);
+                    Console.println("--------------------------------");
                     BeanInfo<TestBean> testBean = beanInfoManager.getBeanInfo("TestBeanInterface1", null, true);
-                    System.out.println(testBean);
+                    Console.println(testBean);
                     testBean = beanInfoManager.getBeanInfo("TestBeanInterface2", null, true);
-                    System.out.println(testBean);
+                    Console.println(testBean);
                     testBean = beanInfoManager.getBeanInfo("TestBean", TestBean.class, true);
-                    System.out.println(testBean);
+                    Console.println(testBean);
                     BeanInfo<TestBeanInterface1> testBean1 = beanInfoManager.getBeanInfo(null, TestBeanInterface1.class, true);
-                    System.out.println(testBean1);
+                    Console.println(testBean1);
                     testBean = beanInfoManager.getBeanInfo(null, TestBean.class, true);
-                    System.out.println(testBean);
-                    System.out.println("----------");
+                    Console.println(testBean);
+                    Console.println("----------");
                     BeanFactory<TestBean> testFactory = beanInfoManager.getBeanFactory("TestBeanInterface1", null, true);
-                    System.out.println(testFactory);
+                    Console.println(testFactory);
                     testFactory = beanInfoManager.getBeanFactory("TestBeanInterface2", null, true);
-                    System.out.println(testFactory);
+                    Console.println(testFactory);
                     testFactory = beanInfoManager.getBeanFactory("TestBean", TestBean.class, true);
-                    System.out.println(testFactory);
+                    Console.println(testFactory);
                     testFactory = beanInfoManager.getBeanFactory(null, TestBean.class, true);
-                    System.out.println(testFactory);
+                    Console.println(testFactory);
                     BeanFactory<TestBeanInterface1> testFactory1 = beanInfoManager.getBeanFactory(null, TestBeanInterface1.class, true);
-                    System.out.println(testFactory1);
+                    Console.println(testFactory1);
                     // must error
                     try {
                         testSimpleBean1 = beanInfoManager.getBeanInfo(null, TestSimpleBean.class, true);
-                        System.out.println(testSimpleBean1);
+                        Console.println(testSimpleBean1);
                     } catch (com.truthbean.debbie.bean.OneMoreBeanRegisteredException e) {
                         Console.error(e.getMessage(), e);
                     }

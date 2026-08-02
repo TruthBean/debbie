@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.router.test;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInfoManager;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -51,7 +52,7 @@ class MvcRouterHandlerTest {
         routerRequest.setResponseType(MediaType.ANY.info());
         routerRequest.setContentType(MediaType.ANY.info());
         RouterInfo matchedRouter = MvcRouterHandler.getMatchedRouter(routerRequest, mvcConfiguration);
-        System.out.println(matchedRouter);
+        Console.println(matchedRouter);
     }
 
     @Test
@@ -65,13 +66,13 @@ class MvcRouterHandlerTest {
         routerRequest.setPathAttributes(new HashMap<>());
         var set = MvcRouterRegister.getRouterInfoSet();
         Set<RouterInfo> routerInfos = MvcRouterHandler.matchRouterPath(url, set, routerRequest);
-        System.out.println("----------------------------------------------------------------------");
+        Console.println("----------------------------------------------------------------------");
         for (RouterInfo routerInfo : routerInfos) {
-            System.out.println(routerInfo);
+            Console.println(routerInfo);
             routerInfo.getRequest().getPathAttributes().forEach((key, value) -> {
-                System.out.println(key + ":");
-                System.out.println(value);
-                System.out.println("----------");
+                Console.println(key + ":");
+                Console.println(value);
+                Console.println("----------");
             });
         }
     }

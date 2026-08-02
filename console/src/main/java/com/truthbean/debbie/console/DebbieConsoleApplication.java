@@ -11,6 +11,7 @@ package com.truthbean.debbie.console;
 
 import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
+import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.boot.AbstractApplication;
 import com.truthbean.debbie.boot.ApplicationArgs;
 import com.truthbean.debbie.boot.DebbieApplication;
@@ -26,6 +27,8 @@ import java.time.Instant;
 public class DebbieConsoleApplication extends AbstractApplication {
     private final Logger logger = LoggerFactory.getLogger(DebbieConsoleApplication.class);
 
+    private ApplicationContext applicationContext;
+
     public DebbieConsoleApplication() {
         super();
     }
@@ -38,6 +41,7 @@ public class DebbieConsoleApplication extends AbstractApplication {
     @Override
     public DebbieApplication init(ApplicationContext applicationContext, ClassLoader classLoader) {
         super.setLogger(logger);
+        this.applicationContext = applicationContext;
         return this;
     }
 
@@ -45,6 +49,10 @@ public class DebbieConsoleApplication extends AbstractApplication {
     protected void start(Instant beforeStartTime, ApplicationArgs args) {
         super.printStartTime();
         postBeforeStart();
+        GlobalBeanFactory globalBeanFactory = applicationContext.getGlobalBeanFactory();
+        DebbieConsoleConfig consoleConfig = globalBeanFactory.factory(DebbieConsoleConfig.class);
+        DebbieConsole debbieConsole = globalBeanFactory.factory(DebbieConsole.class);
+        debbieConsole.consoleListener(consoleConfig, this);
     }
 
     @Override

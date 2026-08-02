@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.check.jdbc.entity.DateTimeEntity;
@@ -55,12 +56,12 @@ public class DateTimeRepositoryTest {
                      @BeanInject(category = "h2") DataSourceConfiguration h2Configuration,
                      @BeanInject(category = "gauss") DataSourceConfiguration gaussConfiguration,
                      @BeanInject DdlRepository ddlRepository) {
-        System.out.println(configuration);
-        System.out.println(mariadbConfiguration);
-        System.out.println(h2Configuration);
-        System.out.println(gaussConfiguration);
+        Console.println(configuration);
+        Console.println(mariadbConfiguration);
+        Console.println(h2Configuration);
+        Console.println(gaussConfiguration);
         TransactionManager.offer(new TransactionInfo());
-        System.out.println(ddlRepository.getTransaction());
+        Console.println(ddlRepository.getTransaction());
     }
 
     @Test
@@ -68,48 +69,48 @@ public class DateTimeRepositoryTest {
         for (int i = 0; i < 1; i++) {
             TransactionManager.offer(factory.getTransaction());
             LocalDateTime localDateTime = dateTimeRepository.localDateTime();
-            System.out.println("LocalDateTime");
-            System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss.S")));
+            Console.println("LocalDateTime");
+            Console.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss.S")));
 
             LocalDate localDate = dateTimeRepository.localDate();
-            System.out.println("LocalDate");
-            System.out.println(localDate.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
+            Console.println("LocalDate");
+            Console.println(localDate.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
 
             LocalTime localTime = dateTimeRepository.localTime();
-            System.out.println("LocalTime");
-            System.out.println(localTime.format(DateTimeFormatter.ofPattern("HH:mm:ss.S")));
+            Console.println("LocalTime");
+            Console.println(localTime.format(DateTimeFormatter.ofPattern("HH:mm:ss.S")));
 
             Instant instant = dateTimeRepository.instant();
-            System.out.println("Instant");
-            System.out.println(instant.toString());
+            Console.println("Instant");
+            Console.println(instant.toString());
 
             Date date = dateTimeRepository.date();
-            System.out.println("Date");
-            System.out.println(date.toString());
+            Console.println("Date");
+            Console.println(date.toString());
 
             java.sql.Date sqlDate = dateTimeRepository.sqlDate();
-            System.out.println("java.sql.Date");
-            System.out.println(sqlDate);
+            Console.println("java.sql.Date");
+            Console.println(sqlDate);
 
             Time time = dateTimeRepository.sqlTime();
-            System.out.println("Time");
-            System.out.println(time);
+            Console.println("Time");
+            Console.println(time);
 
             Timestamp timestamp = dateTimeRepository.timestamp();
-            System.out.println("Timestamp");
-            System.out.println(timestamp);
+            Console.println("Timestamp");
+            Console.println(timestamp);
 
             Calendar calendar = dateTimeRepository.calendar();
-            System.out.println("Calendar");
-            System.out.println(calendar);
+            Console.println("Calendar");
+            Console.println(calendar);
 
             Long now = dateTimeRepository.now();
-            System.out.println("Long");
-            System.out.println(now);
+            Console.println("Long");
+            Console.println(now);
 
             DateTimeEntity dateTimeEntity = dateTimeRepository.dateTimeEntity();
-            System.out.println("Long");
-            System.out.println(dateTimeEntity);
+            Console.println("Long");
+            Console.println(dateTimeEntity);
         }
     }
 }

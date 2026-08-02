@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.bean;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.DebbieScan;
 import com.truthbean.debbie.bean.GlobalBeanFactory;
 import com.truthbean.debbie.bean.inter.A;
@@ -36,42 +37,42 @@ public class BeanConfigurationRegisterTest {
                 ApplicationContext context = factory.getApplicationContext();
                 GlobalBeanFactory beanFactory = context.getGlobalBeanFactory();
                 DataTransformer<Integer, Character> bean = beanFactory.factory("dataTransformer");
-                System.out.println(bean.reverse('a'));
+                Console.println(bean.reverse('a'));
 
-                System.out.println(beanFactory.factory("hehe").toString());
-                System.out.println(beanFactory.factory("狄青").toString());
-                System.out.println(beanFactory.factory("幽灵").toString());
+                Console.println(beanFactory.factory("hehe").toString());
+                Console.println(beanFactory.factory("狄青").toString());
+                Console.println(beanFactory.factory("幽灵").toString());
 
                 PropertiesConfigurationTest test = beanFactory.factory(PropertiesConfigurationTest.class);
-                System.out.println(test.getHehe());
-                System.out.println("------------------------------------------------------------------------------");
+                Console.println(test.getHehe());
+                Console.println("------------------------------------------------------------------------------");
 
-                System.out.println(beanFactory.factory(BBean.class));
-                System.out.println("------------------------------------------------------------------------------");
-                System.out.println(beanFactory.factory(ABean.class));
-                System.out.println("------------------------------------------------------------------------------");
-                System.out.println(beanFactory.factory(CBean.class));
-                System.out.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(BBean.class));
+                Console.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(ABean.class));
+                Console.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(CBean.class));
+                Console.println("------------------------------------------------------------------------------");
                 ABCBean abcBean = beanFactory.factory(ABCBean.class);
-                System.out.println(abcBean);
-                System.out.println(abcBean.getaBean());
-                System.out.println(abcBean.getbBean());
-                System.out.println(abcBean.getcBean());
+                Console.println(abcBean);
+                Console.println(abcBean.getaBean());
+                Console.println(abcBean.getbBean());
+                Console.println(abcBean.getcBean());
 
-                System.out.println("===============================================================================");
-                System.out.println("===============================================================================");
+                Console.println("===============================================================================");
+                Console.println("===============================================================================");
 
-                System.out.println(beanFactory.factory(A.class));
-                System.out.println("------------------------------------------------------------------------------");
-                System.out.println(beanFactory.factory(B.class));
-                System.out.println("------------------------------------------------------------------------------");
-                System.out.println(beanFactory.factory(C.class));
-                System.out.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(A.class));
+                Console.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(B.class));
+                Console.println("------------------------------------------------------------------------------");
+                Console.println(beanFactory.factory(C.class));
+                Console.println("------------------------------------------------------------------------------");
                 Abc abc = beanFactory.factory(Abc.class);
-                System.out.println(abc);
-                System.out.println(abc.getaBean());
-                System.out.println(abc.getbBean());
-                System.out.println(abc.getcBean());
+                Console.println(abc);
+                Console.println(abc.getaBean());
+                Console.println(abc.getbBean());
+                Console.println(abc.getcBean());
             }).start();
         }
         try {

@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.datasource;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.bean.BeanInject;
 import com.truthbean.debbie.bean.BeanInjection;
 import com.truthbean.debbie.bean.DebbieScan;
@@ -53,11 +54,11 @@ public class DataSourceConfigurationTest {
     }
 
     public void print() {
-        System.out.println(configuration);
-        System.out.println(mariadbConfiguration);
-        System.out.println(h2Configuration);
+        Console.println(configuration);
+        Console.println(mariadbConfiguration);
+        Console.println(h2Configuration);
         TransactionManager.offer(new TransactionInfo());
-        System.out.println(ddlRepository.getTransaction());
+        Console.println(ddlRepository.getTransaction());
     }
 
     public static void main(String[] args) {
@@ -68,34 +69,34 @@ public class DataSourceConfigurationTest {
                     DataSourceConfigurationTest factory = beanFactory.factory(DataSourceConfigurationTest.class);
                     factory.print();
                     DataSourceConfiguration dataSourceConfiguration = beanFactory.factory(DataSourceConfiguration.class);
-                    System.out.println(dataSourceConfiguration);
+                    Console.println(dataSourceConfiguration);
                     DataSourceConfiguration mariadbDataSourceConfiguration = beanFactory.factoryConfiguration(DataSourceConfiguration.class, EnvironmentDepositoryHolder.DEFAULT_PROFILE, "mariadb");
-                    System.out.println(mariadbDataSourceConfiguration);
+                    Console.println(mariadbDataSourceConfiguration);
                     DataSourceConfiguration h2DataSourceConfiguration = beanFactory.factoryConfiguration(DataSourceConfiguration.class, EnvironmentDepositoryHolder.DEFAULT_PROFILE, "h2");
-                    System.out.println(h2DataSourceConfiguration);
-                    System.out.println("---------------------------------------------------------------------------------------");
+                    Console.println(h2DataSourceConfiguration);
+                    Console.println("---------------------------------------------------------------------------------------");
                     var dateSourceInjection = new BeanInjection<>(DataSourceConfiguration.class);
                     dataSourceConfiguration = applicationContext.factory(dateSourceInjection);
-                    System.out.println(dataSourceConfiguration);
-                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    Console.println(dataSourceConfiguration);
+                    Console.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
                     dateSourceInjection.addResource("config.profile", EnvironmentDepositoryHolder.DEFAULT_PROFILE);
                     dateSourceInjection.addResource("config.category", "mariadb");
                     dataSourceConfiguration = applicationContext.factory(dateSourceInjection);
-                    System.out.println(dataSourceConfiguration);
-                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    Console.println(dataSourceConfiguration);
+                    Console.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
                     dateSourceInjection.addResource("config.profile", EnvironmentDepositoryHolder.DEFAULT_PROFILE);
                     dateSourceInjection.addResource("config.category", "h2");
                     dataSourceConfiguration = applicationContext.factory(dateSourceInjection);
-                    System.out.println(dataSourceConfiguration);
-                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    Console.println(dataSourceConfiguration);
+                    Console.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
                     dateSourceInjection.addResource("config.profile", EnvironmentDepositoryHolder.DEFAULT_PROFILE);
                     dateSourceInjection.addResource("config.category", "mock");
                     dataSourceConfiguration = applicationContext.factory(dateSourceInjection);
-                    System.out.println(dataSourceConfiguration);
-                    System.out.println("---------------------------------------------------------------------------------------");
+                    Console.println(dataSourceConfiguration);
+                    Console.println("---------------------------------------------------------------------------------------");
                     Set<DataSource> dataSourceSet = beanFactory.getBeanList(DataSource.class);
                     for (DataSource dataSource : dataSourceSet) {
-                        System.out.println(dataSource);
+                        Console.println(dataSource);
                     }
                 });
     }

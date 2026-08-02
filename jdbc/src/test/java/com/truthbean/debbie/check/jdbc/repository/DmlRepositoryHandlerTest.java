@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.check.jdbc.repository;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.check.jdbc.datasource.DataSourceConfigurationTest;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.core.ApplicationContext;
@@ -58,14 +59,14 @@ class DmlRepositoryHandlerTest {
         q.setWebsite(new URL("https://www.qu.org"));
         q.setName("璩");
         var b = surnameRepository.save(q);
-        System.out.println(b);
-        System.out.println(q);
+        Console.println(b);
+        Console.println(q);
     }
 
     @Test
     void testFindById() {
         Optional<Surname> surname = surnameRepository.findById(2L);
-        System.out.println(surname);
+        Console.println(surname);
     }
 
     @Test
@@ -76,36 +77,36 @@ class DmlRepositoryHandlerTest {
         q.setWebsite(new URL("https://www.ye.org"));
         q.setName("叶");
         var result = surnameRepository.saveAndDelete(q, 2L);
-        System.out.println(result);
+        Console.println(result);
     }
 
     @Test
     void testUpdate() throws MalformedURLException {
         Optional<Surname> surnameOptional = surnameRepository.findById(1L);
         surnameOptional.ifPresent(surname -> {
-            System.out.println(surname);
+            Console.println(surname);
             try {
                 surname.setWebsite(new URL("https://qu.org"));
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
             var b = surnameRepository.update(surname);
-            System.out.println(b);
-            System.out.println(surname);
+            Console.println(b);
+            Console.println(surname);
         });
     }
 
     @Test
     void testDeleteById() {
         var b = surnameRepository.delete(1L);
-        System.out.println(b);
+        Console.println(b);
     }
 
     @Test
     void findList() {
         var l = surnameRepository.findAll();
         try {
-            System.out.println(l.get());
+            Console.println(l.get());
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -115,18 +116,18 @@ class DmlRepositoryHandlerTest {
     @Test
     void count() {
         var l = surnameRepository.count();
-        System.out.println(l);
+        Console.println(l);
     }
 
     @Test
     void findPaged() {
         var l = surnameRepository.findPaged(PageRequest.of(0, 10));
-        System.out.println(l);
+        Console.println(l);
     }
 
     @Test
     void existsById() {
         Boolean exists = surnameRepository.exists(4L);
-        System.out.println(exists);
+        Console.println(exists);
     }
 }
