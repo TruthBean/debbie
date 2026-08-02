@@ -7,23 +7,21 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-rootProject.name = "debbie"
+package com.truthbean.debbie.json;
 
-val modules =
-        arrayOf("core",
-                "jackson", "json", "asm", "jdbc", "mvc",
-                "httpclient",
-                "server",
-                "netty", "aio",
-                "agent", "console",
-                "test"
-        )
+/**
+ * Exception thrown when JSON parsing or serialization fails.
+ *
+ * @author TruthBean/Rogar·Q
+ * @since 0.6.3
+ */
+public class JsonException extends RuntimeException {
 
-modules.forEach { dir ->
-    include(dir)
-    findProject(":$dir")?.apply {
-        name = "debbie-$dir"
-        projectDir = File(dir)
-        buildFileName = "build.gradle.kts"
+    public JsonException(String message) {
+        super(message);
+    }
+
+    public JsonException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
