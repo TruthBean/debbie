@@ -26,7 +26,3 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
 
 }
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
