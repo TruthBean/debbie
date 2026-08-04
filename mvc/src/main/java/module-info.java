@@ -28,6 +28,8 @@ module com.truthbean.debbie.mvc {
 
     requires transitive com.truthbean.debbie.core;
     requires transitive com.truthbean.debbie.jackson;
+    // TODO 将jackson替换成json
+    // requires transitive com.truthbean.debbie.json;
 
     uses com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
     uses com.truthbean.debbie.mvc.router.RouterAnnotationParser;

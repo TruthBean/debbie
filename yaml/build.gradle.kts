@@ -8,19 +8,21 @@
  * See the Mulan PSL v2 for more details.
  */
 dependencies {
-    api(project(":debbie-server"))
-
+    // import a BOM. The versions used in this file will override any other version found in the graph
     val truthbeanVersion: String by project
     api(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
-    api("io.netty:netty-codec-http2")
+    api(project(":debbie-core"))
 
-    // ================================================================================================================
+    // test =========================================================================================================
+
     testImplementation(project(":debbie-test"))
-
-    testImplementation("com.truthbean:truthbean-log4j2-boot:$truthbeanVersion")
+    testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion") {
+        exclude(group = "com.truthbean", module = "logger-kotlin")
+    }
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
+
 }

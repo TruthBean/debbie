@@ -10,14 +10,15 @@
 rootProject.name = "debbie"
 
 val modules =
-        arrayOf("core",
-                "jackson", "json", "asm", "jdbc", "mvc",
-                "httpclient",
-                "server",
-                "netty", "aio",
-                "agent", "console",
-                "test"
-        )
+    arrayOf(
+        "core",
+        "jackson", "json", "xml", "yaml", "jdbc", "mvc",
+        "httpclient",
+        "server",
+        "aio",
+        "agent", "console",
+        "test"
+    )
 
 modules.forEach { dir ->
     include(dir)

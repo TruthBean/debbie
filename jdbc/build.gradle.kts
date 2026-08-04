@@ -20,7 +20,6 @@ dependencies {
 
     // testCompile(project(":debbie-hikari"))
     testImplementation(project(":debbie-test"))
-    testImplementation(project(":debbie-asm"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
