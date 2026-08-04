@@ -10,14 +10,22 @@
 package com.truthbean.debbie.yaml;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Serializes a {@link YamlDocument} or {@link YamlNode} tree into a YAML string.
  * <p>
- * Supports compact and pretty-print output modes. Uses block-style output
- * for most structures, with flow-style for inline values.
+ * Two output modes are supported:
+ * <ul>
+ *   <li><b>Pretty-print</b> ({@code prettyPrint=true}): block style with indentation.
+ *       Nested mappings and sequences are rendered across multiple lines with
+ *       increasing indentation.</li>
+ *   <li><b>Compact</b> ({@code prettyPrint=false}): top-level entries use block style
+ *       (one key per line, required for valid YAML), but nested collections use
+ *       flow style ({@code {k: v}} / {@code [a, b]}) to minimize vertical space.</li>
+ * </ul>
+ * <p>
+ * Both modes always produce valid YAML.
  *
  * @author TruthBean/Rogar·Q
  * @since 0.6.3
@@ -28,14 +36,15 @@ public class YamlSerializer {
     private final String indent;
 
     /**
-     * Creates a serializer with compact output (no extra whitespace).
+     * Creates a serializer with compact output.
      */
     public YamlSerializer() {
         this(false);
     }
 
     /**
-     * @param prettyPrint if true, output is formatted with indentation
+     * @param prettyPrint if true, output is formatted with indentation (block style);
+     *                    if false, nested collections use flow style
      */
     public YamlSerializer(boolean prettyPrint) {
         this.prettyPrint = prettyPrint;
@@ -64,18 +73,17 @@ public class YamlSerializer {
         } else {
             for (int i = 0; i < document.documentCount(); i++) {
                 if (i > 0) {
-                    sb.append("---");
-                    if (prettyPrint) {
+                    // Ensure previous document ends with newline before separator
+                    if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '\n') {
                         sb.append('\n');
                     }
+                    sb.append("---\n");
                 }
                 writeNode(document.getDocument(i), sb, 0);
-                if (prettyPrint && i < document.documentCount() - 1) {
-                    sb.append('\n');
-                }
             }
         }
-        if (prettyPrint && sb.length() > 0 && sb.charAt(sb.length() - 1) != '\n') {
+        // Ensure trailing newline for a well-formed document
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '\n') {
             sb.append('\n');
         }
         return sb.toString();
@@ -93,7 +101,7 @@ public class YamlSerializer {
         return sb.toString();
     }
 
-    // ============ write ============
+    // ============ top-level dispatch ============
 
     private void writeNode(YamlNode node, StringBuilder sb, int depth) {
         if (node == null || node.isNull()) {
@@ -107,8 +115,13 @@ public class YamlSerializer {
         }
     }
 
-    // ============ mapping ============
+    // ============ block mapping ============
 
+    /**
+     * Writes a mapping in block style. Each entry occupies its own line.
+     * This is used at the top level in both modes, and for nested mappings
+     * in pretty-print mode.
+     */
     private void writeMapping(YamlMapping mapping, StringBuilder sb, int depth) {
         if (mapping.isEmpty()) {
             sb.append("{}");
@@ -117,123 +130,197 @@ public class YamlSerializer {
         boolean first = true;
         for (Map.Entry<String, YamlNode> entry : mapping) {
             if (!first) {
-                if (prettyPrint) {
-                    sb.append('\n');
-                }
+                sb.append('\n');
             }
             first = false;
-            if (prettyPrint) {
-                indent(sb, depth);
-            }
+            indent(sb, depth);
             writeKey(entry.getKey(), sb);
-            sb.append(':');
-            YamlNode value = entry.getValue();
-            if (value == null || value.isNull()) {
-                if (prettyPrint) {
-                    sb.append(' ');
-                }
-                sb.append("null");
-            } else if (value.isScalar() && !value.asScalar().isString()) {
-                if (prettyPrint) {
-                    sb.append(' ');
-                }
-                sb.append(' ');
-                writeScalarInline(value.asScalar(), sb);
-            } else if (value.isScalar()) {
-                String str = value.asScalar().getAsString();
-                if (str.isEmpty()) {
-                    if (prettyPrint) {
-                        sb.append(' ');
-                    }
-                    sb.append("''");
-                } else if (needsQuoting(str)) {
-                    if (prettyPrint) {
-                        sb.append(' ');
-                    }
-                    sb.append(' ');
-                    sb.append(quoteString(str));
-                } else {
-                    if (prettyPrint) {
-                        sb.append(' ');
-                    }
-                    sb.append(' ');
-                    sb.append(str);
-                }
-            } else if (value.isSequence()) {
-                YamlSequence seq = value.asSequence();
-                if (seq.isEmpty()) {
-                    if (prettyPrint) {
-                        sb.append(' ');
-                    }
-                    sb.append("[]");
-                } else {
-                    if (prettyPrint) {
-                        sb.append('\n');
-                    }
-                    writeSequence(value.asSequence(), sb, depth + 1);
-                }
-            } else if (value.isMapping()) {
-                YamlMapping map = value.asMapping();
-                if (map.isEmpty()) {
-                    if (prettyPrint) {
-                        sb.append(' ');
-                    }
-                    sb.append("{}");
-                } else {
-                    if (prettyPrint) {
-                        sb.append('\n');
-                    }
-                    writeMapping(value.asMapping(), sb, depth + 1);
-                }
-            }
+            sb.append(": ");
+            writeValueAfterColon(entry.getValue(), sb, depth);
         }
     }
 
-    // ============ sequence ============
+    // ============ block sequence ============
 
+    /**
+     * Writes a sequence in block style. Each item occupies its own line
+     * starting with {@code - }.
+     * This is used at the top level in both modes, and for nested sequences
+     * in pretty-print mode.
+     */
     private void writeSequence(YamlSequence sequence, StringBuilder sb, int depth) {
         if (sequence.isEmpty()) {
             sb.append("[]");
             return;
         }
+        boolean first = true;
         for (YamlNode element : sequence) {
-            if (prettyPrint) {
-                indent(sb, depth);
-            }
-            sb.append("- ");
-            if (element == null || element.isNull()) {
-                sb.append("null");
-            } else if (element.isScalar()) {
-                String str = element.asScalar().getAsString();
-                if (needsQuoting(str)) {
-                    sb.append(quoteString(str));
-                } else {
-                    sb.append(str);
-                }
-            } else if (element.isMapping()) {
-                YamlMapping map = element.asMapping();
-                if (map.isEmpty()) {
-                    sb.append("{}");
-                } else {
-                    if (prettyPrint) {
-                        sb.append('\n');
-                    }
-                    writeMapping(map, sb, depth + 1);
-                }
-            } else if (element.isSequence()) {
-                YamlSequence seq = element.asSequence();
-                if (seq.isEmpty()) {
-                    sb.append("[]");
-                } else {
-                    if (prettyPrint) {
-                        sb.append('\n');
-                    }
-                    writeSequence(seq, sb, depth + 1);
-                }
-            }
-            if (prettyPrint) {
+            if (!first) {
                 sb.append('\n');
             }
+            first = false;
+            indent(sb, depth);
+            sb.append("- ");
+            writeValueAsSequenceItem(element, sb, depth);
+        }
+    }
+
+    // ============ value writing (after colon in a mapping) ============
+
+    /**
+     * Writes a value that follows {@code key: } in a block mapping.
+     * <p>
+     * Scalars and empty collections are written inline on the same line.
+     * Non-empty collections are written on subsequent lines:
+     * <ul>
+     *   <li>Pretty-print: block style with indentation</li>
+     *   <li>Compact: flow style on the same line</li>
+     * </ul>
+     */
+    private void writeValueAfterColon(YamlNode value, StringBuilder sb, int depth) {
+        if (value == null || value.isNull()) {
+            sb.append("null");
+        } else if (value.isScalar()) {
+            writeScalar(value.asScalar(), sb);
+        } else if (value.isMapping()) {
+            YamlMapping map = value.asMapping();
+            if (map.isEmpty()) {
+                sb.append("{}");
+            } else if (prettyPrint) {
+                sb.append('\n');
+                writeMapping(map, sb, depth + 1);
+            } else {
+                writeFlowMapping(map, sb);
+            }
+        } else if (value.isSequence()) {
+            YamlSequence seq = value.asSequence();
+            if (seq.isEmpty()) {
+                sb.append("[]");
+            } else if (prettyPrint) {
+                sb.append('\n');
+                writeSequence(seq, sb, depth + 1);
+            } else {
+                writeFlowSequence(seq, sb);
+            }
+        }
+    }
+
+    // ============ value writing (as a sequence item) ============
+
+    /**
+     * Writes a value that follows {@code - } in a block sequence.
+     * <p>
+     * Scalars and empty collections are written inline.
+     * Non-empty mappings put their first key inline with {@code - } and
+     * subsequent keys on new lines (pretty-print) or use flow style (compact).
+     * Non-empty sequences use block style on the next line (pretty-print)
+     * or flow style inline (compact).
+     */
+    private void writeValueAsSequenceItem(YamlNode value, StringBuilder sb, int depth) {
+        if (value == null || value.isNull()) {
+            sb.append("null");
+        } else if (value.isScalar()) {
+            writeScalar(value.asScalar(), sb);
+        } else if (value.isMapping()) {
+            YamlMapping map = value.asMapping();
+            if (map.isEmpty()) {
+                sb.append("{}");
+            } else if (prettyPrint) {
+                // First entry inline with "- ", rest on new lines at depth + 1
+                writeMappingWithInlineFirst(map, sb, depth);
+            } else {
+                writeFlowMapping(map, sb);
+            }
+        } else if (value.isSequence()) {
+            YamlSequence seq = value.asSequence();
+            if (seq.isEmpty()) {
+                sb.append("[]");
+            } else if (prettyPrint) {
+                // Nested sequence on next line
+                sb.append('\n');
+                writeSequence(seq, sb, depth + 1);
+            } else {
+                writeFlowSequence(seq, sb);
+            }
+        }
+    }
+
+    /**
+     * Writes a mapping where the first entry's key is placed inline
+     * (e.g. after {@code - }), and subsequent entries are indented to align
+     * with the first key.
+     */
+    private void writeMappingWithInlineFirst(YamlMapping mapping, StringBuilder sb, int depth) {
+        boolean first = true;
+        for (Map.Entry<String, YamlNode> entry : mapping) {
+            if (!first) {
+                sb.append('\n');
+                indent(sb, depth + 1);
+            }
+            first = false;
+            writeKey(entry.getKey(), sb);
+            sb.append(": ");
+            writeValueAfterColon(entry.getValue(), sb, depth + 1);
+        }
+    }
+
+    // ============ flow style ============
+
+    /**
+     * Writes a mapping in flow style: {@code {key: value, key2: value2}}.
+     */
+    private void writeFlowMapping(YamlMapping mapping, StringBuilder sb) {
+        if (mapping.isEmpty()) {
+            sb.append("{}");
+            return;
+        }
+        sb.append('{');
+        boolean first = true;
+        for (Map.Entry<String, YamlNode> entry : mapping) {
+            if (!first) {
+                sb.append(", ");
+            }
+            first = false;
+            writeKey(entry.getKey(), sb);
+            sb.append(": ");
+            writeFlowValue(entry.getValue(), sb);
+        }
+        sb.append('}');
+    }
+
+    /**
+     * Writes a sequence in flow style: {@code [a, b, c]}.
+     */
+    private void writeFlowSequence(YamlSequence sequence, StringBuilder sb) {
+        if (sequence.isEmpty()) {
+            sb.append("[]");
+            return;
+        }
+        sb.append('[');
+        boolean first = true;
+        for (YamlNode element : sequence) {
+            if (!first) {
+                sb.append(", ");
+            }
+            first = false;
+            writeFlowValue(element, sb);
+        }
+        sb.append(']');
+    }
+
+    /**
+     * Writes a value in flow context (inside {@code {}} or {@code []}).
+     * Nested collections are also rendered in flow style.
+     */
+    private void writeFlowValue(YamlNode value, StringBuilder sb) {
+        if (value == null || value.isNull()) {
+            sb.append("null");
+        } else if (value.isScalar()) {
+            writeScalar(value.asScalar(), sb);
+        } else if (value.isMapping()) {
+            writeFlowMapping(value.asMapping(), sb);
+        } else if (value.isSequence()) {
+            writeFlowSequence(value.asSequence(), sb);
         }
     }
 
@@ -259,21 +346,6 @@ public class YamlSerializer {
         }
     }
 
-    private void writeScalarInline(YamlScalar scalar, StringBuilder sb) {
-        if (scalar.isBoolean()) {
-            sb.append(scalar.getAsBoolean() ? "true" : "false");
-        } else if (scalar.isNumber()) {
-            Number num = scalar.getAsNumber();
-            if (num instanceof BigDecimal) {
-                sb.append(((BigDecimal) num).toPlainString());
-            } else {
-                sb.append(num.toString());
-            }
-        } else {
-            writeScalar(scalar, sb);
-        }
-    }
-
     // ============ key writing ============
 
     private void writeKey(String key, StringBuilder sb) {
@@ -288,14 +360,17 @@ public class YamlSerializer {
 
     private boolean needsQuoting(String str) {
         if (str.isEmpty()) return true;
-        // Check for special YAML characters
+        // Leading/trailing whitespace
         if (str.charAt(0) == ' ' || str.charAt(str.length() - 1) == ' ') return true;
+        // Special YAML indicator characters at start
         if (str.startsWith("#") || str.startsWith("&") || str.startsWith("*") ||
                 str.startsWith("!") || str.startsWith("|") || str.startsWith(">") ||
                 str.startsWith("'") || str.startsWith("\"")) return true;
-        if (str.startsWith("{") || str.startsWith("[") || str.startsWith("?") || str.startsWith("-")) return true;
+        if (str.startsWith("{") || str.startsWith("[") || str.startsWith("?") ||
+                str.startsWith("-") || str.startsWith(":")) return true;
+        // Colon followed by space, or space followed by hash
         if (str.contains(": ") || str.contains(" #")) return true;
-        // Check for boolean/null keywords
+        // Boolean / null keywords
         if (str.equals("true") || str.equals("True") || str.equals("TRUE") ||
                 str.equals("false") || str.equals("False") || str.equals("FALSE") ||
                 str.equals("yes") || str.equals("Yes") || str.equals("YES") ||
@@ -304,10 +379,10 @@ public class YamlSerializer {
                 str.equals("off") || str.equals("Off") || str.equals("OFF") ||
                 str.equals("null") || str.equals("Null") || str.equals("NULL") ||
                 str.equals("~")) return true;
-        // Check number
+        // Numeric strings (quote to preserve as string)
         try {
             Double.parseDouble(str);
-            return true; // quote numbers to preserve them as strings
+            return true;
         } catch (NumberFormatException e) {
             // not a number
         }
@@ -315,7 +390,7 @@ public class YamlSerializer {
     }
 
     private String quoteString(String str) {
-        // Use single quotes by default, double quotes if string contains single quotes
+        // Use single quotes by default; double quotes if string contains single quotes
         if (str.contains("'")) {
             return "\"" + escapeDoubleQuoted(str) + "\"";
         }

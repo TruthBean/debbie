@@ -229,7 +229,7 @@ public class YamlParser {
                         // Check if next line is indented (block content)
                         int nextIndent = lineIndent(nextLine);
                         if (nextIndent > indent) {
-                            value = parseBlockContent(indent + 2);
+                            value = parseBlockContent(nextIndent);
                         } else {
                             value = YamlNull.INSTANCE;
                         }
@@ -288,8 +288,8 @@ public class YamlParser {
                 String nextLine = currentLine();
                 if (nextLine != null) {
                     int nextIndent = lineIndent(nextLine);
-                    if (nextIndent > indent + 2) {
-                        item = parseBlockContent(indent + 2);
+                    if (nextIndent > indent) {
+                        item = parseBlockContent(nextIndent);
                     } else {
                         item = YamlNull.INSTANCE;
                     }
@@ -304,7 +304,13 @@ public class YamlParser {
                 // Nested compact sequence
                 item = parseCompactSequence(itemContent, indent + 2);
             } else {
-                item = parseScalarValue(itemContent);
+                // Check for inline mapping: "- key: value"
+                int inlineColon = findMappingColon(itemContent);
+                if (inlineColon >= 0) {
+                    item = parseInlineMapping(itemContent, indent);
+                } else {
+                    item = parseScalarValue(itemContent);
+                }
             }
 
             sequence.add(item);
@@ -322,16 +328,112 @@ public class YamlParser {
 
         String trimmed = line.trim();
         if (trimmed.startsWith("- ")) {
-            return parseSequence(blockIndent - 2);
+            return parseSequence(blockIndent);
         }
 
         int colonIndex = findMappingColon(trimmed);
         if (colonIndex >= 0) {
-            return parseMapping(blockIndent - 2);
+            return parseMapping(blockIndent);
         }
 
         // Scalar block (multi-line plain text)
         return parseBlockScalar(blockIndent);
+    }
+
+    // ============ inline mapping (compact mapping in sequence) ============
+
+    /**
+     * Parses a mapping whose first entry is inline (e.g. after {@code "- "}).
+     * <p>
+     * Example:
+     * <pre>
+     *   - id: 1
+     *     name: first
+     * </pre>
+     * The first entry {@code id: 1} is parsed from {@code firstEntry}, and
+     * subsequent entries are parsed from the following lines at indent
+     * {@code sequenceIndent + 2} (aligned with the content after "- ").
+     *
+     * @param firstEntry    the inline content after "- " (e.g. "id: 1")
+     * @param sequenceIndent the indent of the "- " line
+     */
+    private YamlMapping parseInlineMapping(String firstEntry, int sequenceIndent) {
+        YamlMapping mapping = new YamlMapping();
+        int mappingIndent = sequenceIndent + 2;
+
+        // Parse the first entry from the inline content
+        int colonIdx = findMappingColon(firstEntry);
+        String key = firstEntry.substring(0, colonIdx).trim();
+        String afterColon = firstEntry.substring(colonIdx + 1).trim();
+
+        YamlNode value = parseMappingValue(afterColon, mappingIndent);
+        mapping.add(key, value);
+
+        // Parse subsequent entries at mappingIndent
+        while (lineIndex < lines.length) {
+            String line = currentLine();
+            if (line == null) break;
+
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                lineIndex++;
+                continue;
+            }
+
+            int indent = lineIndent(line);
+            if (indent != mappingIndent) break;
+            if (trimmed.startsWith("- ")) break;
+
+            String content = stripIndent(line);
+            int ci = findMappingColon(content);
+            if (ci < 0) break;
+
+            String k = content.substring(0, ci).trim();
+            String ac = content.substring(ci + 1).trim();
+            lineIndex++;
+
+            YamlNode v = parseMappingValue(ac, mappingIndent);
+            mapping.add(k, v);
+        }
+
+        return mapping;
+    }
+
+    /**
+     * Parses a mapping value given the text after the colon.
+     * Handles inline scalars, flow collections, and nested block content.
+     *
+     * @param afterColon   the text after "key:" (already trimmed)
+     * @param keyIndent    the indent of the key line
+     */
+    private YamlNode parseMappingValue(String afterColon, int keyIndent) {
+        if (afterColon.isEmpty()) {
+            // Value is on subsequent lines
+            String nextLine = currentLine();
+            if (nextLine != null) {
+                String nextTrimmed = nextLine.trim();
+                if (nextTrimmed.equals("|")) {
+                    lineIndex++;
+                    return parseLiteralScalar(keyIndent + 2);
+                }
+                if (nextTrimmed.equals(">")) {
+                    lineIndex++;
+                    return parseFoldedScalar(keyIndent + 2);
+                }
+                int nextIndent = lineIndent(nextLine);
+                if (nextIndent > keyIndent) {
+                    return parseBlockContent(nextIndent);
+                }
+            }
+            return YamlNull.INSTANCE;
+        }
+        if (afterColon.startsWith("[")) {
+            return parseFlowSequence(afterColon);
+        }
+        if (afterColon.startsWith("{")) {
+            return parseFlowMapping(afterColon);
+        }
+        return parseScalarValue(afterColon);
     }
 
     // ============ flow structures ============
@@ -404,7 +506,7 @@ public class YamlParser {
             if (nextLine != null) {
                 int nextIndent = lineIndent(nextLine);
                 if (nextIndent > parentIndent) {
-                    sequence.add(parseBlockContent(parentIndent + 2));
+                    sequence.add(parseBlockContent(nextIndent));
                 } else {
                     sequence.add(YamlNull.INSTANCE);
                 }
@@ -441,8 +543,13 @@ public class YamlParser {
 
             if (itemVal.isEmpty()) {
                 String nextLine = currentLine();
-                if (nextLine != null && lineIndent(nextLine) > indent + 2) {
-                    sequence.add(parseBlockContent(indent + 4));
+                if (nextLine != null) {
+                    int nextIndent = lineIndent(nextLine);
+                    if (nextIndent > indent) {
+                        sequence.add(parseBlockContent(nextIndent));
+                    } else {
+                        sequence.add(YamlNull.INSTANCE);
+                    }
                 } else {
                     sequence.add(YamlNull.INSTANCE);
                 }
@@ -451,7 +558,13 @@ public class YamlParser {
             } else if (itemVal.startsWith("{")) {
                 sequence.add(parseFlowMapping(itemVal));
             } else {
-                sequence.add(parseScalarValue(itemVal));
+                // Check for inline mapping: "- key: value"
+                int inlineColon = findMappingColon(itemVal);
+                if (inlineColon >= 0) {
+                    sequence.add(parseInlineMapping(itemVal, indent));
+                } else {
+                    sequence.add(parseScalarValue(itemVal));
+                }
             }
         }
 
@@ -693,20 +806,19 @@ public class YamlParser {
                 continue;
             }
 
-            // Colon at the start of a line is not a mapping separator
+            // In YAML 1.2, a mapping separator is ":" followed by a space/tab
+            // or ":" at the end of the line. This avoids matching "http://...".
             if (c == ':' && flowDepth == 0) {
-                // Check that the next non-space char is not a comment
-                int nextNonSpace = i + 1;
-                while (nextNonSpace < content.length() && content.charAt(nextNonSpace) == ' ') {
-                    nextNonSpace++;
-                }
-                if (nextNonSpace < content.length() && content.charAt(nextNonSpace) != '#') {
+                if (i + 1 >= content.length()) {
+                    // Colon at end of line → mapping with null value
                     return i;
                 }
-                // If after colon is only comment or end, still a mapping (value is null)
-                if (nextNonSpace >= content.length() || content.charAt(nextNonSpace) == '#') {
+                char next = content.charAt(i + 1);
+                if (next == ' ' || next == '\t') {
+                    // Colon followed by space → mapping separator
                     return i;
                 }
+                // Colon followed by non-space (e.g. "http://") is not a separator
             }
         }
 
