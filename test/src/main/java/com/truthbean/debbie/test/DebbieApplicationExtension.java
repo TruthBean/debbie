@@ -167,16 +167,14 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
             applicationClass = testClass.get();
             handleDebbieApplicationTest(applicationClass, map);
         }
+        if (!map.isEmpty()) {
+            DebbieTestEnvironment.addCache(map);
+        }
         ApplicationFactory applicationFactory = ApplicationFactory.configure(applicationClass);
         if (applicationFactory != null) {
             DebbieApplication debbieApplication = applicationFactory.create().postCreate().build().factory();
             debbieApplication.start();
             ApplicationContext applicationContext = applicationFactory.getApplicationContext();
-            if (!map.isEmpty()) {
-                map.forEach((key, val) -> {
-                    applicationContext.getEnvironmentHolder().addProperty(key, val);
-                });
-            }
             ExtensionContext.Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
             store.put(ApplicationContext.class, applicationContext);
             store.put(DebbieApplication.class, debbieApplication);
@@ -198,10 +196,8 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
             }
             String[] split = property.split("=");
             if (split.length == 1) {
-                System.setProperty(split[0], "");
                 map.put(split[0], "");
             } else if (split.length == 2) {
-                System.setProperty(split[0], split[1]);
                 map.put(split[0], split[1]);
             }
         }

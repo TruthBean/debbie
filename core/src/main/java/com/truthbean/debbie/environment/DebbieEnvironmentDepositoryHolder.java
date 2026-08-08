@@ -26,13 +26,11 @@ public class DebbieEnvironmentDepositoryHolder implements EnvironmentDepositoryH
     private Logger logger;
 
     public DebbieEnvironmentDepositoryHolder() {
-        /*if (!init) {
-            EnvironmentDepository.init();
-            init = true;
-        }*/
         if (!PROFILE.hasProfile(this.profile())) {
             PROFILE.addEnvironment(this.profile(), this);
         }
+        // flush cache
+        PROFILE.flushProperties();
     }
 
     @Override

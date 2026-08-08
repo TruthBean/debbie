@@ -20,4 +20,7 @@ module com.truthbean.debbie.test {
     requires transitive com.truthbean.logger.core;
 
     requires transitive org.junit.jupiter.api;
+
+    provides com.truthbean.debbie.environment.EnvironmentSpi
+            with com.truthbean.debbie.test.DebbieTestEnvironment;
 }

@@ -99,14 +99,18 @@ public class EnvironmentDepository {
 
     public Properties getAllProperties() {
         if (allProperties.isEmpty()) {
-            environmentMap.forEach((profile, env) -> {
-                Properties properties = env.properties();
-                // customize properties will cover system properties
-                allProperties.putAll(properties);
-                properties.forEach((k, v) -> allProperties.put(profile + ":" + k, v));
-            });
+            flushProperties();
         }
         return allProperties;
+    }
+
+    public void flushProperties() {
+        environmentMap.forEach((profile, env) -> {
+            Properties properties = env.properties();
+            // customize properties will cover system properties
+            allProperties.putAll(properties);
+            properties.forEach((k, v) -> allProperties.put(profile + ":" + k, v));
+        });
     }
 
     public String getHighestPriority() {
@@ -143,6 +147,7 @@ public class EnvironmentDepository {
 
     public void addEnvironment(String profile, ProfiledEnvironment environment) {
         environmentMap.put(profile, environment);
+        flushProperties();
     }
 
     public void clear() {
