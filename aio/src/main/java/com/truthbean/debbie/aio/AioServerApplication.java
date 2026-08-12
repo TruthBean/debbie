@@ -39,7 +39,8 @@ public class AioServerApplication extends AbstractWebServerApplication {
 
     @Override
     public boolean isEnable(Environment environment) {
-        boolean enable = super.isEnable(environment) && environment.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
+        boolean enable = super.isEnable(environment) && environment.getBooleanValue("debbie.mvc.enable", true)
+                && environment.getBooleanValue(AioServerProperties.ENABLE_KEY, true);
         if (!enable) {
             LOGGER.debug("'debbie.server.aio.enable=false', com.truthbean.debbie.aio.AioServerApplication is disabled.");
         }

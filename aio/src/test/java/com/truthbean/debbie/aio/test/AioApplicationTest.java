@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
  * @since 0.0.2
  * Created on 2019-12-17 20:32
  */
-@DebbieApplicationTest
+@DebbieApplicationTest(properties = "debbie.mvc.enable=false")
 public class AioApplicationTest {
 
     public static void main(String[] args) {
