@@ -12,7 +12,7 @@ rootProject.name = "debbie"
 val modules =
     arrayOf(
         "core",
-        "jackson", "json", "xml", "yaml", "jdbc", "mvc",
+        "json", "xml", "yaml", "jdbc", "mvc",
         "httpclient",
         "server",
         "aio",
