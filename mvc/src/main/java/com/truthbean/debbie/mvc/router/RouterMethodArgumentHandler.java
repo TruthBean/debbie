@@ -11,8 +11,6 @@ package com.truthbean.debbie.mvc.router;
 
 import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.data.DataHelperFactory;
-import com.truthbean.debbie.data.JsonHelper;
-import com.truthbean.debbie.data.XmlHelper;
 import com.truthbean.debbie.data.validate.DefaultDataValidateFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MultipartFile;
@@ -46,27 +44,7 @@ public class RouterMethodArgumentHandler extends ExecutableArgumentHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouterMethodArgumentHandler.class);
 
     public RouterMethodArgumentHandler(ClassLoader classLoader) {
-        super(classLoader, requireJsonHelper(), requireXmlHelper());
-    }
-
-    private static JsonHelper requireJsonHelper() {
-        JsonHelper helper = DataHelperFactory.getJsonHelper();
-        if (helper == null) {
-            throw new IllegalStateException(
-                    "no JsonHelper SPI implementation found on the classpath; "
-                            + "please add debbie-jackson or debbie-json as a dependency");
-        }
-        return helper;
-    }
-
-    private static XmlHelper requireXmlHelper() {
-        XmlHelper helper = DataHelperFactory.getXmlHelper();
-        if (helper == null) {
-            throw new IllegalStateException(
-                    "no XmlHelper SPI implementation found on the classpath; "
-                            + "please add debbie-jackson as a dependency");
-        }
-        return helper;
+        super(classLoader, DataHelperFactory.getJsonHelper(), DataHelperFactory.getXmlHelper());
     }
 
     public List<Object> handleMethodParams(RouterRequestValues parameters, List<ExecutableArgument> methodParams, MediaType requestType) {

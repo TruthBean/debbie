@@ -9,7 +9,9 @@
  */
 package com.truthbean.debbie.httpclient;
 
-import com.truthbean.debbie.jackson.util.JacksonUtils;
+import com.truthbean.debbie.data.DataHelperFactory;
+import com.truthbean.debbie.data.JsonHelper;
+import com.truthbean.debbie.data.XmlHelper;
 import com.truthbean.debbie.mvc.router.RouterAnnotationInfoParser;
 import com.truthbean.transformer.TransformerFactory;
 import com.truthbean.debbie.httpclient.annotation.HttpClientRouter;
@@ -241,9 +243,9 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
                         } else {
                             final MediaType mediaType = requestParameter.bodyType();
                             if (mediaType.isSame(MediaType.APPLICATION_JSON_UTF8)) {
-                                request.setTextBody(JacksonUtils.toJson(arg));
+                                request.setTextBody(getJsonHelper().toJson(arg));
                             } else if (mediaType.isSame(MediaType.APPLICATION_XML_UTF8)) {
-                                request.setTextBody(JacksonUtils.toXml(arg));
+                                request.setTextBody(getXmlHelper().toXml(arg));
                             } else {
                                 try {
                                     request.setTextBody(TransformerFactory.transform(arg, String.class));
@@ -279,10 +281,10 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
             final Object o = response.getBody();
             if (o instanceof final String str) {
                 if (newResponseType.isSameMediaType(MediaType.APPLICATION_JSON_UTF8)) {
-                    return JacksonUtils.jsonToBean(str, returnType);
+                    return getJsonHelper().jsonToBean(str, returnType);
                 }
                 if (newResponseType.isSameMediaType(MediaType.APPLICATION_XML_UTF8)) {
-                    return JacksonUtils.xmlToBean(str, returnType);
+                    return getXmlHelper().xmlToBean(str, returnType);
                 }
                 if (TypeHelper.isRawBaseType(returnType)) {
                     returnType = (Class<R>) TypeHelper.getWrapperClass(returnType);
@@ -318,6 +320,14 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
         } else {
             throw new IllegalArgumentException("not support " + responseType + " yet! ");
         }
+    }
+
+    private JsonHelper getJsonHelper() {
+        return DataHelperFactory.getJsonHelper();
+    }
+
+    private XmlHelper getXmlHelper() {
+        return DataHelperFactory.getXmlHelper();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientExecutor.class);
