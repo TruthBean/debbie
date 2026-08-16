@@ -9,7 +9,4 @@
  */
 dependencies {
     api(project(":debbie-mvc"))
-
-    // api("com.truthbean:truthbean-slf4j-boot:$truthbeanVersion")
-    // api("com.truthbean:truthbean-stdout-boot:$truthbeanVersion")
 }

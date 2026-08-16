@@ -376,13 +376,19 @@ public class MvcConfiguration implements DebbieConfiguration {
         configuration.staticResourcesMappingLocation.putAll(staticResourcesMappingLocation);
         configuration.dispatcherMapping = dispatcherMapping;
         configuration.allowClientResponseType = allowClientResponseType;
-        configuration.defaultResponseTypes.addAll(defaultContentTypes);
+        configuration.defaultResponseTypes.addAll(defaultResponseTypes);
         configuration.acceptClientContentType = acceptClientContentType;
         configuration.defaultContentTypes.addAll(defaultContentTypes);
         configuration.enableCors = enableCors;
-        configuration.corsOrigins.addAll(corsOrigins);
-        configuration.corsMethods.addAll(corsMethods);
-        configuration.corsHeaders.addAll(corsHeaders);
+        if (corsOrigins != null) {
+            configuration.corsOrigins = new ArrayList<>(corsOrigins);
+        }
+        if (corsMethods != null) {
+            configuration.corsMethods = new ArrayList<>(corsMethods);
+        }
+        if (corsHeaders != null) {
+            configuration.corsHeaders = new ArrayList<>(corsHeaders);
+        }
         configuration.enableCrsf = enableCrsf;
         configuration.enableSecurity = enableSecurity;
         configuration.templateSuffix = templateSuffix;

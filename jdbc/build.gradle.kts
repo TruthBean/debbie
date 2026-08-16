@@ -14,16 +14,12 @@ dependencies {
 
 // ====================================================================================================================
 
-    testImplementation("com.truthbean:truthbean-log4j2-boot:$truthbeanVersion")
+    testImplementation("com.truthbean:truthbean-stdout-boot:$truthbeanVersion")
 
     testImplementation("com.mysql:mysql-connector-j")
 
     // testCompile(project(":debbie-hikari"))
     testImplementation(project(":debbie-test"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine")
 
     testImplementation("org.mariadb.jdbc:mariadb-java-client")
 

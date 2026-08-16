@@ -1,5 +1,6 @@
 package com.truthbean.debbie.check.boot;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.boot.DebbieApplication;
 import com.truthbean.debbie.boot.DebbieBootApplication;
 import com.truthbean.debbie.core.ApplicationFactory;
@@ -20,7 +21,7 @@ class SimpleApplicationFactoryTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Console.error("Thread.sleep error", e);
         }
         application.exit();
     }

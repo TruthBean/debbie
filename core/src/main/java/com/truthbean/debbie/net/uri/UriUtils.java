@@ -100,7 +100,7 @@ public final class UriUtils {
             URL uri = new URL(encodedUrl);
             return resolveUrl(uri);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            LOGGER.error("Resolve URL error.", e);
         }
         return null;
     }

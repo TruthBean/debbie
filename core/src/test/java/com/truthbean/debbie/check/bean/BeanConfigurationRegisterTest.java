@@ -78,7 +78,7 @@ public class BeanConfigurationRegisterTest {
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Console.error("Thread.sleep error", e);
         }
     }
 }

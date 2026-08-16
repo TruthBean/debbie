@@ -14,7 +14,7 @@ public class SeTestService {
             /*try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Console.error("Thread.sleep error", e);
             }*/
             logger.info(String.valueOf(i));
         }

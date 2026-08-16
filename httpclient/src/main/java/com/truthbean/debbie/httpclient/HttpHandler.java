@@ -57,7 +57,7 @@ public class HttpHandler {
             sc.init(null, new TrustManager[]{SSL_HANDLER}, new SecureRandom());
             return sc;
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("", e);
         }
         return null;
     }
@@ -130,12 +130,11 @@ public class HttpHandler {
 
             if (value != null && !value.isEmpty()) {
                 for (var it : value) {
-                    if (it instanceof Path) {
+                    if (it instanceof Path path) {
                         try {
-                            var path = (Path) it;
                             buildPart(byteArrays, key, path);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            LOGGER.error("", e);
                         }
                     }
                     if (it instanceof File) {
@@ -143,11 +142,10 @@ public class HttpHandler {
                             var path = ((File) it).toPath();
                             buildPart(byteArrays, key, path);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            LOGGER.error("", e);
                         }
                     }
-                    if (it instanceof MultipartFile) {
-                        var file = (MultipartFile) it;
+                    if (it instanceof MultipartFile file) {
                         byteArrays.add(("\"" + key + "\"; filename=\"" + file.getFileName()
                                 + "\"\r\nContent-Type: " + file.getContentType().toString() + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
                         byteArrays.add(file.getContent());
@@ -173,8 +171,7 @@ public class HttpHandler {
                 // true = autoFlush, important!
 
                 for (FormDataParam param : params) {
-                    if (param instanceof TextFromDataParam) {
-                        var text = (TextFromDataParam) param;
+                    if (param instanceof TextFromDataParam text) {
                         // normal param
                         writer.append("--").append(boundary).append(CRLF);
                         writer.append("Content-Disposition: form-data;name=\"").append(text.getName()).append("\"").append(CRLF);
@@ -187,8 +184,7 @@ public class HttpHandler {
                         }
                         writer.append(CRLF);
                         writer.append(text.getValue()).append(CRLF).flush();
-                    } else if (param instanceof FileFormDataParam) {
-                        var file = (FileFormDataParam) param;
+                    } else if (param instanceof FileFormDataParam file) {
                         var binaryFile = file.getFile();
                         var mediaType = file.getFileType();
                         if (mediaType == null || mediaType.isAny()) {

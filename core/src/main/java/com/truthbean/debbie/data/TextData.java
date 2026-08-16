@@ -32,8 +32,7 @@ public interface TextData {
             if (logger != null) {
                 logger.error(rawData + " to char error", e);
             } else {
-                Console.error(rawData + " to char error");
-                e.printStackTrace();
+                Console.error(rawData + " to char error", e);
             }
             return defaultData;
         }
@@ -51,8 +50,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error(rawData + " to bool error", e);
                 } else {
-                    Console.error(rawData + " to bool error");
-                    e.printStackTrace();
+                    Console.error(rawData + " to bool error", e);
                 }
                 result = defaultValue;
             }
@@ -72,8 +70,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error(rawData + " to int error", e);
                 } else {
-                    Console.error(rawData + " to int error");
-                    e.printStackTrace();
+                    Console.error(rawData + " to int error", e);
                 }
                 result = defaultValue;
             }
@@ -93,8 +90,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error(rawData + " to double error", e);
                 } else {
-                    Console.error(rawData + " to double error");
-                    e.printStackTrace();
+                    Console.error(rawData + " to double error", e);
                 }
                 result = defaultValue;
             }
@@ -114,8 +110,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error(rawData + " to long error", e);
                 } else {
-                    Console.error(rawData + " to long error");
-                    e.printStackTrace();
+                    Console.error(rawData + " to long error", e);
                 }
                 result = defaultValue;
             }
@@ -145,8 +140,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error(rawData + " to Charset error", e);
                 } else {
-                    Console.error(rawData + " to Charset error");
-                    e.printStackTrace();
+                    Console.error(rawData + " to Charset error", e);
                 }
                 result = defaultCharset;
             }
@@ -200,8 +194,7 @@ public interface TextData {
                         if (logger != null) {
                             logger.error("class (" + className + ") not found", e);
                         } else {
-                            Console.error("class (" + className + ") not found");
-                            e.printStackTrace();
+                            Console.error("class (" + className + ") not found", e);
                         }
                     }
                 }
@@ -222,8 +215,7 @@ public interface TextData {
                 if (logger != null) {
                     logger.error("class (" + className + ") not found", e);
                 } else {
-                    Console.error("class (" + className + ") not found");
-                    e.printStackTrace();
+                    Console.error("class (" + className + ") not found", e);
                 }
             }
         }
@@ -245,8 +237,7 @@ public interface TextData {
                         if (logger != null) {
                             logger.error("class (" + className + ") not found", e);
                         } else {
-                            Console.error("class (" + className + ") not found");
-                            e.printStackTrace();
+                            Console.error("class (" + className + ") not found", e);
                         }
                     }
                 }

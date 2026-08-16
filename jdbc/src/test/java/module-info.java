@@ -15,5 +15,4 @@
 open module com.truthbean.debbie.jdbc.test {
     requires com.truthbean.debbie.jdbc;
     requires com.truthbean.debbie.test;
-    requires com.truthbean.debbie.asm;
 }

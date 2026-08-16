@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.response.provider;
 
+import com.truthbean.debbie.data.DataHelperFactory;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.mvc.response.AbstractResponseContentHandler;
 import com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
@@ -30,12 +31,12 @@ public enum ResponseContentHandlerProviderEnum {
     /**
      * json restful
      */
-    JSON_RESTFUL(new JsonResponseHandler<>()),
+    JSON_RESTFUL(new JsonResponseHandler<>(DataHelperFactory.getJsonHelper())),
 
     /**
      * xml restful
      */
-    XML_RESTFUL(new XmlResponseHandler<>()),
+    XML_RESTFUL(new XmlResponseHandler<>(DataHelperFactory.getXmlHelper())),
 
     /**
      * text restful

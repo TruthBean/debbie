@@ -33,7 +33,7 @@ public class TaskServiceTest {
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Console.error("Thread.sleep error", e);
         }
     }
 
@@ -44,7 +44,7 @@ public class TaskServiceTest {
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Console.error("Thread.sleep error", e);
             }
             Console.println("66666 done");
         });
@@ -53,7 +53,7 @@ public class TaskServiceTest {
             try {
                 Thread.sleep(6000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Console.error("Thread.sleep error", e);
             }
             return "hello";
         });
@@ -61,7 +61,7 @@ public class TaskServiceTest {
             String s = submit.get(5000, TimeUnit.MILLISECONDS);
             Console.println("2. " + s);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+            Console.error("submit get result error", e);
         }
         Console.println("3 ...................");
         while (!submit.isDone()) {

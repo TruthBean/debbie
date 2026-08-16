@@ -211,7 +211,7 @@ public class HttpClientAction extends HttpHandler {
                 try {
                     body = HttpRequest.BodyPublishers.ofFile(request.getFileBody().toPath());
                 } catch (final FileNotFoundException e) {
-                    e.printStackTrace();
+                    LOGGER.error("", e);
                 }
                 final var httpRequest = builder.method(request.getMethod().name(), body).build();
                 return action(httpRequest, startTime, responseType);

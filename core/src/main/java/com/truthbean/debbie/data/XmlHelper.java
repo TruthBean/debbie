@@ -10,6 +10,15 @@ import java.util.Set;
  * Created on 2022/01/04 19:09.
  */
 public interface XmlHelper {
+
+    /**
+     * bean、array、List、Map --&gt; xml
+     *
+     * @param obj bean、array、List、Map
+     * @return xml string
+     */
+    String toXml(Object obj);
+
     <T> T xmlToBean(String xml, Class<T> clazz);
 
     <T> Set<T> xmlToSetBean(String xml, Class<T> clazz);

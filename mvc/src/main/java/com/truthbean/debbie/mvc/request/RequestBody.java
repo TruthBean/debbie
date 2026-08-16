@@ -9,6 +9,7 @@
  */
 package com.truthbean.debbie.mvc.request;
 
+import com.truthbean.Console;
 import com.truthbean.debbie.io.StreamHelper;
 
 import java.io.BufferedReader;
@@ -68,7 +69,7 @@ public class RequestBody {
                 }
                 content = result;
             } catch (Exception e) {
-                e.printStackTrace();
+                Console.error("read request body error.", e);
             }
         }
         return content;

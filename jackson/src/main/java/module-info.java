@@ -18,4 +18,10 @@ module com.truthbean.debbie.jackson {
 
     provides com.truthbean.debbie.boot.DebbieModuleStarter
             with com.truthbean.debbie.jackson.JacksonModuleStarter;
+
+    provides com.truthbean.debbie.data.JsonHelper
+            with com.truthbean.debbie.jackson.data.JacksonJsonHelper;
+
+    provides com.truthbean.debbie.data.XmlHelper
+            with com.truthbean.debbie.jackson.data.JacksonXmlHelper;
 }

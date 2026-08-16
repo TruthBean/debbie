@@ -67,7 +67,7 @@ public class ScheduledThreadPooledExecutor implements ScheduledPooledExecutor, A
         try {
             return this.executorService.invokeAll(tasks, timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.log(System.Logger.Level.ERROR, "ScheduledThreadPooledExecutor(" + this + ") invokeAll error. ", e);
         }
         return new ArrayList<>();
     }

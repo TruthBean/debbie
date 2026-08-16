@@ -165,7 +165,7 @@ public class SpiLoader {
             try {
                 propertiesClass = (Class<P>) classLoader.loadClass(split[0]);
             } catch (Exception e) {
-                LOGGER.log(System.Logger.Level.ERROR, "", e);
+                LOGGER.log(System.Logger.Level.ERROR, "load class " + split[0] + " error.", e);
             }
 
             Class<?> configClass = null;
@@ -173,7 +173,7 @@ public class SpiLoader {
                 try {
                     configClass = classLoader.loadClass(split[1]);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.log(System.Logger.Level.ERROR, "load class " + split[1] + " error.", e);
                 }
             }
             if (propertiesClass != null && configClass != null) {
@@ -203,7 +203,7 @@ public class SpiLoader {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(System.Logger.Level.ERROR, "", e);
         }
 
         return result;
@@ -215,18 +215,22 @@ public class SpiLoader {
         for (String string : strings) {
             String[] split = string.split(" --> ");
             Class<A> annotationType = null;
-            try {
-                annotationType = (Class<A>) classLoader.loadClass(split[0]);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (split.length > 0) {
+                try {
+                    annotationType = (Class<A>) classLoader.loadClass(split[0]);
+                } catch (Exception e) {
+                    LOGGER.log(System.Logger.Level.ERROR, "load class(" + split[0] + ") error", e);
+                }
             }
 
             Class<? extends MethodProxyHandler> handlerClass = null;
             if (annotationType != null) {
-                try {
-                    handlerClass = (Class<MethodProxyHandler<?>>) classLoader.loadClass(split[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (split.length > 1) {
+                    try {
+                        handlerClass = (Class<MethodProxyHandler<?>>) classLoader.loadClass(split[1]);
+                    } catch (Exception e) {
+                        LOGGER.log(System.Logger.Level.ERROR, "load class(" + split[1] + ") error", e);
+                    }
                 }
                 if (handlerClass != null) {
                     Class<? extends MethodProxyHandler> finalHandlerClass = handlerClass;

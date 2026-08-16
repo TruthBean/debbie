@@ -9,7 +9,7 @@
  */
 package com.truthbean.debbie.mvc.response.provider;
 
-import com.truthbean.debbie.data.serialize.jackson.JacksonXmlUtils;
+import com.truthbean.debbie.data.XmlHelper;
 import com.truthbean.debbie.io.MediaType;
 import com.truthbean.debbie.io.MediaTypeInfo;
 
@@ -19,10 +19,15 @@ import com.truthbean.debbie.io.MediaTypeInfo;
  * Created on 2018-03-03 12:01
  */
 public class XmlResponseHandler<S> extends AbstractRestResponseHandler<S> {
+    private final XmlHelper xmlHelper;
+
+    public XmlResponseHandler(XmlHelper xmlHelper) {
+        this.xmlHelper = xmlHelper;
+    }
 
     @Override
     public String transform(S s) {
-        return JacksonXmlUtils.toXml(s);
+        return xmlHelper.toXml(s);
     }
 
     @Override

@@ -110,11 +110,18 @@ public interface DataSourceFactory extends BeanClosure {
      */
     DataSource getDataSource();
 
+    private void checkDataSource() {
+        if (getDataSource() == null) {
+            throw new NoDatasourceException();
+        }
+    }
+
     DataSourceDriverName getDriverName();
 
     Logger getLogger();
 
     default TransactionInfo getTransaction() {
+        checkDataSource();
         try {
             DataSourceDriverName driverName = getDriverName();
             TransactionInfo transactionInfo = new TransactionInfo();
@@ -124,7 +131,9 @@ public interface DataSourceFactory extends BeanClosure {
                 }
             } catch (Exception ignore) {
             }
-            transactionInfo.setConnection(getDataSource().getConnection());
+            var connection = getDataSource().getConnection();
+            checkConnection(connection);
+            transactionInfo.setConnection(connection);
             transactionInfo.setDriverName(driverName);
             return transactionInfo;
         } catch (SQLException e) {
@@ -133,7 +142,14 @@ public interface DataSourceFactory extends BeanClosure {
         return null;
     }
 
+    private void checkConnection(Connection connection) {
+        if (connection == null) {
+            throw new NoSqlConnection();
+        }
+    }
+
     default Connection getConnection() {
+        checkDataSource();
         try {
             try {
                 if (getLogger().isDebugEnabled() && getDataSource().getLogWriter() == null) {
@@ -141,11 +157,13 @@ public interface DataSourceFactory extends BeanClosure {
                 }
             } catch (Exception ignore) {
             }
-            return getDataSource().getConnection();
+            var connection = getDataSource().getConnection();
+            checkConnection(connection);
+            return connection;
         } catch (SQLException e) {
             getLogger().error("", e);
+            throw new NoSqlConnection();
         }
-        return null;
     }
 
 }

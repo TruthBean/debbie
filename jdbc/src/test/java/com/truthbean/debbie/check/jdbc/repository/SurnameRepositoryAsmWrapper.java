@@ -1,6 +1,6 @@
 package com.truthbean.debbie.check.jdbc.repository;
 
-import com.truthbean.debbie.asm.proxy.AsmGenerated;
+// import com.truthbean.debbie.asm.proxy.AsmGenerated;
 import com.truthbean.debbie.check.jdbc.entity.Surname;
 import com.truthbean.debbie.jdbc.domain.Page;
 import com.truthbean.debbie.jdbc.domain.PageRequest;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-@AsmGenerated
+// @AsmGenerated
 public class SurnameRepositoryAsmWrapper extends SurnameRepository {
     private SurnameRepository target;
     private MethodProxyHandlerHandler handler;

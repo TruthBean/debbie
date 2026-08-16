@@ -15,8 +15,4 @@ dependencies {
     implementation(platform("com.truthbean:truthbean-parent:$truthbeanVersion"))
 
     testImplementation(project(":debbie-test"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine")
 }

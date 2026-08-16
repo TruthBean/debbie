@@ -21,8 +21,4 @@ dependencies {
         exclude(group = "com.truthbean", module = "logger-kotlin")
     }
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine")
-
 }

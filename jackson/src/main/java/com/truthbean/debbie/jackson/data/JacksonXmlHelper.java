@@ -14,6 +14,11 @@ import java.util.Set;
  */
 public class JacksonXmlHelper implements XmlHelper {
     @Override
+    public String toXml(Object obj) {
+        return JacksonXmlUtils.toXml(obj);
+    }
+
+    @Override
     public <T> T xmlToBean(String xml, Class<T> clazz) {
         return JacksonXmlUtils.xmlToBean(xml, clazz);
     }

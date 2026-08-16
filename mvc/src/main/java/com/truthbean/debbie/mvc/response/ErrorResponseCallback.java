@@ -9,6 +9,8 @@
  */
 package com.truthbean.debbie.mvc.response;
 
+import com.truthbean.debbie.mvc.request.BaseRouterRequest;
+
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
@@ -17,6 +19,6 @@ package com.truthbean.debbie.mvc.response;
 @FunctionalInterface
 public interface ErrorResponseCallback {
 
-    void callback(RouterResponse response);
+    void callback(BaseRouterRequest request, RouterResponse response);
 
 }

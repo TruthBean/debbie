@@ -44,7 +44,7 @@ public class PhantomReferenceBeanFactory<T> implements BeanFactory<T> {
                     try {
                         reference = (PhantomReference<T>) queue.remove();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        LOGGER.error("", e);
                     }
                     if (reference != null) {
                         LOGGER.info("bean(" + beanType + ") did gc");

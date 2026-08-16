@@ -65,6 +65,8 @@ module com.truthbean.debbie.core {
     // uses EnvironmentContext;
     uses com.truthbean.debbie.core.ApplicationFactory;
     uses com.truthbean.debbie.environment.ResourceEnvironment;
+    uses com.truthbean.debbie.data.JsonHelper;
+    uses com.truthbean.debbie.data.XmlHelper;
 
     provides com.truthbean.logger.LoggerConfig
             with com.truthbean.debbie.boot.DebbieLoggerConfig;

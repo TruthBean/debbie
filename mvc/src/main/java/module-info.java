@@ -27,10 +27,9 @@ module com.truthbean.debbie.mvc {
     opens com.truthbean.debbie.mvc.request to com.truthbean.core, com.truthbean.debbie.core;
 
     requires transitive com.truthbean.debbie.core;
-    requires transitive com.truthbean.debbie.jackson;
-    // TODO 将jackson替换成json
-    // requires transitive com.truthbean.debbie.json;
 
+    uses com.truthbean.debbie.data.JsonHelper;
+    uses com.truthbean.debbie.data.XmlHelper;
     uses com.truthbean.debbie.mvc.response.view.AbstractTemplateViewHandler;
     uses com.truthbean.debbie.mvc.router.RouterAnnotationParser;
     uses com.truthbean.debbie.mvc.request.RequestParameterParser;
