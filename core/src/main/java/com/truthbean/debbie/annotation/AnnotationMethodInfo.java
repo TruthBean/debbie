@@ -13,19 +13,41 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
+ * Metadata for a single annotation attribute (method), including its
+ * value, {@link AliasFor} declaration, and whether the current value
+ * is still the default.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-09-24 14:39
  */
 public class AnnotationMethodInfo {
+    /**
+     * the attribute (method) name
+     */
     private String methodName;
 
+    /**
+     * whether this attribute declares an {@link AliasFor}
+     */
     private boolean aliasFor;
+    /**
+     * the aliased attribute name
+     */
     private String aliasForAttribute;
+    /**
+     * the annotation type containing the aliased attribute
+     */
     private Class<? extends Annotation> aliasForAnnotation;
 
+    /**
+     * the current attribute value
+     */
     private Object value;
 
+    /**
+     * the underlying annotation method
+     */
     private Method method;
 
     public String getMethodName() {
@@ -56,6 +78,11 @@ public class AnnotationMethodInfo {
         return value;
     }
 
+    /**
+     * Returns whether the current value is still the annotation default.
+     *
+     * @return {@code true} if the value is null or equals the method's default
+     */
     public boolean isDefaultValue() {
         return value == null || value == method.getDefaultValue() || value.equals(method.getDefaultValue());
     }
@@ -80,6 +107,14 @@ public class AnnotationMethodInfo {
         this.aliasFor = aliasFor;
     }
 
+    /**
+     * Checks whether this attribute aliases the given attribute name
+     * and has a compatible return type.
+     *
+     * @param name             the candidate aliased attribute name
+     * @param methodReturnType the expected return type
+     * @return {@code true} if this attribute aliases the given name and type
+     */
     public boolean aliasFor(String name, Class<?> methodReturnType) {
         return name.equals(aliasForAttribute) && methodReturnType == method.getReturnType();
     }

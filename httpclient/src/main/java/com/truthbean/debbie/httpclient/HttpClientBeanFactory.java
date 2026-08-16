@@ -21,19 +21,35 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * {@link BeanFactory} implementation that creates singleton HTTP client
+ * beans from router-annotated interfaces via {@link HttpClientFactory}.
+ *
+ * @param <HttpClientBean> the bean type
  * @author TruthBean
  * @since 0.0.2
  */
 public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpClientBean> {
 
+    /** the created bean instance (lazy) */
     private HttpClientBean httpClientBean;
+    /** the bean class */
     private final Class<HttpClientBean> httpClientBeanClass;
+    /** the underlying HTTP client factory */
     private final HttpClientFactory httpClientFactory;
+    /** bean metadata */
     private final ClassBeanInfo<HttpClientBean> beanInfo;
 
+    /** all registered bean names */
     private final Set<String> beanNames = new HashSet<>();
 
 
+    /**
+     * Creates a bean factory for the given bean info, registering
+     * additional {@code *factory} alias names.
+     *
+     * @param httpClientFactory the underlying HTTP client factory
+     * @param beanInfo          the bean metadata
+     */
     @SuppressWarnings("unchecked")
     public HttpClientBeanFactory(HttpClientFactory httpClientFactory,
                                  ClassBeanInfo<HttpClientBean> beanInfo) {
@@ -47,6 +63,13 @@ public class HttpClientBeanFactory<HttpClientBean> implements BeanFactory<HttpCl
         }
     }
 
+    /**
+     * Creates the HTTP client bean, honouring {@link HttpClientRouter#failureAction()}
+     * if present on the bean class.
+     *
+     * @param applicationContext the application context
+     * @return the created (or cached) singleton bean
+     */
     @Override
     @SuppressWarnings("unchecked")
     public HttpClientBean factoryBean(ApplicationContext applicationContext) {

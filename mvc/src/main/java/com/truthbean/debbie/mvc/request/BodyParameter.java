@@ -14,6 +14,8 @@ import com.truthbean.debbie.io.MediaType;
 import java.lang.annotation.*;
 
 /**
+ * Binds a method parameter to the HTTP request body.
+ *
  * @author TruthBean
  * @since 0.0.2
  */
@@ -33,9 +35,12 @@ public @interface BodyParameter {
      */
     String value() default "";
 
+    /** the default value when the body is absent. */
     String defaultValue() default "";
 
+    /** whether the body is required. */
     boolean require() default true;
 
+    /** the expected media type of the body. */
     MediaType type() default MediaType.ANY;
 }

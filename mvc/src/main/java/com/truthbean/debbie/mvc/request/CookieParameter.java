@@ -12,6 +12,8 @@ package com.truthbean.debbie.mvc.request;
 import java.lang.annotation.*;
 
 /**
+ * Binds a method parameter to an HTTP cookie value.
+ *
  * @author TruthBean
  * @since 0.0.2
  */
@@ -20,6 +22,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface CookieParameter {
 
+    /** the cookie name; if blank, the parameter name is used. */
     String name() default "";
 
     /**
@@ -28,7 +31,9 @@ public @interface CookieParameter {
      */
     String value() default "";
 
+    /** the default value when the cookie is absent. */
     String defaultValue() default "";
 
+    /** whether the cookie is required. */
     boolean require() default true;
 }

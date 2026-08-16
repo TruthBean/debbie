@@ -21,11 +21,28 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
+ * Factory interface for building and managing a Debbie application instance.
+ * <p>
+ * Defines a fluent lifecycle pipeline:
+ * <pre>
+ *   preInit → init → config → create → postCreate → build → factory
+ * </pre>
+ * Each method returns this factory (or the resulting application) so that
+ * the steps can be chained. Static convenience methods ({@link #initialize},
+ * {@link #configure}, {@link #create}, {@link #factory}) compose common
+ * sub-sequences of the pipeline.
+ *
  * @author TruthBean
  * @since 0.1.0
  */
 public interface ApplicationFactory {
 
+    /**
+     * Pre-initialises the factory with the given command-line arguments.
+     *
+     * @param args command-line arguments
+     * @return this factory for chaining
+     */
     ApplicationFactory preInit(String... args);
 
     /**
@@ -169,6 +186,13 @@ public interface ApplicationFactory {
 
     // ============================================================================================================
 
+    /**
+     * Creates a new empty application factory, either via SPI or the default
+     * {@link DebbieApplicationFactory}. Returns an {@link EmptyApplicationFactory}
+     * when Debbie is disabled.
+     *
+     * @return a new empty application factory
+     */
     static ApplicationFactory newEmpty() {
         if (DebbieApplication.isDisable()) {
             return SpiLoader.loadProvider(ApplicationFactory.class, new EmptyApplicationFactory());
@@ -176,30 +200,89 @@ public interface ApplicationFactory {
         return DebbieApplicationFactory.newEmpty();
     }
 
+    /**
+     * Creates and pre-initialises a factory for the given application class.
+     *
+     * @param applicationClass the main application class
+     * @param args             command-line arguments
+     * @param <T>              the application type
+     * @return the initialised factory
+     */
     static <T> ApplicationFactory initialize(Class<T> applicationClass, String... args) {
         return newEmpty().preInit(applicationClass, args).init();
     }
 
+    /**
+     * Initialises and configures a factory for the given application class.
+     *
+     * @param applicationClass the main application class
+     * @param args             command-line arguments
+     * @param <T>              the application type
+     * @return the configured factory
+     */
     static <T> ApplicationFactory configure(Class<T> applicationClass, String... args) {
         return initialize(applicationClass, args).config();
     }
 
+    /**
+     * Initialises and configures a factory for the given application instance.
+     *
+     * @param application the application instance
+     * @param args        command-line arguments
+     * @param <T>         the application type
+     * @return the configured factory
+     */
     static <T> ApplicationFactory configure(T application, String... args) {
         return newEmpty().preInit(application.getClass(), args).init().config(application);
     }
 
+    /**
+     * Builds a fully created factory (init → config → create → build)
+     * for the given application class.
+     *
+     * @param applicationClass the main application class
+     * @param args             command-line arguments
+     * @param <T>              the application type
+     * @return the built factory
+     */
     static <T> ApplicationFactory create(Class<T> applicationClass, String... args) {
         return initialize(applicationClass, args).config().create().build();
     }
 
+    /**
+     * Builds a fully created factory for the given application instance.
+     *
+     * @param application the application instance
+     * @param args        command-line arguments
+     * @param <T>         the application type
+     * @return the built factory
+     */
     static <T> ApplicationFactory create(T application, String... args) {
         return newEmpty().preInit(application.getClass(), args).init().config(application).create().build();
     }
 
+    /**
+     * Runs the full pipeline and returns the resulting {@link DebbieApplication}
+     * for the given application class.
+     *
+     * @param applicationClass the main application class
+     * @param args             command-line arguments
+     * @param <T>              the application type
+     * @return the built and started-ready application
+     */
     static <T> DebbieApplication factory(Class<T> applicationClass, String... args) {
         return initialize(applicationClass, args).config().create().postCreate().build().factory();
     }
 
+    /**
+     * Runs the full pipeline and returns the resulting {@link DebbieApplication}
+     * for the given application instance.
+     *
+     * @param application the application instance
+     * @param args        command-line arguments
+     * @param <T>         the application type
+     * @return the built and started-ready application
+     */
     static <T> DebbieApplication factory(T application, String... args) {
         return newEmpty()
                 .preInit(application.getClass(), args)

@@ -14,27 +14,36 @@ import com.truthbean.debbie.io.MediaTypeInfo;
 import java.io.File;
 
 /**
+ * A multipart form-data parameter representing a file upload, carrying
+ * the {@link File} and its content type.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
  * Created on 2020-02-24 14:29
  */
 public class FileFormDataParam extends FormDataParam {
+    /** the file to upload */
     private File file;
 
+    /** the media type of the file content */
     private MediaTypeInfo fileType;
 
+    /** Returns the file to upload. */
     public File getFile() {
         return file;
     }
 
+    /** Sets the file to upload. */
     public void setFile(File file) {
         this.file = file;
     }
 
+    /** Returns the media type of the file content. */
     public MediaTypeInfo getFileType() {
         return fileType;
     }
 
+    /** Sets the media type of the file content. */
     public void setFileType(MediaTypeInfo fileType) {
         this.fileType = fileType;
     }

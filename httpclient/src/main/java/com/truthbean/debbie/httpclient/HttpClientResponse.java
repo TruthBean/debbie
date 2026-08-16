@@ -18,49 +18,78 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Represents an HTTP response received by the Debbie HTTP client,
+ * containing the status code, body, headers, SSL session and HTTP
+ * version.
+ *
+ * @param <T> the body type (e.g. {@code String}, {@code byte[]},
+ *            {@code InputStream})
  * @author TruthBean
  * @since 0.0.2
  * Created on 2019-11-23 00:13.
  */
 public class HttpClientResponse<T> {
+    /** HTTP status code */
     private int code;
 
+    /** response body */
     private T body;
 
+    /** response headers, keyed by header name */
     public Map<String, List<String>> headers;
 
+    /** TLS session, or {@code null} if not HTTPS */
     public SSLSession sslSession;
 
+    /** HTTP protocol version */
     public HttpClient.Version version;
 
+    /** Returns the HTTP status code. */
     public int getCode() {
         return code;
     }
 
+    /** Sets the HTTP status code. */
     public void setCode(int code) {
         this.code = code;
     }
 
+    /** Returns {@code true} if a body is present. */
     public boolean hasBody() {
         return body != null;
     }
 
+    /** Returns the response body. */
     public T getBody() {
         return body;
     }
 
+    /** Sets the response body. */
     public void setBody(T body) {
         this.body = body;
     }
 
+    /** Returns the response headers map. */
     public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
+    /**
+     * Returns all values for the given header name (case-insensitive).
+     *
+     * @param headerName the header name enum
+     * @return a list of header values, possibly empty
+     */
     public List<String> getHeaderValues(HttpHeader.HttpHeaderName headerName) {
         return getHeaderValues(headerName.getName());
     }
 
+    /**
+     * Returns all values for the given header name (case-insensitive).
+     *
+     * @param headerName the header name
+     * @return a list of header values, possibly empty
+     */
     public List<String> getHeaderValues(String headerName) {
         if (!headers.isEmpty()) {
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {

@@ -25,16 +25,29 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 /**
+ * Base implementation of {@link TaskAction} providing thread-pool-based
+ * task execution with support for fixed-rate, delayed and cron-scheduled
+ * tasks.
+ * <p>
+ * Subclasses supply a {@linkplain #getTaskThreadName() thread name} and
+ * a {@linkplain #getLogger() logger}. Tasks are collected in
+ * {@link #taskList} and dispatched by {@link #doTask()}.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.5.7
  */
 public abstract class AbstractTaskAction implements TaskAction {
+    /** thread factory for task execution threads */
     private final ThreadFactory namedThreadFactory = new NamedThreadFactory(getTaskThreadName(), true);
+    /** single-thread pool for dispatching tasks */
     private final PooledExecutor taskThreadPool = new ThreadPooledExecutor(1, 1, namedThreadFactory);
+    /** scheduled pool for fixed-rate / cron tasks, sized to CPU count */
     private final ScheduledPooledExecutor scheduledPooledExecutor = new ScheduledThreadPooledExecutor(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
+    /** the application context, set via {@link #setApplicationContext} */
     protected ApplicationContext applicationContext;
 
+    /** registered task descriptors */
     protected final Set<TaskInfo> taskList = new LinkedHashSet<>();
 
     @Override
@@ -42,8 +55,14 @@ public abstract class AbstractTaskAction implements TaskAction {
         this.applicationContext = applicationContext;
     }
 
+    /** Returns the thread name prefix for task execution threads. */
     protected abstract String getTaskThreadName();
 
+    /**
+     * Dispatches all registered tasks: synchronous tasks run on the
+     * {@code taskThreadPool}, async tasks on the global thread pool, and
+     * scheduled/cron tasks on the {@code scheduledPooledExecutor}.
+     */
     @Override
     public void doTask() {
         final ThreadPooledExecutor executor = applicationContext.getGlobalBeanFactory().factory("threadPooledExecutor");
@@ -138,6 +157,7 @@ public abstract class AbstractTaskAction implements TaskAction {
         }, finalDelay);
     }
 
+    /** Shuts down the scheduled and task thread pools. */
     @Override
     public void stop() {
         scheduledPooledExecutor.destroy();
@@ -145,5 +165,6 @@ public abstract class AbstractTaskAction implements TaskAction {
         taskThreadPool.destroy();
     }
 
+    /** Returns the logger for this task action. */
     protected abstract Logger getLogger();
 }

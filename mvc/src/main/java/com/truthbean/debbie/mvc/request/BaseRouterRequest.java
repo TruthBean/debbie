@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Read-only base interface for router requests, providing access to
+ * the request id, HTTP method, URL, path attributes, matrix parameters,
+ * headers, cookies, session, form parameters, query string, body
+ * content, content type, and response type.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.6.3
  */

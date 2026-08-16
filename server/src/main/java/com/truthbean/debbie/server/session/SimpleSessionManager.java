@@ -15,17 +15,27 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Simple in-memory {@link SessionManager} backed by a
+ * {@link ConcurrentHashMap} keyed by session id.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/05/25 12:08.
  */
 public class SimpleSessionManager implements SessionManager {
+    /** session id → session */
     private final Map<String, RouterSession> sessionMap;
 
+    /** Creates an empty session manager. */
     public SimpleSessionManager() {
         this.sessionMap = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Creates a new {@link SimpleRouterSession}, stores it, and returns it.
+     *
+     * @return the newly created session
+     */
     @Override
     public RouterSession createSession() {
         var session = new SimpleRouterSession();

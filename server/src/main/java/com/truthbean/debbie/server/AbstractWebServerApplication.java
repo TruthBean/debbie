@@ -17,16 +17,28 @@ import java.net.InetAddress;
 import java.util.List;
 
 /**
+ * Base class for web server applications, overriding {@link #isWeb()}
+ * to return {@code true} and providing a helper to log all local URLs
+ * at startup.
+ *
  * @author truthbean
  * @since 0.0.2
  */
 public abstract class AbstractWebServerApplication extends AbstractApplication {
 
+    /** Returns {@code true} — this is a web application. */
     @Override
     public boolean isWeb() {
         return true;
     }
 
+    /**
+     * Logs the application URLs for localhost, IPv4 loopback, IPv6
+     * loopback, and all local IPv4 addresses on the given port.
+     *
+     * @param logger the logger to write to
+     * @param port   the server port
+     */
     protected void printlnWebUrl(Logger logger, int port) {
         logger.trace("before print....");
         List<InetAddress> ipv4LocalAddress = NetWorkUtils.getAllIpv4LocalAddress();

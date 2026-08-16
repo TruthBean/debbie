@@ -12,6 +12,16 @@ package com.truthbean.debbie.event;
 import java.time.Clock;
 import java.util.EventObject;
 
+/**
+ * Base class for all Debbie application events.
+ * <p>
+ * Extends {@link EventObject} and adds a {@link #getTimestamp() timestamp}
+ * recorded at construction time. Subclasses represent specific lifecycle
+ * or domain events published through the {@code ApplicationContext}.
+ *
+ * @author TruthBean/Rogar·Q
+ * @since 0.0.1
+ */
 public abstract class AbstractDebbieEvent extends EventObject {
 
     /**
@@ -54,6 +64,12 @@ public abstract class AbstractDebbieEvent extends EventObject {
         return this.timestamp;
     }
 
+    /**
+     * Returns the runtime class of this event, cast to a concrete subtype.
+     *
+     * @param <E> the event subtype
+     * @return the class of this event instance
+     */
     @SuppressWarnings("unchecked")
     public <E extends AbstractDebbieEvent> Class<E> getType() {
         return (Class<E>) getClass();

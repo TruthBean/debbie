@@ -12,29 +12,46 @@ package com.truthbean.debbie.proxy;
 import java.lang.reflect.Method;
 
 /**
+ * Base executor for invoking a method on a proxied interface, typically
+ * used by configuration proxies that delegate method calls to an
+ * underlying configuration object.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public abstract class AbstractMethodExecutor {
 
+    /** the interface type being proxied */
     private final Class<?> interfaceType;
+    /** the method to execute */
     private final Method method;
+    /** the underlying configuration object */
     private final Object configuration;
 
+    /**
+     * Creates an executor for the given interface method and configuration.
+     *
+     * @param interfaceType the interface type being proxied
+     * @param method        the method to execute
+     * @param configuration the underlying configuration object
+     */
     public AbstractMethodExecutor(Class<?> interfaceType, Method method, Object configuration) {
         this.interfaceType = interfaceType;
         this.method = method;
         this.configuration = configuration;
     }
 
+    /** Returns the proxied interface type. */
     public Class<?> getInterfaceType() {
         return interfaceType;
     }
 
+    /** Returns the method to execute. */
     public Method getMethod() {
         return method;
     }
 
+    /** Returns the underlying configuration object. */
     public Object getConfiguration() {
         return configuration;
     }

@@ -20,10 +20,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Properties loader for {@link HttpClientConfiguration}, reading values
+ * from the environment under the {@code debbie.httpclient.} prefix and
+ * building per-profile, per-category configurations.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public class HttpClientProperties extends CategoriedProperties<HttpClientConfiguration> {
+    /** profile → (category → configuration) */
     private final Map<String, Map<String, HttpClientConfiguration>> configurationMap = new HashMap<>();
 
     private static final String HTTP_CLIENT_PREFIX = "debbie.httpclient.";

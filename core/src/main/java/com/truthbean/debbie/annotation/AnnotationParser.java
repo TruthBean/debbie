@@ -21,11 +21,21 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Parses annotations and their {@link AliasFor} relationships into
+ * {@link AnnotationInfo} metadata.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-09-24 12:07
  */
 public class AnnotationParser {
+    /**
+     * Parses a single annotation into {@link AnnotationInfo}, resolving
+     * attribute values and {@link AliasFor} declarations.
+     *
+     * @param annotation the annotation to parse
+     * @return the parsed annotation metadata
+     */
     public static AnnotationInfo parse(Annotation annotation) {
         var info = new AnnotationInfo(annotation);
         Class<? extends Annotation> type = annotation.annotationType();
@@ -54,6 +64,14 @@ public class AnnotationParser {
         return info;
     }
 
+    /**
+     * Parses all annotations present on the given class (including
+     * meta-annotations) into a map keyed by annotation type, resolving
+     * {@link AliasFor} relationships across annotations.
+     *
+     * @param clazz the class to parse
+     * @return a map of annotation type to parsed metadata
+     */
     public static Map<Class<? extends Annotation>, AnnotationInfo> parseClassAnnotation(Class<?> clazz) {
         Set<Annotation> annotations = ReflectionUtils.getClassAnnotations(clazz);
 
@@ -88,7 +106,7 @@ public class AnnotationParser {
     }
 
     private static void parseClassAnnotation(AnnotationInfo info, Map<Class<? extends Annotation>, AnnotationInfo> map,
-                                            String attributeName, Object attributeValue) {
+                                             String attributeName, Object attributeValue) {
         Class<? extends Annotation> type = info.annotationType();
         info.properties().forEach((name, methodInfo) -> {
             Method declaredMethod = methodInfo.getMethod();

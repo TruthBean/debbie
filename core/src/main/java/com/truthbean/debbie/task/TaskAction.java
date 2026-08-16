@@ -12,15 +12,23 @@ package com.truthbean.debbie.task;
 import com.truthbean.debbie.core.ApplicationContextAware;
 
 /**
+ * SPI interface for task actions, loaded via {@code ServiceLoader}.
+ * <p>
+ * A task action prepares, executes, and stops a set of scheduled or
+ * on-demand tasks within the application context.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-08-11 11:18
  */
 public interface TaskAction extends ApplicationContextAware {
 
-   void prepare();
+    /** Prepares tasks before execution (e.g. scanning, registration). */
+    void prepare();
 
-   void doTask();
+    /** Executes all registered tasks. */
+    void doTask();
 
-   void stop();
+    /** Stops all running tasks and releases resources. */
+    void stop();
 }

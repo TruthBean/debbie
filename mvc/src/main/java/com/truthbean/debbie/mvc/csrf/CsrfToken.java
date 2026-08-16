@@ -13,13 +13,18 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
+ * An immutable CSRF token consisting of a random UUID string and a
+ * creation timestamp.
+ *
  * @author TruthBean
  * @since 0.0.1
  * @since 2019-03-30 14:22
  */
 public class CsrfToken {
+    /** the token string */
     private final String token;
 
+    /** when the token was created */
     private final Timestamp createTime;
 
     private CsrfToken(String token, Timestamp createTime) {
@@ -27,14 +32,17 @@ public class CsrfToken {
         this.createTime = createTime;
     }
 
+    /** Creates a new {@link CsrfToken} with a random UUID and the current time. */
     public static CsrfToken create() {
         return new CsrfToken(UUID.randomUUID().toString(), new Timestamp(System.currentTimeMillis()));
     }
 
+    /** Returns the token string. */
     public String getToken() {
         return token;
     }
 
+    /** Returns the creation timestamp. */
     public Timestamp getCreateTime() {
         return createTime;
     }

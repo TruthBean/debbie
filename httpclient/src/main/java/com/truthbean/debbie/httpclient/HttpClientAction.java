@@ -35,22 +35,36 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 /**
+ * Core HTTP client action that builds and sends {@link HttpRequest}s
+ * via the JDK {@link HttpClient}, supporting proxy, auth, TLS, retry,
+ * form-urlencoded and multipart bodies.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public class HttpClientAction extends HttpHandler {
 
+    /** shared HTTP client builder */
     private static final HttpClient.Builder HTTP_CLIENT_BUILDER = HttpClient.newBuilder();
 
+    /** the JDK HTTP client instance */
     private final HttpClient httpClient;
+    /** the HTTP client configuration */
     private final HttpClientConfiguration configuration;
 
+    /**
+     * Creates an action with the given configuration, initialising the
+     * underlying {@link HttpClient}.
+     *
+     * @param configuration the HTTP client configuration
+     */
     public HttpClientAction(final HttpClientConfiguration configuration) {
         super(configuration);
         this.configuration = configuration;
         this.httpClient = createHttpClient();
     }
 
+    /** Builds the JDK HTTP client with proxy, auth and TLS settings. */
     protected HttpClient createHttpClient() {
         final HttpClient.Builder builder = HTTP_CLIENT_BUILDER;
         if (configuration.useProxy()) {
@@ -66,6 +80,12 @@ public class HttpClientAction extends HttpHandler {
         return builder.build();
     }
 
+    /**
+     * Waits for the response future with the configured timeout.
+     *
+     * @param future the response future
+     * @return the HTTP response, or {@code null} on error
+     */
     @SuppressWarnings("rawtypes")
     protected HttpResponse getResponse(final CompletableFuture<HttpResponse> future) {
         HttpResponse response = null;
@@ -81,6 +101,13 @@ public class HttpClientAction extends HttpHandler {
         return response;
     }
 
+    /**
+     * Retries the request up to {@code retryTime} times until a response
+     * is received.
+     *
+     * @param future the response future
+     * @return the HTTP response, or {@code null} if all retries fail
+     */
     @SuppressWarnings("rawtypes")
     protected HttpResponse actionWithRetryWhenFail(CompletableFuture<HttpResponse> future) {
         int tryCount = 0;
@@ -114,6 +141,14 @@ public class HttpClientAction extends HttpHandler {
         return response;
     }
 
+    /**
+     * Builds and sends an HTTP request from the given router request,
+     * handling form-urlencoded, multipart and raw bodies.
+     *
+     * @param request          the router request
+     * @param responseTypeInfo the expected response media type
+     * @return the HTTP client response
+     */
     @SuppressWarnings("rawtypes")
     public HttpClientResponse action(final RouterRequest request, final MediaTypeInfo responseTypeInfo) {
         HttpResponseType responseType;

@@ -34,16 +34,35 @@ import java.net.HttpCookie;
 import java.util.*;
 
 /**
+ * Method executor for proxied HTTP client interfaces. Parses
+ * {@link HttpClientRouter} and router annotations to build
+ * {@link HttpClientRequest}s, resolves parameter values at invocation
+ * time, sends requests via {@link HttpClientAction}, and deserialises
+ * responses.
+ *
+ * @param <T> the interface type being proxied
  * @author TruthBean
  * @since 0.0.1
  */
 public class HttpClientExecutor<T> extends AbstractMethodExecutor {
 
+    /** the resolved HTTP client configuration */
     private final HttpClientConfiguration configuration;
+    /** the underlying HTTP client action */
     private final HttpClientAction httpClientAction;
 
+    /** pre-built requests for each URL × HTTP method combination */
     private final List<HttpClientRequest> requests = new ArrayList<>();
 
+    /**
+     * Parses router annotations on the given interface method and
+     * pre-builds {@link HttpClientRequest}s for each URL and HTTP method.
+     *
+     * @param interfaceType the proxied interface
+     * @param method        the router-annotated method
+     * @param classLoader   the class loader for annotation parsing
+     * @param configuration the HTTP client configuration or properties
+     */
     public HttpClientExecutor(final Class<T> interfaceType, final Method method, final ClassLoader classLoader,
                               final Object configuration) {
         super(interfaceType, method, configuration);
@@ -142,6 +161,7 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
         }
     }
 
+    /** Sets parameter values from the given method arguments onto each request. */
     private void setParameterValue(final Object... args) {
         if (args == null || args.length == 0)
             return;
@@ -156,6 +176,17 @@ public class HttpClientExecutor<T> extends AbstractMethodExecutor {
         }
     }
 
+    /**
+     * Executes all pre-built requests with the given arguments, mapping
+     * parameters to headers, cookies, queries, form fields or body as
+     * annotated, and returns the deserialised result.
+     *
+     * @param object     the proxy instance (unused)
+     * @param returnType the expected return type
+     * @param args       the method arguments
+     * @param <R>        the return type
+     * @return the deserialised result
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public <R> R execute(final Object object, final Class<R> returnType, final Object... args) {

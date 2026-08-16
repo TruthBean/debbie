@@ -18,30 +18,56 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Configuration for a JDBC data source, including driver, URL,
+ * credentials, auto-commit, transaction isolation level, driver
+ * properties, and the {@link DataSourceFactory} class to use.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public class DataSourceConfiguration implements Copyable<DataSourceConfiguration>, DebbieConfiguration {
+    /** configuration profile name */
     private String profile;
+    /** configuration category name */
     private String category;
 
+    /** whether the data source is enabled */
     private boolean enable;
+    /** the database driver name enum */
     private DataSourceDriverName driverName;
+    /** the JDBC connection URL */
     private String url;
+    /** the database username */
     private String user;
+    /** the database password */
     private String password;
 
+    /** whether connections auto-commit */
     private Boolean autoCommit;
+    /** the default transaction isolation level */
     private TransactionIsolationLevel defaultTransactionIsolationLevel;
 
+    /** additional driver-specific properties */
     private Map<String, Object> driverProperties;
 
+    /** the data source factory class to instantiate */
     private Class<? extends DataSourceFactory> dataSourceFactoryClass;
 
+    /**
+     * Creates a configuration with the given enable state.
+     *
+     * @param enable whether the data source is enabled
+     */
     public DataSourceConfiguration(boolean enable) {
         this.enable = enable;
     }
 
+    /**
+     * Copy constructor: creates a deep copy of the given configuration,
+     * including a new {@link HashMap} for driver properties.
+     *
+     * @param configuration the source configuration
+     */
     public DataSourceConfiguration(DataSourceConfiguration configuration) {
         this.enable = configuration.enable;
         this.profile = configuration.profile;

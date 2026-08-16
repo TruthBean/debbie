@@ -17,24 +17,34 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
+ * Simple in-memory implementation of {@link RouterSession} backed by a
+ * {@link HashMap} for attributes.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/05/25 12:11.
  */
 public class SimpleRouterSession implements RouterSession {
 
+    /** session id (random UUID) */
     private final String id;
 
+    /** session creation time in milliseconds */
     private final Long createTime;
 
+    /** last accessed time in milliseconds */
     private Long lastAccessedTime;
 
+    /** max inactive interval in milliseconds */
     private Long maxInactiveInterval;
 
+    /** session attributes */
     private final Map<String, Object> attributes;
 
+    /** whether this session has been invalidated */
     private boolean invalidate;
 
+    /** Creates a new session with a random UUID id and the current time. */
     public SimpleRouterSession() {
         this.id = UUID.randomUUID().toString();
         this.createTime = System.currentTimeMillis();
@@ -57,6 +67,7 @@ public class SimpleRouterSession implements RouterSession {
         return lastAccessedTime;
     }
 
+    /** Sets the last accessed time. */
     public void setLastAccessedTime(Long lastAccessedTime) {
         this.lastAccessedTime = lastAccessedTime;
     }
@@ -66,6 +77,7 @@ public class SimpleRouterSession implements RouterSession {
         return maxInactiveInterval;
     }
 
+    /** Sets the max inactive interval. */
     public void setMaxInactiveInterval(Long maxInactiveInterval) {
         this.maxInactiveInterval = maxInactiveInterval;
     }
@@ -91,6 +103,7 @@ public class SimpleRouterSession implements RouterSession {
         this.attributes.clear();
     }
 
+    /** Returns whether this session has been invalidated. */
     public boolean isInvalidate() {
         return invalidate;
     }

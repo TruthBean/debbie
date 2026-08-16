@@ -15,14 +15,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Base response object carrying headers, content, and HTTP status.
+ *
  * @author TruthBean
  * @since 0.5.2
  */
 public class BaseRouterResponse {
+    /** response headers */
     private final Map<String, String> headers = new HashMap<>();
 
+    /** response body content */
     private Object content;
 
+    /** HTTP status code */
     private HttpStatus status;
 
     public void setHeader(String name, String value) {
@@ -71,6 +76,7 @@ public class BaseRouterResponse {
         this.status = HttpStatus.valueOf(status);
     }
 
+    /** Copies all fields (headers, content, status) from the given response. */
     public void copyFrom(BaseRouterResponse response) {
         this.headers.putAll(response.headers);
 
@@ -79,6 +85,7 @@ public class BaseRouterResponse {
         this.status = response.status;
     }
 
+    /** Copies non-null fields (content, status) and all headers from the given response. */
     public void copyNoNull(BaseRouterResponse response) {
         this.headers.putAll(response.headers);
 
@@ -89,6 +96,7 @@ public class BaseRouterResponse {
             this.status = response.status;
     }
 
+    /** Creates a shallow clone with a copied headers map. */
     public BaseRouterResponse cloneObject() {
         BaseRouterResponse response;
         try {

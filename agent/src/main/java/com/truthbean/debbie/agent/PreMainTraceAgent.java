@@ -16,23 +16,40 @@ import java.security.ProtectionDomain;
 public class PreMainTraceAgent {
     /**
      * 执行java编程语言代码
+     *
      * @param agentArgs 通过命令行传给 Java Agent 的参数
-     * @param inst Java Class 字节码转换的工具
+     * @param inst      Java Class 字节码转换的工具
      */
     public static void premain(String agentArgs, Instrumentation inst) {
         LOGGER.trace("Running premain with agentArgs : " + agentArgs);
         inst.addTransformer(new DefineTransformer(), true);
     }
 
+    /**
+     * 执行java编程语言代码
+     *
+     * @param agentArgs 通过命令行传给 Java Agent 的参数
+     */
     public static void premain(String agentArgs) {
         LOGGER.trace("Running premain without Instrumentation with agentArgs : " + agentArgs);
     }
 
+    /**
+     * 在 JVM 启动后动态附加 Java Agent
+     *
+     * @param agentArgs 通过命令行传给 Java Agent 的参数
+     * @param inst      Java Class 字节码转换的工具
+     */
     public static void agentmain(String agentArgs, Instrumentation inst) {
         LOGGER.trace("Running agentmain with agentArgs : " + agentArgs);
         inst.addTransformer(new DefineTransformer(), true);
     }
 
+    /**
+     * 在 JVM 启动后动态附加 Java Agent
+     *
+     * @param agentArgs 通过命令行传给 Java Agent 的参数
+     */
     public static void agentmain(String agentArgs) {
         LOGGER.trace("Running agentmain without Instrumentation with agentArgs : " + agentArgs);
     }

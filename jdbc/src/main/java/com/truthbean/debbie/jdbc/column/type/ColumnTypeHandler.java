@@ -21,6 +21,12 @@ import java.time.*;
 import java.util.Calendar;
 
 /**
+ * Utility class for JDBC column type handling: mapping database data
+ * types to Java types, reading values from {@link ResultSet}, writing
+ * values to {@link PreparedStatement}, and converting between
+ * {@link Date}, {@link Time}, {@link Timestamp} and {@code java.time}
+ * types.
+ *
  * @author 璩诗斌
  * @since 0.0.1
  */
@@ -29,6 +35,15 @@ public class ColumnTypeHandler {
     private ColumnTypeHandler() {
     }
 
+    /**
+     * Maps a database data type name (with precision and scale) to a
+     * simplified Java type name.
+     *
+     * @param dataType  the raw database type name
+     * @param precision the numeric precision
+     * @param scale     the numeric scale
+     * @return the simplified Java type name
+     */
     public static String getType(String dataType, int precision, int scale) {
         dataType = dataType.toLowerCase();
         if (dataType.contains("char")) {
@@ -64,6 +79,19 @@ public class ColumnTypeHandler {
         return dataType;
     }
 
+    /**
+     * Reads a column value from the result set at the given index,
+     * dispatching to the appropriate {@code getXxx} method based on
+     * the column class name.
+     *
+     * @param resultSet      the result set
+     * @param index          the 1-based column index
+     * @param columnClass    the expected Java type
+     * @param columnClassName the Java type name (see {@link JdbcTypeConstants})
+     * @param <T>            the value type
+     * @return the column value
+     * @throws SQLException if a database access error occurs
+     */
     public static <T> T getColumnValue(ResultSet resultSet, int index, Class<T> columnClass, String columnClassName) throws SQLException {
         return switch (columnClassName) {
             case JdbcTypeConstants.ARRAY -> columnClass.cast(resultSet.getArray(index));
@@ -97,6 +125,7 @@ public class ColumnTypeHandler {
         };
     }
 
+    /** Converts a {@link Time} to the target class (LocalTime, String, etc.). */
     public static <T> T transformTime(Time time, Class<T> targetClass) {
         if (time == null) {
             return null;
@@ -116,6 +145,7 @@ public class ColumnTypeHandler {
         return null;
     }
 
+    /** Converts a {@link Date} to the target class (LocalDateTime, LocalDate, Timestamp, etc.). */
     public static <T> T transformDate(Date date, Class<T> targetClass) {
         if (date == null) {
             return null;
@@ -161,6 +191,7 @@ public class ColumnTypeHandler {
         return transformTimestamp(timestamp, columnClass);
     }
 
+    /** Converts a {@link Timestamp} to the target class (LocalDateTime, Instant, ZonedDateTime, etc.). */
     public static <T> T transformTimestamp(Timestamp timestamp, Class<T> targetClass) {
         if (timestamp == null) {
             return null;
@@ -209,6 +240,12 @@ public class ColumnTypeHandler {
         return getColumnValue(resultSet, index, columnClass, columnClassName);
     }
 
+    /**
+     * Maps a Java class to the corresponding {@link JDBCType}.
+     *
+     * @param type the Java class
+     * @return the JDBC type
+     */
     public static JDBCType explain(Class<?> type) {
         return switch (type.getName()) {
             case JdbcTypeConstants.ARRAY -> JDBCType.ARRAY;
@@ -234,6 +271,16 @@ public class ColumnTypeHandler {
         };
     }
 
+    /**
+     * Sets a parameter value on a prepared statement, dispatching to the
+     * appropriate {@code setXxx} method based on the argument's type.
+     *
+     * @param driverName         the database driver (for driver-specific quirks)
+     * @param preparedStatement  the prepared statement
+     * @param index              the 1-based parameter index
+     * @param arg                the argument value
+     * @throws SQLException if a database access error occurs
+     */
     public static void setSqlArgValue(DataSourceDriverName driverName, PreparedStatement preparedStatement, int index,
                                       Object arg) throws SQLException {
         if (arg == null) {

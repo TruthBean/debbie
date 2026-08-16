@@ -15,12 +15,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Default {@link CsrfTokenFactory} that caches tokens per request id
+ * in an in-memory map.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public class DefaultCsrfTokenFactory implements CsrfTokenFactory {
+    /** request id → CSRF token */
     private final Map<String, CsrfToken> tokens = new HashMap<>();
 
+    /**
+     * Returns the existing token for the request, or creates and
+     * caches a new one.
+     *
+     * @param request the router request
+     * @return the CSRF token for this request
+     */
     @Override
     public CsrfToken loadToken(RouterRequest request) {
         var id = request.getId();
@@ -33,6 +44,7 @@ public class DefaultCsrfTokenFactory implements CsrfTokenFactory {
         }
     }
 
+    /** Clears all cached tokens. */
     public void reset() {
         tokens.clear();
     }

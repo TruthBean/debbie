@@ -22,40 +22,61 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Default implementation of {@link RouterRequest} carrying all request
+ * data: method, URL, path attributes, matrix parameters, headers,
+ * cookies, session, form parameters, query string, and body content.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/04/13 12:28.
  */
 public class DefaultRouterRequest implements RouterRequest {
+    /** request id (typically a UUID) */
     private String id;
 
+    /** HTTP method */
     private HttpMethod method;
 
+    /** request URL */
     private String url;
 
+    /** path variables extracted from the URL pattern */
     private Map<String, List<String>> pathAttributes;
+    /** matrix parameters */
     private Map<String, List<String>> matrix;
 
+    /** request headers */
     private HttpHeader header = new HttpHeader();
 
+    /** request cookies */
     private List<HttpCookie> cookies;
 
+    /** HTTP session */
     private RouterSession session;
 
+    /** form / body parameters */
     private Map<String, List<Object>> parameters;
 
+    /** query string parameters */
     private Map<String, List<String>> queries;
 
+    /** request body as an input stream */
     private InputStream inputStreamBody;
+    /** request body as text */
     private String textBody;
+    /** request body as a file */
     private File fileBody;
 
+    /** Content-Type header value */
     private MediaTypeInfo contentType;
 
+    /** expected response media type */
     private MediaTypeInfo responseType;
 
+    /** request-scoped attributes */
     private final Map<String, Object> requestAttribute = new HashMap<>();
 
+    /** character encoding */
     private Charset charset;
 
     String remoteAddress;

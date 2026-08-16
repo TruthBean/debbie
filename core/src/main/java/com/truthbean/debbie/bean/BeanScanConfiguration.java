@@ -289,6 +289,7 @@ public class BeanScanConfiguration implements DebbieConfiguration {
         return Collections.unmodifiableSet(preRegisteredClasses);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public BeanScanConfiguration copy() {
         BeanScanConfiguration configuration = new BeanScanConfiguration();

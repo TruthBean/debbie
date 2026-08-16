@@ -18,6 +18,8 @@ import com.truthbean.debbie.mvc.response.provider.NothingResponseHandler;
 import java.lang.annotation.*;
 
 /**
+ * Marks a method as an HTTP {@code CONNECT} router.
+ *
  * @author TruthBean
  * @since 0.0.2
  */
@@ -72,8 +74,10 @@ public @interface ConnectRouter {
      */
     boolean hasTemplate() default false;
 
+    /** the template file suffix, e.g. {@code ".ftl"}. */
     String templateSuffix() default "";
 
+    /** the template resource prefix, e.g. {@code "classpath*:template/"}. */
     String templatePrefix() default "";
 
     /**
@@ -82,7 +86,9 @@ public @interface ConnectRouter {
      */
     MediaType responseType() default MediaType.ANY;
 
+    /** the response content handler class. */
     Class<? extends AbstractResponseContentHandler<?, ?>> handlerClass() default NothingResponseHandler .class;
 
+    /** whether this router is hidden from documentation. */
     boolean hidden() default false;
 }

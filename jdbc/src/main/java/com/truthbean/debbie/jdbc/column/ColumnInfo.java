@@ -22,48 +22,74 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 /**
+ * Metadata describing a single database column and its mapping to a
+ * Java entity property, including the column name, JDBC type, nullability,
+ * primary-key flags, getter/setter references, and an optional
+ * {@link DataTransformer} for value conversion.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2018-03-19 11:18.
  */
 public class ColumnInfo implements Copyable<ColumnInfo> {
+    /** the Java property name */
     private String property;
 
+    /** the database column name */
     private String column;
+    /** the column default value expression */
     private String columnDefaultValue;
 
+    /** the database data type name */
     private String dataType;
+    /** the JDBC type */
     private JDBCType jdbcType;
 
+    /** column comment */
     private String comment;
 
+    /** the full column type definition */
     private String columnType;
 
+    /** maximum character length */
     private int charMaxLength;
 
+    /** whether the column allows null values */
     private Boolean nullable;
 
+    /** numeric scale */
     private int scale;
 
+    /** numeric precision */
     private int precision;
 
+    /** the Java class type name */
     private String classType;
 
+    /** the option/enum type name */
     private String optionType;
 
+    /** the Java class mapped to this column */
     private Class<?> javaClass;
 
+    /** the current column value (may be populated from an entity) */
     private Object value;
+    /** getter to extract the property value from an entity */
     @SuppressWarnings("rawtypes")
     private EntityPropertyGetter propertyGetter;
+    /** setter to write a value onto an entity property */
     @SuppressWarnings("rawtypes")
     private EntityPropertySetter propertySetter;
+    /** optional transformer applied before setting values */
     @SuppressWarnings("rawtypes")
     private DataTransformer valueTransformer;
 
+    /** whether this column is part of the primary key */
     private boolean isPrimaryKey;
+    /** the primary-key generation strategy */
     private PrimaryKeyType primaryKeyType;
 
+    /** whether this column has a unique constraint */
     private boolean unique;
 
     public String getProperty() {
@@ -158,6 +184,13 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         return value;
     }
 
+    /**
+     * Returns the column value: the cached {@link #value} if set, or
+     * the value read from the given entity via the property getter.
+     *
+     * @param entity the entity to read from (may be {@code null})
+     * @return the column value, or {@code null}
+     */
     @SuppressWarnings("unchecked")
     public Object getValue(Object entity) {
         if (value != null) {
@@ -182,6 +215,7 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         this.propertyGetter = propertyGetter;
     }
 
+    /** Reads the property value from the given entity and caches it in {@link #value}. */
     @SuppressWarnings("unchecked")
     public void getPropertyValue(Object entity) {
         if (propertyGetter != null) {
@@ -198,6 +232,17 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         this.propertySetter = propertySetter;
     }
 
+    /**
+     * Sets the property value on the given entity, applying the
+     * {@link DataTransformer} and type conversion (e.g. {@link Date},
+     * {@link Time}, {@link Timestamp}, {@link LocalDateTime},
+     * {@code Integer}↔{@code Long}) before invoking the setter.
+     *
+     * @param entity the target entity
+     * @param value  the raw value to set
+     * @param <E>    the entity type
+     * @param <P>    the property type
+     */
     @SuppressWarnings("unchecked")
     public <E, P> void setPropertyValue(E entity, P value) {
         if (propertySetter != null) {
@@ -296,6 +341,13 @@ public class ColumnInfo implements Copyable<ColumnInfo> {
         this.unique = unique;
     }
 
+    /**
+     * Creates a shallow copy of this column info, clearing the cached
+     * {@link #value}. Getter, setter and transformer references are
+     * shared (not deep-copied).
+     *
+     * @return a new {@link ColumnInfo} with copied metadata
+     */
     @Override
     public ColumnInfo copy() {
         ColumnInfo info = new ColumnInfo();

@@ -10,17 +10,22 @@
 package com.truthbean.debbie.httpclient.form;
 
 /**
+ * Holds the name of a form-data parameter.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
  * Created on 2020-02-24 14:27
  */
 public class FormDataParamName {
+    /** the parameter name */
     private String name;
 
+    /** Returns the parameter name. */
     public String getName() {
         return name;
     }
 
+    /** Sets the parameter name. */
     public void setName(String name) {
         this.name = name;
     }

@@ -21,27 +21,67 @@ import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
+ * The actual runner for the AIO (NIO.2) HTTP server.
+ * <p>
+ * Creates an {@link AsynchronousServerSocketChannel}, binds it to the
+ * configured address (TCP or Unix domain socket), and starts accepting
+ * connections via a {@link ServerCompletionHandler}. Router and filter
+ * registration is performed during {@link #init}.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.5.5
  */
-public class RealAioServerRunner implements Runnable{
+public class RealAioServerRunner implements Runnable {
+    /**
+     * the asynchronous server socket channel, created during init
+     */
     private volatile AsynchronousServerSocketChannel server;
 
+    /**
+     * the Debbie application context for bean lookup
+     */
     private final ApplicationContext applicationContext;
+    /**
+     * MVC configuration resolved from the bean factory
+     */
     private volatile MvcConfiguration mvcConfiguration;
+    /**
+     * AIO server configuration (port, charset, thread pool, etc.)
+     */
     private final AioServerConfiguration configuration;
 
+    /**
+     * session manager for HTTP sessions
+     */
     private SessionManager sessionManager;
 
+    /**
+     * Creates a runner with the given application context and configuration.
+     *
+     * @param applicationContext the Debbie application context
+     * @param configuration      the AIO server configuration
+     */
     public RealAioServerRunner(final ApplicationContext applicationContext, final AioServerConfiguration configuration) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
     }
 
+    /**
+     * Initializes the AIO server: resolves MVC configuration, registers
+     * routers and filters (character encoding, CORS, CSRF, security),
+     * creates the session manager, and opens/binds the asynchronous
+     * server socket channel.
+     *
+     * @param applicationContext the Debbie application context
+     * @param configuration      the AIO server configuration
+     * @return this runner instance for chaining
+     */
     public RealAioServerRunner init(ApplicationContext applicationContext, final AioServerConfiguration configuration) {
         final MvcConfiguration mvcConfiguration = applicationContext.getGlobalBeanFactory().factory(MvcConfiguration.class);
         var beanInfoManager = applicationContext.getBeanInfoManager();
@@ -63,6 +103,18 @@ public class RealAioServerRunner implements Runnable{
         return this;
     }
 
+    /**
+     * Opens and binds the asynchronous server socket channel.
+     * <p>
+     * Supports both TCP ({@link InetSocketAddress}) and Unix domain sockets
+     * (via reflection on {@code java.net.UnixDomainSocketAddress}). Sets
+     * common socket options (SO_REUSEPORT, SO_REUSEADDR, SO_RCVBUF,
+     * SO_SNDBUF, SO_KEEPALIVE) when supported by the platform.
+     *
+     * @param configuration  the AIO server configuration
+     * @param sessionManager the session manager to use
+     * @throws Exception if the channel cannot be opened or bound
+     */
     @SuppressWarnings("unchecked")
     private void doInit(AioServerConfiguration configuration, final SessionManager sessionManager) throws Exception {
         int port = configuration.getPort();
@@ -107,10 +159,21 @@ public class RealAioServerRunner implements Runnable{
         this.server = server;
     }
 
+    /**
+     * Passes the AIO server configuration to the given consumer, typically
+     * used to print server startup information.
+     *
+     * @param consumer the consumer receiving the configuration
+     */
     void printMessage(Consumer<AioServerConfiguration> consumer) {
         consumer.accept(this.configuration);
     }
 
+    /**
+     * Starts accepting connections by invoking
+     * {@link AsynchronousServerSocketChannel#accept} with a
+     * {@link ServerCompletionHandler}.
+     */
     @Override
     public void run() {
         try {

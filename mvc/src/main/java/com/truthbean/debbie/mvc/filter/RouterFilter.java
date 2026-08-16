@@ -16,11 +16,16 @@ import com.truthbean.debbie.mvc.response.RouterResponse;
 import java.io.Serializable;
 
 /**
+ * Filter interface invoked before and after router handling, similar
+ * to a servlet filter. Filters can short-circuit the request in
+ * {@link #preRouter} or modify the response in {@link #postRouter}.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public interface RouterFilter extends Serializable {
 
+    /** Returns {@code true} to skip this filter for the given request. */
     default boolean notFilter(RouterRequest request) {
         return false;
     }
@@ -48,6 +53,7 @@ public interface RouterFilter extends Serializable {
         return null;
     }
 
+    /** Sets the MVC configuration on this filter; returns {@code this} for chaining. */
     default RouterFilter setMvcConfiguration(MvcConfiguration configuration) {
         return this;
     }

@@ -13,15 +13,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Parses command-line arguments of the form {@code -Dkey=value} and
+ * applies them as system properties.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-10-22 22:10
  */
 public class ApplicationArgs {
+    /** the raw command-line arguments */
     private final String[] args;
 
+    /** parsed key-value pairs extracted from {@code -D} arguments */
     private final Map<String, String> envArgs = new HashMap<>();
 
+    /**
+     * Parses the given arguments, extracting {@code -Dkey=value} pairs
+     * and applying them as system properties.
+     *
+     * @param args command-line arguments
+     */
     public ApplicationArgs(String... args) {
         this.args = args;
         if (this.args.length > 0) {
@@ -39,10 +50,12 @@ public class ApplicationArgs {
         }
     }
 
+    /** Returns the parsed {@code -Dkey=value} pairs. */
     public Map<String, String> getEnvArgs() {
         return envArgs;
     }
 
+    /** Returns the raw command-line arguments. */
     public String[] getArgs() {
         return args;
     }

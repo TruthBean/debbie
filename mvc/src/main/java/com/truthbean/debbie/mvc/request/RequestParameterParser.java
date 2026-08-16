@@ -15,19 +15,25 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 
 /**
+ * SPI interface for parsing request parameter annotations into
+ * {@link RequestParameterInfo} metadata.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.1.0
  * Created on 2020-09-24 10:41
  */
 public interface RequestParameterParser {
+    /** Parses the given annotation into parameter info; default returns {@code null}. */
     default RequestParameterInfo parse(Annotation annotation) {
         return null;
     }
 
+    /** Parses the given executable argument into parameter info; default returns {@code null}. */
     default RequestParameterInfo parse(ExecutableArgument argument) {
         return null;
     }
 
+    /** Parses the given reflective parameter into parameter info; default returns {@code null}. */
     default RequestParameterInfo parse(Parameter parameter) {
         return null;
     }

@@ -33,16 +33,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
+ * Base implementation of a Debbie application, providing lifecycle
+ * management (start/exit/forceExit), startup and shutdown thread pools,
+ * a JVM shutdown hook, and timing utilities.
+ * <p>
+ * Concrete subclasses implement {@link #init}, {@link #start} and
+ * {@link #exit} to define application-specific behaviour.
+ *
  * @author truthbean/Rogar·Q
  * @since 0.0.1
  */
 public abstract class AbstractApplication implements DebbieApplication {
+    /** logger for this application instance */
     private Logger logger;
+    /** instant recorded just before the application starts */
     private Instant beforeStartTime;
+    /** the Debbie application context */
     private ApplicationContext applicationContext;
+    /** the factory that created this application */
     private ApplicationFactory applicationFactory;
 
+    /** whether the application is currently running */
     private final AtomicBoolean running = new AtomicBoolean(false);
+    /** whether the application has fully exited */
     private final AtomicBoolean exited = new AtomicBoolean(true);
 
     /**
@@ -58,6 +71,7 @@ public abstract class AbstractApplication implements DebbieApplication {
     private final ExecutorService startupExecutorService = new java.util.concurrent.ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
             startupNamedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    /** pooled executor wrapper for startup tasks */
     private final PooledExecutor startupExecutor = new ThreadPooledExecutor(startupExecutorService, 5000L, "DebbieApplication-Startup");
 
     /**
@@ -68,40 +82,71 @@ public abstract class AbstractApplication implements DebbieApplication {
     private final ExecutorService shutdownExecutorService = new java.util.concurrent.ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
             shutdownNamedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    /** pooled executor wrapper for shutdown tasks */
     private final PooledExecutor shutdownExecutor = new ThreadPooledExecutor(shutdownExecutorService, 5000L, "DebbieApplication-ShutDow");
 
+    /** whether to load configuration from properties files */
     private boolean useProperties = true;
 
+    /** boot context exposed to {@code then}/{@code afterStarted} callbacks */
     private ApplicationBootContext applicationBootContext;
 
+    /** Sets whether to load configuration from properties files. */
     public void setUseProperties(boolean useProperties) {
         this.useProperties = useProperties;
     }
 
+    /** Returns whether properties-based configuration is enabled. */
     public boolean useProperties() {
         return useProperties;
     }
 
+    /** Returns whether this application is a web application. */
     public boolean isWeb() {
         return false;
     }
 
+    /**
+     * Returns whether this application is enabled under the given environment.
+     *
+     * @param environment the current environment
+     * @return {@code true} by default
+     */
     public boolean isEnable(Environment environment) {
         return true;
     }
 
+    /**
+     * Binds the application factory and derives the application context
+     * and boot context from it.
+     *
+     * @param applicationFactory the factory that created this application
+     */
     public void setApplicationFactory(ApplicationFactory applicationFactory) {
         this.applicationFactory = applicationFactory;
         this.applicationContext = applicationFactory.getApplicationContext();
         this.applicationBootContext = new DebbieApplicationBootContext(applicationContext);
     }
 
+    /**
+     * Registers a callback to run immediately against the boot context.
+     *
+     * @param applicationBootContextConsumer callback receiving the boot context
+     * @return this application for chaining
+     */
     @Override
     public DebbieApplication then(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
         applicationBootContextConsumer.accept(this.applicationBootContext);
         return this;
     }
 
+    /**
+     * Registers a callback to run after the application has fully started.
+     * Blocks the calling thread until startup is complete.
+     *
+     * @param applicationBootContextConsumer callback receiving the boot context
+     * @return the started application handle
+     */
     @Override
     public DebbieStartedApplication afterStarted(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
         waitUntilStarted();
@@ -109,6 +154,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         return this;
     }
 
+    /** Blocks until the application is running and no longer exiting. */
     private void waitUntilStarted() {
         while (!(running.get() && !exited.get() && !applicationContext.isExiting())) {
             try {
@@ -122,6 +168,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         }
     }
 
+    /** Sets the logger used by this application instance. */
     protected void setLogger(Logger logger) {
         this.logger = logger;
     }
@@ -137,16 +184,25 @@ public abstract class AbstractApplication implements DebbieApplication {
     public abstract DebbieApplication init(ApplicationContext applicationContext,
                                            ClassLoader classLoader);
 
+    /** Records the instant just before the application starts. */
     public void setBeforeStartTime(Instant beforeStartTime) {
         this.beforeStartTime = beforeStartTime;
     }
 
+    /** Calls post-start starters via the application factory, if applicable. */
     protected void postBeforeStart() {
         if (applicationFactory instanceof DebbieApplicationFactory debbieApplicationFactory) {
             debbieApplicationFactory.postCallStarter(this);
         }
     }
 
+    /**
+     * Starts the application asynchronously on the startup thread pool.
+     * Registers a JVM shutdown hook and publishes a
+     * {@link DebbieReadyEvent} once started.
+     *
+     * @return this application (as a started handle) for chaining
+     */
     @Override
     public final DebbieStartedApplication start() {
         startupExecutor.execute(() -> {
@@ -179,6 +235,7 @@ public abstract class AbstractApplication implements DebbieApplication {
      */
     protected abstract void start(Instant beforeStartTime, ApplicationArgs args);
 
+    /** Logs the time spent starting the application and JVM uptime. */
     protected void printStartTime() {
         final RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
         final Instant now = Instant.now();
@@ -216,10 +273,18 @@ public abstract class AbstractApplication implements DebbieApplication {
         }
     }
 
+    /** Releases application context resources before exiting. */
     private synchronized void beforeExit(ApplicationContext applicationContext, String... args) {
         applicationContext.release(args);
     }
 
+    /**
+     * Waits until the application has started, then runs the callback and
+     * exits.
+     *
+     * @param applicationBootContextConsumer callback receiving the boot context
+     * @return the exited application handle
+     */
     @Override
     public DebbieExitedApplication exit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
         waitUntilStarted();
@@ -227,6 +292,12 @@ public abstract class AbstractApplication implements DebbieApplication {
         return exit();
     }
 
+    /**
+     * Gracefully exits the application on the shutdown thread pool,
+     * destroying both startup and shutdown executors.
+     *
+     * @return the exited application handle
+     */
     @Override
     public final DebbieExitedApplication exit() {
         logger.debug("application running: " + running.get());
@@ -254,6 +325,12 @@ public abstract class AbstractApplication implements DebbieApplication {
         return this;
     }
 
+    /**
+     * Runs the callback then force-exits the application without waiting
+     * for startup to complete.
+     *
+     * @param applicationBootContextConsumer callback receiving the boot context
+     */
     @Override
     public void forceExit(Consumer<ApplicationBootContext> applicationBootContextConsumer) {
         try {
@@ -264,6 +341,7 @@ public abstract class AbstractApplication implements DebbieApplication {
         forceExit();
     }
 
+    /** Force-exits the application synchronously on the calling thread. */
     @Override
     public void forceExit() {
         try {
@@ -288,6 +366,7 @@ public abstract class AbstractApplication implements DebbieApplication {
      */
     protected abstract void exit(Instant beforeStartTime, ApplicationArgs args);
 
+    /** Logs elapsed time and uptime information when exiting. */
     protected void printExitTime() {
         RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
         Instant now = Instant.now();
@@ -305,6 +384,13 @@ public abstract class AbstractApplication implements DebbieApplication {
         logger.info(() -> "application is exiting");
     }
 
+    /**
+     * Performs the actual exit: calls the abstract {@link #exit}, releases
+     * the application factory, removes the JVM shutdown hook, and invokes
+     * {@code System.gc()}.
+     *
+     * @param args application arguments
+     */
     public final void doExit(ApplicationArgs args) {
         try {
             exit(beforeStartTime, args);

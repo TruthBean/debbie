@@ -12,6 +12,9 @@ package com.truthbean.debbie.httpclient.ws;
 import java.net.http.WebSocket;
 
 /**
+ * Callback invoked when the first message arrives on a
+ * {@link java.net.http.WebSocket} connection.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.5.1
  * Created on 2021-06-04 16:35
@@ -19,8 +22,12 @@ import java.net.http.WebSocket;
 public interface FirstMessageCallback {
 
     /**
-     * if break message
-     * @return if true break, else continue
+     * Called when a message is received.
+     *
+     * @param message    the received message
+     * @param webSocket  the WebSocket connection
+     * @param last       whether this is the last part of the message
+     * @return {@code true} to break (stop processing), {@code false} to continue
      */
     default boolean callback(String message, WebSocket webSocket, boolean last) {
         return false;

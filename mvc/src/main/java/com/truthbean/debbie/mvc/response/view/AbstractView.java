@@ -10,17 +10,24 @@
 package com.truthbean.debbie.mvc.response.view;
 
 /**
+ * Base class for views, defining the template name, suffix, prefix,
+ * and whether the view is text-based.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/12 22:13.
  */
 public abstract class AbstractView {
+    /** the template name, defaults to {@code "index"} */
     private String template = "index";
 
+    /** the template file suffix */
     private String suffix = ".ext";
 
+    /** the template resource prefix */
     private String prefix = "classpath*:template/";
 
+    /** whether the view is text-based */
     private boolean text = true;
 
     public String getTemplate() {
@@ -60,6 +67,7 @@ public abstract class AbstractView {
         return "{" + "\"template\":\"" + template + "\"" + "," + "\"suffix\":\"" + suffix + "\"" + "," + "\"prefix\":\"" + prefix + "\"" + "," + "\"text\":" + text + "}";
     }
 
+    /** Returns the full template location: {@code prefix + template + suffix}. */
     public String getLocation() {
         return getPrefix() + getTemplate() + getSuffix();
     }

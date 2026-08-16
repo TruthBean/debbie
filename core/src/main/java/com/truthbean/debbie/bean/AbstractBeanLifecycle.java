@@ -17,8 +17,6 @@ import com.truthbean.debbie.environment.EnvironmentDepositoryHolder;
 import com.truthbean.debbie.environment.EnvironmentHolderAware;
 import com.truthbean.debbie.event.DebbieEventPublisherAware;
 
-import static com.truthbean.debbie.environment.EnvironmentDepositoryHolder.DEFAULT_PROFILE;
-
 /**
  * @author TruthBean/Rogar·Q
  * @since 0.2.0
@@ -27,6 +25,7 @@ import static com.truthbean.debbie.environment.EnvironmentDepositoryHolder.DEFAU
 public abstract class AbstractBeanLifecycle implements BeanLifecycle {
     /**
      * invoke ConstructPost#postConstruct method by target bean
+     *
      * @param bean target bean
      */
     protected void doConstructPost(Object bean) {
@@ -37,8 +36,9 @@ public abstract class AbstractBeanLifecycle implements BeanLifecycle {
 
     /**
      * invoke aware set method by target bean
+     *
      * @param applicationContext application context
-     * @param object target bean
+     * @param object             target bean
      */
     protected void resolveAwareValue(ApplicationContext applicationContext, Object object) {
         if (applicationContext.isExiting()) {
@@ -64,6 +64,7 @@ public abstract class AbstractBeanLifecycle implements BeanLifecycle {
 
     /**
      * invoke CreatePost#postCreate method by target bean
+     *
      * @param bean target bean
      */
     protected void doCreatedPost(Object bean) {
@@ -72,5 +73,10 @@ public abstract class AbstractBeanLifecycle implements BeanLifecycle {
         }
     }
 
+    /**
+     * get really logger by the implementation BeanLifecycle
+     *
+     * @return Logger
+     */
     protected abstract Logger getLogger();
 }

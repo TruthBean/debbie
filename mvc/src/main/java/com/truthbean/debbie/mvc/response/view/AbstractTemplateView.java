@@ -16,35 +16,46 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A template-based view (e.g. JSP, FreeMarker) carrying model
+ * attributes, a redirect flag, and an optional {@link RouterSession}.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/12 22:00.
  */
 public abstract class AbstractTemplateView extends AbstractView {
+    /** whether this view triggers a redirect */
     private boolean redirect = false;
 
+    /** model attributes passed to the template */
     private final Map<String, Object> data = new HashMap<>();
 
+    /** the HTTP session associated with this view */
     private RouterSession routerSession;
 
+    /** Sets a single model attribute. */
     public void setAttribute(String name, Object value) {
         data.put(name, value);
     }
 
+    /** Sets multiple model attributes at once. */
     public void setAttributes(Map<String, Object> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
             data.putAll(attributes);
         }
     }
 
+    /** Sets the HTTP session. */
     public void setRouterSession(RouterSession routerSession) {
         this.routerSession = routerSession;
     }
 
+    /** Returns the HTTP session. */
     public RouterSession getRouterSession() {
         return routerSession;
     }
 
+    /** Copies all state (redirect, template, data, session) from the given view. */
     public void from(AbstractTemplateView modelAndView) {
         this.redirect = modelAndView.redirect;
         this.setTemplate(modelAndView.getTemplate());
@@ -54,18 +65,22 @@ public abstract class AbstractTemplateView extends AbstractView {
         this.routerSession = modelAndView.routerSession;
     }
 
+    /** Returns an unmodifiable view of the model attributes. */
     public Map<String, Object> getAttributes() {
         return Collections.unmodifiableMap(data);
     }
 
+    /** Sets whether this view triggers a redirect. */
     public void setRedirect(boolean redirect) {
         this.redirect = redirect;
     }
 
+    /** Returns whether this view triggers a redirect. */
     public boolean isRedirect() {
         return redirect;
     }
 
+    /** Returns {@code true} if the given object is a template view. */
     public static boolean isTemplateView(Object any){
         return any instanceof AbstractTemplateView;
     }

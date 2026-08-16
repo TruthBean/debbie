@@ -20,33 +20,60 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Core context interface for a running Debbie application, providing
+ * access to the class loader, environment, bean factory, bean lifecycle
+ * listeners, resource resolver, and event publishing.
+ *
  * @author TruthBean
  * @since 0.1.0
  */
 public interface ApplicationContext extends DebbieEventPublisher {
     /**
-     * after DebbieApplication#start call
+     * Returns the command-line arguments parsed at application start.
+     *
      * @return application args
      */
     ApplicationArgs getApplicationArgs();
 
+    /** Returns the class loader used for resource and class scanning. */
     ClassLoader getClassLoader();
 
+    /** Returns the holder for all registered environments. */
     EnvironmentDepositoryHolder getEnvironmentHolder();
 
+    /** Returns the default environment. */
     Environment getDefaultEnvironment();
 
+    /** Returns the resource resolver for classpath and filesystem resources. */
     ResourceResolver getResourceResolver();
 
+    /** Returns the bean info manager for registered beans. */
     BeanInfoManager getBeanInfoManager();
 
+    /** Returns the global bean factory for bean instantiation and injection. */
     GlobalBeanFactory getGlobalBeanFactory();
 
+    /** Returns all registered bean lifecycle listeners. */
     Set<BeanLifecycle> getBeanLifecycle();
 
+    /**
+     * Transforms the given object to the target type.
+     *
+     * @param origin the source object
+     * @param target the target type
+     * @param <O>    the source type
+     * @param <T>    the target type
+     * @return the transformed value
+     */
     <O, T> T transform(final O origin, final Class<T> target);
 
+    /**
+     * Releases all context resources (beans, environments, etc.).
+     *
+     * @param args optional release arguments
+     */
     void release(String... args);
 
+    /** Returns whether the application is in the process of exiting. */
     boolean isExiting();
 }

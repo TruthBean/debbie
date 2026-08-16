@@ -21,11 +21,20 @@ import java.net.http.HttpRequest;
 import java.util.*;
 
 /**
+ * Convenience HTTP client providing simple {@code get}, {@code post},
+ * {@code put}, {@code delete} methods that delegate to
+ * {@link HttpClientAction#action}.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public class HttpClientHandler extends HttpClientAction {
 
+    /**
+     * Creates a handler with the given configuration.
+     *
+     * @param configuration the HTTP client configuration
+     */
     public HttpClientHandler(HttpClientConfiguration configuration) {
         super(configuration);
     }

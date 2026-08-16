@@ -12,11 +12,20 @@ package com.truthbean.debbie.mvc.csrf;
 import com.truthbean.debbie.mvc.request.RouterRequest;
 
 /**
+ * Factory for loading or creating {@link CsrfToken}s associated with
+ * incoming requests.
+ *
  * @author TruthBean
  * @since 0.0.1
  */
 public interface CsrfTokenFactory {
 
+    /**
+     * Loads (or creates) the CSRF token for the given request.
+     *
+     * @param request the router request
+     * @return the CSRF token
+     */
     CsrfToken loadToken(RouterRequest request);
 
 }

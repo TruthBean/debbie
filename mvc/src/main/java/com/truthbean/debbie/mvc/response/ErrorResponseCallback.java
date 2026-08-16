@@ -12,6 +12,9 @@ package com.truthbean.debbie.mvc.response;
 import com.truthbean.debbie.mvc.request.BaseRouterRequest;
 
 /**
+ * Callback invoked when a router produces an error response, allowing
+ * customisation of the response content and status.
+ *
  * @author TruthBean/Rogar·Q
  * @since 0.0.2
  * Created on 2020-03-22 22:02
@@ -19,6 +22,12 @@ import com.truthbean.debbie.mvc.request.BaseRouterRequest;
 @FunctionalInterface
 public interface ErrorResponseCallback {
 
+    /**
+     * Handles the error response for the given request.
+     *
+     * @param request  the router request
+     * @param response the router response to customise
+     */
     void callback(BaseRouterRequest request, RouterResponse response);
 
 }

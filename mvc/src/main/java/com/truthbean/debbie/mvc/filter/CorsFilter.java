@@ -24,14 +24,20 @@ import java.io.IOException;
 import static com.truthbean.debbie.mvc.request.HttpHeader.HttpHeaderNames.*;
 
 /**
+ * Filter that handles CORS (Cross-Origin Resource Sharing) by adding
+ * {@code Access-Control-*} headers to responses and rejecting
+ * disallowed cross-origin requests.
+ *
  * @author TruthBean
  * @since 0.0.1
  * Created on 2019/3/25 22:03.
  */
 public class CorsFilter implements RouterFilter, Closeable {
 
+    /** the MVC configuration providing CORS settings */
     private MvcConfiguration configuration;
 
+    /** per-thread flag indicating whether the current request is a CORS request */
     private final ThreadLocal<Boolean> doCors = new ThreadLocal<>();
 
     @Override
@@ -98,6 +104,7 @@ public class CorsFilter implements RouterFilter, Closeable {
         return false;
     }
 
+    /** Returns {@code true} if the request Origin header matches the Host header. */
     public static boolean isRequestOriginEqualRequestHost(RouterRequest request) {
         final HttpHeader header = request.getHeader();
         if (header != null) {
@@ -109,6 +116,7 @@ public class CorsFilter implements RouterFilter, Closeable {
         return false;
     }
 
+    /** Returns {@code true} if the request is an OPTIONS request with a different origin. */
     public static boolean isLooseCorsRequest(RouterRequest request) {
         return HttpMethod.OPTIONS == request.getMethod() && !isRequestOriginEqualRequestHost(request);
     }
