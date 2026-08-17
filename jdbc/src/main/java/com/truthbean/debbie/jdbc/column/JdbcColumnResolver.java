@@ -11,6 +11,7 @@ package com.truthbean.debbie.jdbc.column;
 
 import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
+import com.truthbean.debbie.jdbc.annotation.SqlId;
 import com.truthbean.debbie.jdbc.column.type.ColumnTypeHandler;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
 import com.truthbean.debbie.jdbc.datasource.DriverConnection;
@@ -152,6 +153,7 @@ public class JdbcColumnResolver {
     public static ColumnInfo resolveField(Field field) {
         var columnInfo = new ColumnInfo();
         SqlColumn sqlColumn = field.getAnnotation(SqlColumn.class);
+        SqlId sqlId = field.getAnnotation(SqlId.class);
         if (sqlColumn != null) {
             var columnName = EntityResolver.getColumnName(sqlColumn, field.getName());
             columnInfo.setColumn(columnName);
@@ -186,6 +188,37 @@ public class JdbcColumnResolver {
                 }
             } catch (Exception e) {
                 LOGGER.error(() -> "transformer class " + sqlColumn.transformer() + " instance error", e);
+            }
+        } else if (sqlId != null) {
+            var columnName = EntityResolver.getColumnName(sqlId, field.getName());
+            columnInfo.setColumn(columnName);
+            if (!sqlId.comment().isBlank()) {
+                columnInfo.setComment(sqlId.comment());
+            }
+            columnInfo.setNullable(false);
+            if (field.getType() == UUID.class) {
+                columnInfo.setCharMaxLength(64);
+            } else {
+                columnInfo.setCharMaxLength(sqlId.charMaxLength());
+            }
+
+            columnInfo.setPrimaryKey(true);
+            columnInfo.setPrimaryKeyType(sqlId.primaryKey());
+            columnInfo.setUnique(true);
+            columnInfo.setCharMaxLength(sqlId.charMaxLength());
+            if (!sqlId.defaultValue().isBlank()) {
+                columnInfo.setColumnDefaultValue(sqlId.defaultValue());
+            }
+            try {
+                Class<? extends DataTransformer<?, ?>> transformer = sqlId.transformer();
+                if (transformer == DataTransformer.NoDataTransformer.class
+                        || Objects.equals(transformer, DataTransformer.class)) {
+                    columnInfo.setValueTransformer(DataTransformer.NO);
+                } else {
+                    columnInfo.setValueTransformer(DataTransformerCenter.getTransformer(transformer));
+                }
+            } catch (Exception e) {
+                LOGGER.error(() -> "transformer class " + sqlId.transformer() + " instance error", e);
             }
         } else {
             columnInfo.setColumn(field.getName());

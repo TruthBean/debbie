@@ -16,6 +16,7 @@ import com.truthbean.debbie.annotation.AnnotationInfo;
 import com.truthbean.debbie.jdbc.annotation.JdbcTransient;
 import com.truthbean.debbie.jdbc.annotation.SqlColumn;
 import com.truthbean.debbie.jdbc.annotation.SqlEntity;
+import com.truthbean.debbie.jdbc.annotation.SqlId;
 import com.truthbean.debbie.jdbc.column.ColumnInfo;
 import com.truthbean.debbie.jdbc.column.JdbcColumnResolver;
 import com.truthbean.debbie.jdbc.datasource.DataSourceDriverName;
@@ -131,6 +132,9 @@ public class EntityResolver {
             }
 
             column = field.getAnnotation(SqlColumn.class);
+            if (column != null && column.isTransient()) {
+                continue;
+            }
             var columnName = EntityResolver.getColumnName(column, field.getName());
             for (var entry : map) {
                 if (columnName.equals(entry.getColumn())) {
@@ -242,12 +246,27 @@ public class EntityResolver {
         return columnName;
     }
 
+    public static String getColumnName(SqlId column, String fieldName) {
+        if (column == null) {
+            // 没有SqlColumn默认使用field
+            return fieldName;
+        }
+        var columnName = column.value();
+        if (columnName.isBlank()) {
+            columnName = column.name();
+        }
+        if (columnName.isBlank()) {
+            columnName = fieldName;
+        }
+        return columnName;
+    }
+
     public static List<ColumnInfo> resolveClassInfo(ClassInfo<?> classInfo) {
         List<ColumnInfo> columns = new ArrayList<>();
         List<FieldInfo> fields = classInfo.getFields();
         if (!fields.isEmpty()) {
             fields.stream()
-                    .filter(field -> field.getAnnotation(JdbcTransient.class) == null)
+                    .filter(field -> !isTransient(field))
                     .forEach(field -> columns.add(JdbcColumnResolver.resolveField(field.getField())));
         }
         return columns;
@@ -258,10 +277,21 @@ public class EntityResolver {
         var fields = classInfo.getFields();
         if (!fields.isEmpty()) {
             fields.stream()
-                    .filter(field -> field.getAnnotation(JdbcTransient.class) == null)
+                    .filter(field -> !isTransient(field))
                     .forEach(field -> columns.add(JdbcColumnResolver.resolveFieldAndValue(field.getField(), entity)));
         }
         return columns;
+    }
+
+    private static boolean isTransient(FieldInfo field) {
+        if (field.getAnnotation(JdbcTransient.class) != null) {
+            return true;
+        }
+        SqlColumn annotation = field.getAnnotation(SqlColumn.class);
+        if (annotation != null && annotation.isTransient()) {
+            return true;
+        }
+        return false;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityResolver.class);

@@ -15,21 +15,13 @@ import com.truthbean.transformer.DataTransformer;
 import java.lang.annotation.*;
 
 /**
- * @author TruthBean
- * @since 0.0.1
- * Created on 2019/3/23 15:47.
+ * @author TruthBean/Rogar·Q
+ * @since 0.6.3
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface SqlColumn {
-    /**
-     * is id
-     * @return whether is id
-     */
-    boolean id() default false;
-    PrimaryKeyType primaryKey() default PrimaryKeyType.NONE;
-
+public @interface SqlId {
     /**
      * @return column name
      */
@@ -40,11 +32,7 @@ public @interface SqlColumn {
      */
     String name() default "";
 
-    boolean isTransient() default false;
-
-    boolean nullable() default true;
-
-    boolean unique() default false;
+    PrimaryKeyType primaryKey() default PrimaryKeyType.NONE;
 
     int charMaxLength() default 64;
 
