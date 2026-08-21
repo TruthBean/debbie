@@ -42,6 +42,6 @@ public class MvcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public int getOrder() {
-        return 11;
+        return 300;
     }
 }

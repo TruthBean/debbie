@@ -28,7 +28,7 @@ public class DebbieConsoleModuleStarter implements DebbieModuleStarter {
 
     @Override
     public int getOrder() {
-        return 40;
+        return 600;
     }
 
     @Override

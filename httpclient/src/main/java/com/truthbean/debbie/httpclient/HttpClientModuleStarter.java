@@ -45,6 +45,6 @@ public class HttpClientModuleStarter implements DebbieModuleStarter {
 
     @Override
     public int getOrder() {
-        return 21;
+        return 311;
     }
 }

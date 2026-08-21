@@ -42,6 +42,6 @@ public class AioModuleStarter implements DebbieModuleStarter {
 
     @Override
     public int getOrder() {
-        return 35;
+        return 321;
     }
 }

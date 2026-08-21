@@ -98,7 +98,7 @@ public class JdbcModuleStarter implements DebbieModuleStarter {
 
     @Override
     public int getOrder() {
-        return 10;
+        return 200;
     }
 
     @Override
