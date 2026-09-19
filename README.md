@@ -14,8 +14,7 @@ mybatis(https://github.com/truthbean/debbie-mybatis) 等~~，
 后续陆续增加、完善，使其成长为一个完整的微服务项目
 
 ## 说明
-    该项目使用Java17开发，为什么不适用kotlin，因为jetbrain开发的ktor框架已经很好用了啊（[滑稽]）；
-    项目包管理采用gradle dsl。
+    该项目使用Java25开发，包管理采用gradle dsl。
     项目力求最简化，简单来说，就是能用自己写的尽量自己写；其次要模块界限分明，包引用简单化；
     使用spi而不是通过optional来引用其他包或项目，不会因为包引入给开发者带来困扰。
 
@@ -36,7 +35,9 @@ properties名称一律小写，第三方框架的properties的key由驼峰换成
 
 [0.6.2-RELEASE package](./versions/0.6.2-RELEASE.md)
 
-latest version: 0.6.2-RELEASE
+[0.6.3-RELEASE package](./versions/0.6.3-RELEASE.md)
+
+latest version: 0.6.3-RELEASE
 
 ```xml
 <dependency>
