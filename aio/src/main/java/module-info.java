@@ -14,9 +14,12 @@
  */
 module com.truthbean.debbie.aio {
     exports com.truthbean.debbie.aio to com.truthbean.core;
+    exports com.truthbean.debbie.aio.websocket;
 
     requires transitive com.truthbean.debbie.server;
     requires transitive java.management;
+
+    uses com.truthbean.debbie.aio.websocket.WebSocketEndpoint;
 
     provides com.truthbean.debbie.boot.AbstractApplication with
             com.truthbean.debbie.aio.AioServerApplication;

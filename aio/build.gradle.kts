@@ -17,3 +17,12 @@ dependencies {
 
     testImplementation("com.truthbean:truthbean-logger-to-jul:$truthbeanVersion")
 }
+
+// end-to-end check for the websocket service sharing the aio http port
+tasks.register<JavaExec>("runWebSocketHarness") {
+    group = "verification"
+    description = "Boots the aio server and exercises the websocket handshake, echo, ping/pong and close on the same port"
+    mainClass.set("com.truthbean.debbie.aio.test.websocket.WebSocketServerHarness")
+    classpath = project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java)["test"].runtimeClasspath
+    modularity.inferModulePath.set(true)
+}

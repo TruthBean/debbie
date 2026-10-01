@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +47,7 @@ class RequestCompleteHandler {
 
     void handle(final long connectionTimeout, final boolean ignoreEncode,
                 final AsynchronousSocketChannel channel, final SessionManager sessionManager,
-                final Consumer<RouterRequest> routerRequestConsumer, final long beginTime) {
+                final BiConsumer<RouterRequest, List<String>> routerRequestConsumer, final long beginTime) {
         try {
             // 请求内容
             StringBuilder stringBuilder = new StringBuilder();
@@ -67,7 +67,9 @@ class RequestCompleteHandler {
             LOG.debug("client message: " + request);
             List<String> lines = request.lines().collect(Collectors.toList());
             if (lines.size() > 1) {
-                routerRequestConsumer.accept(new RawRequestWrapper(lines, remoteAddress, sessionManager, ignoreEncode));
+                // raw lines travel with the request: the websocket upgrade
+                // handshake is sniffed from them before the mvc dispatch
+                routerRequestConsumer.accept(new RawRequestWrapper(lines, remoteAddress, sessionManager, ignoreEncode), lines);
                 long end = System.currentTimeMillis();
                 LOG.debug("Request processed in {} ms", end - beginTime);
             }

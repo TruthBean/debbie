@@ -9,6 +9,12 @@
  */
 package com.truthbean.debbie.aio;
 
+import com.truthbean.core.concurrent.NamedThreadFactory;
+import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
+import com.truthbean.debbie.aio.websocket.WebSocketEndpoint;
+import com.truthbean.debbie.aio.websocket.WebSocketEndpointManager;
+import com.truthbean.debbie.aio.websocket.WebSocketHandler;
+import com.truthbean.debbie.aio.websocket.WebSocketHandshake;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.request.RouterRequest;
@@ -17,10 +23,17 @@ import com.truthbean.Logger;
 import com.truthbean.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
-import java.util.function.Consumer;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 /**
  * @author TruthBean/Rogar·Q
@@ -28,6 +41,15 @@ import java.util.function.Consumer;
  * Created on 2019-12-20 16:10
  */
 class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketChannel, AsynchronousServerSocketChannel> {
+
+    /**
+     * WebSocket connections stay open for a long time, so their frame loop is
+     * offloaded from the AIO channel-group threads onto a dedicated pool;
+     * plain HTTP requests keep being handled inline.
+     */
+    private static final ExecutorService WEBSOCKET_EXECUTOR = new ThreadPoolExecutor(
+            0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+            new NamedThreadFactory("aio-websocket-").setUncaughtExceptionHandler(new ThreadLoggerUncaughtExceptionHandler()));
 
     private final ApplicationContext applicationContext;
     private final AioServerConfiguration configuration;
@@ -49,14 +71,14 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
     public void completed(AsynchronousSocketChannel channel, AsynchronousServerSocketChannel attachment) {
         long begin = System.currentTimeMillis();
         // handle this connection
-        handleRequest(channel, routerRequest -> handleResponse(routerRequest, channel, attachment), begin);
+        handleRequest(channel, (routerRequest, rawLines) -> handleResponse(routerRequest, rawLines, channel, attachment), begin);
         // handle next connection
         if (attachment != null) {
             attachment.accept(attachment, ServerCompletionHandler.this);
         }
     }
 
-    private void handleRequest(AsynchronousSocketChannel channel, Consumer<RouterRequest> routerRequestConsumer,
+    private void handleRequest(AsynchronousSocketChannel channel, BiConsumer<RouterRequest, List<String>> routerRequestConsumer,
                                long beginTime) {
         try {
             if (LOGGER.isDebugEnabled()) {
@@ -72,24 +94,69 @@ class ServerCompletionHandler implements CompletionHandler<AsynchronousSocketCha
                 this.sessionManager, routerRequestConsumer, beginTime);
     }
 
-    private void handleResponse(RouterRequest routerRequest, AsynchronousSocketChannel channel,
+    private void handleResponse(RouterRequest routerRequest, List<String> rawLines, AsynchronousSocketChannel channel,
                                 AsynchronousServerSocketChannel attachment) {
-        if (routerRequest != null) {
-            var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration, mvcConfiguration);
-            responseCompletionHandler.handle(channel, () -> {
-                try {
-                    channel.shutdownOutput();
-                    channel.shutdownInput();
-                } catch (IOException e) {
-                    LOGGER.error("", e);
+        if (routerRequest == null) {
+            return;
+        }
+        if (configuration.isWebsocketEnable() && WebSocketEndpointManager.hasEndpoints()) {
+            // the websocket upgrade shares this server's http port: sniff the
+            // raw request lines before the regular mvc dispatch
+            if (WebSocketHandshake.isWebSocketUpgrade(rawLines)) {
+                WebSocketEndpoint endpoint = WebSocketEndpointManager.matchEndpoint(routerRequest.getUrl());
+                if (endpoint != null) {
+                    LOGGER.debug(() -> "WebSocket upgrade on " + routerRequest.getUrl());
+                    // never run the long-lived frame loop on the accept chain
+                    WEBSOCKET_EXECUTOR.execute(new WebSocketHandler(channel, routerRequest, endpoint, configuration));
+                    return;
                 }
+                rejectUpgrade(channel);
+                return;
+            }
+        }
+        var responseCompletionHandler = new ResponseCompletionHandler(applicationContext, routerRequest, configuration, mvcConfiguration);
+        responseCompletionHandler.handle(channel, () -> {
+            try {
+                channel.shutdownOutput();
+                channel.shutdownInput();
+            } catch (IOException e) {
+                LOGGER.error("", e);
+            }
 
-                try {
-                    channel.close();
-                } catch (IOException e) {
-                    LOGGER.error("", e);
-                }
-            });
+            try {
+                channel.close();
+            } catch (IOException e) {
+                LOGGER.error("", e);
+            }
+        });
+    }
+
+    /**
+     * Writes a plain 400 answer for an upgrade request that carries the
+     * WebSocket handshake but matches no registered endpoint.
+     */
+    private void rejectUpgrade(AsynchronousSocketChannel channel) {
+        byte[] body = "Invalid websocket request\n".getBytes(StandardCharsets.UTF_8);
+        String response = "HTTP/" + configuration.getHttpVersion() + " 400 Bad Request\r\n"
+                + "Server: " + configuration.getServerMessage() + "\r\n"
+                + "Content-Length: " + body.length + "\r\n"
+                + "\r\n";
+        ByteBuffer buffer = ByteBuffer.allocate(response.length() + body.length);
+        buffer.put(response.getBytes(StandardCharsets.US_ASCII));
+        buffer.put(body);
+        buffer.flip();
+        try {
+            channel.write(buffer).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("", e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            LOGGER.error("", e);
+        }
+        try {
+            channel.close();
+        } catch (IOException e) {
+            LOGGER.error("", e);
         }
     }
 

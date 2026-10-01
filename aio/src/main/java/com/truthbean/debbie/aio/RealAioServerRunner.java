@@ -6,6 +6,7 @@ import com.truthbean.core.concurrent.NamedThreadFactory;
 import com.truthbean.core.concurrent.ThreadLoggerUncaughtExceptionHandler;
 import com.truthbean.core.util.ReflectionUtils;
 import com.truthbean.core.util.StringUtils;
+import com.truthbean.debbie.aio.websocket.WebSocketEndpointManager;
 import com.truthbean.debbie.core.ApplicationContext;
 import com.truthbean.debbie.mvc.MvcConfiguration;
 import com.truthbean.debbie.mvc.filter.RouterFilterManager;
@@ -91,6 +92,10 @@ public class RealAioServerRunner implements Runnable {
         RouterFilterManager.registerCorsFilter(mvcConfiguration, "/**");
         RouterFilterManager.registerCsrfFilter(mvcConfiguration, "/**");
         RouterFilterManager.registerSecurityFilter(mvcConfiguration, "/**");
+
+        // discover websocket endpoints declared through the SPI; they are
+        // served on this server's http port via the upgrade handshake
+        WebSocketEndpointManager.loadEndpoints(applicationContext.getClassLoader());
 
         this.mvcConfiguration = mvcConfiguration;
 

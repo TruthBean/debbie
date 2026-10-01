@@ -47,6 +47,12 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
     /** whether to skip response encoding */
     private boolean ignoreEncode;
 
+    /** whether WebSocket upgrades are served on this HTTP port */
+    private boolean websocketEnable = true;
+
+    /** idle read timeout of an established WebSocket connection, in milliseconds */
+    private long websocketReadTimeout = 60_000L;
+
     /** thread pool configuration for the AIO server worker threads */
     private ThreadPoolConfiguration threadPoolConfig = new ThreadPoolConfiguration();
 
@@ -137,6 +143,22 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         this.ignoreEncode = ignoreEncode;
     }
 
+    public boolean isWebsocketEnable() {
+        return websocketEnable;
+    }
+
+    public void setWebsocketEnable(boolean websocketEnable) {
+        this.websocketEnable = websocketEnable;
+    }
+
+    public long getWebsocketReadTimeout() {
+        return websocketReadTimeout;
+    }
+
+    public void setWebsocketReadTimeout(long websocketReadTimeout) {
+        this.websocketReadTimeout = websocketReadTimeout;
+    }
+
     /**
      * Fills in fields that are null or zero with values from the given
      * default configuration.
@@ -155,6 +177,9 @@ public class AioServerConfiguration extends AbstractServerConfiguration {
         }
         if (connectionTimeout == 0L && defaultConfiguration.connectionTimeout != 0L) {
             connectionTimeout = defaultConfiguration.connectionTimeout;
+        }
+        if (websocketReadTimeout == 0L && defaultConfiguration.websocketReadTimeout != 0L) {
+            websocketReadTimeout = defaultConfiguration.websocketReadTimeout;
         }
     }
 

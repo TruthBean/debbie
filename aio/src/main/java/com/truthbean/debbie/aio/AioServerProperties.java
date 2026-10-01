@@ -34,6 +34,9 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
     private static final String CONNECTION_TIMEOUT = "connection.timeout";
     private static final String URL_ENCODED = "url.encoded";
 
+    private static final String WEBSOCKET_ENABLE = "websocket.enable";
+    private static final String WEBSOCKET_READ_TIMEOUT = "websocket.read.timeout";
+
     private static final String THREAD_POOL_CORE_SIZE = "thread-pool.core-size";
     private static final String THREAD_POOL_MAX_POOL_SIZE = "thread-pool.max-pool-size";
     private static final String THREAD_POOL_QUEUE_SIZE = "thread-pool.queue-size";
@@ -178,6 +181,18 @@ public class AioServerProperties extends BaseServerProperties<AioServerConfigura
                 AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
                 boolean encoded = getBoolean(v, true);
                 configuration.setIgnoreEncode(!encoded);
+            }
+            key = AIO_SERVER_PREFIX + category + WEBSOCKET_ENABLE;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                boolean websocketEnable = getBoolean(v, true);
+                configuration.setWebsocketEnable(websocketEnable);
+            }
+            key = AIO_SERVER_PREFIX + category + WEBSOCKET_READ_TIMEOUT;
+            if (k.equals(key)) {
+                AioServerConfiguration configuration = getConfiguration(profile, DEFAULT_CATEGORY, classLoader);
+                long readTimeout = getLong(v, 60000L);
+                configuration.setWebsocketReadTimeout(readTimeout);
             }
             key = AIO_SERVER_PREFIX + category + THREAD_POOL_CORE_SIZE;
             if (k.equals(key)) {
