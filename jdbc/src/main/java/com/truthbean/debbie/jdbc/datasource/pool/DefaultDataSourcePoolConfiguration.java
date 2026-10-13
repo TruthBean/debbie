@@ -59,6 +59,30 @@ public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration 
      */
     private int pingConnectionNotUsedFor;
 
+    /**
+     * The minimum number of idle connections the pool maintains.
+     * Set to 0 to disable warm-up and minimum-idle enforcement.
+     */
+    private int minIdleConnection = 0;
+
+    /**
+     * Maximum time in milliseconds an idle connection may stay in the pool
+     * before the evictor removes it. 0 means no limit.
+     */
+    private long idleTimeout = 60_000L;
+
+    /**
+     * Maximum age in milliseconds from connection creation before the evictor
+     * removes it, regardless of usage. 0 means no limit.
+     */
+    private long maxConnectionAge = 0L;
+
+    /**
+     * Interval in milliseconds at which the background evictor thread runs.
+     * Set to 0 to disable the evictor entirely.
+     */
+    private long evictionInterval = 5_000L;
+
     public DefaultDataSourcePoolConfiguration(DataSourceConfiguration configuration) {
         super(configuration);
     }
@@ -125,6 +149,38 @@ public class DefaultDataSourcePoolConfiguration extends DataSourceConfiguration 
 
     public void setPingConnectionNotUsedFor(int pingConnectionNotUsedFor) {
         this.pingConnectionNotUsedFor = pingConnectionNotUsedFor;
+    }
+
+    public int getMinIdleConnection() {
+        return minIdleConnection;
+    }
+
+    public void setMinIdleConnection(int minIdleConnection) {
+        this.minIdleConnection = minIdleConnection;
+    }
+
+    public long getIdleTimeout() {
+        return idleTimeout;
+    }
+
+    public void setIdleTimeout(long idleTimeout) {
+        this.idleTimeout = idleTimeout;
+    }
+
+    public long getMaxConnectionAge() {
+        return maxConnectionAge;
+    }
+
+    public void setMaxConnectionAge(long maxConnectionAge) {
+        this.maxConnectionAge = maxConnectionAge;
+    }
+
+    public long getEvictionInterval() {
+        return evictionInterval;
+    }
+
+    public void setEvictionInterval(long evictionInterval) {
+        this.evictionInterval = evictionInterval;
     }
 
     @Override

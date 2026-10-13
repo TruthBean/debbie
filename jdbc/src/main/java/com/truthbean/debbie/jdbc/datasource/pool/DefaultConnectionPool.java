@@ -19,7 +19,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,7 +35,7 @@ public class DefaultConnectionPool {
 
     private final DefaultDataSource dataSource;
 
-    private final List<ConnectionProxy> idleConnections = new ArrayList<>();
+    private final LinkedList<ConnectionProxy> idleConnections = new LinkedList<>();
     private final List<ConnectionProxy> activeConnections = new ArrayList<>();
     private volatile long requestCount = 0;
     private volatile long accumulatedRequestTime = 0;
@@ -46,10 +51,16 @@ public class DefaultConnectionPool {
     private final DefaultDataSourcePoolConfiguration configuration;
 
     private final Lock lock = new ReentrantLock();
+    private final Condition notEmpty = lock.newCondition();
+    private volatile ScheduledExecutorService evictionExecutor;
 
     public DefaultConnectionPool(DefaultDataSourcePoolConfiguration configuration) {
         this.configuration = configuration;
         this.dataSource = new DefaultDataSource(configuration);
+        this.expectedConnectionTypeCode = assembleConnectionTypeCode(
+                configuration.getUrl(), configuration.getUser(), configuration.getPassword());
+        warmUpConnections();
+        startEvictionThread();
     }
 
     public long getRequestCount() {
@@ -115,7 +126,7 @@ public class DefaultConnectionPool {
             }
             for (int i = this.idleConnections.size(); i > 0; i--) {
                 try {
-                    ConnectionProxy conn = this.idleConnections.remove(i - 1);
+                    ConnectionProxy conn = this.idleConnections.removeLast();
                     conn.invalidate();
 
                     Connection realConn = conn.getRealConnection();
@@ -130,6 +141,9 @@ public class DefaultConnectionPool {
         } finally {
             lock.unlock();
         }
+        if (evictionExecutor != null) {
+            evictionExecutor.shutdownNow();
+        }
         if (log.isDebugEnabled()) {
             log.debug("PooledDataSource forcefully closed/removed all connections.");
         }
@@ -143,6 +157,93 @@ public class DefaultConnectionPool {
         return ("" + url + username + password).hashCode();
     }
 
+    /**
+     * Pre-creates idle connections up to minIdleConnection at startup.
+     */
+    private void warmUpConnections() {
+        int minIdle = configuration.getMinIdleConnection();
+        if (minIdle <= 0) return;
+        lock.lock();
+        try {
+            for (int i = 0; i < minIdle; i++) {
+                try {
+                    Connection real = dataSource.getConnection();
+                    ConnectionProxy proxy = new ConnectionProxy(real, this);
+                    proxy.setConnectionTypeCode(expectedConnectionTypeCode);
+                    idleConnections.addLast(proxy);
+                } catch (SQLException e) {
+                    log.warn("Failed to warm up connection: " + e.getMessage());
+                }
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Warmed up " + idleConnections.size() + " idle connections.");
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Starts a single-threaded daemon scheduler that periodically evicts expired
+     * idle connections and replenishes the pool to minIdleConnection.
+     */
+    private void startEvictionThread() {
+        long interval = configuration.getEvictionInterval();
+        if (interval <= 0) return;
+        evictionExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "debbie-pool-evictor");
+            t.setDaemon(true);
+            return t;
+        });
+        evictionExecutor.scheduleWithFixedDelay(this::maintain, interval, interval, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Background task: evicts idle connections that have exceeded idleTimeout or
+     * maxConnectionAge, then replenishes the pool back to minIdleConnection.
+     */
+    private void maintain() {
+        long idleTimeout = configuration.getIdleTimeout();
+        long maxAge = configuration.getMaxConnectionAge();
+        int minIdle = configuration.getMinIdleConnection();
+        lock.lock();
+        try {
+            java.util.Iterator<ConnectionProxy> it = idleConnections.iterator();
+            while (it.hasNext()) {
+                if (idleConnections.size() <= minIdle) break;
+                ConnectionProxy conn = it.next();
+                boolean expired = (idleTimeout > 0 && conn.getTimeElapsedSinceLastUse() > idleTimeout)
+                        || (maxAge > 0 && conn.getAge() > maxAge);
+                if (expired) {
+                    it.remove();
+                    conn.invalidate();
+                    try {
+                        conn.getRealConnection().close();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Evicted expired connection " + conn.getRealHashCode() + ".");
+                        }
+                    } catch (SQLException e) {
+                        log.warn("Error closing evicted connection: " + e.getMessage());
+                    }
+                }
+            }
+            // replenish up to minIdle
+            int deficit = minIdle - idleConnections.size();
+            for (int i = 0; i < deficit; i++) {
+                try {
+                    Connection real = dataSource.getConnection();
+                    ConnectionProxy proxy = new ConnectionProxy(real, this);
+                    proxy.setConnectionTypeCode(expectedConnectionTypeCode);
+                    idleConnections.addLast(proxy);
+                } catch (SQLException e) {
+                    log.warn("Evictor: failed to replenish idle connection: " + e.getMessage());
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
     protected void pushConnection(ConnectionProxy conn) throws SQLException {
         lock.lock();
         try {
@@ -154,14 +255,14 @@ public class DefaultConnectionPool {
                         conn.getRealConnection().rollback();
                     }
                     ConnectionProxy newConn = new ConnectionProxy(conn.getRealConnection(), this);
-                    this.idleConnections.add(newConn);
+                    this.idleConnections.addLast(newConn);
                     newConn.setCreatedTimestamp(conn.getCreatedTimestamp());
                     newConn.setLastUsedTimestamp(conn.getLastUsedTimestamp());
                     conn.invalidate();
                     if (log.isDebugEnabled()) {
                         log.debug("Returned connection " + newConn.getRealHashCode() + " to pool.");
                     }
-                    this.notifyAll();
+                    notEmpty.signalAll();
                 } else {
                     this.accumulatedCheckoutTime += conn.getCheckoutTime();
                     if (!conn.getRealConnection().getAutoCommit()) {
@@ -195,7 +296,7 @@ public class DefaultConnectionPool {
             try {
                 if (!this.idleConnections.isEmpty()) {
                     // Pool has available connection
-                    conn = this.idleConnections.remove(0);
+                    conn = this.idleConnections.removeFirst();
                     if (log.isDebugEnabled()) {
                         log.debug("Checked out connection " + conn.getRealHashCode() + " from pool.");
                     }
@@ -251,7 +352,7 @@ public class DefaultConnectionPool {
                                     log.debug("Waiting as long as " + timeToWait + " milliseconds for connection.");
                                 }
                                 long wt = System.currentTimeMillis();
-                                this.wait(timeToWait);
+                                notEmpty.await(timeToWait, TimeUnit.MILLISECONDS);
                                 this.accumulatedWaitTime += System.currentTimeMillis() - wt;
                             } catch (InterruptedException e) {
                                 break;
@@ -282,7 +383,7 @@ public class DefaultConnectionPool {
                         this.badConnectionCount++;
                         localBadConnectionCount++;
                         conn = null;
-                        if (localBadConnectionCount > (configuration.getMaxIdleConnection() + configuration.getMaxLocalBadConnectionTolerance())) {
+                        if (localBadConnectionCount > configuration.getMaxLocalBadConnectionTolerance()) {
                             if (log.isDebugEnabled()) {
                                 log.debug("PooledDataSource: Could not get a good connection to the database.");
                             }
@@ -383,7 +484,7 @@ public class DefaultConnectionPool {
         return "\n===CONFINGURATION==============================================" +
                 "\n jdbcDriver                     " + configuration.getDriverName() +
                 "\n jdbcUrl                        " + configuration.getUrl() +
-                "\n jdbcUsername                   " + configuration.getUrl() +
+                "\n jdbcUsername                   " + configuration.getUser() +
                 "\n jdbcPassword                   " + (configuration.getPassword() == null ? "NULL" : "************") +
                 "\n poolMaxActiveConnections       " + configuration.getMaxActiveConnection() +
                 "\n poolMaxIdleConnections         " + configuration.getMaxIdleConnection() +
@@ -403,6 +504,10 @@ public class DefaultConnectionPool {
                 "\n hadToWait                      " + getHadToWaitCount() +
                 "\n averageWaitTime                " + getAverageWaitTime() +
                 "\n badConnectionCount             " + getBadConnectionCount() +
+                "\n minIdleConnection              " + configuration.getMinIdleConnection() +
+                "\n idleTimeout                    " + configuration.getIdleTimeout() +
+                "\n maxConnectionAge               " + configuration.getMaxConnectionAge() +
+                "\n evictionInterval               " + configuration.getEvictionInterval() +
                 "\n===============================================================";
     }
 

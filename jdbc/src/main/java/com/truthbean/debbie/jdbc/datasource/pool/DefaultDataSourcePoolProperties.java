@@ -38,6 +38,10 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
     private static final String MAX_LOCAL_BAD_CONNECTION_TOLERANCE = "max-local-bad-connection-tolerance";
     private static final String PING_QUERY = "ping-query";
     private static final String PING_CONNECTION_NOT_USED_FOR = "ping-connection-not-used-for";
+    private static final String MIN_IDLE_CONNECTION = "min-idle-connection";
+    private static final String IDLE_TIMEOUT = "idle-timeout";
+    private static final String MAX_CONNECTION_AGE = "max-connection-age";
+    private static final String EVICTION_INTERVAL = "eviction-interval";
     //=====================================================================================================================================
 
     private static final String MAX_ACTIVE_CONNECTION_KEY = "debbie.datasource.pool.max-active-connection";
@@ -47,6 +51,10 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
     private static final String MAX_LOCAL_BAD_CONNECTION_TOLERANCE_KEY = "debbie.datasource.pool.max-local-bad-connection-tolerance";
     private static final String PING_QUERY_KEY = "debbie.datasource.pool.ping-query";
     private static final String PING_CONNECTION_NOT_USED_FOR_KEY = "debbie.datasource.pool.ping-connection-not-used-for";
+    private static final String MIN_IDLE_CONNECTION_KEY = POOL_KEY_PREFIX + MIN_IDLE_CONNECTION;
+    private static final String IDLE_TIMEOUT_KEY = POOL_KEY_PREFIX + IDLE_TIMEOUT;
+    private static final String MAX_CONNECTION_AGE_KEY = POOL_KEY_PREFIX + MAX_CONNECTION_AGE;
+    private static final String EVICTION_INTERVAL_KEY = POOL_KEY_PREFIX + EVICTION_INTERVAL;
     //===========================================================================
 
     private DataSourceProperties dataSourceProperties;
@@ -67,6 +75,10 @@ public class DefaultDataSourcePoolProperties extends CategoriedProperties<Defaul
             configuration.setMaxCheckoutTime(getIntegerValue(MAX_CHECKOUT_TIME_KEY, 20000));
             configuration.setTimeToWait(getIntegerValue(TIME_TO_WAIT_KEY, 20000));
             configuration.setMaxLocalBadConnectionTolerance(getIntegerValue(MAX_LOCAL_BAD_CONNECTION_TOLERANCE_KEY, 3));
+            configuration.setMinIdleConnection(getIntegerValue(MIN_IDLE_CONNECTION_KEY, 0));
+            configuration.setIdleTimeout(getLongValue(IDLE_TIMEOUT_KEY, 60_000L));
+            configuration.setMaxConnectionAge(getLongValue(MAX_CONNECTION_AGE_KEY, 0L));
+            configuration.setEvictionInterval(getLongValue(EVICTION_INTERVAL_KEY, 5_000L));
             String pingQuery = getValue(PING_QUERY_KEY);
             if (pingQuery == null || pingQuery.isBlank()) {
                 configuration.setPingEnabled(false);

@@ -57,6 +57,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         if (applicationContext != null) {
             BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
             Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+            if (injectTypes == null || injectTypes.isEmpty()) {
+                return false;
+            }
             for (Class<? extends Annotation> injectType : injectTypes) {
                 if (parameterContext.isAnnotated(injectType)) {
                     if (logger.isTraceEnabled()) {
@@ -77,6 +80,9 @@ public class DebbieApplicationExtension implements BeforeAllCallback, AfterAllCa
         if (applicationContext != null) {
             BeanInfoManager beanInfoManager = applicationContext.getBeanInfoManager();
             Set<Class<? extends Annotation>> injectTypes = beanInfoManager.getInjectTypes();
+            if (injectTypes == null || injectTypes.isEmpty()) {
+                return null;
+            }
             for (Class<? extends Annotation> injectType : injectTypes) {
                 if (parameterContext.isAnnotated(injectType)) {
                     if (injectType == PropertyInject.class) {
