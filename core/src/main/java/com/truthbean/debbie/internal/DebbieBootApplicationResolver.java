@@ -40,7 +40,7 @@ class DebbieBootApplicationResolver {
 
     void resolverClasses(BeanScanConfiguration configuration, ResourceResolver resourceResolver) {
         Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
-        if (targetClasses.isEmpty()) {
+        if (targetClasses.isEmpty() && configuration.isEnableScanResources()) {
             ClassLoader classLoader = this.applicationContext.getClassLoader();
             var allClass = ReflectionHelper.getAllClassByPackageName("**", classLoader, resourceResolver);
             allClass.forEach(configuration::addScanClasses);
@@ -149,7 +149,7 @@ class DebbieBootApplicationResolver {
             beanInfoManager.registerBeanInfo(beanFactory);
             var bean = beanFactory.factoryBean(applicationContext);
             configuration.copyFrom(bean);
-        } else {
+        } else if (configuration.isEnableScanResources()) {
             Set<Class<?>> targetClasses = configuration.getTargetClasses(resourceResolver);
             if (targetClasses.isEmpty()) {
                 ClassLoader classLoader = this.applicationContext.getClassLoader();

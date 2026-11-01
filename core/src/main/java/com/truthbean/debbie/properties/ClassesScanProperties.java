@@ -62,7 +62,7 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
                 configuration.addScanClasses(classes);
             }
 
-            boolean scan = properties.getBooleanValue(RESOURCE_SCAN_ENABLE_KEY, true);
+            boolean scan = properties.getBooleanValue(RESOURCE_SCAN_ENABLE_KEY, configuration.isEnable());
             configuration.setEnableScanResources(scan);
 
             List<String> packages = properties.getStringListValue(SCAN_BASE_PACKAGES_KEY, ",");
@@ -88,6 +88,8 @@ public class ClassesScanProperties extends DebbieEnvironmentDepositoryHolder imp
                     }
                 }
             }
+        } else {
+            configuration.setEnableScanResources(false);
         }
         if (configurationMap.isEmpty()) {
             Map<String, BeanScanConfiguration> map = new HashMap<>();
